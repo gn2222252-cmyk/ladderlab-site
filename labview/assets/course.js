@@ -150,15 +150,21 @@ function exam(c,cfg){
   const box=document.createElement('div');box.className='exam';c.appendChild(box);
   const KEYB='gantry-lv-exam-best';
   let best=null;try{best=JSON.parse(localStorage.getItem(KEYB)||'null');}catch(e){}
+  /* 錯題本：答錯（或沒作答）的題目記下來，答對了就移除；以題目文字當作識別 */
+  const KEYW='gantry-lv-exam-wrong';
+  let wrongBook=[];try{wrongBook=JSON.parse(localStorage.getItem(KEYW)||'[]');}catch(e){wrongBook=[];}
+  const saveWrong=()=>{try{localStorage.setItem(KEYW,JSON.stringify(wrongBook));}catch(e){}};
+  const inBank=()=>wrongBook.filter(t=>cfg.bank.some(q=>q.q===t));
   function start(topic){
     if(typeof topic!=='string') topic='';
-    const pool=topic?cfg.bank.filter(q=>q.topic===topic):cfg.bank;
+    const pool=topic==='__wrong__'?cfg.bank.filter(q=>wrongBook.includes(q.q)):topic?cfg.bank.filter(q=>q.topic===topic):cfg.bank;
     const bank=pool.slice();for(let i=bank.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bank[i],bank[j]]=[bank[j],bank[i]];}
     const qs=(topic?bank:bank.slice(0,Math.min(cfg.n,bank.length))).map(shuffled);
     const ans=new Array(qs.length).fill(-1);
     const minutes=topic?Math.ceil(qs.length*1.5):cfg.minutes;
     let left=minutes*60,timer=null;
-    box.innerHTML=`<div class="exbar"><b>${topic?'主題練習：'+topic:'模擬考進行中'}</b><span class="clock"></span><span class="cnt"></span><button class="btn pri sub">交卷</button></div><div class="qs"></div>`;
+    const tname=topic==='__wrong__'?'錯題本':topic;
+    box.innerHTML=`<div class="exbar"><b>${tname?(topic==='__wrong__'?'錯題本重練':'主題練習：'+tname):'模擬考進行中'}</b><span class="clock"></span><span class="cnt"></span><button class="btn pri sub">交卷</button></div><div class="qs"></div>`;
     const list=box.querySelector('.qs');
     qs.forEach((q,k)=>{
       const d=document.createElement('div');d.className='quiz';
@@ -180,11 +186,13 @@ function exam(c,cfg){
         d.querySelectorAll('label').forEach((l,j)=>{if(j===q.a)l.classList.add('right');else if(j===ans[k])l.classList.add('wrong');});
         if(ans[k]===q.a)ok++;
         d.querySelector('.ex').innerHTML=(ans[k]===q.a?'<b>答對。</b>':(ans[k]<0?'<b>沒作答。</b>':'<b>答錯。</b>'))+' '+(q.ex||'')+(q.topic?` <span class="qd">（${q.topic}）</span>`:'');});
+      qs.forEach((q,k)=>{const i=wrongBook.indexOf(q.q);if(ans[k]===q.a){if(i>=0)wrongBook.splice(i,1);}else if(i<0)wrongBook.push(q.q);});
+      saveWrong();
       const pct=Math.round(100*ok/qs.length),pass=pct>=cfg.pass;
       if(!topic&&(!best||pct>best.pct)){best={pct,at:new Date().toLocaleString()};try{localStorage.setItem(KEYB,JSON.stringify(best));}catch(e){}}
       const used=minutes*60-left;
       const bar=box.querySelector('.exbar');
-      bar.innerHTML=`<b style="color:${pass?'#0b8a5f':'#b91c1c'}">${timeout?'時間到。':''}得分 ${ok} / ${qs.length}（${pct}%）${pass?'　通過':'　未通過'}（及格 ${cfg.pass}%）</b><span>用時 ${Math.floor(used/60)} 分 ${used%60} 秒</span><button class="btn menu">回選單</button><button class="btn pri again">${topic?'再練一次':'再考一次（重新抽題）'}</button>`;
+      bar.innerHTML=`<b style="color:${pass?'#0b8a5f':'#b91c1c'}">${timeout?'時間到。':''}得分 ${ok} / ${qs.length}（${pct}%）${pass?'　通過':'　未通過'}（及格 ${cfg.pass}%）</b><span>用時 ${Math.floor(used/60)} 分 ${used%60} 秒</span><button class="btn menu">回選單</button><button class="btn pri again">${topic?'再練一次':'再考一次（重新抽題）'}</button><span class="qd">錯題本現在有 ${inBank().length} 題</span>`;
       bar.querySelector('.again').onclick=()=>start(topic);
       bar.querySelector('.menu').onclick=menu;
       const wrong=[...new Set(qs.filter((q,k)=>ans[k]!==q.a).map(q=>q.topic).filter(Boolean))];
@@ -195,8 +203,10 @@ function exam(c,cfg){
   function menu(){
     const topics=[...new Set(cfg.bank.map(q=>q.topic).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh',{numeric:true}));
     box.innerHTML=`<div class="exbar"><span>${cfg.n} 題、${cfg.minutes} 分鐘、及格 ${cfg.pass}%。每次從 ${cfg.bank.length} 題題庫隨機抽題，交卷後才顯示答案和解說。${best?`　你的最佳成績：${best.pct}%（${best.at}）`:''}</span><button class="btn pri go">開始模擬考</button></div>
-<div class="exbar topicbar"><span>或依主題練習（該主題全部題目）：</span><select class="tp">${topics.map(t=>`<option value="${t}">${t}（${cfg.bank.filter(q=>q.topic===t).length} 題）</option>`).join('')}</select><button class="btn tgo">開始練習</button></div>`;
+<div class="exbar topicbar"><span>或依主題練習（該主題全部題目）：</span><select class="tp">${topics.map(t=>`<option value="${t}">${t}（${cfg.bank.filter(q=>q.topic===t).length} 題）</option>`).join('')}</select><button class="btn tgo">開始練習</button></div>${inBank().length?`<div class="exbar topicbar"><span>錯題本：之前答錯或沒作答的 ${inBank().length} 題，答對一次就移出。</span><button class="btn wgo">重練錯題</button><button class="btn wclr">清空錯題本</button></div>`:''}`;
     box.querySelector('.go').onclick=()=>start('');
+    if(box.querySelector('.wgo')){box.querySelector('.wgo').onclick=()=>start('__wrong__');
+      box.querySelector('.wclr').onclick=()=>{if(confirm('清空錯題本？')){wrongBook=[];saveWrong();menu();}};}
     box.querySelector('.tgo').onclick=()=>start(box.querySelector('.tp').value);
   }
   menu();

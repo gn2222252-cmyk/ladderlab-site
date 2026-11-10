@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8b316f9146">
+<meta name="ll-version" content="458e1ed43b">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -23,7 +23,7 @@
   <main id="main"><div id="content"></div></main>
 </div>
 <script src="assets/lvdraw.js?v=fe4083103b"></script>
-<script src="assets/course.js?v=4a89e5d75a"></script>
+<script src="assets/course.js?v=a5189578fb"></script>
 <script src="assets/lvfmt.js?v=174413c716"></script>
 <script src="lessons/part1_start.js?v=326a186882"></script>
 <script src="lessons/part2_basics_a.js?v=65b702a165"></script>
@@ -51,7 +51,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8b316f9146" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "458e1ed43b" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8b316f9146">
+<meta name="ll-version" content="458e1ed43b">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>全班進度表：合併學生的進度檔 | LadderLab</title>
@@ -61,7 +61,7 @@
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=42a3a2cd01"></script>
 <script src="course.js?v=9f95046c87"></script>
-<script src="common.js?v=59040b80a6"></script>
+<script src="common.js?v=26e7d4e9ea"></script>
 <script>
 "use strict";
 (function () {
@@ -160,7 +160,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8b316f9146" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "458e1ed43b" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
