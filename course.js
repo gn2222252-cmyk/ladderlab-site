@@ -56,12 +56,14 @@ Progress lives in this browser only, under the keys each page already used. */
     const d = doneSets();
     const n = f.sec.items.filter((it) => isDone(it, d)).length;
     const prev = step(f, -1), next = step(f, 1);
+    /* the end of a side track leads back to the main line: the chapter after the one it is taken after */
+    const back = !next && !f.sec.main && f.sec.after ? flat.find((x) => x.sec.main && String(x.sec.id) === String(+f.sec.after + 1)) : null;
     el.className = "cbar";
     el.innerHTML = `<div class="cbar-where"><a href="path.html">課程地圖</a> › <b>${esc(secName(f.sec))}</b>` +
       `<span class="cbar-pos">第 ${f.n + 1}／${f.sec.items.length} 項 · 完成 ${n}</span>` +
       `<span class="cbar-meter"><i style="width:${Math.round(100 * n / f.sec.items.length)}%"></i></span></div>` +
       `<div class="cbar-nav">${prev ? `<a class="btnlink" href="${prev.it.href}">‹ ${esc(label(prev.it))}</a>` : ""}` +
-      `${next ? `<a class="btnlink go" href="${next.it.href}">下一步：${esc(label(next.it))} ›</a>` : `<a class="btnlink go" href="path.html">回課程地圖 ›</a>`}</div>`;
+      `${next ? `<a class="btnlink go" href="${next.it.href}">下一步：${esc(label(next.it))} ›</a>` : back ? `<a class="btnlink go" href="${back.it.href}">回主線：${esc(secName(back.sec))} ›</a>` : `<a class="btnlink go" href="path.html">回課程地圖 ›</a>`}</div>`;
     el.hidden = false;
   }
 
