@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="b83c599230">
+<meta name="ll-version" content="8a619cd1c8">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>機台設計方法：從需求到 PLC 程式與試車 | LadderLab</title>
@@ -143,6 +143,45 @@
         </tbody></table></div>
       <div class="callout warn"><b>安全條件要直接串在輸出上，不要等換步。</b>步序表寫「有人或光電被遮 → 回 S20」，但換步要到下一圈才發生：光電剛被遮的那一圈，S22 裡的關門輸出 Y001 還是 ON。所以關門那條要直接串防夾和有人的接點（例如 <code>ANI X003</code>、<code>ANI X002</code>），條件一成立當圈就斷。急停、安全門也一樣。E15 的評分會抓這一圈。</div>
       <p>這個步序表直接就是 SFC：S0 → S20 → S21 → S22，S22 有一條選擇分支回 S20。用 STL 寫或用自保持寫都可以，練習題 E15 的參考解答用自保持，你可以試著改寫成 STL，切到「SFC 圖」對照。</p>
+      <figure class="wirefig sfcfig">
+        <svg viewBox="0 0 460 420" width="100%" style="max-width:460px;height:auto" role="img" aria-label="自動門的 SFC：S0 待機、S20 開門、S21 保持開、S22 關門，S22 有選擇分支回 S20">
+          <style>
+            .sfcfig text{fill:currentColor;font-size:13px;font-family:inherit}
+            .sfcfig .w{stroke:currentColor;stroke-width:1.6;fill:none}
+            .sfcfig .st{stroke:currentColor;stroke-width:1.8;fill:var(--card,transparent)}
+            .sfcfig .tr{stroke:var(--on,#1e6fff);stroke-width:3}
+            .sfcfig .c{font-size:12px;fill-opacity:.8}
+            .sfcfig .j{stroke:var(--on,#1e6fff);stroke-width:1.6;fill:none}
+          </style>
+          <rect class="st" x="80" y="14" width="110" height="34"/><rect class="st" x="85" y="19" width="100" height="24"/>
+          <text x="135" y="36" text-anchor="middle">S0 待機</text>
+          <line class="w" x1="135" y1="48" x2="135" y2="98"/><line class="tr" x1="120" y1="73" x2="150" y2="73"/>
+          <text x="158" y="77" class="c">有人 X2 或 光電被遮 X3</text>
+          <rect class="st" x="80" y="98" width="110" height="34"/><text x="135" y="120" text-anchor="middle">S20 開門</text>
+          <text x="200" y="120" class="c">Y0 開門馬達；T 5 秒逾時</text>
+          <line class="w" x1="135" y1="132" x2="135" y2="182"/><line class="tr" x1="120" y1="157" x2="150" y2="157"/>
+          <text x="158" y="161" class="c">開到底 X0</text>
+          <rect class="st" x="80" y="182" width="110" height="34"/><text x="135" y="204" text-anchor="middle">S21 保持開</text>
+          <text x="200" y="204" class="c">有人就重新計時</text>
+          <line class="w" x1="135" y1="216" x2="135" y2="266"/><line class="tr" x1="120" y1="241" x2="150" y2="241"/>
+          <text x="158" y="245" class="c">沒人、光電沒遮 2 秒</text>
+          <rect class="st" x="80" y="266" width="110" height="34"/><text x="135" y="288" text-anchor="middle">S22 關門</text>
+          <text x="200" y="282" class="c">Y1 關門馬達；T 5 秒逾時</text>
+          <text x="200" y="298" class="c">（防夾、有人直接串在 Y1）</text>
+          <line class="w" x1="135" y1="300" x2="135" y2="320"/>
+          <line class="w" x1="60" y1="320" x2="210" y2="320"/>
+          <line class="w" x1="60" y1="320" x2="60" y2="380"/><line class="tr" x1="45" y1="350" x2="75" y2="350"/>
+          <text x="8" y="398" class="c">有人或光電被遮 → 回 S20</text>
+          <path class="j" d="M60 380 V404"/><text x="44" y="414" class="c" fill="var(--on,#1e6fff)">↑ S20</text>
+          <line class="w" x1="210" y1="320" x2="210" y2="380"/><line class="tr" x1="195" y1="350" x2="225" y2="350"/>
+          <text x="232" y="354" class="c">關到底 X1</text>
+          <path class="j" d="M210 380 V404"/><text x="196" y="414" class="c" fill="var(--on,#1e6fff)">↑ S0</text>
+        </svg>
+        <figcaption>上面的步序表畫成 SFC：方框是步（雙框是初始步 S0），橫粗線是轉移條件。S22 往下分兩條（選擇分支），兩個條件只會有一個成立；箭頭寫的 S20、S0 是跳回那一步（STL 寫成 OUT S20、OUT S0）。</figcaption>
+      </figure>
+      <div class="callout"><b>逾時值怎麼定？</b>先量（或估）正常動作的時間，再乘 1.5～2 倍。例如門正常 3 秒開到底，逾時就設 5～6 秒：太短會誤報（氣壓低一點、負載重一點就超過），太長則卡住很久才發現。
+      這個數字要寫進交付文件的參數表，試車時再用實測時間調整。</div>
+
     </section>
 
     <section id="d6">
@@ -223,7 +262,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "b83c599230" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8a619cd1c8" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

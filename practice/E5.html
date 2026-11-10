@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="b83c599230">
+<meta name="ll-version" content="8a619cd1c8">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E5 延時啟動｜PLC 練習題（自動評分）</title>
@@ -37,7 +37,7 @@ X0 關掉時 Y0 立刻熄，下次打開重新計時。</div>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "b83c599230" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8a619cd1c8" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
