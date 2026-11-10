@@ -582,3 +582,21 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .k-add{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
 .inputs.free-io .inp small{grid-column:1/-1;white-space:nowrap;margin:-2px 0 0}
 .lamps.free-io li{flex-wrap:wrap}.lamps.free-io li small{white-space:nowrap}
+.k-card.k-mid{width:160px}
+.k-part.metal{fill:#a9b6c8;stroke:#5d6573}
+.k-bin{fill:none;stroke:#7f8a9c;stroke-dasharray:3 2}
+.k-pusher.on .k-cylbody{stroke:var(--on);stroke-width:2}
+.k-frame{fill:#eef1f5;stroke:#7f8a9c}.k-slat{fill:#a9b6c8;stroke:#7f8a9c;stroke-width:.6}
+.k-motor-t{font-size:9px;fill:#fff}.k-floor{stroke:#5d6573;stroke-width:2}
+.k-warn{font-size:13px;font-weight:700;fill:#e53935}
+.k-card.burnt{border-color:#e53935;background:#fdecea}
+.k-tank{fill:none;stroke:#5d6573;stroke-width:2}.k-water{fill:#4aa3f0;opacity:.75}
+.k-pipe{fill:none;stroke:#7f8a9c;stroke-width:4}.k-mark{stroke:#5d6573;stroke-width:1.5}
+.k-valve{fill:#c9ced6;stroke:#5d6573}.k-valve.open{fill:#4aa3f0}
+.k-lv{font-size:14px;font-weight:700;fill:var(--ink)}
+.k-oven{fill:#eef1f5;stroke:#5d6573}.k-coil{fill:none;stroke:#7f8a9c;stroke-width:3}
+.k-card.on .k-coil{stroke:#ff5a1f;filter:drop-shadow(0 0 4px #ff5a1f)}
+.k-temp{font-size:18px;font-weight:700;fill:#333}
+.k-therm{fill:#fff;stroke:#7f8a9c}.k-merc{fill:#e53935}
+.k-segbg{fill:#1d2128}.k-seg{stroke:#3a2a2a;stroke-width:5;stroke-linecap:round}.k-seg.lit{stroke:#ff3b30;filter:drop-shadow(0 0 3px #ff3b30)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .k-frame,:root:not([data-theme="light"]) .k-oven{fill:#2a303a}:root:not([data-theme="light"]) .k-temp{fill:#e6eaf0}:root:not([data-theme="light"]) .k-card.burnt{background:#3a1e1e}}
