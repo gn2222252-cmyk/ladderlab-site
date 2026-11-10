@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LadderLab 梯圖實驗室｜三菱 FX PLC 互動課程</title>
+<meta name="description" content="三菱 FX3S PLC 完整線上課程：接線、階梯圖、FX 指令、步進 STL 與 SFC、GX Works2 操作、異常與復歸、整機設計、故障排除。每課都能在瀏覽器裡操作，練習自動評分。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">LadderLab <span data-t="brand_sub">梯圖實驗室</span></div>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="lang" class="ghost" type="button">English</button>
+</header>
+
+<main>
+  <section class="hero">
+    <h1 data-t="h1">三菱 FX PLC：從接線、階梯圖到會設計、會除錯，全部在瀏覽器裡練</h1>
+    <p data-t="sub">為正在學 FX3S、用 GX Works2 的學生寫的一條完整課程：每一課都有會動的階梯圖，學完馬上自己寫程式，在虛擬機台上自動評分。不用買 PLC、不用安裝軟體。</p>
+    <p class="hero-cta"><a class="btnlink go big" id="start" href="learn.html#0">從第 1 章開始 ›</a> <a class="btnlink" href="path.html">看完整課程地圖</a></p>
+  </section>
+
+  <div class="who">
+    <a href="path.html"><b>我在學 PLC</b><span>照課程地圖七章走：互動課 → GX Works2 操作 → 自動評分練習。每一頁上方都有「下一步」。</span></a>
+    <a href="exam.html"><b>我要考技能檢定</b><span>氣壓乙級、工業配線乙級的 PLC 題做成模擬機台，三種模式、急停、復歸、停電一項一項評分。</span></a>
+    <a href="check.html"><b>我是現場工程師</b><span>貼上 GX Works2 程式：找雙線圈、SET 沒 RST，逐條翻成白話；或直接練故障排除案例。</span></a>
+  </div>
+
+  <h2 class="sec-h">課程主線：七章</h2>
+  <ol class="home-map" id="homemap"></ol>
+
+  <h2 class="sec-h">先看一台真實設計的機台在跑</h2>
+  <p class="hint" data-t="lab_intro">這是課程最後幾章的主角：雙龍門取放機。程式用 FX 指令寫成，現在就在你的瀏覽器裡執行。按「原點復歸」再按「啟動」，也可以製造故障看它怎麼報警。</p>
+  <section class="lab">
+    <div id="loading" class="loading"><span class="spin"></span><span data-t="loading">正在載入模擬引擎（第一次約 10 秒）…</span></div>
+
+    <div class="stage">
+      <div class="scene-card">
+        <canvas id="scene" width="640" height="360" aria-label="machine"></canvas>
+        <div class="status" id="status"></div>
+      </div>
+
+      <div class="panel">
+        <div class="guide" id="guide"></div>
+        <div class="buttons">
+          <button data-cmd="home" data-t="b_home">原點復歸</button>
+          <button data-cmd="start" class="go" data-t="b_start">啟動</button>
+          <button data-cmd="stop" data-t="b_stop">停止</button>
+          <button data-cmd="reset" data-t="b_reset">異常復歸</button>
+          <button id="estop" class="stopbtn" type="button" data-t="b_estop">急停</button>
+          <button data-cmd="add_part" data-t="b_part">放一個工件</button>
+        </div>
+        <div class="row">
+          <label><span data-t="speed">速度</span>
+            <select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+          <button id="restart" class="ghost" type="button" data-t="b_restart">重新開始</button>
+        </div>
+        <fieldset class="fault">
+          <legend data-t="fault">製造故障</legend>
+          <select id="fsensor"></select>
+          <select id="fmode">
+            <option value="" data-t="f_ok">正常</option>
+            <option value="0" data-t="f_off">卡在 OFF（斷線）</option>
+            <option value="1" data-t="f_on">卡在 ON（短路）</option>
+          </select>
+        </fieldset>
+        <div class="io">
+          <div><h3 data-t="inputs">輸入 X</h3><ul id="xs"></ul></div>
+          <div><h3 data-t="outputs">輸出 Y</h3><ul id="ys"></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ladder-card">
+      <div class="ladder-head">
+        <h2 data-t="ladder">階梯圖（即時監視）</h2>
+        <select id="section"></select>
+      </div>
+      <p class="hint" data-t="hint">藍色＝接點導通、線圈通電。點任何一條，看它的意思和現在為什麼通或不通。</p>
+      <div class="ladder-wrap"><div id="ladder"></div></div>
+      <div id="explain" class="explain" hidden></div>
+    </div>
+  </section>
+
+  <section class="pro">
+    <h2 data-t="pro_h">之後會有的付費版（開發中）</h2>
+    <div class="plans">
+      <div class="plan"><h3 data-t="p1">學習者 Pro</h3><p data-t="p1d">更多機台場景、自動評分練習題、AI 助教、GX Works2 操作教學。</p></div>
+      <div class="plan"><h3 data-t="p2">工程師 Pro</h3><p data-t="p2d">匯入你的程式：AI 逐條解釋、找出可能的錯誤、產生 I/O 文件、先在虛擬機台試車。</p></div>
+    </div>
+
+    <form id="wait" class="wait">
+      <h3 data-t="w_h">加入候補名單（尚未開放，開放時優先通知你）</h3>
+      <label><span data-t="w_email">Email</span><input type="email" name="email" required maxlength="120"></label>
+      <label><span data-t="q1">你是？</span>
+        <select name="role" required>
+          <option value="" data-t="choose">請選擇</option>
+          <option value="student" data-t="r1">學生</option>
+          <option value="engineer" data-t="r2">現場工程師</option>
+          <option value="teacher" data-t="r3">老師／講師</option>
+          <option value="career" data-t="r4">想轉職進自動化</option>
+          <option value="other" data-t="r5">其他</option>
+        </select></label>
+      <label><span data-t="q2">最常用哪個廠牌的 PLC？</span><input name="brands" maxlength="120" data-tp="q2p" placeholder="例如：三菱 FX、台達、西門子"></label>
+      <label><span data-t="q3">寫或修 PLC 程式時，你最卡的是什麼？</span><textarea name="pain" rows="2" maxlength="500"></textarea></label>
+      <label><span data-t="q4">如果有上面的 Pro 功能，你每月願意付多少？</span>
+        <select name="price">
+          <option value="" data-t="choose">請選擇</option>
+          <option value="0" data-t="pr0">不會付費</option>
+          <option value="lt300" data-t="pr1">NT$300 以下</option>
+          <option value="300-800" data-t="pr2">NT$300～800</option>
+          <option value="gt800" data-t="pr3">NT$800 以上</option>
+        </select></label>
+      <label><span data-t="q5">比較想要哪一版？</span>
+        <select name="plan">
+          <option value="learner" data-t="p1">學習者 Pro</option>
+          <option value="engineer" data-t="p2">工程師 Pro</option>
+          <option value="both" data-t="both">兩個都要</option>
+        </select></label>
+      <details class="notice"><summary data-t="n_s">個人資料蒐集告知（完整內容見<a href="privacy.html">隱私權政策</a>）</summary>
+        <p data-t="n_b">蒐集者：LadderLab（個人開發者）。目的：開放通知與產品研究。類別：Email 與你填寫的問卷內容。期間：到你要求刪除或產品停止為止。你可以隨時來信要求查詢、更正或刪除。不提供將無法收到開放通知。</p></details>
+      <label class="check"><input type="checkbox" name="consent" required> <span data-t="consent">我已閱讀告知事項，同意收到開放通知。</span></label>
+      <button class="go" data-t="w_btn">加入候補</button>
+      <p id="wmsg" class="wmsg" role="status"></p>
+    </form>
+  </section>
+</main>
+
+<footer>
+  <p data-t="disc"><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機，請勿直接用於實際設備。</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="py/bundle.js"></script>
+<script src="config.js"></script>
+<script src="ladder.js"></script>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script>
+"use strict";
+(function () {
+  const esc = Course.esc, d = Course.doneSets();
+  document.getElementById("homemap").innerHTML = Course.data.chapters.map((c) => {
+    const first = c.items[0];
+    const n = c.items.filter((it) => Course.isDone(it, d)).length;
+    return `<li><a href="path.html#ch${c.id}"><b><span class="no">${c.id}</span>${esc(c.t)}</b><span>${esc(c.can.join("、"))}</span>` +
+      `${n ? `<span> · 已完成 ${n}/${c.items.length}</span>` : ""}</a></li>`;
+  }).join("");
+  const nx = Course.firstOpen();
+  const started = Course.flat.some((f) => f.sec.main && Course.isDone(f.it, d));
+  if (nx && started) {
+    const a = document.getElementById("start");
+    a.href = nx.it.href; a.textContent = "繼續上次：" + Course.label(nx.it) + " ›";
+  }
+})();
+</script>
+<script src="app.js"></script>
+</body>
+</html>

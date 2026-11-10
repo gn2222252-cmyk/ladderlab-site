@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /py/
+Sitemap: https://gn2222252-cmyk.github.io/ladderlab-site/sitemap.xml

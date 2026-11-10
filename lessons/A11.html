@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.7 比較指令：CMP、ZCP 與區間判斷｜PLC 互動課程</title>
+<meta name="description" content="感測器不一定只有 ON／OFF。水位、溫度、重量、計數值都是數字，機台要判斷「太低、正常、太高」，就要比較。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A11.html">
+<meta property="og:title" content="3.7 比較指令：CMP、ZCP 與區間判斷｜PLC 互動課程">
+<meta property="og:description" content="感測器不一定只有 ON／OFF。水位、溫度、重量、計數值都是數字，機台要判斷「太低、正常、太高」，就要比較。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A11.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "A11 比較指令：CMP、ZCP 與區間判斷", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 3 章　FX 常用指令</p>
+<h1>3.7 比較指令：CMP、ZCP 與區間判斷</h1>
+<p class="lesson-goal"><b>本課目標</b>用 CMP、ZCP 判斷數值的大小和區間。</p>
+<div class="text">感測器不一定只有 ON／OFF。水位、溫度、重量、計數值都是數字，機台要判斷「太低、正常、太高」，就要比較。
+CMP D0 K50 M10 一次給三個結果：M10＝D0 比 50 大、M11＝剛好等於、M12＝比 50 小。ZCP K30 K70 D0 M20 判斷區間：M20＝低於 30、M21＝30～70 之間（含兩端）、M22＝高於 70。
+下面用按鈕模擬水位：X0 加 10、X1 減 10。Y0 補水、Y1 正常燈、Y2 高水位警報。</div>
+<p><a class="btnlink go" href="../learn.html#A11">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>寫法</th><th>結果</th><th>適合</th></tr></thead><tbody><tr><td>LD&gt;= D0 K30</td><td>一個接點，條件成立就導通</td><td>只要判斷一個條件</td></tr><tr><td>CMP D0 K50 M10</td><td>M10 大於、M11 等於、M12 小於，三個一起出來</td><td>同一個值要分三種情況</td></tr><tr><td>ZCP K30 K70 D0 M20</td><td>M20 低於下限、M21 在區間內、M22 高於上限</td><td>上下限、正常範圍</td></tr></tbody></table></div>
+<div class="notes">CMP、ZCP 的驅動條件 OFF 時，M 會保持上一次的結果，不會自己清掉。所以常用 M8000 一直驅動。
+要用遲滯（例如低於 30 開始補水、補到 70 才停）時，結果再接 SET／RST，不要直接 OUT，否則水位在 30 附近會一直開開關關。</div>
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD X000
+PLS M0
+LD M0
+ADD D0 K10 D0
+LD X001
+PLS M1
+LD M1
+SUB D0 K10 D0
+LD M8000
+CMP D0 K50 M10
+LD M8000
+ZCP K30 K70 D0 M20
+LD M20
+OUT Y000
+LD M21
+OUT Y001
+LD M22
+OUT Y002
+LD M10
+OUT Y003</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20X000%0APLS%20M0%0ALD%20M0%0AADD%20D0%20K10%20D0%0ALD%20X001%0APLS%20M1%0ALD%20M1%0ASUB%20D0%20K10%20D0%0ALD%20M8000%0ACMP%20D0%20K50%20M10%0ALD%20M8000%0AZCP%20K30%20K70%20D0%20M20%0ALD%20M20%0AOUT%20Y000%0ALD%20M21%0AOUT%20Y001%0ALD%20M22%0AOUT%20Y002%0ALD%20M10%0AOUT%20Y003#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>CMP 一次給「大於、等於、小於」三個 M</li><li>ZCP 判斷低於、區間內、高於，區間含兩端</li><li>結果要遲滯時接 SET／RST</li></ul><p class="trap"><b>常見錯誤：</b>CMP 結果直接 OUT 補水泵，水位在門檻附近一直開開關關。</p></div>
+<h2>預測看看</h2><div class="qz"><p>X0 按 5 下（D0 = 50），Y3（CMP 的「大於 50」）是？</p><details><summary>看答案</summary><p><b>OFF</b>　D0 剛好等於 50，ON 的是 M11（等於），M10（大於）不會 ON。</p></details></div><div class="qz"><p>X0 按 7 下（D0 = 70），Y1（30～70 正常）是？</p><details><summary>看答案</summary><p><b>ON</b>　ZCP 的區間包含兩端，70 還算在區間內。</p></details></div>
+<p class="pager"><a class="btnlink" href="A5.html">‹ 上一課：3.6 數值：K、H、MOV、ADD、比較</a> <a class="btnlink" href="A10.html">下一課：3.8 ALT 與 ZRST：一個按鈕切換、一次清除</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

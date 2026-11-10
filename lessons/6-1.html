@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.3 步進和一般階梯圖差在哪｜PLC 互動課程</title>
+<meta name="description" content="兩種都是階梯圖，也都是合法寫法，差別在 PLC 這一圈要算哪些行。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-1.html">
+<meta property="og:title" content="4.3 步進和一般階梯圖差在哪｜PLC 互動課程">
+<meta property="og:description" content="兩種都是階梯圖，也都是合法寫法，差別在 PLC 這一圈要算哪些行。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-1.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "6-1 步進和一般階梯圖差在哪", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 4 章　順序控制：步進 STL 與 SFC</p>
+<h1>4.3 步進和一般階梯圖差在哪</h1>
+<p class="lesson-goal"><b>本課目標</b>說出步進和一般階梯圖在執行上的差別。</p>
+<div class="text">兩種都是階梯圖，也都是合法寫法，差別在 PLC 這一圈要算哪些行。
+一般階梯圖：每一條每一圈都算。步進階梯圖：程式切成一步一步，只有作用中的步才算，其他步整段跳過；RET 之後的一般階梯每圈照算。
+下面程式上半是步進，最後一條是一般階梯。按「▶ 播放示範」看差別，底下是完整對照。</div>
+<p><a class="btnlink go" href="../learn.html#6-1">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th></th><th>一般階梯圖（自保持）</th><th>步進階梯圖（STL）</th></tr></thead><tbody><tr><td>每一圈算哪些</td><td>全部都算</td><td>只算作用中的步，加上 RET 後的一般階梯</td></tr><tr><td>怎麼記住第幾步</td><td>自保持線圈 M</td><td>狀態元件 S</td></tr><tr><td>怎麼換步</td><td>下一步回頭切斷上一步</td><td>SET 下一步，上一步自動關</td></tr><tr><td>輸出怎麼關</td><td>自己寫切斷條件</td><td>離開這一步自動 OFF</td></tr><tr><td>同一個線圈</td><td>只能寫一次</td><td>不同步裡可以各寫一次</td></tr><tr><td>適合</td><td>急停、互鎖、開關</td><td>有先後順序的動作</td></tr></tbody></table></div>
+
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD M8002
+SET S0
+STL S0
+LD X000
+SET S20
+STL S20
+OUT Y000
+LD X001
+SET S21
+STL S21
+OUT Y001
+LD X002
+SET S0
+RET
+LD X003
+OUT Y002</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20M8002%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0ASET%20S20%0ASTL%20S20%0AOUT%20Y000%0ALD%20X001%0ASET%20S21%0ASTL%20S21%0AOUT%20Y001%0ALD%20X002%0ASET%20S0%0ARET%0ALD%20X003%0AOUT%20Y002#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>一般階梯每圈每行都算</li><li>步進只算作用中的步，其他步整段跳過</li><li>RET 之後回到一般階梯</li></ul><p class="trap"><b>常見錯誤：</b>把每圈都要算的東西（例如急停、互鎖）寫在某一步裡，那一步不作用就沒在算。</p></div>
+<h2>預測看看</h2><div class="qz"><p>還在 S0 待機時按住 X3（RET 後的一般階梯），Y2 是？</p><details><summary>看答案</summary><p><b>ON</b>　RET 後面的一般階梯每個掃描都會算，不管現在在哪一步。</p></details></div><div class="qz"><p>進 S20 後按 X1 換到 S21，Y0 是？</p><details><summary>看答案</summary><p><b>OFF</b>　Y0 是在 S20 裡 OUT 的，離開 S20 就自動 OFF。</p></details></div>
+<p class="pager"><a class="btnlink" href="6.html">‹ 上一課：4.2 步進（STL）：同一件事，不打結</a> <a class="btnlink" href="6-2.html">下一課：4.4 步進的寫法規則</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

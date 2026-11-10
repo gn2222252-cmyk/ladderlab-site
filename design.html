@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>機台設計方法：從需求到 PLC 程式與試車 | LadderLab</title>
+<meta name="description" content="現場工程師怎麼分析一台機器：需求與風險、感測器與電磁閥選型、NPN/PNP、FX3S 點數、I/O 表、時序與步序、程式架構、模擬測試、試車清單。用自動門從頭做一次。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="learn guide-page">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="tocbtn" class="ghost only-narrow" type="button">目錄</button>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="contents">
+    <h3>機台設計方法</h3>
+    <ol>
+      <li><a href="#d0">0 整體流程</a></li>
+      <li><a href="#d1">1 需求與風險</a></li>
+      <li><a href="#d2">2 元件選型</a></li>
+      <li><a href="#d3">3 PLC 點數與選型</a></li>
+      <li><a href="#d4">4 I/O 表與接線</a></li>
+      <li><a href="#d5">5 時序與步序</a></li>
+      <li><a href="#d6">6 程式架構</a></li>
+      <li><a href="#d7">7 模擬測試</a></li>
+      <li><a href="#d8">8 現場試車</a></li>
+      <li><a href="#d9">9 交付文件</a></li>
+    </ol>
+    <p class="toc-note">硬體規格（點數、電流、接線）以三菱 FX3S 硬體手冊與元件型錄為準。本頁是設計流程的教學，不是已核准的配線圖；安全功能要依風險評估設計。</p>
+  </nav>
+
+  <main class="lesson guide">
+    <div id="cbar" data-auto hidden></div>
+    <p class="crumb">機台設計方法 · 以自動門為例</p>
+    <h1>拿到一台沒看過的機器，PLC 工程師怎麼從頭做到能上線</h1>
+    <p class="lead-text">課本教指令，現場要的是方法。這頁用一台「自動門」從需求一路做到試車，每一步都寫現場會問的問題。做完可以到 <a href="practice.html#E15">練習題 E15</a> 把程式寫出來，在虛擬門上驗證，評分器會檢查有沒有夾到人。</p>
+
+    <section id="d0">
+      <h2>0　整體流程</h2>
+      <div class="flow">
+        <span>需求與風險</span><span>元件選型</span><span>PLC 點數</span><span>I/O 表與接線</span><span>時序與步序</span><span>程式架構</span><span>模擬測試</span><span>現場試車</span><span>交付文件</span>
+      </div>
+      <p>新手常見的錯：一拿到題目就開 GX Works2 寫接點。結果 I/O 一改再改、互鎖漏掉、異常時不知道機台會怎樣。先把前五步用紙筆做完，寫程式反而最快。</p>
+    </section>
+
+    <section id="d1">
+      <h2>1　需求與風險：先問清楚</h2>
+      <p>需求書通常只寫「有人來就開門」。工程師要追問到每一個動作都有答案：</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>問題</th><th>自動門的答案（本例設定）</th></tr></thead>
+        <tbody>
+          <tr><td>機器要做什麼？一個循環的動作順序？</td><td>有人 → 開門到底 → 沒人 2 秒 → 關門到底</td></tr>
+          <tr><td>每個動作怎麼知道「完成了」？</td><td>開到底、關到底各一個限位開關（不能只靠計時）</td></tr>
+          <tr><td>動作中途被打斷怎麼辦？</td><td>關門途中有人或防夾光電被遮 → 立刻改開門</td></tr>
+          <tr><td>哪些動作絕對不能同時發生？</td><td>開門馬達、關門馬達（相間短路或機構打架）</td></tr>
+          <tr><td>最壞會傷到誰？（風險）</td><td>關門夾到人 → 防夾光電＋程式反轉＋馬達力量限制（機構與驅動器層級）</td></tr>
+          <tr><td>停電、急停、復電後要怎樣？</td><td>停電可手推；復電後不能自己亂動，先回到已知狀態（例如先開到底再進入自動）</td></tr>
+          <tr><td>操作員要看到什麼、按什麼？</td><td>自動／手動開關、故障燈；維修時可手動開關門</td></tr>
+        </tbody></table></div>
+      <div class="callout warn">安全原則：會傷人的危險，不能只靠 PLC 程式擋。急停、安全門、防夾要依風險評估，用安全繼電器、安全控制器或驅動器的安全功能（例如 STO）做第一道保護；PLC 程式是第二道，負責流程上的安全反應。</div>
+    </section>
+
+    <section id="d2">
+      <h2>2　元件選型：感測器和致動器</h2>
+      <h3>感測器</h3>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>種類</th><th>偵測什麼</th><th>常用在</th><th>注意</th></tr></thead>
+        <tbody>
+          <tr><td>機械式限位開關</td><td>被壓到</td><td>門開到底、關到底</td><td>耐用、便宜；接常閉或常開要和程式一致</td></tr>
+          <tr><td>近接開關（電感式）</td><td>金屬靠近</td><td>位置、到位</td><td>不用接觸；有 NPN／PNP 輸出之分</td></tr>
+          <tr><td>光電開關（對射、反射）</td><td>光被遮住</td><td>有人、工件到位、防夾</td><td>髒污、反光會誤判（故障排除 F7、F8）</td></tr>
+          <tr><td>磁簧開關</td><td>氣缸活塞的磁鐵</td><td>氣缸上下限</td><td>裝在氣缸上，位置要調</td></tr>
+        </tbody></table></div>
+      <h3>NPN 還是 PNP？看 PLC 的輸入接法</h3>
+      <p>FX3S 的輸入可以接成<b>漏型（sink）</b>或<b>源型（source）</b>，由 S/S 端子接到哪裡決定：</p>
+      <ul>
+        <li><b>S/S 接 24V → 漏型輸入</b>：電流從 PLC 流出、經感測器流到 0V，配 <b>NPN</b> 輸出的感測器。</li>
+        <li><b>S/S 接 0V → 源型輸入</b>：感測器把 24V 送進 PLC，配 <b>PNP</b> 輸出的感測器。</li>
+      </ul>
+      <p class="why">一台機器的輸入只能選一種接法，所以感測器要統一 NPN 或 PNP。買錯型號，輸入燈永遠不會亮。實際端子與接線以 FX3S 硬體手冊為準。</p>
+      <h3>致動器</h3>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>致動器</th><th>PLC 怎麼控制</th><th>重點</th></tr></thead>
+        <tbody>
+          <tr><td>單線圈電磁閥（彈簧復歸）</td><td>一個輸出：ON 動作、OFF 彈回</td><td>斷電會回到原位：適合「斷電要回安全位置」的動作</td></tr>
+          <tr><td>雙線圈電磁閥</td><td>兩個輸出：各打一下切換</td><td>斷電保持原位置（雙龍門的 4V220）；兩個線圈不能同時 ON</td></tr>
+          <tr><td>三相馬達（正反轉）</td><td>兩個輸出接兩個接觸器</td><td>程式互鎖之外，接觸器要做<b>電氣互鎖</b>（輔助接點），再加熱電驛保護</td></tr>
+          <tr><td>伺服／步進馬達</td><td>脈衝或通訊</td><td>需要原點復歸、極限、驅動器警報輸入</td></tr>
+        </tbody></table></div>
+      <p>自動門選擇：開到底、關到底用限位開關；有人用微波或紅外感測；防夾用對射光電；門由一個馬達正反轉帶動（兩個接觸器，硬體電氣互鎖）。</p>
+    </section>
+
+    <section id="d3">
+      <h2>3　PLC 點數與選型</h2>
+      <p>先數 I/O，再留 20% 左右的餘裕給之後加功能：</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>輸入</th><th>點數</th><th>輸出</th><th>點數</th></tr></thead>
+        <tbody>
+          <tr><td>開到底、關到底</td><td>2</td><td>開門、關門</td><td>2</td></tr>
+          <tr><td>有人、防夾光電</td><td>2</td><td>故障燈</td><td>1</td></tr>
+          <tr><td>自動／手動、手動開、手動關</td><td>3</td><td>（預留）</td><td>1</td></tr>
+          <tr><td>急停監看（輔助接點）、馬達熱電驛</td><td>2</td><td></td><td></td></tr>
+          <tr><th>合計</th><th>9</th><th>合計</th><th>4</th></tr>
+        </tbody></table></div>
+      <p>FX3S 主機有 10、14、20、30 點等型號（輸入／輸出點數依型號不同）。9 入 4 出，選 FX3S-20M（12 入 8 出）有餘裕。</p>
+      <ul>
+        <li><b>繼電器輸出（MR）</b>：可以直接推交流或直流負載、電流較大，但有機械壽命、反應慢，不適合高速脈衝。</li>
+        <li><b>電晶體輸出（MT）</b>：只能推直流、每點電流小，但壽命長、可出高速脈衝。FX3S-20MT/ES 是漏型輸出，COM 接 0V。</li>
+        <li>接觸器線圈、電磁閥線圈的電流要對照輸出的額定值；不夠就加中間繼電器。雙龍門案例的經驗：同一個 COM 的總電流也有上限。</li>
+      </ul>
+    </section>
+
+    <section id="d4">
+      <h2>4　I/O 表與接線</h2>
+      <p>I/O 表是 PLC 程式、配線圖、HMI 畫面三方共用的契約。至少要有這些欄位：</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>位址</th><th>名稱</th><th>元件</th><th>ON 代表</th><th>斷線時 PLC 看到</th><th>程式用途</th></tr></thead>
+        <tbody>
+          <tr><td>X000</td><td>開到底</td><td>限位開關（常開）</td><td>門全開</td><td>OFF：以為沒開到 → 開門逾時報警</td><td>停止開門</td></tr>
+          <tr><td>X001</td><td>關到底</td><td>限位開關（常開）</td><td>門全關</td><td>OFF → 關門逾時報警</td><td>停止關門</td></tr>
+          <tr><td>X002</td><td>有人</td><td>紅外／微波感測</td><td>偵測到人</td><td>OFF：沒人時不會開（使用者會發現）</td><td>開門請求</td></tr>
+          <tr><td>X003</td><td>防夾光電</td><td>對射光電（遮光 ON）</td><td>門口有東西</td><td>設計時要讓「故障＝不安全」不會發生：常用遮光或斷線都視為有人</td><td>關門中立刻反轉</td></tr>
+          <tr><td>Y000</td><td>開門</td><td>接觸器 KM1</td><td>馬達正轉</td><td>—</td><td>與 Y001 互鎖</td></tr>
+          <tr><td>Y001</td><td>關門</td><td>接觸器 KM2</td><td>馬達反轉</td><td>—</td><td>與 Y000 互鎖</td></tr>
+        </tbody></table></div>
+      <p class="why">「斷線時 PLC 看到什麼」這一欄最重要。防夾這種安全訊號，要設計成斷線也會停（失效安全），所以很多安全光電用「沒收到光就 ON」或接常閉。這也是為什麼急停接常閉：線斷了等於按下急停（故障排除 F2）。</p>
+    </section>
+
+    <section id="d5">
+      <h2>5　時序與步序</h2>
+      <p>把動作寫成步序表：每一步都要有<b>進入條件、輸出、完成條件、逾時、取消方式</b>。</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>步</th><th>輸出</th><th>完成條件（往下一步）</th><th>中途打斷</th><th>逾時</th></tr></thead>
+        <tbody>
+          <tr><td>S0 待機（關著）</td><td>—</td><td>有人 X002 或防夾 X003 → S20</td><td>—</td><td>—</td></tr>
+          <tr><td>S20 開門</td><td>Y000</td><td>開到底 X000 → S21</td><td>—</td><td>5 秒沒開到 → 故障</td></tr>
+          <tr><td>S21 保持開</td><td>—</td><td>沒人且光電沒遮，持續 2 秒 → S22</td><td>有人就重新計時</td><td>—</td></tr>
+          <tr><td>S22 關門</td><td>Y001</td><td>關到底 X001 → S0</td><td>有人或光電被遮 → 回 S20</td><td>5 秒沒關到 → 故障</td></tr>
+        </tbody></table></div>
+      <p>這個步序表直接就是 SFC：S0 → S20 → S21 → S22，S22 有一條選擇分支回 S20。用 STL 寫或用自保持寫都可以，練習題 E15 的參考解答用自保持，你可以試著改寫成 STL，切到「SFC 圖」對照。</p>
+    </section>
+
+    <section id="d6">
+      <h2>6　程式架構：分區寫，不要想到哪寫到哪</h2>
+      <p>雙龍門的程式（課程 B1～C4、故障排除用的那台）就是這樣分區的，大型機台幾乎都是這個骨架：</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>區</th><th>內容</th><th>為什麼</th></tr></thead>
+        <tbody>
+          <tr><td>1 初始化</td><td>M8002：清步序、清停電保持區、參數預設值</td><td>上電狀態可預期</td></tr>
+          <tr><td>2 命令</td><td>按鈕、HMI 命令轉成單次脈衝</td><td>避免按住時重複觸發</td></tr>
+          <tr><td>3 模式與安全</td><td>自動／手動、急停、異常中</td><td>所有動作的總開關</td></tr>
+          <tr><td>4 原點復歸</td><td>回到已知位置</td><td>清步序不等於機構回原點（課程 B2）</td></tr>
+          <tr><td>5 自動流程</td><td>步序（STL 或 D 暫存器）</td><td>只決定「想要」哪些動作</td></tr>
+          <tr><td>6 手動</td><td>點動，也要過互鎖與限位</td><td>維修時用（課程 B1）</td></tr>
+          <tr><td>7 逾時監視</td><td>每個等感測器的步配計時器，記第一個異常碼</td><td>故障一定停得下來（課程 A8、C4）</td></tr>
+          <tr><td>8 輸出仲裁</td><td><b>唯一驅動 Y 的地方</b>：(自動 或 手動) 且 互鎖 且 沒異常</td><td>不會雙線圈；互鎖只寫一次（課程 C3）</td></tr>
+          <tr><td>9 狀態</td><td>燈號、給 HMI 的字組</td><td>操作員和上位機看得懂</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <section id="d7">
+      <h2>7　模擬測試：先在電腦上把機器弄壞</h2>
+      <p>寫完先在模擬器測，測試清單至少包括：</p>
+      <ul class="checklist">
+        <li>✔ 正常循環 10 次以上</li>
+        <li>✔ 每一個感測器：斷線（一直 OFF）、短路（一直 ON）各一次，機台有沒有停在安全狀態、有沒有報對的異常</li>
+        <li>✔ 每一步中途按停止、急停、斷電再上電</li>
+        <li>✔ 相反動作在任何時刻都不會同時 ON（評分器每個掃描都在查）</li>
+        <li>✔ 異常排除後，復歸流程能回到正常生產</li>
+      </ul>
+      <p>LadderLab 的練習題就是這樣評分的；故障排除頁可以練「別人的程式遇到故障時怎麼找」。</p>
+    </section>
+
+    <section id="d8">
+      <h2>8　現場試車：順序很重要</h2>
+      <ol class="howto">
+        <li><b>斷電檢查</b>：對照配線圖量測，確認電源電壓、COM、S/S 接法正確。</li>
+        <li><b>只送控制電</b>：負載電源先不送。逐一觸發每個感測器，看 PLC 輸入燈和監看畫面是不是對的位址。</li>
+        <li><b>輸出測試</b>：用強制 ON 或手動模式，一次一個輸出，確認接觸器／電磁閥是對的那一個，方向對不對。</li>
+        <li><b>單動</b>：手動模式逐一動作每個機構，確認限位會停。</li>
+        <li><b>空載、低速連動</b>：自動模式跑循環，手放在急停上。</li>
+        <li><b>異常測試</b>：拔感測器線、擋光電、按急停，確認每種情況的反應和模擬時一樣。</li>
+        <li><b>帶料生產</b>：記錄週期時間與異常，交接。</li>
+      </ol>
+      <div class="callout warn">試車時任何會讓機構動作的測試，先確認旁邊沒有人、可以隨時切斷電源。</div>
+    </section>
+
+    <section id="d9">
+      <h2>9　交付文件</h2>
+      <ul>
+        <li>I/O 表（含斷線行為）、配線圖、元件清單</li>
+        <li>步序表或 SFC 圖、異常碼表（什麼原因、怎麼排除）</li>
+        <li>程式（含軟元件註解）、參數表</li>
+        <li>試車紀錄、已知限制</li>
+      </ul>
+      <p>雙龍門和 AOI 兩台機台在 LadderLab 都可以實際操作，它們的程式分區、異常碼、交握設計都可以當成範本。</p>
+      <p><a class="btnlink go" href="practice.html#E15">到練習題 E15 把自動門寫出來 ›</a></p>
+      <div id="wl" class="wl-box"></div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p>
+</footer>
+<script src="config.js"></script>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script src="common.js"></script>
+<script src="waitlist.js"></script>
+<script>
+  document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
+  document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));
+  renderWaitlist(document.getElementById("wl"), "design", "想要更多機台的完整設計案例嗎？");
+</script>
+</body>
+</html>

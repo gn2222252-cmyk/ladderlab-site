@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5.1 接線：現場常閉 ≠ 程式常閉｜PLC 互動課程</title>
+<meta name="description" content="最常搞混的觀念：接點有兩個世界。現場按鈕的常開、常閉是實體接線；程式的接點只看 X 是 ON 還是 OFF。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A9.html">
+<meta property="og:title" content="5.1 接線：現場常閉 ≠ 程式常閉｜PLC 互動課程">
+<meta property="og:description" content="最常搞混的觀念：接點有兩個世界。現場按鈕的常開、常閉是實體接線；程式的接點只看 X 是 ON 還是 OFF。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A9.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "A9 接線：現場常閉 ≠ 程式常閉", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 5 章　讓機台可靠：異常、手動與復歸</p>
+<h1>5.1 接線：現場常閉 ≠ 程式常閉</h1>
+<p class="lesson-goal"><b>本課目標</b>分清楚現場的常開／常閉和程式的接點，急停接法正確。</p>
+<div class="text">最常搞混的觀念：接點有兩個世界。現場按鈕的常開、常閉是實體接線；程式的接點只看 X 是 ON 還是 OFF。
+急停和重要的停止鈕要接常閉：平常有電，X 是 ON；按下或斷線都變 OFF。所以程式裡要用常開接點（AND X1）。
+如果接常開按鈕、程式用常閉，平常能用，但電線斷了按鈕就失效，機器停不下來。雙龍門的急停 X13 就是接常閉。</div>
+<p><a class="btnlink go" href="../learn.html#A9">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>FX3S-20MT/ES 接線重點</th><th>內容</th></tr></thead><tbody><tr><td>輸入</td><td>這台用漏型接法，S/S 接 24V，配 NPN 感測器</td></tr><tr><td>輸出</td><td>電晶體漏型輸出，COM 接 0V，負載接 +24V 和 Y。Y0～Y3 各一個 COM，Y4～Y7 共用 COM4</td></tr><tr><td>急停</td><td>接常閉，第二組接點直接切斷輸出電源，不靠程式</td></tr><tr><td>極限開關</td><td>常閉串在馬達迴路，超程直接斷電，不進 PLC</td></tr><tr><td>互鎖</td><td>程式互鎖之外，正反轉還要加硬體互鎖</td></tr></tbody></table></div>
+
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD X000
+OR Y000
+AND X001
+OUT Y000</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20X000%0AOR%20Y000%0AAND%20X001%0AOUT%20Y000#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>急停、重要的停止接常閉：平常 X 是 ON</li><li>程式用常開接點（AND X1）</li><li>斷線時也會停，這才安全</li></ul><p class="trap"><b>常見錯誤：</b>急停接常開按鈕，電線一斷按鈕就失效。</p></div>
+<h2>預測看看</h2><div class="qz"><p>按一下 X0 啟動，Y0 是？</p><details><summary>看答案</summary><p><b>ON</b>　停止按鈕接常閉：沒按時 X1 是 ON，程式用常開接點 AND X1 才導通。</p></details></div><div class="qz"><p>停止按鈕被按下（常閉斷開，X1 變 OFF），Y0 是？</p><details><summary>看答案</summary><p><b>OFF</b>　現場常閉 + 程式常開：按下或線斷了都會停，這叫失效安全。</p></details></div>
+<p class="pager"><a class="btnlink" href="6-3.html">‹ 上一課：4.9 通用嗎？換廠牌怎麼辦</a> <a class="btnlink" href="A8.html">下一課：5.2 逾時與異常：機台的保命結構</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

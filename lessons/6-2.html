@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.4 步進的寫法規則｜PLC 互動課程</title>
+<meta name="description" content="步進有固定寫法，照底下的規則寫就不會出錯。這一課的程式有三步：Y0 同時寫在 S20 和 S21，Y2 用 SET，看看離開步之後有什麼不同。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-2.html">
+<meta property="og:title" content="4.4 步進的寫法規則｜PLC 互動課程">
+<meta property="og:description" content="步進有固定寫法，照底下的規則寫就不會出錯。這一課的程式有三步：Y0 同時寫在 S20 和 S21，Y2 用 SET，看看離開步之後有什麼不同。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-2.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "6-2 步進的寫法規則", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 4 章　順序控制：步進 STL 與 SFC</p>
+<h1>4.4 步進的寫法規則</h1>
+<p class="lesson-goal"><b>本課目標</b>照固定規則寫 STL，知道 OUT 與 SET 在步裡的差別。</p>
+<div class="text">步進有固定寫法，照底下的規則寫就不會出錯。這一課的程式有三步：Y0 同時寫在 S20 和 S21，Y2 用 SET，看看離開步之後有什麼不同。</div>
+<p><a class="btnlink go" href="../learn.html#6-2">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>規則</th><th>為什麼</th><th>寫錯會怎樣</th></tr></thead><tbody><tr><td>M8002 開機 SET S0～S9 的初始步</td><td>開機時沒有任何步作用</td><td>機器永遠不會動</td></tr><tr><td>S20 之類的一般步，由別的步 SET</td><td>流程才是一條清楚的線</td><td>步會亂跳，SFC 也轉不回來</td></tr><tr><td>步進區最後一定要 RET</td><td>告訴 PLC 回到一般階梯</td><td>程式錯誤，寫不進去</td></tr><tr><td>每一步：做什麼 → 等什麼 → 去哪裡</td><td>固定順序，一看就懂</td><td>邏輯難追，容易漏條件</td></tr><tr><td>同一線圈可寫在不同步</td><td>同時只有一步作用</td><td>平行分支同時作用的步不可共用</td></tr><tr><td>SET 的東西要自己 RST</td><td>離開步只會關 OUT</td><td>輸出一直留著</td></tr></tbody></table></div>
+
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD M8002
+SET S0
+STL S0
+LD X000
+SET S20
+LD X002
+RST Y002
+STL S20
+OUT Y000
+OUT T0 K15
+LD T0
+SET S21
+STL S21
+OUT Y000
+OUT Y001
+OUT T1 K15
+LD T1
+SET S22
+STL S22
+SET Y002
+LD X001
+SET S0
+RET</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20M8002%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0ASET%20S20%0ALD%20X002%0ARST%20Y002%0ASTL%20S20%0AOUT%20Y000%0AOUT%20T0%20K15%0ALD%20T0%0ASET%20S21%0ASTL%20S21%0AOUT%20Y000%0AOUT%20Y001%0AOUT%20T1%20K15%0ALD%20T1%0ASET%20S22%0ASTL%20S22%0ASET%20Y002%0ALD%20X001%0ASET%20S0%0ARET#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>同一個 Y 可以在不同步各寫一次 OUT（步進允許）</li><li>步裡 SET 的輸出離開步不會關，要另外 RST</li><li>換步用 SET Sxx</li></ul><p class="trap"><b>常見錯誤：</b>在步裡 SET 了輸出卻沒有地方 RST，機台回待機時還在動。</p></div>
+<h2>預測看看</h2><div class="qz"><p>跑到 S22（SET Y2）後按 X1 回待機，Y2 是？</p><details><summary>看答案</summary><p><b>ON</b>　SET 的輸出不會因為換步而 OFF，要另外 RST（本課用 X2）。</p></details></div><div class="qz"><p>在 S21 時，Y0 是？（S20、S21 都寫了 OUT Y0）</p><details><summary>看答案</summary><p><b>ON</b>　不同步各 OUT 同一個 Y 不算雙線圈：同一時間只有作用中的步會執行。</p></details></div>
+<p class="pager"><a class="btnlink" href="6-1.html">‹ 上一課：4.3 步進和一般階梯圖差在哪</a> <a class="btnlink" href="6-5.html">下一課：4.5 先畫步序再寫程式：從動作描述到 STL</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

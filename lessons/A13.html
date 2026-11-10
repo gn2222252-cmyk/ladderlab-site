@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5.4 停電：哪些東西會記住｜PLC 互動課程</title>
+<meta name="description" content="機台運轉到一半停電，復電後要「接著做」還是「從頭來」？這不是 PLC 自己決定的，是你寫的程式加上 CPU 的斷電保持範圍一起決定。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A13.html">
+<meta property="og:title" content="5.4 停電：哪些東西會記住｜PLC 互動課程">
+<meta property="og:description" content="機台運轉到一半停電，復電後要「接著做」還是「從頭來」？這不是 PLC 自己決定的，是你寫的程式加上 CPU 的斷電保持範圍一起決定。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A13.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "A13 停電：哪些東西會記住", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 5 章　讓機台可靠：異常、手動與復歸</p>
+<h1>5.4 停電：哪些東西會記住</h1>
+<p class="lesson-goal"><b>本課目標</b>知道停電後哪些元件會記住，並在 M8002 那一圈決定接著做或從頭來。</p>
+<div class="text">機台運轉到一半停電，復電後要「接著做」還是「從頭來」？這不是 PLC 自己決定的，是你寫的程式加上 CPU 的斷電保持範圍一起決定。
+FX3S 跟很多教材用的 FX3U 不一樣：FX3S 的 S10～S127、M384～M511、D128～D255 預設斷電保持（存在 EEPROM），S20 這種一般步停電後還記得自己在哪一步。D0、M0 這些一般元件則會清成 0。
+這一課的模擬照 FX3S 的保持範圍。按右邊的「⚡ 停電再復電」看看哪些東西留下來：步序 S21 留著、D128 留著、D0 歸零。</div>
+<p><a class="btnlink go" href="../learn.html#A13">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>FX3S</th><th>FX3U（預設）</th><th>停電後</th></tr></thead><tbody><tr><td>步 S</td><td>S10～S127 保持（S0～S9 初始步也保持）</td><td>S500～S899 保持</td><td>保持的步復電後仍在作用</td></tr><tr><td>輔助繼電器 M</td><td>M384～M511</td><td>M500～M1023</td><td>其他 M 清成 OFF</td></tr><tr><td>資料暫存器 D</td><td>D128～D255</td><td>D200～D511</td><td>其他 D 清成 0</td></tr><tr><td>計數器 C</td><td>C16～C31</td><td>C100～C199</td><td>保持現在值</td></tr><tr><td>計時器 T</td><td>T128～T137 積算型</td><td>T246～T255 積算型</td><td>一般計時器歸零</td></tr><tr><td>輸出 Y</td><td>全部 OFF</td><td>全部 OFF</td><td>由程式在復電後重新決定</td></tr></tbody></table></div>
+<div class="notes">復電後的第一圈 M8002 會 ON 一次。這一圈是你決定「接著做還是從頭來」的地方：
+接著做：只有在沒有任何步在作用時才 SET S0（本課的寫法）。
+從頭來：M8002 時 ZRST S0 S127 清掉所有步，再 SET S0。
+常見錯誤：照 FX3U 的習慣只寫 M8002 SET S0，放到 FX3S 上，停電前在 S21，復電後 S0 和 S21 同時作用。按上方「常見錯誤」那個程式試試。
+檢定題的停電要求每題不同，一定要照題目寫。這個模擬器的練習題預設是 FX3U 的範圍，題目有寫的以題目為準。</div>
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD M8002
+ANI S20
+ANI S21
+ANI S22
+SET S0
+STL S0
+LD X000
+SET S20
+STL S20
+OUT Y000
+LD X001
+SET S21
+STL S21
+OUT Y001
+LD X002
+SET S22
+STL S22
+OUT Y002
+LD X003
+INC D0
+INC D128
+SET S0
+RET</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20M8002%0AANI%20S20%0AANI%20S21%0AANI%20S22%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0ASET%20S20%0ASTL%20S20%0AOUT%20Y000%0ALD%20X001%0ASET%20S21%0ASTL%20S21%0AOUT%20Y001%0ALD%20X002%0ASET%20S22%0ASTL%20S22%0AOUT%20Y002%0ALD%20X003%0AINC%20D0%0AINC%20D128%0ASET%20S0%0ARET#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>FX3S 的 S10～S127、M384～M511、D128～D255 斷電保持，跟 FX3U 不同</li><li>復電第一圈 M8002 ON：接著做就只在沒有步時 SET S0；從頭來就先 ZRST 再 SET S0</li><li>輸出 Y 停電後一律 OFF，復電由程式重新決定</li></ul><p class="trap"><b>常見錯誤：</b>照 FX3U 的寫法只寫 M8002 SET S0，在 FX3S 上復電後兩步同時作用。</p></div>
+<h2>預測看看</h2><div class="qz"><p>跑到第二段（S21）後停電再復電，Y1 是？</p><details><summary>看答案</summary><p><b>ON</b>　FX3S 的 S21 斷電保持，復電後仍在 S21，Y1 再次輸出。</p></details></div><div class="qz"><p>做完一輪（D0 = 1）後停電再復電，D0 是？</p><details><summary>看答案</summary><p><b>0</b>　D0 是一般暫存器，停電清成 0；D128 才會保持。</p></details></div>
+<p class="pager"><a class="btnlink" href="C4.html">‹ 上一課：5.3 首發故障：保留第一個異常碼，原因排除後才復歸</a> <a class="btnlink" href="B1.html">下一課：5.5 雙龍門手動點動：按了為什麼不動？</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

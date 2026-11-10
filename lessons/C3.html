@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5.8 輸出仲裁：自動與手動最後都經過互鎖｜PLC 互動課程</title>
+<meta name="description" content="多個來源可以提出動作請求，但實體 Y 輸出應有清楚的最後決策點。最後一層再檢查模式允許、限位、警報和相反方向，避免兩段程式各自直接控制同一個輸出。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/C3.html">
+<meta property="og:title" content="5.8 輸出仲裁：自動與手動最後都經過互鎖｜PLC 互動課程">
+<meta property="og:description" content="多個來源可以提出動作請求，但實體 Y 輸出應有清楚的最後決策點。最後一層再檢查模式允許、限位、警報和相反方向，避免兩段程式各自直接控制同一個輸出。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/C3.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "C3 輸出仲裁：自動與手動最後都經過互鎖", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 5 章　讓機台可靠：異常、手動與復歸</p>
+<h1>5.8 輸出仲裁：自動與手動最後都經過互鎖</h1>
+<p class="lesson-goal"><b>本課目標</b>把自動和手動的請求集中到一個輸出段，再統一加互鎖。</p>
+<div class="text">多個來源可以提出動作請求，但實體 Y 輸出應有清楚的最後決策點。最後一層再檢查模式允許、限位、警報和相反方向，避免兩段程式各自直接控制同一個輸出。
+本課示範：自動前進和允許的手動前進先合併；正反方向同時請求時兩邊都禁止；警報或前限位也會封鎖前進。這是 P9 輸出區的教學縮小版。</div>
+<p><a class="btnlink go" href="../learn.html#C3">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>請求狀況</th><th>前進 Y0</th><th>後退 Y1</th></tr></thead><tbody><tr><td>自動前進且無封鎖</td><td>ON</td><td>OFF</td></tr><tr><td>手動前進但未允許</td><td>OFF</td><td>OFF</td></tr><tr><td>正反向同時請求</td><td>OFF</td><td>OFF</td></tr><tr><td>前限位或警報有效</td><td>OFF</td><td>依後退條件及互鎖判斷</td></tr></tbody></table></div>
+
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD X001
+AND X003
+OUT M70
+LD X000
+OR M70
+ANI X004
+ANI X005
+ANI X002
+ANI Y001
+OUT Y000
+LD X002
+ANI X005
+ANI X000
+ANI M70
+ANI Y000
+OUT Y001</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20X001%0AAND%20X003%0AOUT%20M70%0ALD%20X000%0AOR%20M70%0AANI%20X004%0AANI%20X005%0AANI%20X002%0AANI%20Y001%0AOUT%20Y000%0ALD%20X002%0AANI%20X005%0AANI%20X000%0AANI%20M70%0AANI%20Y000%0AOUT%20Y001#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>各段程式只提出請求（寫 M）</li><li>最後一層檢查模式、限位、警報、相反方向</li><li>只有輸出段能碰 Y，不會雙線圈</li></ul><p class="trap"><b>常見錯誤：</b>自動、手動各自驅動 Y，互鎖只寫在其中一邊。</p></div>
+<h2>預測看看</h2><div class="qz"><p>手動前進請求 X1，但手動允許 X3 是 OFF，Y0 是？</p><details><summary>看答案</summary><p><b>OFF</b>　手動請求要先和手動允許合成 M70，才進到輸出仲裁。</p></details></div><div class="qz"><p>自動前進 X0，同時警報中 X5，Y0 是？</p><details><summary>看答案</summary><p><b>OFF</b>　自動和手動最後都經過同一個仲裁：警報、限位、反向請求都會擋。</p></details></div>
+<p class="pager"><a class="btnlink" href="C2.html">‹ 上一課：5.7 循環停止：收到 Stop 後在安全邊界停</a> <a class="btnlink" href="C5.html">下一課：6.1 完整程式範本：一支氣缸的取放機</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

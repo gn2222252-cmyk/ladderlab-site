@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLC 課程地圖：三菱 FX3S 從零到會設計、會除錯 | LadderLab</title>
+<meta name="description" content="一條主線七章：認識 PLC、階梯圖運作、FX 指令、步進 STL 與 SFC、異常與手動復歸、整機設計、故障排除。每章都有互動課、GX Works2 操作、自動評分練習，另有技能檢定與 LabVIEW 支線。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+  <h1>課程地圖</h1>
+  <p class="lead-text">一條主線、七章，照順序走。每一章都是同一個節奏：<b>互動課看懂</b> → <b>GX Works2 實際操作</b> → <b>自己寫程式，在虛擬機台上自動評分</b>。每一頁上方都有「下一步」，跟著按就不會迷路。</p>
+  <div class="resume" id="resume"></div>
+  <div class="overall"><div class="bar"><i id="allbar"></i></div><span id="alltext"></span></div>
+
+  <div class="legend"><span class="k-L">互動課</span><span class="k-G">操作／方法</span><span class="k-E">練習（自動評分）</span><span class="k-F">故障案例</span></div>
+  <div id="chapters" class="chapters"></div>
+
+  <h2 class="tracks-h">支線（主線學到一定程度再走）</h2>
+  <div id="tracks" class="chapters"></div>
+  <p class="why">進度只存在這個瀏覽器。</p>
+  <div id="wl" class="wl-box"></div>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="waitlist.js"></script>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script>
+"use strict";
+const d = Course.doneSets(), esc = Course.esc;
+let all = 0, got = 0;
+function card(sec) {
+  const n = sec.items.filter((it) => Course.isDone(it, d)).length;
+  if (sec.main) { all += sec.items.length; got += n; }
+  const items = sec.items.map((it) => {
+    const ok = Course.isDone(it, d);
+    const text = it.k === "L" ? `<b>${it.no}</b> ${esc(it.label)}` : esc(it.label);
+    return `<li class="k-${it.k}${ok ? " ok" : ""}"><a href="${it.href}"${it.k === "G" ? ` data-g="${esc(it.id)}"` : ""}>${ok ? "✓ " : ""}${text}</a></li>`;
+  }).join("");
+  const head = sec.main ? `<span class="ch-no">${sec.id}</span>` : `<span class="ch-no side">支</span>`;
+  const after = sec.after ? `<p class="why">建議在第 ${sec.after} 章之後</p>` : "";
+  return `<section class="chapter${n === sec.items.length ? " done" : ""}" id="ch${sec.id}"><div class="chap-head">${head}<div><h2>${esc(sec.t)}</h2>` +
+    `<p>${esc(sec.why)}</p>${after}</div></div>` +
+    `<div class="ch-can"><b>學完你會</b><ul>${sec.can.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>` +
+    `<div class="bar"><i style="width:${Math.round(100 * n / sec.items.length)}%"></i></div><p class="why">${n} / ${sec.items.length}</p>` +
+    `<details${sec.main ? " open" : ""}><summary>內容（${sec.items.length} 項）</summary><ol class="path-items">${items}</ol></details></section>`;
+}
+document.getElementById("chapters").innerHTML = Course.data.chapters.map(card).join("");
+document.getElementById("tracks").innerHTML = Course.data.tracks.map(card).join("");
+document.getElementById("allbar").style.width = Math.round(100 * got / all) + "%";
+document.getElementById("alltext").textContent = `主線進度 ${got} / ${all}`;
+const nxt = Course.firstOpen();
+document.getElementById("resume").innerHTML = nxt
+  ? `<a class="btnlink go big" href="${nxt.it.href}">${got ? "繼續上次" : "從第一課開始"}：${esc(Course.label(nxt.it))} ›</a><span class="why">${esc(Course.secName(nxt.sec))}</span>`
+  : `<b>主線全部完成！</b> 可以挑戰支線的技能檢定題。`;
+document.querySelectorAll("[data-g]").forEach((a) => a.addEventListener("click", () => Course.markPage(a.dataset.g)));
+renderWaitlist(document.getElementById("wl"), "path", "想在 Pro 開放時第一個知道嗎？");
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E20 氣壓乙級 PLC 題：平衡迴路（08000-1090203）｜PLC 練習題（自動評分）</title>
+<meta name="description" content="依 08000-1090203「PLC-氣壓控制－平衡迴路」的操作功能（只練 PLC 程式）。C 是負載缸：三個位置 c0、c1、c2，原點在 c2（上方）。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E20.html">
+<meta property="og:title" content="E20 氣壓乙級 PLC 題：平衡迴路（08000-1090203）｜PLC 練習題（自動評分）">
+<meta property="og:description" content="依 08000-1090203「PLC-氣壓控制－平衡迴路」的操作功能（只練 PLC 程式）。C 是負載缸：三個位置 c0、c1、c2，原點在 c2（上方）。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E20.html">
+<link rel="stylesheet" href="../style.css">
+
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="../practice.html" class="here">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 練習題</a></p>
+<h1>E20 氣壓乙級 PLC 題：平衡迴路（08000-1090203）</h1>
+<div class="task">依 08000-1090203「PLC-氣壓控制－平衡迴路」的操作功能（只練 PLC 程式）。C 是負載缸：三個位置 c0、c1、c2，原點在 c2（上方）。
+動作順序：A+ → B+ → C- 到 c1 → A- → C- 到 c0 → A+ → B- → C+ 回 c2 → A-。
+・燈號、手動步進、單一循環、連續循環（STOP 做完這一循環）、運轉中切換無效：同 E18。
+・急停：ST 無效；A、B 停在該步終點（雙線圈閥）；C 在第 3 步（往 c1、還沒到）要立即退回 c2，其他步驟就地停止（三口中封閥）。
+・解除急停後，復歸模式按復歸鈕：黃燈 0.5 秒閃爍，C 回 c2 → B 回 b0 → A 回 a0；未復歸啟動無效。
+I/O：X0～X7 同 E18；a0 X10、a1 X11、b0 X12、b1 X13、c0 X14、c1 X15、c2 X16；A+ Y0、A- Y1、B+ Y2、B- Y3、C+（往 c2）Y4、C-（往 c0）Y5。</div>
+<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>復歸/運轉（ON＝運轉）</td><td>開關</td></tr><tr><td>X001</td><td>復歸按鈕</td><td>按鈕</td></tr><tr><td>X002</td><td>手動步進</td><td>開關</td></tr><tr><td>X003</td><td>單一循環</td><td>開關</td></tr><tr><td>X004</td><td>連續循環</td><td>開關</td></tr><tr><td>X005</td><td>啟動 ST</td><td>按鈕</td></tr><tr><td>X006</td><td>停止 STOP</td><td>按鈕</td></tr><tr><td>X007</td><td>緊急停止 EMS（常閉）</td><td>開關</td></tr><tr><td>X010</td><td>a0</td><td>感測器</td></tr><tr><td>X011</td><td>a1</td><td>感測器</td></tr><tr><td>X012</td><td>b0</td><td>感測器</td></tr><tr><td>X013</td><td>b1</td><td>感測器</td></tr><tr><td>X014</td><td>c0</td><td>感測器</td></tr><tr><td>X015</td><td>c1</td><td>感測器</td></tr><tr><td>X016</td><td>c2</td><td>感測器</td></tr><tr><td>Y000</td><td>A+</td><td>輸出</td></tr><tr><td>Y001</td><td>A-</td><td>輸出</td></tr><tr><td>Y002</td><td>B+</td><td>輸出</td></tr><tr><td>Y003</td><td>B-</td><td>輸出</td></tr><tr><td>Y004</td><td>C+（往 c2）</td><td>輸出</td></tr><tr><td>Y005</td><td>C-（往 c0）</td><td>輸出</td></tr><tr><td>Y006</td><td>綠燈</td><td>輸出</td></tr><tr><td>Y007</td><td>紅燈</td><td>輸出</td></tr><tr><td>Y010</td><td>黃燈</td><td>輸出</td></tr></tbody></table></div>
+<ul class="rules"><li>安全條件：A+、A- 同時輸出</li><li>安全條件：B+、B- 同時輸出</li><li>安全條件：C+、C- 同時輸出</li></ul>
+<p><a class="btnlink go" href="../practice.html#E20">開始寫程式，自動評分 ›</a></p>
+<p class="why">評分會在虛擬機台上跑 9 組情境，並在每個掃描檢查安全條件。</p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

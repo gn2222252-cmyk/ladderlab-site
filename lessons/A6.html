@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.5 特殊繼電器 M8000 家族｜PLC 互動課程</title>
+<meta name="description" content="M8000 開頭的是 PLC 內建的線圈。你不用寫程式驅動它，PLC 自己會控制，你只要拿它的接點來用。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A6.html">
+<meta property="og:title" content="3.5 特殊繼電器 M8000 家族｜PLC 互動課程">
+<meta property="og:description" content="M8000 開頭的是 PLC 內建的線圈。你不用寫程式驅動它，PLC 自己會控制，你只要拿它的接點來用。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A6.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "A6 特殊繼電器 M8000 家族", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 3 章　FX 常用指令</p>
+<h1>3.5 特殊繼電器 M8000 家族</h1>
+<p class="lesson-goal"><b>本課目標</b>會用 M8000、M8002、M8013 這幾個最常用的特殊繼電器。</p>
+<div class="text">M8000 開頭的是 PLC 內建的線圈。你不用寫程式驅動它，PLC 自己會控制，你只要拿它的接點來用。
+這一課一行一行看：M8000 一直 ON、M8002 只有開機一圈、M8013 自己一秒閃一次。按「▶ 播放示範」。</div>
+<p><a class="btnlink go" href="../learn.html#A6">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>作用</th><th>常見用途</th></tr></thead><tbody><tr><td>M8000</td><td>PLC 在 RUN 就一直 ON</td><td>每圈都要做的事</td></tr><tr><td>M8002</td><td>RUN 後第一圈 ON</td><td>開機初始化、SET S0</td></tr><tr><td>M8012</td><td>100 ms 時脈，0.05 秒 ON、0.05 秒 OFF</td><td>快閃、計時</td></tr><tr><td>M8013</td><td>1 秒時脈，0.5 秒 ON、0.5 秒 OFF</td><td>心跳、指示燈閃爍</td></tr></tbody></table></div>
+<div class="notes">INC D0：把 D0 加 1（Increment）。
+D0 是存數字的格子。
+時脈：自己一直 ON、OFF 循環的訊號，就像節拍器。</div>
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD M8000
+OUT Y000
+LD M8002
+INC D0
+LD M8013
+OUT Y001
+LD M8013
+PLS M0
+LD M0
+INC D1
+LD M8013
+INC D2</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20M8000%0AOUT%20Y000%0ALD%20M8002%0AINC%20D0%0ALD%20M8013%0AOUT%20Y001%0ALD%20M8013%0APLS%20M0%0ALD%20M0%0AINC%20D1%0ALD%20M8013%0AINC%20D2#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>M8000 執行中一直 ON</li><li>M8002 開機第一圈 ON：初始化、進初始步</li><li>M8013 一秒閃一次：閃燈最簡單</li></ul><p class="trap"><b>常見錯誤：</b>想自己寫 OUT M8000。特殊繼電器只拿接點用。</p></div>
+<h2>預測看看</h2><div class="qz"><p>跑 3 秒後，D0（M8002 加）是多少？</p><details><summary>看答案</summary><p><b>1</b>　M8002 只在 RUN 後第一個掃描 ON，一輩子只加一次。</p></details></div><div class="qz"><p>跑 3 秒後，D1（M8013 加 PLS）是不是 4 以下？</p><details><summary>看答案</summary><p><b>是</b>　M8013 每秒一個上升緣，PLS 之後每秒只加 1。</p></details></div>
+<p class="pager"><a class="btnlink" href="A3.html">‹ 上一課：3.4 計數器 C：內建只算一次</a> <a class="btnlink" href="A5.html">下一課：3.6 數值：K、H、MOV、ADD、比較</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

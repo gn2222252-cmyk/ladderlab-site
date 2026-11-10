@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLC 故障排除實戰 | LadderLab</title>
+<meta name="description" content="機台壞了怎麼找原因？看報修單、讀異常碼、看 I/O 與階梯圖，找出故障、修好並親手復機。雙龍門取放機 8 個真實故障案例。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="learn">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="tocbtn" class="ghost only-narrow" type="button">案例</button>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="cases"></nav>
+
+  <main class="lesson">
+    <div id="cbar" data-auto hidden></div>
+    <div id="loading" class="loading"><span class="spin"></span><span>正在載入模擬引擎（第一次約 10 秒）…</span></div>
+    <p class="crumb">故障排除實戰 · 雙龍門取放機（FX3S 8 輸出同步版）</p>
+    <h1 id="title"></h1>
+    <div class="ticket"><div class="ticket-head">報修單 <span id="level"></span></div><p id="report"></p></div>
+
+    <details class="method"><summary>現場診斷的固定步驟（不知道從哪開始就照這個）</summary>
+      <ol><li><b>重現現象</b>：原點復歸、啟動，看機台停在哪、做了什麼。</li>
+        <li><b>看異常碼</b>：有異常碼代表 PLC 自己發現了；沒有異常碼代表程式以為一切正常，要看「等在哪一步」。</li>
+        <li><b>看 I/O</b>：PLC 有沒有下命令（Y），機構有沒有回報（X）。找「應該變化卻沒變化」的那一個。</li>
+        <li><b>沿階梯圖往左追</b>：點作用中那一步的轉移條件，看卡在哪個接點。</li>
+        <li><b>分辨硬體還是程式</b>：命令出去了機構沒動 → 機構／氣壓／馬達；機構動了訊號沒來 → 感測器；條件本身寫錯 → 程式。</li>
+        <li><b>修好後驗證</b>：復歸、原點、啟動，確認恢復生產。</li></ol></details>
+
+    <div class="stage">
+      <div class="scene-card">
+        <canvas id="scene" width="640" height="360" aria-label="machine"></canvas>
+        <div class="status" id="status"></div>
+      </div>
+      <div class="panel">
+        <div class="buttons">
+          <button data-cmd="home">原點復歸</button>
+          <button data-cmd="start" class="go">啟動</button>
+          <button data-cmd="stop">停止</button>
+          <button data-cmd="reset">異常復歸</button>
+          <button id="estop" class="stopbtn" type="button">急停</button>
+          <button id="mode" type="button">模式：自動</button>
+        </div>
+        <div class="row">
+          <label>速度 <select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+          <button id="restart" class="ghost" type="button">重新開始這個案例</button>
+        </div>
+        <div class="io">
+          <div><h3>輸入 X</h3><ul id="xs"></ul></div>
+          <div><h3>輸出 Y</h3><ul id="ys"></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ladder-card">
+      <div class="ladder-head"><h2>階梯圖（即時監視）</h2><select id="section"></select></div>
+      <p class="hint">點任何一條，看它現在為什麼通或不通。等在某一步時，點那一步的轉移條件最有用。</p>
+      <div class="ladder-wrap"><div id="ladder"></div></div>
+      <div id="explain" class="explain" hidden></div>
+    </div>
+
+    <section class="diag">
+      <h2>你的診斷</h2>
+      <div class="diag-row">
+        <label>故障在哪裡<select id="part"></select></label>
+        <label>原因是什麼<select id="cause"></select></label>
+        <button id="submit" class="go" type="button">送出診斷</button>
+      </div>
+      <p id="dmsg" class="dmsg"></p>
+      <div class="clues"><button id="clue" type="button" class="small-btn">給我一個提示</button><div id="cluelist"></div></div>
+      <div id="repairbox" hidden>
+        <button id="repair" class="go" type="button">修理</button>
+        <div id="explainbox" class="callout" hidden></div>
+        <p id="progress" class="verdict"></p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬結果不代表實機。</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="py/bundle.js"></script>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script src="common.js"></script>
+<script src="ladder.js"></script>
+<script src="scene.js"></script>
+<script src="faults.js"></script>
+</body>
+</html>

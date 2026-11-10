@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FX3S 實機與接線：每一條線接在哪個端子 | LadderLab</title>
+<meta name="description" content="用 FX3S-20MT/ES 的面板圖一步一步看：電源、漏型與源型輸入、NPN/PNP 感測器、電晶體輸出、USB。紅色箭頭指出每條線接的端子。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="learn guide-page">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="tocbtn" class="ghost only-narrow" type="button">目錄</button>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="contents">
+    <h3>FX3S 實機與接線</h3>
+    <ol>
+      <li><a href="#w1">1 認識面板</a></li>
+      <li><a href="#w2">2 電源怎麼接</a></li>
+      <li><a href="#w3">3 輸入：漏型（NPN）</a></li>
+      <li><a href="#w4">4 輸入：源型（PNP）</a></li>
+      <li><a href="#w5">5 輸出：燈和電磁閥</a></li>
+      <li><a href="#w6">6 接電腦寫程式</a></li>
+      <li><a href="#w7">7 燈不亮時先查哪裡</a></li>
+    </ol>
+    <p class="toc-note">端子位置依三菱《FX3S 系列使用者手冊（硬體篇）》4.7.4 節 FX3S-20MR/ES、20MT/ES 的端子排列。面板是重畫的示意圖，不是照片。實際接線以機台上印的字和手冊為準。</p>
+  </nav>
+
+  <main class="lesson guide">
+    <div id="cbar" data-auto hidden></div>
+    <p class="crumb">FX3S 實機與接線 · FX3S-20MT/ES</p>
+    <h1>每一條線到底接在哪個端子</h1>
+    <p class="lead-text">課本上的接線圖是電路符號，站到機台前面卻找不到要鎖哪一顆螺絲。這頁把學校常見的 FX3S-20MT/ES 面板畫出來，按「下一步」，<b style="color:var(--stop)">紅色箭頭</b>會指出這一步要接的端子，線會自己畫出來，通電時黃色小點表示電流在走。</p>
+    <div class="callout warn"><b>安全：</b>接線、拆線前一定先斷電。交流電源（L、N）有觸電危險，第一次接請讓老師看過再送電。</div>
+
+    <section id="w1">
+      <h2>1　認識面板</h2>
+      <p>先知道每個地方叫什麼。之後老師說「看一下 X3 的燈」，你要知道看哪裡。</p>
+      <div data-fx3s="parts"></div>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>端子排</th><th>由左到右（上層）</th><th>由左到右（下層）</th></tr></thead>
+        <tbody>
+          <tr><th>上排：電源、輸入</th><td>⏚　S/S　X1　X3　X5　X7　X11　X13</td><td>L　N　X0　X2　X4　X6　X10　X12</td></tr>
+          <tr><th>下排：24V 輸出電源、輸出</th><td>0V　Y0　Y1　Y2　Y3　Y4　Y6　•（空端子）</td><td>24V　COM0　COM1　COM2　COM3　COM4　Y5　Y7</td></tr>
+        </tbody></table></div>
+      <p class="why">上下兩層是交錯的：單數的 X 在上層、雙數在下層。標「•」的是空端子，不要接線。</p>
+    </section>
+
+    <section id="w2">
+      <h2>2　電源怎麼接</h2>
+      <p>型號最後的 ES 代表交流電源型（AC100～240V）。DS 型是 DC24V 供電，端子位置相同，但標示是 ＋、－。</p>
+      <div data-fx3s="power"></div>
+      <div class="callout warn">下排的 <b>24V、0V</b> 是 PLC 送出來給感測器用的電（最多 400mA），<b>不是電源入口</b>。官方手冊的警告：不要從外部供電到 24V 端子，也不要把交流電接到直流端子，PLC 會損壞。</div>
+    </section>
+
+    <section id="w3">
+      <h2>3　輸入：漏型（配 NPN 感測器）</h2>
+      <p>FX3S 的輸入可以選漏型或源型，由 <b>S/S</b> 這個端子接到哪裡決定。台灣的教學設備和 NPN 感測器多半是漏型。</p>
+      <div class="wire-legend"><span><i style="background:#e02020"></i>24V</span><span><i style="background:#1e6fff"></i>0V</span><span><i style="background:#8a4b12"></i>感測器棕線</span><span><i style="background:var(--ink)"></i>訊號線</span></div>
+      <div data-fx3s="sink"></div>
+      <div class="callout">口訣：<b>漏型＝S/S 接 24V，訊號拉到 0V 才 ON，配 NPN。</b>每一點輸入大約流 5～7mA，所以按鈕、感測器要選適合小電流的。</div>
+    </section>
+
+    <section id="w4">
+      <h2>4　輸入：源型（配 PNP 感測器）</h2>
+      <p>和漏型完全對稱，只是 24V 和 0V 的角色互換。</p>
+      <div data-fx3s="source"></div>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th></th><th>漏型 Sink</th><th>源型 Source</th></tr></thead>
+        <tbody>
+          <tr><th>S/S 接</th><td>24V</td><td>0V</td></tr>
+          <tr><th>按鈕另一端接</th><td>0V</td><td>24V</td></tr>
+          <tr><th>感測器</th><td>NPN（動作時黑線接到 0V）</td><td>PNP（動作時黑線接到 24V）</td></tr>
+          <tr><th>三線式感測器</th><td colspan="2">棕＝24V、藍＝0V、黑＝訊號接 X（兩種都一樣，只是感測器型式不同）</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <section id="w5">
+      <h2>5　輸出：接燈和電磁閥</h2>
+      <p>型號裡的 T 是電晶體輸出。MT/ES 是漏型：負載一端接電源的 ＋，另一端接 Y，COM 接電源的 －。MR（繼電器輸出）接法類似，但可以接交流。MT/ESS 是源型，COM 的位置印的是 +V，接法相反。</p>
+      <div data-fx3s="output"></div>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>輸出</th><th>共點</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr><td>Y0</td><td>COM0</td><td rowspan="4">各自獨立，一點一個共點。可以接不同的電源</td></tr>
+          <tr><td>Y1</td><td>COM1</td></tr><tr><td>Y2</td><td>COM2</td></tr><tr><td>Y3</td><td>COM3</td></tr>
+          <tr><td>Y4～Y7</td><td>COM4</td><td>四點共用一個共點</td></tr>
+        </tbody></table></div>
+      <p class="why">電晶體輸出每點最大 0.5A、DC5～30V。馬達、大電磁閥不能直接接 Y，要用 Y 去推繼電器或接觸器，再由它們去開負載。</p>
+    </section>
+
+    <section id="w6">
+      <h2>6　接電腦寫程式</h2>
+      <div data-fx3s="usb"></div>
+      <p>軟體這邊的每一步在 <a href="gx2.html#g8">GX Works2：寫入 FX3S 與監看</a>。</p>
+    </section>
+
+    <section id="w7">
+      <h2>7　燈不亮時先查哪裡</h2>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>看到的現象</th><th>先查</th></tr></thead>
+        <tbody>
+          <tr><td>POW 不亮</td><td>L、N 有沒有電、有沒有鎖緊</td></tr>
+          <tr><td>按了按鈕，IN 燈不亮</td><td>S/S 那條線有沒有接；按鈕另一端是不是接到對的那一邊（漏型接 0V）；感測器 NPN/PNP 型式對不對</td></tr>
+          <tr><td>IN 燈亮，OUT 燈不亮</td><td>RUN 燈有沒有亮；再用 GX Works2 監看程式卡在哪個條件</td></tr>
+          <tr><td>OUT 燈亮，負載不動</td><td>這一點的 COM 有沒有接；負載電源有沒有開；負載本身有沒有壞</td></tr>
+          <tr><td>ERR 閃爍</td><td>程式錯誤，用 GX Works2 的 PLC 診斷看錯誤碼</td></tr>
+        </tbody></table></div>
+      <p>這個判斷順序在第 7 章 <a href="faults.html">故障排除</a> 會用虛擬機台實際練。</p>
+      <p><a class="btnlink go" href="learn.html#1">下一步：第一個程式 ›</a></p>
+    </section>
+  </main>
+</div>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script src="fx3s.js"></script>
+<script>
+document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
+document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));
+</script>
+</body>
+</html>

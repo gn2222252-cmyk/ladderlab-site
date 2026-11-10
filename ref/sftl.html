@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SFTL／SFTR：位元移位（跑馬燈、工件追蹤）｜三菱 FX PLC 指令</title>
+<meta name="description" content="把一排連續的位元往高號（SFTL）或低號（SFTR）推 n2 格，空出來的位置由來源補進來。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/ref/sftl.html">
+<meta property="og:title" content="SFTL／SFTR：位元移位（跑馬燈、工件追蹤）｜三菱 FX PLC 指令">
+<meta property="og:description" content="把一排連續的位元往高號（SFTL）或低號（SFTR）推 n2 格，空出來的位置由來源補進來。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/ref/sftl.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "SFTL／SFTR：位元移位（跑馬燈、工件追蹤）", "description": "把一排連續的位元往高號（SFTL）或低號（SFTR）推 n2 格，空出來的位置由來源補進來。", "inLanguage": "zh-Hant"}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html" class="here">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">FX 指令說明</a> · 數值</p>
+<h1>SFTL／SFTR：位元移位（跑馬燈、工件追蹤）</h1>
+<p class="lead-text">把一排連續的位元往高號（SFTL）或低號（SFTR）推 n2 格，空出來的位置由來源補進來。</p>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>SFTL 來源 目的起點 K位元數 K移動格數</td><td>來源 X、Y、M、S；目的 Y、M、S</td></tr></tbody></table></div>
+<p>SFTLP X1 Y0 K8 K1：Y0～Y7 這 8 個位元往上推一格，Y0 補進 X1 現在的狀態。學校常見的「八燈依序點亮」就是它。</p><p>輸送帶工件追蹤也是同一招：每走一個工位推一格，來源是「這個位置有沒有工件」。</p><p>一定要用脈衝版 SFTLP（或前面接 PLS）。用 SFTL，條件 ON 的每一圈都推一次，燈一下子就全部跑完。</p><p>FX3S 的 Y 只有 Y0～Y15，位元數不要超過實際的點數。</p>
+<h2>範例</h2>
+<pre class="il">LD X000
+SFTLP X001 Y000 K8 K1</pre>
+<p>X1 ON 時按 X0：Y0 亮；放開 X1 再按 X0：亮點移到 Y1。</p>
+<p><a class="btnlink go" href="../practice.html?il=LD%20X000%0ASFTLP%20X001%20Y000%20K8%20K1#FREE">在瀏覽器執行這個範例 ›</a></p>
+<h2>常見錯誤</h2><ul><li>沒加 P，按一下推了幾十格。</li><li>來源和目的重疊，結果難以預測。</li></ul>
+<h2>相關指令</h2><p><a class="btnlink" href="rol.html">ROL／ROR</a> <a class="btnlink" href="pls.html">PLS</a> <a class="btnlink" href="mov.html">MOV</a></p>
+<p class="why">範例佔 10 個程式步。本頁範例已在 LadderLab 的 FX 相容引擎實際執行驗證；指令細節以三菱 FX 系列程式設計手冊為準。</p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

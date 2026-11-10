@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GX Works2 實作：FX3S 的階梯圖、STL 與 SFC | LadderLab</title>
+<meta name="description" content="一步一步在 GX Works2 建立 FX3S 工程：一般階梯圖、STL 步進階梯圖、SFC 順序功能圖的差別與建立方法，含寫入、監看、常見錯誤。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="learn guide-page">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="tocbtn" class="ghost only-narrow" type="button">目錄</button>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="contents">
+    <h3>GX Works2 實作（FX3S）</h3>
+    <ol>
+      <li><a href="#g1">1 三種寫法差在哪</a></li>
+      <li><a href="#g2">2 建立工程時選什麼</a></li>
+      <li><a href="#g13">3 認識畫面</a></li>
+      <li><a href="#g4">4 實作 A：畫一般階梯圖</a></li>
+      <li><a href="#g14">5 編輯操作與快捷鍵</a></li>
+      <li><a href="#g15">6 存檔與開啟工程</a></li>
+      <li><a href="#g5">7 實作 B：用階梯圖寫 STL</a></li>
+      <li><a href="#g6">8 實作 C：SFC 工程</a></li>
+      <li><a href="#g7">9 SFC 分支：鑽床</a></li>
+      <li><a href="#g3">10 接 PLC 之前</a></li>
+      <li><a href="#g8">11 寫入 FX3S 與監看</a></li>
+      <li><a href="#g9">12 沒有 PLC 時怎麼練</a></li>
+      <li><a href="#g10">13 GX Developer 對照</a></li>
+      <li><a href="#g11">14 常見錯誤</a></li>
+      <li><a href="#g12">15 自我檢查清單</a></li>
+    </ol>
+    <p class="toc-note">畫面是 GX Works2 繁體中文版（FX3S 工程）的實際截圖，點圖可以放大。操作步驟和快捷鍵依三菱官方《GX Works2 入門指南（簡單工程篇）》與《操作手冊（簡單工程篇）》附錄 1 核對。</p>
+  </nav>
+
+  <main class="lesson guide">
+    <div id="cbar" data-auto hidden></div>
+    <p class="crumb">GX Works2 實作 · FX3S</p>
+    <h1>在 GX Works2 寫 FX3S：從開新工程到畫完階梯圖、STL、SFC</h1>
+    <p class="lead-text">這頁照著真的 GX Works2 畫面，一步一步做三件事：建立工程並畫出一條完整的階梯圖、在階梯圖裡寫 STL 步進、建立 SFC 工程。每一步都有實際截圖，也寫了做錯時會看到什麼。建議一邊開著 GX Works2 一邊照做。</p>
+
+    <!-- 1 -->
+    <section id="g1">
+      <h2>1　三種寫法差在哪</h2>
+      <p>FX 系列寫「一步一步動作」的程式有三種寫法。<b>最重要的一句話：STL 和 SFC 是同一個東西的兩種畫法。</b>你在 GX Works2 畫的 SFC，寫進 PLC 以後就是 STL 指令。</p>
+      <div class="table-box"><table class="gtable">
+        <thead><tr><th></th><th>一般階梯圖（用 M 記步）</th><th>STL 步進階梯圖</th><th>SFC 順序功能圖</th></tr></thead>
+        <tbody>
+          <tr><th>樣子</th><td>一般接點、線圈</td><td>還是階梯圖，多了 <code>STL S20</code>、<code>SET S21</code>、<code>RET</code></td><td>流程圖：方框是步，短橫線是移轉條件</td></tr>
+          <tr><th>記住第幾步</th><td>自己用 M 自保持</td><td>S 狀態元件</td><td>S 狀態元件（方框旁的數字就是 S 編號）</td></tr>
+          <tr><th>換下一步</th><td>自己寫：下一步回頭切斷上一步</td><td><code>SET S21</code>，上一步自動關</td><td>移轉條件最後接 <code>[TRAN]</code></td></tr>
+          <tr><th>建立工程時選</th><td>程式語言：梯形圖</td><td>程式語言：<b>梯形圖</b></td><td>程式語言：<b>SFC</b></td></tr>
+          <tr><th>寫進 PLC 後</th><td>一般指令</td><td>STL / RET 指令</td><td><b>也是 STL / RET 指令</b></td></tr>
+          <tr><th>適合</th><td>很短的動作、不需要步序</td><td>想用階梯圖畫面、方便印出來對照</td><td>流程長、有分支，想一眼看懂現在在哪一步</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>同一個程式，三種畫法（可以操作）</h3>
+      <p>例題：上電後 Y0 亮 1 秒、Y1 亮 1 秒，一直輪流（就是你講義裡的「雙燈閃爍」）。按下面的分頁切換，燈號和程式會同步動。</p>
+      <div class="compare" id="compare">
+        <div class="compare-tabs" role="tablist">
+          <button type="button" data-c="m" class="here">一般階梯圖（M）</button>
+          <button type="button" data-c="stl">STL 步進階梯圖</button>
+          <button type="button" data-c="sfc">SFC 圖</button>
+        </div>
+        <div class="compare-body">
+          <div class="compare-lamps"><span class="lamp" id="lamp0">Y0</span><span class="lamp" id="lamp1">Y1</span><span id="cmp-step" class="cmp-step"></span></div>
+          <div id="cmp-note" class="cmp-note"></div>
+          <div id="cmp-load" class="loading" hidden><span class="spin"></span>正在載入模擬引擎…</div>
+          <button type="button" id="cmp-start" class="go">載入互動比較（約 10 秒）</button>
+          <div class="ladder-wrap" id="cmp-ladder" hidden></div>
+          <div class="sfc-wrap" id="cmp-sfc" hidden></div>
+          <pre id="cmp-il" class="il" hidden></pre>
+        </div>
+      </div>
+      <div class="callout">看出來了嗎？STL 那一頁和 SFC 那一頁是<b>同一份程式</b>：每一段 <code>STL S20</code> 就是 SFC 的一個方框，段落裡 <code>SET S21</code> 前面的條件就是 SFC 的移轉條件，<code>M8002 → SET S0</code> 就是 SFC 工程裡的「梯形圖塊」。</div>
+    </section>
+
+    <!-- 2 -->
+    <section id="g2">
+      <h2>2　建立工程時選什麼</h2>
+      <p>選單 <span class="menu">工程(P)</span> → 新增，或按工具列最左邊的白紙圖示（<kbd>Ctrl</kbd>＋<kbd>N</kbd>），會跳出「新增」對話框。四個欄位由上到下選：</p>
+      <figure class="shot"><a href="img/gx2/g01c.png" target="_blank" rel="noopener"><img src="img/gx2/g01c.png" alt="GX Works2 新增工程對話框：系列 FXCPU、機種 FX3S、工程類型 簡單工程、程式語言 梯形圖" loading="lazy"></a><figcaption>「新增」對話框。系列選 FXCPU，機種選 FX3S，工程類型選簡單工程，「使用標籤」不要勾。</figcaption></figure>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>欄位</th><th>選什麼</th><th>選錯會怎樣</th></tr></thead>
+        <tbody>
+          <tr><th>系列</th><td><b>FXCPU</b></td><td>預設是 QCPU，沒改的話機種清單裡找不到 FX3S</td></tr>
+          <tr><th>機種</th><td><b>FX3S</b></td><td>選成 FX3U 也能寫程式，但寫入實機時會因為機種不符被擋下來</td></tr>
+          <tr><th>工程類型</th><td><b>簡單工程</b></td><td>結構化工程是另一套做法，學校不用</td></tr>
+          <tr><th>使用標籤</th><td><b>不勾</b></td><td>勾了以後程式語言就選不到 SFC，而且轉換之外還要多做編譯</td></tr>
+          <tr><th>程式語言</th><td><b>梯形圖</b> 或 <b>SFC</b></td><td>看下面的判斷</td></tr>
+        </tbody></table></div>
+      <div class="decide">
+        <div class="decide-q">程式語言要選哪個？老師要你畫「方框和移轉條件」的流程圖嗎？</div>
+        <div class="decide-a"><b>是</b> → 選 <b>SFC</b>。接著第 0 塊設成<b>梯形圖塊</b>，寫 M8002 → SET S0；再新增 SFC 塊畫流程。→ 看第 8 節</div>
+        <div class="decide-a"><b>不是，但要用 STL 指令</b> → 選<b>梯形圖</b>，直接輸入 <code>STL S20</code> 這些指令。→ 看第 7 節</div>
+        <div class="decide-a"><b>只是一般的接點和線圈</b> → 選<b>梯形圖</b>。→ 看第 4 節</div>
+      </div>
+      <div class="callout warn"><b>「先選 SFC 再選梯形圖」是什麼意思？</b>SFC 工程裡一定會有一個梯形圖塊，因為 FX 的 SFC 需要一段梯形圖去啟動初始步（官方入門指南 4.2.7 節）。所以順序是：新增工程選 SFC → 軟體問第 0 塊的類型時選「梯形圖塊」→ 再新增一個 SFC 塊。不是建立兩個工程。</div>
+    </section>
+
+    <section id="g13">
+      <h2>3　認識畫面</h2>
+      <p>按下確定後，工程建好，畫面長這樣。先知道每一區叫什麼，後面的步驟才看得懂。</p>
+      <figure class="shot wide"><a href="img/gx2/g02.png" target="_blank" rel="noopener"><img src="img/gx2/g02.png" alt="GX Works2 新工程的整個視窗：左邊導航的工程樹，中間是 MAIN 的梯形圖編輯區，只有一條 END" loading="lazy"></a><figcaption>剛建好的梯形圖工程。左邊是導航視窗，中間是 MAIN 程式的編輯區，裡面只有一條 END。</figcaption></figure>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>位置</th><th>名稱</th><th>用來做什麼</th></tr></thead>
+        <tbody>
+          <tr><th>最上面一排字</th><td>功能表：工程、編輯、搜尋/取代、轉換/編譯、檢視、線上、偵錯、診斷、工具、視窗、說明</td><td>所有功能都找得到。這頁用到的是工程、轉換/編譯、檢視、線上、偵錯</td></tr>
+          <tr><th>功能表下面兩排圖示</th><td>工具列</td><td>常用功能的按鈕。右邊那一排有 F5、sF5、F6… 的是<b>梯形圖工具列</b>，畫階梯圖都靠它</td></tr>
+          <tr><th>左邊</th><td>導航視窗（工程樹）</td><td>參數、全域元件註解、程式設定、<b>程式組件 → 程式 → MAIN</b>、區域元件註解、元件記憶體。點兩下 MAIN 打開程式</td></tr>
+          <tr><th>左下三個按鈕</th><td>工程／使用者媒體櫃／連接目標</td><td>切換導航視窗的內容。接 PLC 時要切到「連接目標」</td></tr>
+          <tr><th>中間</th><td>工作視窗</td><td>畫梯形圖的地方。上面的分頁寫著 <code>[PRG]寫入 MAIN 1步序</code>：「寫入」代表現在是可以編輯的寫入模式</td></tr>
+          <tr><th>藍色方框</th><td>游標</td><td>現在要輸入的那一格。用方向鍵或滑鼠移動</td></tr>
+          <tr><th>最下面</th><td>狀態列</td><td>顯示「無標籤」、機種 FX3S、目前步數（例如 4/5步序）、「覆寫」或「插入」</td></tr>
+        </tbody></table></div>
+      <p>梯形圖工具列放大來看。滑鼠停在按鈕上會出現名稱和快捷鍵，例如「常開接點 (F5)」。按鈕下面的小字就是快捷鍵：<code>sF5</code> 是 Shift＋F5，<code>cF9</code> 是 Ctrl＋F9，<code>aF7</code> 是 Alt＋F7。</p>
+      <figure class="shot wide"><a href="img/gx2/ladbar.png" target="_blank" rel="noopener"><img src="img/gx2/ladbar.png" alt="GX Works2 梯形圖工具列：F5 常開接點、sF5 並聯常開、F6 常閉接點、sF6 並聯常閉、F7 線圈、F8 應用指令、F9 橫線、sF9 豎線、cF9 刪橫線、cF10 刪豎線" loading="lazy"></a><figcaption>梯形圖工具列（放大）。由左到右：F5、sF5、F6、sF6、F7、F8｜F9、sF9、cF9、cF10｜sF7、sF8、aF7、aF8…</figcaption></figure>
+    </section>
+
+    <!-- 4 -->
+    <section id="g4">
+      <h2>4　實作 A：畫一條完整的階梯圖</h2>
+      <p>目標：馬達自保持（練習題 <a href="practice.html#E3">E3</a>）。按 X0 啟動、按 X1 停止，Y0 自己保持。要畫的是這四個指令：<code>LD X0</code>、<code>OR Y0</code>、<code>ANI X1</code>、<code>OUT Y0</code>。</p>
+      <ol class="howto">
+        <li><b>確認游標在第一格。</b>藍色方框在左上角。分頁上要寫「寫入」；如果寫的是「讀取」或「監看」，按 <kbd>F2</kbd> 切回寫入模式。</li>
+        <li><b>按 <kbd>F5</kbd>（常開接點），輸入 <code>X0</code>，按 Enter。</b>會跳出「輸入梯形圖」的小視窗，直接打字就好。
+          <figure class="shot"><a href="img/gx2/g04c.png" target="_blank" rel="noopener"><img src="img/gx2/g04c.png" alt="按 F5 後跳出的輸入梯形圖視窗，輸入 X0" loading="lazy"></a><figcaption>「輸入梯形圖」視窗。左邊的下拉選單顯示現在要放的符號，右邊打元件編號，按確定或 Enter。</figcaption></figure>
+          <p class="why">打 <code>X0</code> 就好，軟體會自動補成 X000。游標會自己往右移一格。</p></li>
+        <li><b>按 <kbd>F6</kbd>（常閉接點），輸入 <code>X1</code>，Enter。</b>這是停止按鈕。</li>
+        <li><b>按 <kbd>F7</kbd>（線圈），輸入 <code>Y0</code>，Enter。</b>線圈會自動放到最右邊，中間的橫線也會自動補上。游標跳到下一列。</li>
+        <li><b>畫並聯的自保持接點。</b>把游標移到 <b>X000 正下方那一格</b>（第二列第一格），按 <kbd>Shift</kbd>＋<kbd>F5</kbd>（並聯常開接點），輸入 <code>Y0</code>，Enter。軟體會放一個 Y000 接點，並自動畫一條豎線接回上面。
+          <figure class="shot wide"><a href="img/gx2/g05.png" target="_blank" rel="noopener"><img src="img/gx2/g05.png" alt="畫好自保持但還沒轉換的梯形圖，整塊是灰色底" loading="lazy"></a><figcaption>畫完的樣子。<b>灰色底</b>代表「還沒轉換」。</figcaption></figure></li>
+        <li><b>按 <kbd>F4</kbd> 轉換。</b>功能表是 <span class="menu">轉換/編譯(C)</span> → 轉換。成功後灰底變白底，左邊出現步號（0、4），狀態列的步數從 1 變成 5。
+          <figure class="shot wide"><a href="img/gx2/g06.png" target="_blank" rel="noopener"><img src="img/gx2/g06.png" alt="轉換後的梯形圖，底色變白，左邊出現步號 0 和 4" loading="lazy"></a><figcaption>轉換成功：底色變白，END 前面的數字 4 代表這段程式用了 4 步。</figcaption></figure>
+          <p class="err">做錯：沒按 F4 就想寫入 PLC 或關掉視窗，軟體會提醒有未轉換的梯形圖。<b>灰底的程式不算數。</b></p></li>
+      </ol>
+      <div class="callout"><b>也可以完全不用功能鍵，直接打指令。</b>游標在格子上時直接打 <code>LD X0</code> 按 Enter、<code>OR Y0</code> Enter、<code>ANI X1</code> Enter、<code>OUT Y0</code> Enter，軟體會自己畫成梯形圖。背得出指令的人這樣最快，而且和 LadderLab 練習題輸入的文字一模一樣。</div>
+      <p>寫完可以把同樣的指令貼到 <a href="practice.html#E3">練習題 E3</a> 評分，確認邏輯對了再去學校寫入實機。</p>
+    </section>
+
+    <section id="g14">
+      <h2>5　編輯操作與快捷鍵</h2>
+      <p>畫錯了怎麼改、怎麼插入一列、線怎麼畫。下表的按鍵都依官方操作手冊附錄 1 核對過。</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>要做的事</th><th>按鍵</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr><th colspan="3">放元件</th></tr>
+          <tr><td>常開接點／常閉接點</td><td><kbd>F5</kbd>／<kbd>F6</kbd></td><td>串聯在游標位置</td></tr>
+          <tr><td>並聯常開／並聯常閉</td><td><kbd>Shift</kbd>＋<kbd>F5</kbd>／<kbd>Shift</kbd>＋<kbd>F6</kbd></td><td>放在游標位置，自動畫豎線接回上一列</td></tr>
+          <tr><td>線圈</td><td><kbd>F7</kbd></td><td>OUT。計時器打 <code>T0 K10</code>，計數器打 <code>C0 K5</code></td></tr>
+          <tr><td>應用指令</td><td><kbd>F8</kbd></td><td>方括號的指令：<code>SET M0</code>、<code>RST Y0</code>、<code>MOV K5 D0</code>、<code>STL S20</code>、<code>RET</code></td></tr>
+          <tr><td>上升沿／下降沿接點</td><td><kbd>Shift</kbd>＋<kbd>F7</kbd>／<kbd>Shift</kbd>＋<kbd>F8</kbd></td><td>LDP、LDF。並聯的是 <kbd>Alt</kbd>＋<kbd>F7</kbd>／<kbd>Alt</kbd>＋<kbd>F8</kbd></td></tr>
+          <tr><th colspan="3">畫線</th></tr>
+          <tr><td>橫線／豎線</td><td><kbd>F9</kbd>／<kbd>Shift</kbd>＋<kbd>F9</kbd></td><td>豎線畫在游標的<b>左邊緣</b>往下</td></tr>
+          <tr><td>刪橫線／刪豎線</td><td><kbd>Ctrl</kbd>＋<kbd>F9</kbd>／<kbd>Ctrl</kbd>＋<kbd>F10</kbd></td><td></td></tr>
+          <tr><td>用方向鍵畫線或擦線</td><td><kbd>Ctrl</kbd>＋<kbd>←→↑↓</kbd></td><td>往那個方向畫一段，已經有線就擦掉</td></tr>
+          <tr><th colspan="3">修改</th></tr>
+          <tr><td>改一個元件</td><td>在它上面點兩下，或按 Enter</td><td>跳出同一個輸入視窗，改完按確定</td></tr>
+          <tr><td>刪一個元件</td><td><kbd>Delete</kbd></td><td></td></tr>
+          <tr><td>常開、常閉互換</td><td><kbd>Ctrl</kbd>＋<kbd>/</kbd></td><td>不用刪掉重畫</td></tr>
+          <tr><td>插入一列／刪除一列</td><td><kbd>Shift</kbd>＋<kbd>Insert</kbd>／<kbd>Shift</kbd>＋<kbd>Delete</kbd></td><td>在兩條之間加新的一條，先插入一列空白</td></tr>
+          <tr><td>插入一格／刪除一格</td><td><kbd>Ctrl</kbd>＋<kbd>Insert</kbd>／<kbd>Ctrl</kbd>＋<kbd>Delete</kbd></td><td>在一串接點中間再塞一個</td></tr>
+          <tr><td>覆寫／插入切換</td><td><kbd>Insert</kbd></td><td>狀態列右下角會顯示「覆寫」或「插入」。覆寫模式下新元件會蓋掉游標上原有的</td></tr>
+          <tr><td>復原／重做</td><td><kbd>Ctrl</kbd>＋<kbd>Z</kbd>／<kbd>Ctrl</kbd>＋<kbd>Y</kbd></td><td></td></tr>
+          <tr><td>剪下、複製、貼上</td><td><kbd>Ctrl</kbd>＋<kbd>X</kbd>、<kbd>Ctrl</kbd>＋<kbd>C</kbd>、<kbd>Ctrl</kbd>＋<kbd>V</kbd></td><td>先用滑鼠拖曳選取幾條</td></tr>
+          <tr><th colspan="3">轉換與模式</th></tr>
+          <tr><td>轉換</td><td><kbd>F4</kbd></td><td>全部重新轉換是 <kbd>Shift</kbd>＋<kbd>Alt</kbd>＋<kbd>F4</kbd></td></tr>
+          <tr><td>寫入模式／讀取模式</td><td><kbd>F2</kbd>／<kbd>Shift</kbd>＋<kbd>F2</kbd></td><td>讀取模式不能改，用來防止手滑</td></tr>
+          <tr><td>監看開始／停止</td><td><kbd>F3</kbd>／<kbd>Alt</kbd>＋<kbd>F3</kbd></td><td>要先連上 PLC 或開模擬</td></tr>
+          <tr><td>顯示元件註解</td><td><kbd>Ctrl</kbd>＋<kbd>F5</kbd></td><td>接點下面顯示「啟動」「停止」這些字</td></tr>
+          <tr><td>找元件</td><td><kbd>Ctrl</kbd>＋<kbd>F</kbd></td><td>想知道 M10 用在哪幾條</td></tr>
+        </tbody></table></div>
+      <div class="callout"><b>幫元件加註解：</b>左邊工程樹點兩下「全域元件註解」，在表格裡填 X0＝啟動、X1＝停止、Y0＝馬達，回到程式按 <kbd>Ctrl</kbd>＋<kbd>F5</kbd> 就會顯示。交作業、考檢定時有註解的程式好讀很多。</div>
+    </section>
+
+    <section id="g15">
+      <h2>6　存檔與開啟工程</h2>
+      <ol class="howto">
+        <li><b>存檔：</b><span class="menu">工程(P)</span> → 另存新檔，跳出「工程另存新檔」。選資料夾、打檔案名稱（例如 <code>E3_馬達自保持</code>），按存檔。之後按 <kbd>Ctrl</kbd>＋<kbd>S</kbd> 就會直接存。
+          <figure class="shot"><a href="img/gx2/g06bc.png" target="_blank" rel="noopener"><img src="img/gx2/g06bc.png" alt="工程另存新檔對話框" loading="lazy"></a><figcaption>「工程另存新檔」。這樣存出來是一個 <code>.gxw</code> 檔，可以直接複製到隨身碟。</figcaption></figure>
+          <p class="why">對話框左下角的「儲存工作區格式工程」是另一種存法，會存成一整個資料夾（工作區），給 MELSOFT Navigator 用。學校作業存成單一個 .gxw 檔最方便帶走。</p></li>
+        <li><b>開啟舊工程：</b><span class="menu">工程(P)</span> → 開啟（<kbd>Ctrl</kbd>＋<kbd>O</kbd>），找到 .gxw 檔，按開啟。如果當初是用工作區格式存的，要按左下角的「開啟工作區格式工程」去找資料夾。
+          <figure class="shot"><a href="img/gx2/g06cc.png" target="_blank" rel="noopener"><img src="img/gx2/g06cc.png" alt="開啟工程對話框" loading="lazy"></a><figcaption>「開啟工程」。</figcaption></figure></li>
+        <li><b>打開之後看不到程式？</b>到左邊工程樹，展開 程式組件 → 程式，點兩下 <b>MAIN</b>。</li>
+        <li><b>下課前：</b>先 <kbd>F4</kbd> 轉換，再 <kbd>Ctrl</kbd>＋<kbd>S</kbd> 存檔，再關軟體。沒轉換的梯形圖存檔時會被要求先處理。</li>
+      </ol>
+    </section>
+
+    <!-- 5 -->
+    <section id="g5">
+      <h2>7　實作 B：在梯形圖工程裡寫 STL 步進</h2>
+      <p>目標：用 STL 寫雙燈閃爍（練習題 <a href="practice.html#E12">E12</a>）。工程照第 2 節建立，<b>程式語言選梯形圖</b>。STL、SET、RET 都是用 <kbd>F8</kbd>（應用指令）輸入。</p>
+      <ol class="howto">
+        <li>第一條：<kbd>F5</kbd> 輸入 <code>M8002</code>，再 <kbd>F8</kbd> 輸入 <code>SET S0</code>。M8002 是 PLC 從 STOP 切 RUN 的第一個掃描 ON 一次，用來啟動初始步。</li>
+        <li>按 <kbd>F8</kbd>，輸入 <code>STL S0</code>，Enter。STL 指令自己佔一條，表示從這裡開始是 S0 這一步。
+          <figure class="shot wide"><a href="img/gx2/g07c.png" target="_blank" rel="noopener"><img src="img/gx2/g07c.png" alt="按 F8 輸入 STL S20 的輸入梯形圖視窗，上方提示「步梯形圖開始」" loading="lazy"></a><figcaption>用 F8 輸入 <code>STL S20</code>。打到 STL 時，軟體會提示這是「步梯形圖開始」。</figcaption></figure></li>
+        <li>S0 裡：<kbd>F5</kbd> <code>M8000</code>、<kbd>F8</kbd> <code>SET S20</code>。M8000 是 RUN 中常 ON，代表一進待機就換到 S20。</li>
+        <li><kbd>F8</kbd> <code>STL S20</code>。接著這一步有兩個輸出：<kbd>F7</kbd> <code>Y0</code>，以及 <kbd>F7</kbd> <code>T0 K10</code>（T0 計 1 秒，K10 = 10 × 0.1 秒）。
+          <p class="err"><b>這裡最容易卡住。</b>步裡面連續兩個沒有條件的輸出，不能各自從左母線畫一條，要畫成<b>同一條的上下兩個分支</b>：Y000 在上，往下拉一條豎線（<kbd>Shift</kbd>＋<kbd>F9</kbd>），T0 K10 接在下面。畫成兩條各自獨立的，按 F4 會跳出下面這個訊息。</p>
+          <figure class="shot wide"><a href="img/gx2/g08_convert_errorc.png" target="_blank" rel="noopener"><img src="img/gx2/g08_convert_errorc.png" alt="轉換失敗的訊息：存在無法轉換的梯形圖，請修改游標位置的梯形圖" loading="lazy"></a><figcaption>畫錯時 F4 的結果：「存在無法轉換的梯形圖。請修改游標位置的梯形圖。」游標會停在有問題的那一條。</figcaption></figure></li>
+        <li><kbd>F5</kbd> <code>T0</code>、<kbd>F8</kbd> <code>SET S21</code>：時間到，換到 S21。</li>
+        <li><kbd>F8</kbd> <code>STL S21</code>，一樣畫 <code>Y1</code> 和 <code>T1 K10</code> 兩個分支。</li>
+        <li><kbd>F5</kbd> <code>T1</code>、<kbd>F7</kbd> <code>S20</code>：跳回前面的步，用<b>線圈</b> OUT S20，不是 SET。<span class="why">這是 FX 手冊的寫法；在 SFC 圖上就是 JUMP。</span></li>
+        <li>最後 <kbd>F8</kbd> <code>RET</code>：告訴 PLC 步進區結束。</li>
+        <li><kbd>F4</kbd> 轉換。正確的結果長這樣：
+          <figure class="shot wide"><a href="img/gx2/g08.png" target="_blank" rel="noopener"><img src="img/gx2/g08.png" alt="轉換成功的 STL 雙燈閃爍程式：SET S0、STL S0、SET S20、STL S20、Y000 與 T0 K10 分支、SET S21、STL S21、Y001 與 T1 K10 分支、S20 線圈、RET、END" loading="lazy"></a><figcaption>轉換成功，共 25 步。注意 Y000／T0 和 Y001／T1 都是「一條兩個分支」，最後跳回是 (S20) 線圈。</figcaption></figure></li>
+      </ol>
+      <pre class="il">LD M8002
+SET S0
+STL S0
+LD M8000
+SET S20
+STL S20
+OUT Y000
+OUT T0 K10
+LD T0
+SET S21
+STL S21
+OUT Y001
+OUT T1 K10
+LD T1
+OUT S20
+RET</pre>
+      <p class="why">這份指令可以直接貼到 <a href="practice.html#E12">練習題 E12</a> 執行。在 GX Works2 也可以不按功能鍵，照這個順序一行一行打字輸入。</p>
+      <div class="callout">步進的三個規則：<br>① 在步裡用 <code>OUT</code> 的輸出，離開這一步就自動 OFF；要跨步保持用 <code>SET</code>，之後在別步 <code>RST</code>。<br>② 同一個 Y 可以在不同步各寫一次 <code>OUT</code>，不算雙線圈。<br>③ <b>換步的那一個掃描，前後兩步會同時 ON。</b>下降和上升這種相反動作，要在步裡加互鎖接點（FX 手冊建議）。</div>
+      <p class="why">有些課本的 STL 是畫成一個粗的接點（−[STL]−）。GX Works2 預設畫成方括號指令；想看成接點的樣子，到 <span class="menu">工具(T)</span> → 選項 → 程式編輯器 → 梯形圖，勾「以接點形式顯示 STL 指令」（Display STL instruction in contact format，只有 FX 無標籤工程可以用）。</p>
+    </section>
+
+    <!-- 6 -->
+    <section id="g6">
+      <h2>8　實作 C：SFC 工程（重點）</h2>
+      <p>目標：把上一節的雙燈閃爍改用 SFC 畫。步驟依官方入門指南 4.2.7「程式的創建（FXCPU）」。</p>
+      <ol class="howto">
+        <li><b>新增工程，程式語言選 SFC。</b>「使用標籤」一定不要勾。
+          <figure class="shot"><a href="img/gx2/g09c.png" target="_blank" rel="noopener"><img src="img/gx2/g09c.png" alt="新增工程對話框，程式語言選 SFC" loading="lazy"></a><figcaption>和第 2 節一樣，只有最後一欄改成 SFC。</figcaption></figure>
+          <p class="err">做錯：勾了「使用標籤」，程式語言清單裡就選不到 SFC（官方說明：FX 的 SFC 不支援標籤）。</p></li>
+        <li><b>第 0 塊設成「梯形圖塊」。</b>按確定後馬上跳出「塊資訊設定」。標題打「啟動梯形圖」，<b>塊類型選梯形圖塊</b>，按執行。
+          <figure class="shot"><a href="img/gx2/g10c.png" target="_blank" rel="noopener"><img src="img/gx2/g10c.png" alt="塊資訊設定：資料名 Block、標題 啟動梯形圖、塊編號 0、塊類型 梯形圖塊" loading="lazy"></a><figcaption>第 0 塊：塊類型選「梯形圖塊」。</figcaption></figure>
+          <p class="why">為什麼：FX 的 SFC 要靠一段梯形圖把初始步 S0 打開。這段梯形圖每個掃描都會執行，急停、異常處理也寫在這種塊。</p></li>
+        <li><b>在第 0 塊寫 M8002 → SET S0，按 F4 轉換。</b>畫面會分成左右兩半：左邊是這一塊的圖（只有一格 LD），右邊是它的梯形圖。在右邊照第 4 節的方法輸入：<kbd>F5</kbd> <code>M8002</code>、<kbd>F8</kbd> <code>SET S0</code>，然後 <kbd>F4</kbd>。
+          <figure class="shot wide"><a href="img/gx2/g11.png" target="_blank" rel="noopener"><img src="img/gx2/g11.png" alt="SFC 工程的第 0 塊：左邊顯示 LD，右邊的梯形圖是 M8002 接點和 SET S0" loading="lazy"></a><figcaption>第 0 塊寫好並轉換。左邊工程樹的「000:Block 啟動梯形圖」是<b>紅字</b>，代表整個工程還有東西沒轉換完。</figcaption></figure>
+          <p class="err">做錯：忘了這一條，SFC 畫得再好，一個步都不會亮（最常見的錯誤）。</p></li>
+        <li><b>新增 SFC 塊。</b>在工程樹的 <b>MAIN</b> 上按右鍵 → 新增資料。資料類型是「程式」，程式語言只有 SFC 可以選，資料名 Block1 不用改，按確定。
+          <figure class="shot"><a href="img/gx2/g12c.png" target="_blank" rel="noopener"><img src="img/gx2/g12c.png" alt="新增資料對話框：資料類型 程式、資料名 Block1、程式語言 SFC" loading="lazy"></a><figcaption>「新增資料」。</figcaption></figure>
+          接著又跳出「塊資訊設定」，這次<b>塊類型選 SFC 塊</b>，標題可以打「雙燈閃爍」，按執行。
+          <figure class="shot"><a href="img/gx2/g13c.png" target="_blank" rel="noopener"><img src="img/gx2/g13c.png" alt="塊資訊設定：資料名 Block1、塊編號 1、塊類型 SFC 塊" loading="lazy"></a><figcaption>第 1 塊：塊類型選「SFC 塊」。</figcaption></figure></li>
+        <li><b>認識 SFC 編輯畫面。</b>工程樹多了「001:Block1」。畫面一樣分左右：左邊是 SFC 圖（有行號 1、2、3… 和列號），右邊是目前選到的步或移轉的梯形圖。軟體已經先幫你放好初始步 0 和移轉 0。
+          <figure class="shot wide"><a href="img/gx2/g14.png" target="_blank" rel="noopener"><img src="img/gx2/g14.png" alt="SFC 編輯畫面：左邊 SFC 圖有初始步 ?0 和移轉 ?0，右邊是步序編號 0 的梯形圖，工具列換成 SFC 工具列" loading="lazy"></a><figcaption>新的 SFC 塊。編號前面的 <b>?</b> 代表「這一格裡面還沒有寫程式」。上面的工具列也換成 SFC 專用的。</figcaption></figure>
+          <figure class="shot wide"><a href="img/gx2/sfcbar.png" target="_blank" rel="noopener"><img src="img/gx2/sfcbar.png" alt="SFC 工具列：F5 步、F8 跳躍、F5 移轉、F6 選擇分支、F7 並行分支、F8 選擇合併、F9 並行合併、sF9 豎線" loading="lazy"></a><figcaption>SFC 工具列（放大）。游標在「步」的列時 F5 是步、F8 是 JUMP；在「移轉」的列時 F5 是移轉、F6／F7 是選擇／並行分支、F8／F9 是選擇／並行合併。</figcaption></figure></li>
+        <li><b>放步和移轉。</b>在左邊 SFC 圖的格子上<b>點兩下</b>（或按 Enter），跳出「輸入 SFC 符號」。圖形符號選 STEP，編號打 20，按確定。游標會自動往下。
+          <figure class="shot"><a href="img/gx2/g15c.png" target="_blank" rel="noopener"><img src="img/gx2/g15c.png" alt="輸入 SFC 符號對話框：圖形符號 STEP、編號 20" loading="lazy"></a><figcaption>在第 4 行放步 20。註解欄可以填「Y0 亮」，之後能顯示在圖上。</figcaption></figure>
+          照下面的表一格一格放：
+          <div class="sfc-grid-mock">
+            <div class="g-head"><span>行</span><span>第 1 列</span><span>「輸入 SFC 符號」要填的</span></div>
+            <div><span>1</span><span class="g-step init">0</span><span>已經有了（初始步，雙框）</span></div>
+            <div><span>2</span><span class="g-tr">┼ 0</span><span>已經有了（移轉 0）</span></div>
+            <div><span>3</span><span class="g-line">│</span><span>連接線，不用輸入</span></div>
+            <div><span>4</span><span class="g-step">20</span><span><code>STEP</code> / <code>20</code></span></div>
+            <div><span>5</span><span class="g-tr">┼ 1</span><span><code>TR</code> / <code>1</code></span></div>
+            <div><span>6</span><span class="g-line">│</span><span></span></div>
+            <div><span>7</span><span class="g-step">21</span><span><code>STEP</code> / <code>21</code></span></div>
+            <div><span>8</span><span class="g-tr">┼ 2</span><span><code>TR</code> / <code>2</code></span></div>
+            <div><span>10</span><span class="g-jump">↳ 20</span><span><code>JUMP</code> / <code>20</code>（跳回 S20）</span></div>
+          </div>
+          <p class="why">步放在第 1、4、7… 行，移轉放在第 2、5、8… 行。移轉旁的數字（0、1、2）只是<b>移轉編號</b>，不是 X0、X1！條件要寫在移轉裡面。</p>
+          <figure class="shot"><a href="img/gx2/g16c.png" target="_blank" rel="noopener"><img src="img/gx2/g16c.png" alt="輸入 SFC 符號的圖形符號下拉清單：STEP、JUMP、豎線" loading="lazy"></a><figcaption>在步的那幾行，圖形符號可以選 STEP、JUMP 或豎線。JUMP 就是從這裡選。</figcaption></figure>
+          <figure class="shot wide"><a href="img/gx2/g17.png" target="_blank" rel="noopener"><img src="img/gx2/g17.png" alt="畫好的 SFC 圖：初始步 0、移轉 0、步 20、移轉 1、步 21、移轉 2、JUMP 20，每個編號前面都有問號" loading="lazy"></a><figcaption>圖畫好了。每個編號前面都還有 <b>?</b>，因為裡面的程式都還沒寫。被 JUMP 指到的步 20，方框裡多了一個黑點。</figcaption></figure>
+          <p class="why">FX 的規則（官方）：S0～S9 是初始步，每個 SFC 塊要從其中一個開始，所以最多 10 個 SFC 塊；一般步從 S10 以後（三菱慣例從 S20 開始，S10～S19 留給 IST 指令）；每個塊最多 512 步；步號在整個程式不能重複。</p></li>
+        <li><b>寫每一步的動作。</b>在左邊點一下步 20，右邊就是它的梯形圖（分頁標題是「步序編號20」）。在右邊輸入 <kbd>F7</kbd> <code>Y0</code> 和 <kbd>F7</kbd> <code>T0 K10</code>（一樣要畫成上下兩個分支），<b>按 F4 轉換</b>。左邊步 20 前面的 ? 會消失。
+          <figure class="shot wide"><a href="img/gx2/g18.png" target="_blank" rel="noopener"><img src="img/gx2/g18.png" alt="步 20 的梯形圖：Y000 線圈和 T0 K10 線圈兩個分支，左邊 SFC 圖的步 20 問號消失" loading="lazy"></a><figcaption>步 20 寫好並轉換：左邊的「?20」變成「20」。</figcaption></figure>
+          步 21 同樣寫 <code>Y1</code>、<code>T1 K10</code>。步 0 是待機，沒有動作，可以不寫。
+          <p class="why">步的梯形圖裡不用寫 STL，軟體會自己加。如果你的畫面沒有左右並列，用 <span class="menu">檢視(V)</span> 裡的「開啟 Zoom」切過去，寫完再用「返回 SFC 塊」（<kbd>Ctrl</kbd>＋<kbd>R</kbd>）回來；也可以到 工具 → 選項 → 程式編輯器 → SFC → SFC 圖，勾「SFC 圖和 Zoom 並列顯示」。</p></li>
+        <li><b>寫每一個移轉條件，結尾是 TRAN。</b>在左邊點移轉 1，右邊分頁變成「移轉編號1」。輸入 <kbd>F5</kbd> <code>T0</code>，然後按 <kbd>F8</kbd>，什麼都不打直接按確定（也可以打 <code>TRAN</code>），[TRAN] 就會出現，再 <kbd>F4</kbd> 轉換。
+          <figure class="shot wide"><a href="img/gx2/g19.png" target="_blank" rel="noopener"><img src="img/gx2/g19.png" alt="移轉 1 的梯形圖：T0 接點接到 TRAN" loading="lazy"></a><figcaption>移轉 1：T0 ON 就換到下一步。結尾是 <b>[TRAN]</b>，不是線圈。</figcaption></figure>
+          <ul>
+            <li>移轉 0（S0 → S20）：<code>M8000</code> → TRAN（一進 S0 就往下）。</li>
+            <li>移轉 1（S20 → S21）：<code>T0</code> → TRAN。</li>
+            <li>移轉 2（S21 → 跳回 S20）：<code>T1</code> → TRAN。</li>
+          </ul>
+          <p class="why">官方入門指南的說法：移轉條件只能有一個虛擬線圈 [TRAN]，輸入方法是按線圈（F7）或應用指令（F8）後直接按確定。</p>
+          <p class="err">做錯：在移轉裡寫 <code>SET S21</code> 或 <code>OUT Y0</code>，轉換會報錯。換步只能用 TRAN。</p></li>
+        <li><b>整個 SFC 轉換。</b>點回左邊的 SFC 圖，按 <kbd>F4</kbd>。下方「輸出」視窗顯示結果，<code>Error: 0, Warning: 0</code> 就是成功。工程樹上的紅字也會變回黑字。
+          <figure class="shot wide"><a href="img/gx2/g21.png" target="_blank" rel="noopener"><img src="img/gx2/g21.png" alt="SFC 轉換成功：輸出視窗顯示 Error 0 Warning 0，工程樹的 000 和 001 變成黑字" loading="lazy"></a><figcaption>全部轉換成功。步 0 還是「?0」沒關係，它本來就沒有動作。有錯誤時，在輸出視窗的那一行點兩下會跳到出錯的位置。</figcaption></figure></li>
+      </ol>
+      <div class="callout">SFC 和 STL 一一對照：<br>
+        梯形圖塊 000 = <code>LD M8002 / SET S0</code><br>
+        步 0 + 移轉 0 = <code>STL S0 / LD M8000 / SET S20</code><br>
+        步 20 的梯形圖 = <code>STL S20 / OUT Y000 / OUT T0 K10</code>，移轉 1 = <code>LD T0 / SET S21</code><br>
+        JUMP 20 = <code>OUT S20</code>　　塊結尾 = <code>RET</code><br>
+        上面這個工程轉換後是 55 步；第 7 節用 STL 直接寫是 25 步。SFC 工程會多存一些圖的資訊，程式的動作是一樣的。</div>
+    </section>
+
+    <!-- 7 -->
+    <section id="g7">
+      <h2>9　SFC 分支：鑽床（並行分支 + 選擇分支）</h2>
+      <p>例題（練習題 <a href="practice.html#E13">E13</a>）：夾緊後兩支鑽頭<b>同時</b>鑽孔，兩支都回原點才旋轉工件；鑽滿 3 對孔就鬆開，否則再鑽一次。</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>SFC 符號（符號輸入裡選）</th><th>意思</th><th>STL 寫法</th></tr></thead>
+        <tbody>
+          <tr><td><code>==D</code> 並行分支</td><td>一個移轉成立，<b>同時</b>開始好幾條（雙橫線）</td><td>同一個移轉裡 <code>SET S21</code>、<code>SET S24</code></td></tr>
+          <tr><td><code>==C</code> 並行合併</td><td>每一條都完成才往下（雙橫線）</td><td>連續兩個 STL：<code>STL S23</code>、<code>STL S26</code>，下一行寫移轉</td></tr>
+          <tr><td><code>--D</code> 選擇分支</td><td>哪個條件先成立就走哪條（單橫線）</td><td>同一步裡寫兩個移轉，各 SET 不同的步</td></tr>
+          <tr><td><code>--C</code> 選擇合併</td><td>不同路線匯回同一步</td><td>兩條路線都 SET 同一個步</td></tr>
+          <tr><td><code>JUMP</code></td><td>跳到指定步（GX 不畫回頭長線）</td><td><code>OUT S</code>（跳回前面的步）</td></tr>
+        </tbody></table></div>
+      <p>在 SFC 編輯畫面，分支符號在<b>移轉</b>的那幾行輸入：格子上點兩下，從「輸入 SFC 符號」的圖形符號清單選，或直接按工具列的 F6（選擇分支）、F7（並行分支）、F8（選擇合併）、F9（並行合併）。分支的兩條路分別畫在第 1 列、第 2 列（官方入門指南的選擇分支例子就是 <code>--D</code> 加兩個移轉放在同一行的第 1、2 列）。</p>
+      <div class="callout warn">兩個容易錯的地方：<br>① 並行分支的兩條路，結束的地方要有「等待步」（例如 S23、S26），再用並行合併收起來。少了合併，旋轉會在一邊還沒回來時就開始。<br>② <b>換步的那一個掃描前後兩步同時 ON</b>：鑽頭「下降」和「上升」要在步裡加互鎖（上升那步寫 <code>LDI Y001 → OUT Y002</code>）。</div>
+      <p><a class="btnlink go" href="practice.html#E13">到 E13 寫寫看，切到「SFC 圖」對照 ›</a></p>
+    </section>
+
+    <!-- 3 -->
+    <section id="g3">
+      <h2>10　接 PLC 之前</h2>
+      <ul class="steps-list">
+        <li><b>寫程式、轉換、存檔都不用接 PLC。</b>先離線把程式做完。</li>
+        <li><b>FX3S 的 USB 埠</b>在面板右邊的小蓋子裡，位置和接法看 <a href="wiring.html#w6">FX3S 實機與接線：接電腦寫程式</a>。第一次連線需要 USB 驅動（安裝 GX Works2 時一起裝的），學校電腦通常已經裝好。</li>
+        <li><b>安全：</b>第一次寫入新程式前，先確認輸出接的負載（馬達、氣缸）可以安全動作，或先把負載移開。</li>
+      </ul>
+    </section>
+
+    <!-- 8 -->
+    <section id="g8">
+      <h2>11　寫入 FX3S 與監看</h2>
+      <ol class="howto">
+        <li><b>接線</b>：USB 線接到 PLC 面板右邊蓋子裡的 USB 埠（<a href="wiring.html#w6">看位置</a>）。</li>
+        <li><b>設定連線</b>：左下導航視窗切到「連接目標」，點兩下 <span class="menu">Connection1</span>。「電腦側 I/F」點兩下 <b>Serial USB</b>，選 <b>USB</b>；「PLC 側 I/F」選 <b>PLC Module</b>。按<b>通訊測試</b>：成功會顯示 PLC 型號（FX3S）。
+          <p class="err">失敗：檢查 USB 線、PLC 電源、驅動，或換一個 USB 口再試。</p></li>
+        <li><b>寫入</b>：<span class="menu">線上(O)</span> → <span class="menu">PLC 寫入 (Write to PLC)</span>。勾<b>參數 + 程式</b>，按執行。PLC 在 RUN 時軟體會問要不要先遠端 STOP，選是。</li>
+        <li><b>切到 RUN</b>：把 PLC 上的 RUN/STOP 開關撥到 RUN，或用 <span class="menu">線上(O)</span> → <span class="menu">遠端操作</span>。</li>
+        <li><b>監看</b>：<span class="menu">線上(O)</span> → <span class="menu">監看 (Monitor)</span> → <span class="menu">監看開始 (Start Monitoring)</span>（常用快捷鍵 F3）。
+          <ul><li>階梯圖：導通的接點、通電的線圈會填滿顏色。</li>
+            <li>SFC：<b>目前有效的步會反白</b>。監看時畫面是唯讀的；要修改先回到寫入模式（常用快捷鍵 F2）。</li></ul></li>
+        <li><b>看所有元件</b>：<span class="menu">線上(O)</span> → <span class="menu">監看</span> → <span class="menu">元件/緩衝記憶體批量監看</span>，輸入 X0 或 S0 看一整排的狀態。</li>
+      </ol>
+    </section>
+
+    <!-- 9 -->
+    <section id="g9">
+      <h2>12　沒有 PLC 時怎麼練</h2>
+      <ul class="steps-list">
+        <li><b>GX Works2 內建模擬</b>：<span class="menu">偵錯(B)</span> → <span class="menu">模擬開始/停止</span>（GX Simulator2）。版本支援 FX3S 的話可以離線監看。</li>
+        <li><b>在 LadderLab 練</b>：<a href="practice.html">練習題</a>可以直接輸入指令表，在虛擬機台上跑、自動評分，有 STL 的程式還能切到「SFC 圖」看流程。邏輯先在這裡練對，去學校只剩操作軟體。</li>
+      </ul>
+    </section>
+
+    <!-- 10 -->
+    <section id="g10">
+      <h2>13　老師講義用 GX Developer？對照表</h2>
+      <p>很多講義和網路教學用的是舊軟體 GX Developer，畫面和步驟不同，照著做在 GX Works2 會找不到選項。</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>要做的事</th><th>GX Developer（舊）</th><th>GX Works2</th></tr></thead>
+        <tbody>
+          <tr><td>建立 SFC 工程</td><td>創建新工程：PLC 系列、類型，「程序類型」選 SFC</td><td>新增工程：簡單工程、FXCPU、FX3S，「程式語言」選 SFC，不勾標籤</td></tr>
+          <tr><td>設定梯形圖塊</td><td>在「塊列表」雙擊第 0 塊，選梯形圖塊</td><td>建立工程後自動跳出「塊資訊設定」，選梯形圖塊</td></tr>
+          <tr><td>新增 SFC 塊</td><td>塊列表雙擊第 1 塊，選 SFC 塊</td><td>工程樹 MAIN 按右鍵 → 新增資料 → 語言 SFC → 區塊類型 SFC 塊</td></tr>
+          <tr><td>寫步的動作、移轉條件</td><td>點選步或移轉，右側出現梯形圖視窗</td><td>顯示 → 打開 Zoom（可設定並列顯示）</td></tr>
+          <tr><td>移轉條件結尾</td><td>TRAN</td><td>TRAN（線圈按鈕直接確定，自動輸入）</td></tr>
+          <tr><td>轉換</td><td>變換（F4）</td><td>轉換/編譯 → 轉換（F4）</td></tr>
+          <tr><td>跳轉、分支符號</td><td>JUMP、--D、==D、==C</td><td>同樣在 SFC 符號輸入選</td></tr>
+          <tr><td>SFC 看成階梯圖</td><td>工程 → 編輯數據 → 改變程序類型</td><td>官方入門指南沒寫到對應功能；可以把同一流程在 LadderLab 的練習題切「階梯圖 / SFC 圖」對照</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <!-- 11 -->
+    <section id="g11">
+      <h2>14　常見錯誤</h2>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>現象</th><th>原因</th><th>怎麼做</th></tr></thead>
+        <tbody>
+          <tr><td>程式語言選不到 SFC</td><td>勾了「使用標籤」</td><td>重新建立工程，不要勾</td></tr>
+          <tr><td>SFC 一個步都不亮</td><td>梯形圖塊沒有 M8002 → SET S0</td><td>在 000 區塊補上並轉換</td></tr>
+          <tr><td>寫入失敗、步或移轉有標記</td><td>還有步、移轉沒寫或沒轉換</td><td>每個 Zoom 寫完 F4，最後整個 SFC 再轉換一次</td></tr>
+          <tr><td>移轉轉換錯誤</td><td>移轉裡寫了 SET S 或 OUT Y</td><td>移轉只能是條件 + [TRAN]</td></tr>
+          <tr><td>步進程式轉換錯誤（階梯圖工程）</td><td>少了 RET</td><td>步進區最後加 RET</td></tr>
+          <tr><td>換步後輸出還亮著</td><td>那個輸出用 SET</td><td>在後面的步 RST，或改用 OUT</td></tr>
+          <tr><td>急停按了沒反應</td><td>急停寫在某一步裡，那步不在執行就不會被掃描</td><td>安全條件寫在梯形圖塊（每個掃描都執行），例如 ZRST 清掉所有步</td></tr>
+          <tr><td>相反動作瞬間同時輸出</td><td>換步的一個掃描前後兩步同時 ON</td><td>在步裡加互鎖接點</td></tr>
+          <tr><td>兩條路應該等對方卻沒等</td><td>並行合併沒寫（STL 要連續兩個）</td><td>用 ==C，或 STL S23 / STL S26 連在一起</td></tr>
+          <tr><td>監看時不能改</td><td>監看模式是唯讀</td><td>先切回寫入模式</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <!-- 12 -->
+    <section id="g12">
+      <h2>15　自我檢查清單</h2>
+      <p>在學校操作時一項一項勾（只存在這台瀏覽器）。</p>
+      <ul class="checklist" id="checklist">
+        <li><label><input type="checkbox" data-k="c1"> 我能說出 STL 和 SFC 的關係（同一個東西的兩種畫法）</label></li>
+        <li><label><input type="checkbox" data-k="c2"> 我建立過「簡單工程、FXCPU、FX3S、梯形圖」的工程並轉換成功</label></li>
+        <li><label><input type="checkbox" data-k="c3"> 我在階梯圖工程輸入過 STL、SET S、RET，轉換成功</label></li>
+        <li><label><input type="checkbox" data-k="c4"> 我建立過 SFC 工程：000 梯形圖塊、001 SFC 塊</label></li>
+        <li><label><input type="checkbox" data-k="c5"> 我在 000 寫了 M8002 → SET S0</label></li>
+        <li><label><input type="checkbox" data-k="c6"> 我會用 SFC 符號輸入放 STEP、TR、JUMP</label></li>
+        <li><label><input type="checkbox" data-k="c7"> 我會打開 Zoom 寫步的動作和移轉的 TRAN</label></li>
+        <li><label><input type="checkbox" data-k="c8"> 我把整個 SFC 轉換成功，沒有錯誤</label></li>
+        <li><label><input type="checkbox" data-k="c9"> 我設定過連接目標、通訊測試成功、寫入 FX3S</label></li>
+        <li><label><input type="checkbox" data-k="c10"> 我在監看模式看到 SFC 的步一格一格反白</label></li>
+        <li><label><input type="checkbox" data-k="c11"> 我做過並行分支和並行合併（鑽床）</label></li>
+      </ul>
+      <p id="checkcount" class="verdict"></p>
+    </section>
+
+    <div id="wl" class="wl-box"></div>
+
+    <section class="sources">
+      <h2>資料來源</h2>
+      <ul>
+        <li>三菱電機《GX Works2 入門指南（簡單工程篇）》繁體中文版：第 3 章梯形圖語言程式的創建、第 4 章 SFC 語言程式的創建（4.2.7 FXCPU）。</li>
+        <li>三菱電機 FX3S/FX3G/FX3GC/FX3U/FX3UC 程式設計手冊：步進梯形圖（STL/RET）、並行合併、OUT S 跳躍。</li>
+        <li>三菱電機《GX Works2 Version 1 操作手冊（簡單工程篇）》：2.2.12 STL 指令的接點形式顯示、6 章梯形圖編輯、7.3 SFC 圖的創建、附錄 1 工具列與快捷鍵一覽。</li>
+        <li>畫面截圖取自 GX Works2 繁體中文版的 FX3S 工程，僅用於操作教學。不同版本的畫面與用詞可能略有不同。功能表裡的項目名稱若和這頁寫的不一樣，以你電腦上的為準。</li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works、GX Developer 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="py/bundle.js"></script>
+<script src="config.js"></script>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script src="common.js"></script>
+<script src="waitlist.js"></script>
+<script src="ladder.js"></script>
+<script src="sfc.js"></script>
+<script src="gx2.js"></script>
+</body>
+</html>

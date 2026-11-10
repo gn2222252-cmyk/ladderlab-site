@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6.2 回到雙龍門｜PLC 互動課程</title>
+<meta name="description" content="現在你學的全部用在機台上了。這一課是右龍門放料這三步的縮小版，後面接 P9 的輸出段。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/10.html">
+<meta property="og:title" content="6.2 回到雙龍門｜PLC 互動課程">
+<meta property="og:description" content="現在你學的全部用在機台上了。這一課是右龍門放料這三步的縮小版，後面接 P9 的輸出段。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/10.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "10 回到雙龍門", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 6 章　整機設計：從需求到程式</p>
+<h1>6.2 回到雙龍門</h1>
+<p class="lesson-goal"><b>本課目標</b>在雙龍門的真實程式裡找到前面學的每一種結構。</p>
+<div class="text">現在你學的全部用在機台上了。這一課是右龍門放料這三步的縮小版，後面接 P9 的輸出段。
+看懂結構：上半是步進，只決定「想做什麼」，寫到 M；下半像 P9，集中加互鎖才輸出到 Y。下降要在定位點 X2 才准（互鎖）。
+看完這課，按上方「開機台程式」回到真正的梯形圖，點任何一條階梯，下方會解釋它現在卡在哪裡。</div>
+<p><a class="btnlink go" href="../learn.html#10">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+
+
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD M8002
+SET S0
+STL S0
+LD X000
+SET S25
+STL S25
+OUT M54
+LD X001
+SET S26
+STL S26
+OUT T1 K10
+LD T1
+SET S27
+STL S27
+OUT M53
+LD X002
+SET S0
+RET
+LD M54
+AND X003
+ANI Y001
+OUT Y000
+LD M53
+ANI Y000
+OUT Y001</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20M8002%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0ASET%20S25%0ASTL%20S25%0AOUT%20M54%0ALD%20X001%0ASET%20S26%0ASTL%20S26%0AOUT%20T1%20K10%0ALD%20T1%0ASET%20S27%0ASTL%20S27%0AOUT%20M53%0ALD%20X002%0ASET%20S0%0ARET%0ALD%20M54%0AAND%20X003%0AANI%20Y001%0AOUT%20Y000%0ALD%20M53%0AANI%20Y000%0AOUT%20Y001#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>上半是步進，只決定想做什麼，寫到 M</li><li>下半是輸出段，集中加互鎖才到 Y</li><li>點每一條階梯看它現在卡在哪</li></ul><p class="trap"><b>常見錯誤：</b>直接從真實程式第一行讀到最後一行。先找分區，再看每區。</p></div>
+<h2>預測看看</h2><div class="qz"><p>按一下 X0，Y0（下降）是？（定位點 X3 是 ON）</p><details><summary>看答案</summary><p><b>ON</b>　S25 要求下降 M54，輸出區再確認定位點 X3 和沒有上升命令，才真的輸出 Y0。</p></details></div><div class="qz"><p>下降中離開定位點（X3 OFF），Y0 是？</p><details><summary>看答案</summary><p><b>OFF</b>　步序只決定「想要」，輸出區的互鎖決定「准不准」。不在定位點不准下降。</p></details></div>
+<p class="pager"><a class="btnlink" href="C5.html">‹ 上一課：6.1 完整程式範本：一支氣缸的取放機</a> <a class="btnlink" href="C1.html">下一課：6.3 雙軸並行：兩邊都到位才過關</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

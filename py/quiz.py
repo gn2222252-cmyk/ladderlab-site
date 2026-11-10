@@ -1,0 +1,176 @@
+# -*- coding: utf-8 -*-
+"""Prediction questions for the lessons: "after these inputs, what is this device?". The right answer is not written
+by hand: answer() runs the lesson's own program on learn.Runner, so a question can never claim a wrong result.
+Each question: q (the situation), steps (('set', dev, 0/1) or ('wait', ms)), ask (device), why (the reason, shown after)."""
+import json
+
+import learn
+from ladder_view import bit, word
+from lessons import LESSONS
+
+QUIZ = {
+    "1": [{"q": "按住 X0，Y0 是？", "steps": [("set", "X000", 1), ("wait", 100)], "ask": "Y000",
+           "why": "X0 閉合，電從母線經過接點到線圈。"},
+          {"q": "按住 X0 再放開，Y0 是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 100)], "ask": "Y000",
+           "why": "OUT 是「條件成立才 ON」，放開按鈕條件消失，線圈就 OFF。"}],
+    "2": [{"q": "X0 和 X1 都按住，Y0 是？", "steps": [("set", "X000", 1), ("set", "X001", 1), ("wait", 100)], "ask": "Y000",
+           "why": "X1 是 ANI（常閉）：按下 X1 反而斷開，串聯的路就不通。"},
+          {"q": "只按住 X3，Y1 是？", "steps": [("set", "X003", 1), ("wait", 100)], "ask": "Y001", "why": "X2、X3 並聯，任一個成立就通。"}],
+    "3": [{"q": "按下 X0 之後的「第一個掃描」結束時，Y1 是？", "steps": [("set", "X000", 1), ("scan", 1)], "ask": "Y001",
+           "why": "Y1 那一行在 M1 被寫之前就算完了，這一圈它看到的 M1 還是舊值 OFF，要慢一圈才亮。"},
+          {"q": "按住 X0 第二個掃描結束時，Y1 是？", "steps": [("set", "X000", 1), ("scan", 2)], "ask": "Y001",
+           "why": "第二圈時 M1 已經是 ON（上一圈最後寫的），Y1 跟著 ON。"}],
+    "3-2": [{"q": "X0 按住 1 秒，D0（只在剛到時加）是多少？", "steps": [("set", "X000", 1), ("wait", 1000)], "ask": "D0",
+             "why": "M0 只在 X0 剛 ON 的那一圈成立（ANI M1 下一圈就擋住），所以只加 1。"},
+            {"q": "X0 按住 1 秒，D1（每一圈都加）會比 10 大嗎？", "steps": [("set", "X000", 1), ("wait", 1000)], "ask": "D1", "cmp": ">", "val": 10,
+             "why": "每個掃描都 INC 一次：1 秒有幾十圈，D1 一路加上去。這就是為什麼計數要抓上升緣。"}],
+    "4": [{"q": "按一下 X0（按了再放開），Y0 是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 300)], "ask": "Y000",
+           "why": "Y0 自己的接點並在 X0 旁邊，放開 X0 電改走 Y0 那條路，自己撐住。"},
+          {"q": "X0 和 X1 同時按住，Y0 是？", "steps": [("set", "X000", 1), ("set", "X001", 1), ("wait", 100)], "ask": "Y000",
+           "why": "停止 X1 串在最後面（ANI），按住停止一定斷，停止優先。"}],
+    "8": [{"q": "只按住 X0（第一條），Y0 是？", "steps": [("set", "X000", 1), ("wait", 100)], "ask": "Y000",
+           "why": "雙線圈：第二條 OUT Y0（條件 X1 沒按）在後面把 Y0 寫回 OFF，最後一次說了算。"},
+          {"q": "只按住 X1（第二條），Y0 是？", "steps": [("set", "X001", 1), ("wait", 100)], "ask": "Y000",
+           "why": "後面那條成立，最後寫的是 ON。所以雙線圈時只有最後一條有效。"}],
+    "9": [{"q": "先按住 X0，再按住 X1，Y1 是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X001", 1), ("wait", 100)], "ask": "Y001",
+           "why": "Y0 已經 ON，反轉那條有 ANI Y0 擋住，先來先贏。"},
+          {"q": "接著放開 X0（X1 繼續按住），Y1 是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X001", 1), ("wait", 100),
+                                                    ("set", "X000", 0), ("wait", 100)], "ask": "Y001",
+           "why": "Y0 OFF 之後 ANI Y0 恢復導通，Y1 才 ON。"}],
+    "A2": [{"q": "X0 按住 2.5 秒，Y0 是？（T0 K30）", "steps": [("set", "X000", 1), ("wait", 2500)], "ask": "Y000",
+            "why": "K30 = 3 秒（單位 0.1 秒），2.5 秒還沒到。"},
+           {"q": "X0 按住 2 秒、放開、再按住 2 秒，Y0 是？", "steps": [("set", "X000", 1), ("wait", 2000), ("set", "X000", 0), ("wait", 100),
+                                                         ("set", "X000", 1), ("wait", 2000)], "ask": "Y000",
+            "why": "一般計時器條件一斷就歸零，重新從 0 開始數，所以還是只有 2 秒。"}],
+    "A3": [{"q": "X0 按住不放 2 秒，C0（K3）的接點是？", "steps": [("set", "X000", 1), ("wait", 2000)], "ask": "C0",
+            "why": "計數器只在 OFF→ON 那一下加 1，按住不放只算 1 次。"},
+           {"q": "X0 按三下，Y0 是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 100)] * 3, "ask": "Y000",
+            "why": "三次上升緣，C0 到 3，接點 ON。"}],
+    "A4": [{"q": "按一下 X0（按了放開），Y1（SET）是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 100)], "ask": "Y001",
+            "why": "SET 之後就保持，要 RST 才關。Y0 用 OUT，放開就 OFF。"},
+           {"q": "X2 按住 1 秒，D0（PLS 加）是多少？", "steps": [("set", "X002", 1), ("wait", 1000)], "ask": "D0",
+            "why": "PLS 只在上升緣 ON 一個掃描，所以只加 1。"}],
+    "A6": [{"q": "跑 3 秒後，D0（M8002 加）是多少？", "steps": [("wait", 3000)], "ask": "D0",
+            "why": "M8002 只在 RUN 後第一個掃描 ON，一輩子只加一次。"},
+           {"q": "跑 3 秒後，D1（M8013 加 PLS）是不是 4 以下？", "steps": [("wait", 3050)], "ask": "D1", "cmp": "<=", "val": 4,
+            "why": "M8013 每秒一個上升緣，PLS 之後每秒只加 1。"}],
+    "A8": [{"q": "按 X0 開始，到位感測器 X1 一直沒來，4 秒後 M3（異常）是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X000", 0),
+                                                                     ("wait", 4000)], "ask": "M3",
+            "why": "S20 裡的 T0 K30 是 3 秒鬧鐘，時間到就 SET M3。"},
+           {"q": "異常後，Y0（動作輸出）是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 4000)], "ask": "Y000",
+            "why": "M3 用 ZRST 把所有步清掉，S20 不作用了，裡面的 OUT Y0 跟著 OFF。"}],
+    "B1": [{"q": "按住前進 X0，同時前端限位 X2 是 ON，Y0 是？", "steps": [("set", "X002", 1), ("set", "X000", 1), ("wait", 100)], "ask": "Y000",
+            "why": "ANI X002：到限位就不准再往前，按鈕按著也一樣。"},
+           {"q": "關掉 Manual Allowed（X4），按住前進 X0，Y0 是？", "steps": [("set", "X004", 0), ("set", "X000", 1), ("wait", 100)], "ask": "Y000",
+            "why": "AND X004：沒有手動許可，點動請求不會到輸出。"}],
+    "C4": [{"q": "先發生故障 A（X0），再發生故障 B（X1），D220 是多少？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X001", 1),
+                                                                ("wait", 100)], "ask": "D220",
+            "why": "每條都先檢查 D220 = 0 才寫，所以只記第一個發生的異常（首發故障）。"},
+           {"q": "故障 A 還在，按 Reset（X2），M3 是？", "steps": [("set", "X000", 1), ("wait", 100), ("set", "X002", 1), ("wait", 100)], "ask": "M3",
+            "why": "Reset 條件有 ANI X000、ANI X001：原因還在就不能復歸。"}],
+    '5': [{'q': '按一下 X0，1 秒後 Y0（下降）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 900)], 'ask': 'Y000', 'why': 'M0 自保持住，氣缸要 2 秒才到下限，1 秒時還在下降。'}, {'q': '按一下 X0，3 秒後 Y1（吸盤）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 2900)], 'ask': 'Y001', 'why': '2 秒到下限換到 M1（吸附），吸 2 秒，3 秒時還在吸。'}],
+    '6': [{'q': '按一下 X0，1 秒後 S20（下降步）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 900)], 'ask': 'S20', 'why': 'SET S20 之後，S0 自動關掉，現在在下降這一步。'}, {'q': '按一下 X0，3 秒後 Y1（吸盤，用 SET）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 2900)], 'ask': 'Y001', 'why': '到下限進 S21，SET Y001 吸住；SET 不會因為換步而放開。'}],
+    '6-1': [{'q': '還在 S0 待機時按住 X3（RET 後的一般階梯），Y2 是？', 'steps': [('set', 'X003', 1), ('wait', 100)], 'ask': 'Y002', 'why': 'RET 後面的一般階梯每個掃描都會算，不管現在在哪一步。'}, {'q': '進 S20 後按 X1 換到 S21，Y0 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X001', 1), ('wait', 100), ('set', 'X001', 0), ('wait', 100)], 'ask': 'Y000', 'why': 'Y0 是在 S20 裡 OUT 的，離開 S20 就自動 OFF。'}],
+    '6-2': [{'q': '跑到 S22（SET Y2）後按 X1 回待機，Y2 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 3300), ('set', 'X001', 1), ('wait', 100), ('set', 'X001', 0), ('wait', 100)], 'ask': 'Y002', 'why': 'SET 的輸出不會因為換步而 OFF，要另外 RST（本課用 X2）。'}, {'q': '在 S21 時，Y0 是？（S20、S21 都寫了 OUT Y0）', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 1700)], 'ask': 'Y000', 'why': '不同步各 OUT 同一個 Y 不算雙線圈：同一時間只有作用中的步會執行。'}],
+    '6-3': [{'q': '按一下 X0，D0（步序號）是多少？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100)], 'ask': 'D0', 'why': 'MOV K10 D0：用一個數字記住現在在第 10 步（下降）。'}, {'q': '按一下 X0，1 秒後 Y0（下降）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 900)], 'ask': 'Y000', 'why': 'LD= D0 K10 成立就輸出 Y0：步序存在 D0，其他廠牌也能這樣寫。'}],
+    '6-4': [{'q': '按一下 X0，2.5 秒後 M1（吸附步）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 2400)], 'ask': 'M1', 'why': '下降 2 秒到下限後換到 M1，吸附計時 2 秒還沒到。'}],
+    '7': [{'q': '按 X0 後 2 秒，右邊的 S21 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 1900)], 'ask': 'S21', 'why': '右邊 S20 1.5 秒就換到 S21；左邊 S40 要 3 秒，兩邊各走各的。'}, {'q': '按 X0 後 3.5 秒（右邊已完成、左邊還沒），S0 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 3400)], 'ask': 'S0', 'why': '並行合併（連續 STL S22、STL S42）要兩邊都完成才回 S0；左邊 S41 還在跑。'}],
+    '10': [{'q': '按一下 X0，Y0（下降）是？（定位點 X3 是 ON）', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100)], 'ask': 'Y000', 'why': 'S25 要求下降 M54，輸出區再確認定位點 X3 和沒有上升命令，才真的輸出 Y0。'}, {'q': '下降中離開定位點（X3 OFF），Y0 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X003', 0), ('wait', 100)], 'ask': 'Y000', 'why': '步序只決定「想要」，輸出區的互鎖決定「准不准」。不在定位點不准下降。'}],
+    'A1': [{'q': '按住 X10（X7 的下一點），Y10 是？', 'steps': [('set', 'X010', 1), ('wait', 100)], 'ask': 'Y010', 'why': 'X、Y 是八進位：X7 的下一點是 X10，沒有 X8、X9。'}],
+    'A5': [{'q': 'X0 按三下，Y0（D0 ≥ 30）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100)], 'ask': 'Y000', 'why': '每按一下 ADD 10（有 PLS），三下 D0 = 30，比較接點成立。'}, {'q': '按 X2（MOV H10 D1），D1 是多少？', 'steps': [('set', 'X002', 1), ('wait', 100)], 'ask': 'D1', 'why': 'H 是十六進位：H10 = 16。'}],
+    'A7': [{'q': '檢測 NG（X1 OFF）時按 X0，2 秒後 Y1（NG 動作）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 1900)], 'ask': 'Y001', 'why': '1.5 秒檢測完，X1 OFF 走 S22（NG 那條路）。'}, {'q': '檢測 OK（X1 ON）時按 X0，2 秒後 Y1 是？', 'steps': [('set', 'X001', 1), ('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 1900)], 'ask': 'Y001', 'why': '選擇分支：X1 ON 走 S21（OK），NG 那條不會動。'}],
+    'A9': [{'q': '按一下 X0 啟動，Y0 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100)], 'ask': 'Y000', 'why': '停止按鈕接常閉：沒按時 X1 是 ON，程式用常開接點 AND X1 才導通。'}, {'q': '停止按鈕被按下（常閉斷開，X1 變 OFF），Y0 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X001', 0), ('wait', 100)], 'ask': 'Y000', 'why': '現場常閉 + 程式常開：按下或線斷了都會停，這叫失效安全。'}],
+    'B2': [{'q': '按 Home X0，再按取消 X1，S0（待機）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X001', 1), ('wait', 100), ('set', 'X001', 0), ('wait', 100)], 'ask': 'S0', 'why': '取消把步序清回待機。'}, {'q': '這時原點感測器 X2 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X001', 1), ('wait', 100), ('set', 'X001', 0), ('wait', 100)], 'ask': 'X002', 'why': '步序回待機不代表機構回到原點，要原點感測器 ON 才算。'}],
+    'C1': [{'q': '開始後只有左軸到位（X2 ON），Y0（左軸移動）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X002', 1), ('wait', 100)], 'ask': 'Y000', 'why': 'LDI X002：左軸到了就停，右軸繼續。'}, {'q': '同上，這時 S21（下一步）是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X002', 1), ('wait', 100)], 'ask': 'S21', 'why': 'AND X002、AND X003：兩邊都到位才過關。'}],
+    'C2': [{'q': '運轉中按 Stop（X4），再完成階段 1、2 和循環邊界，S0 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X004', 1), ('wait', 100), ('set', 'X004', 0), ('wait', 100), ('set', 'X001', 1), ('wait', 100), ('set', 'X001', 0), ('wait', 100), ('set', 'X002', 1), ('wait', 100), ('set', 'X002', 0), ('wait', 100), ('set', 'X003', 1), ('wait', 100), ('set', 'X003', 0), ('wait', 100)], 'ask': 'S0', 'why': 'Stop 先記在 M1，做到循環邊界才停回待機，不會停在半路。'}, {'q': '沒按 Stop，做到循環邊界，S20 是？', 'steps': [('set', 'X000', 1), ('wait', 100), ('set', 'X000', 0), ('wait', 100), ('set', 'X001', 1), ('wait', 100), ('set', 'X001', 0), ('wait', 100), ('set', 'X002', 1), ('wait', 100), ('set', 'X002', 0), ('wait', 100), ('set', 'X003', 1), ('wait', 100), ('set', 'X003', 0), ('wait', 100)], 'ask': 'S20', 'why': '沒有停止請求，邊界之後直接開始下一個循環。'}],
+    'C3': [{'q': '手動前進請求 X1，但手動允許 X3 是 OFF，Y0 是？', 'steps': [('set', 'X001', 1), ('wait', 100)], 'ask': 'Y000', 'why': '手動請求要先和手動允許合成 M70，才進到輸出仲裁。'}, {'q': '自動前進 X0，同時警報中 X5，Y0 是？', 'steps': [('set', 'X000', 1), ('set', 'X005', 1), ('wait', 100)], 'ask': 'Y000', 'why': '自動和手動最後都經過同一個仲裁：警報、限位、反向請求都會擋。'}],
+    "0": [{"q": "X1 感測器 ON（有工件），Y1 是？", "steps": [("set", "X001", 1), ("wait", 100)], "ask": "Y001",
+           "why": "外面的訊號讓 X1 ON，程式 LD X001 OUT Y001，Y1 就輸出。"},
+          {"q": "按住 X0 的時候，Y1 是？", "steps": [("set", "X000", 1), ("wait", 100)], "ask": "Y001",
+           "why": "X0 只控制 Y0。每一個輸出只看程式裡寫給它的條件。"}],
+    "A10": [{"q": "X0 按一下放開、再按一下放開，Y0 是？", "steps": [("set", "X000", 1), ("wait", 200), ("set", "X000", 0), ("wait", 200),
+                                                       ("set", "X000", 1), ("wait", 200), ("set", "X000", 0), ("wait", 200)], "ask": "Y000",
+             "why": "ALTP 每按一下切換一次：ON 再切回 OFF。"},
+            {"q": "按 X2 再按 X3，Y3 是？", "steps": [("set", "X002", 1), ("wait", 100), ("set", "X002", 0), ("wait", 100),
+                                              ("set", "X003", 1), ("wait", 100)], "ask": "Y003",
+             "why": "ZRST Y2 Y4 把 Y2、Y3、Y4 一起清掉，中間的 Y3 也包含在內。"}],
+    "A11": [{"q": "X0 按 5 下（D0 = 50），Y3（CMP 的「大於 50」）是？",
+             "steps": [s for _ in range(5) for s in (("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 100))], "ask": "Y003",
+             "why": "D0 剛好等於 50，ON 的是 M11（等於），M10（大於）不會 ON。"},
+            {"q": "X0 按 7 下（D0 = 70），Y1（30～70 正常）是？",
+             "steps": [s for _ in range(7) for s in (("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 100))], "ask": "Y001",
+             "why": "ZCP 的區間包含兩端，70 還算在區間內。"}],
+    "A12": [{"q": "X1 ON 時按一下 X0，再關掉 X1 按兩下 X0，Y2 是？",
+             "steps": [("set", "X001", 1), ("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 100), ("set", "X001", 0),
+                       ("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 100), ("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("wait", 100)],
+             "ask": "Y002", "why": "第一次補進 1 到 Y0，之後推兩格：Y0 → Y1 → Y2。"},
+            {"q": "X1 ON，按住 X0 一秒不放，Y1 是？", "steps": [("set", "X001", 1), ("set", "X000", 1), ("wait", 1000)], "ask": "Y001",
+             "why": "SFTLP 只在 X0 剛按下推一次，所以只有 Y0 亮，Y1 還沒輪到。"}],
+    "A13": [{"q": "跑到第二段（S21）後停電再復電，Y1 是？",
+             "steps": [("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("set", "X001", 1), ("wait", 100), ("set", "X001", 0), ("power", 0), ("wait", 200)],
+             "ask": "Y001", "why": "FX3S 的 S21 斷電保持，復電後仍在 S21，Y1 再次輸出。"},
+            {"q": "做完一輪（D0 = 1）後停電再復電，D0 是？",
+             "steps": [st for d in ("X000", "X001", "X002", "X003") for st in (("set", d, 1), ("wait", 100), ("set", d, 0), ("wait", 100))] + [("power", 0), ("wait", 200)],
+             "ask": "D0", "why": "D0 是一般暫存器，停電清成 0；D128 才會保持。"}],
+    "C5": [{"q": "手動模式（X4 OFF）按住啟動 X0 一秒，S20 是？", "steps": [("set", "X000", 1), ("wait", 1000)], "ask": "S20",
+            "why": "S0 的啟動條件串了 M10（自動模式），手動模式按啟動不會進自動步。"},
+           {"q": "自動模式啟動後，按住手動下降 X5 一秒，M41 是？",
+            "steps": [("set", "X004", 1), ("wait", 100), ("set", "X000", 1), ("wait", 100), ("set", "X000", 0), ("set", "X005", 1), ("wait", 1000)],
+            "ask": "M41", "why": "P3 的手動請求串了 LDI M10，自動模式下手動按鈕不產生請求。"}],
+    "6-5": [{"q": "按啟動後 2 秒（A 已伸出、B 正在伸出），Y0 是？", "steps": [("set", "X000", 1), ("wait", 200), ("set", "X000", 0), ("wait", 1800)],
+             "ask": "Y000", "why": "A 在 S20 用 SET Y0，進 S21 之後還是保持 ON，A 不會縮回。"},
+            {"q": "按啟動後 2 秒，S21（B+）是？",
+             "steps": [("set", "X000", 1), ("wait", 200), ("set", "X000", 0), ("wait", 1800)], "ask": "S21",
+             "why": "A 大約 1.4 秒伸到底，X3 ON 就換到 S21；換步看的是感測器，不是時間。"}],
+}
+
+
+def _lesson(lid):
+    return next(l for l in LESSONS if l["title"].split(" ", 1)[0] == lid)
+
+
+def answer(lid, q):
+    """Runs the lesson program and returns (value, shown text)."""
+    run = learn.Runner(_lesson(lid))
+    run.finish(0.1)
+    for st in q["steps"]:
+        if st[0] == "set":
+            run.set_input(st[1], st[2])
+        elif st[0] == "wait":
+            run.finish(st[1] / 1000.0)
+        elif st[0] == "power":
+            run.power_cycle()
+        elif st[0] == "scan":
+            for _ in range(st[1]):
+                run.plc.scan(learn.SCAN_MS)
+    dev = q["ask"]
+    if dev[0] == "D":
+        v = word(run.plc, dev)
+    elif dev[0] == "C" and "cmp" not in q:
+        v = int(bool(bit(run.plc, dev)))
+    else:
+        v = word(run.plc, dev) if dev[0] in "TC" and "cmp" in q else int(bool(bit(run.plc, dev)))
+    if "cmp" in q:
+        ok = v > q["val"] if q["cmp"] == ">" else v <= q["val"]
+        return int(ok), "是" if ok else "不是"
+    if dev[0] in "D":
+        return v, str(v)
+    return v, "ON" if v else "OFF"
+
+
+def questions(lid):
+    out = []
+    for q in QUIZ.get(lid, []):
+        v, text = answer(lid, q)
+        if "cmp" in q:
+            options = ["是", "不是"]
+        elif q["ask"][0] == "D":
+            options = sorted({str(v), str(max(0, v - 1)), str(v + 1), str(v + 2)}, key=int)[:4]
+        else:
+            options = ["ON", "OFF"]
+        out.append({"q": q["q"], "options": options, "answer": text, "why": q["why"]})
+    return out
+
+
+def questions_json(lid):
+    return json.dumps(questions(lid), ensure_ascii=False)

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.9 移位：跑馬燈與工件追蹤｜PLC 互動課程</title>
+<meta name="description" content="SFTL 把一排位元整排往高號推：SFTLP X1 Y0 K8 K1 的意思是「Y0～Y7 這 8 個位元往上推 1 格，空出來的 Y0 補進 X1 現在的狀態」。SFTR 方向相反。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A12.html">
+<meta property="og:title" content="3.9 移位：跑馬燈與工件追蹤｜PLC 互動課程">
+<meta property="og:description" content="SFTL 把一排位元整排往高號推：SFTLP X1 Y0 K8 K1 的意思是「Y0～Y7 這 8 個位元往上推 1 格，空出來的 Y0 補進 X1 現在的狀態」。SFTR 方向相反。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A12.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "A12 移位：跑馬燈與工件追蹤", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 3 章　FX 常用指令</p>
+<h1>3.9 移位：跑馬燈與工件追蹤</h1>
+<p class="lesson-goal"><b>本課目標</b>用 SFTL／SFTR 讓一排位元移動，做出跑馬燈和工件追蹤。</p>
+<div class="text">SFTL 把一排位元整排往高號推：SFTLP X1 Y0 K8 K1 的意思是「Y0～Y7 這 8 個位元往上推 1 格，空出來的 Y0 補進 X1 現在的狀態」。SFTR 方向相反。
+下面 X0 是「推一格」，X1 決定補進去的是 1 還是 0。先讓 X1 ON 推一次，Y0 亮；再把 X1 關掉一直推，亮點就一格一格往後走。
+學校常考的「八燈依序點亮」就是這樣做的。現場的用法是工件追蹤：輸送帶每走一個工位推一格，補進去的是「這個工位有沒有工件」，每個位元就是那個工位的狀態。</div>
+<p><a class="btnlink go" href="../learn.html#A12">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+
+<div class="notes">要一直繞圈（跑馬燈），把來源改成最後一顆：SFTLP Y7 Y0 K8 K1，移出去的同時補回 Y0。
+要自己每秒推一格，用計時器做脈衝：LD M0 ANI T0 OUT T0 K10，再用 T0 的接點推。
+一定要用 SFTLP（脈衝），否則按住的每一圈都推一次。ROL／ROR 是另一種做法：整個字組自己轉，不從外面補。</div>
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD X000
+SFTLP X001 Y000 K8 K1
+LD X002
+ZRST Y000 Y007</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20X000%0ASFTLP%20X001%20Y000%20K8%20K1%0ALD%20X002%0AZRST%20Y000%20Y007#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>SFTLP 來源 目的 K位元數 K格數：整排往高號推，空位補來源</li><li>來源用最後一顆，就變成環狀繞圈</li><li>一定要用脈衝版，按一下推一格</li></ul><p class="trap"><b>常見錯誤：</b>用 SFTL 沒加 P，按一下燈就全部跑完。</p></div>
+<h2>預測看看</h2><div class="qz"><p>X1 ON 時按一下 X0，再關掉 X1 按兩下 X0，Y2 是？</p><details><summary>看答案</summary><p><b>ON</b>　第一次補進 1 到 Y0，之後推兩格：Y0 → Y1 → Y2。</p></details></div><div class="qz"><p>X1 ON，按住 X0 一秒不放，Y1 是？</p><details><summary>看答案</summary><p><b>OFF</b>　SFTLP 只在 X0 剛按下推一次，所以只有 Y0 亮，Y1 還沒輪到。</p></details></div>
+<p class="pager"><a class="btnlink" href="A10.html">‹ 上一課：3.8 ALT 與 ZRST：一個按鈕切換、一次清除</a> <a class="btnlink" href="5.html">下一課：4.1 用自保持寫流程：開始打結</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

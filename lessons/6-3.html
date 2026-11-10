@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.9 通用嗎？換廠牌怎麼辦｜PLC 互動課程</title>
+<meta name="description" content="想法通用，指令不通用。STL 是三菱 FX 的指令，換廠牌程式不能直接搬，每家寫法不同，見底下對照表。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-3.html">
+<meta property="og:title" content="4.9 通用嗎？換廠牌怎麼辦｜PLC 互動課程">
+<meta property="og:description" content="想法通用，指令不通用。STL 是三菱 FX 的指令，換廠牌程式不能直接搬，每家寫法不同，見底下對照表。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-3.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "6-3 通用嗎？換廠牌怎麼辦", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 4 章　順序控制：步進 STL 與 SFC</p>
+<h1>4.9 通用嗎？換廠牌怎麼辦</h1>
+<p class="lesson-goal"><b>本課目標</b>知道 STL 是三菱專用，換廠牌時用步序暫存器寫同一件事。</p>
+<div class="text">想法通用，指令不通用。STL 是三菱 FX 的指令，換廠牌程式不能直接搬，每家寫法不同，見底下對照表。
+所以很多工廠用第三種寫法：步序暫存器。用一個 D 存現在第幾步，再用比較接點判斷。只用比較和 MOV，換廠牌也改得過去。
+下面就是同一個動作的步序暫存器版本，看 D0 的數字變化。13_PLC 的 D300 就是這種寫法。</div>
+<p><a class="btnlink go" href="../learn.html#6-3">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>廠牌／標準</th><th>步進怎麼寫</th><th>說明</th></tr></thead><tbody><tr><td>三菱 FX</td><td>STL、RET</td><td>這台機台用的</td></tr><tr><td>台達 DVP</td><td>STL、RET</td><td>寫法接近，初始步一樣是 S0～S9</td></tr><tr><td>西門子 S7-200</td><td>LSCR、SCRT、SCRE</td><td>叫順序控制繼電器。注意西門子說的 STL 是語句表，不是步進</td></tr><tr><td>歐姆龍</td><td>STEP、SNXT</td><td>名稱和用法都不同</td></tr><tr><td>IEC 61131-3 標準</td><td>SFC 循序功能圖</td><td>國際標準的語言之一，各家支援程度不同</td></tr><tr><td>步序暫存器</td><td>比較接點＋MOV</td><td>不靠專用指令，換廠牌最好改</td></tr></tbody></table></div>
+
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD= D0 K0
+AND X000
+MOV K10 D0
+LD= D0 K10
+OUT Y000
+LD= D0 K10
+AND X001
+MOV K20 D0
+LD= D0 K20
+OUT T0 K20
+LD= D0 K20
+AND T0
+MOV K30 D0
+LD= D0 K20
+OR= D0 K30
+OUT Y001
+LD= D0 K30
+OUT Y002
+LD= D0 K30
+AND X002
+MOV K0 D0</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%3D%20D0%20K0%0AAND%20X000%0AMOV%20K10%20D0%0ALD%3D%20D0%20K10%0AOUT%20Y000%0ALD%3D%20D0%20K10%0AAND%20X001%0AMOV%20K20%20D0%0ALD%3D%20D0%20K20%0AOUT%20T0%20K20%0ALD%3D%20D0%20K20%0AAND%20T0%0AMOV%20K30%20D0%0ALD%3D%20D0%20K20%0AOR%3D%20D0%20K30%0AOUT%20Y001%0ALD%3D%20D0%20K30%0AOUT%20Y002%0ALD%3D%20D0%20K30%0AAND%20X002%0AMOV%20K0%20D0#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>想法通用、指令不通用</li><li>步序暫存器：用 D 存第幾步，用比較接點判斷</li><li>只用 MOV 和比較，各廠牌都改得過去</li></ul><p class="trap"><b>常見錯誤：</b>以為步進程式可以直接搬到西門子、台達。</p></div>
+<h2>預測看看</h2><div class="qz"><p>按一下 X0，D0（步序號）是多少？</p><details><summary>看答案</summary><p><b>10</b>　MOV K10 D0：用一個數字記住現在在第 10 步（下降）。</p></details></div><div class="qz"><p>按一下 X0，1 秒後 Y0（下降）是？</p><details><summary>看答案</summary><p><b>ON</b>　LD= D0 K10 成立就輸出 Y0：步序存在 D0，其他廠牌也能這樣寫。</p></details></div>
+<p class="pager"><a class="btnlink" href="A7.html">‹ 上一課：4.8 步進的選擇分支：OK 和 NG</a> <a class="btnlink" href="A9.html">下一課：5.1 接線：現場常閉 ≠ 程式常閉</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

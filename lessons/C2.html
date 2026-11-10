@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5.7 循環停止：收到 Stop 後在安全邊界停｜PLC 互動課程</title>
+<meta name="description" content="循環停止通常不是立刻切斷所有輸出。PLC 先記住 Stop 請求，讓目前取放流程完成，再在循環邊界回待機。這和急停不同：急停由安全迴路立即處理危險能量。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/C2.html">
+<meta property="og:title" content="5.7 循環停止：收到 Stop 後在安全邊界停｜PLC 互動課程">
+<meta property="og:description" content="循環停止通常不是立刻切斷所有輸出。PLC 先記住 Stop 請求，讓目前取放流程完成，再在循環邊界回待機。這和急停不同：急停由安全迴路立即處理危險能量。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/C2.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "C2 循環停止：收到 Stop 後在安全邊界停", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 5 章　讓機台可靠：異常、手動與復歸</p>
+<h1>5.7 循環停止：收到 Stop 後在安全邊界停</h1>
+<p class="lesson-goal"><b>本課目標</b>寫出循環停止：記住 Stop，做完這一輪才停。</p>
+<div class="text">循環停止通常不是立刻切斷所有輸出。PLC 先記住 Stop 請求，讓目前取放流程完成，再在循環邊界回待機。這和急停不同：急停由安全迴路立即處理危險能量。
+本課 S20→S21→S22 模擬一個循環。X4 是 Stop 請求，M1 記住請求；即使 X4 放開，M1 仍保持到循環完成。</div>
+<p><a class="btnlink go" href="../learn.html#C2">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>收到 Stop 時</th><th>M1</th><th>PLC 行為</th></tr></thead><tbody><tr><td>目前在 S20/S21</td><td>ON 並保持</td><td>先完成本循環，不立刻跳回待機</td></tr><tr><td>到 S22 且邊界 X3 成立</td><td>ON</td><td>清運轉旗標，停止自動循環</td></tr><tr><td>回 S0 後重新 Start</td><td>OFF</td><td>才開始下一個循環</td></tr></tbody></table></div>
+
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD M8002
+SET S0
+STL S0
+LD X000
+RST M1
+SET M0
+SET S20
+STL S20
+OUT Y000
+LD X001
+SET S21
+STL S21
+OUT Y001
+LD X002
+SET S22
+STL S22
+OUT Y002
+LD X003
+ANI M1
+SET S20
+LD X003
+AND M1
+RST M0
+RST M1
+SET S0
+RET
+LD X004
+SET M1</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20M8002%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0ARST%20M1%0ASET%20M0%0ASET%20S20%0ASTL%20S20%0AOUT%20Y000%0ALD%20X001%0ASET%20S21%0ASTL%20S21%0AOUT%20Y001%0ALD%20X002%0ASET%20S22%0ASTL%20S22%0AOUT%20Y002%0ALD%20X003%0AANI%20M1%0ASET%20S20%0ALD%20X003%0AAND%20M1%0ARST%20M0%0ARST%20M1%0ASET%20S0%0ARET%0ALD%20X004%0ASET%20M1#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>Stop 是請求，先記到 M</li><li>在循環邊界才回待機</li><li>和急停不同：急停立即處理危險</li></ul><p class="trap"><b>常見錯誤：</b>按停止就直接清步序，工件停在半空中。</p></div>
+<h2>預測看看</h2><div class="qz"><p>運轉中按 Stop（X4），再完成階段 1、2 和循環邊界，S0 是？</p><details><summary>看答案</summary><p><b>ON</b>　Stop 先記在 M1，做到循環邊界才停回待機，不會停在半路。</p></details></div><div class="qz"><p>沒按 Stop，做到循環邊界，S20 是？</p><details><summary>看答案</summary><p><b>ON</b>　沒有停止請求，邊界之後直接開始下一個循環。</p></details></div>
+<p class="pager"><a class="btnlink" href="B2.html">‹ 上一課：5.6 復歸與原點：清掉步序不代表機構已回原點</a> <a class="btnlink" href="C3.html">下一課：5.8 輸出仲裁：自動與手動最後都經過互鎖</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

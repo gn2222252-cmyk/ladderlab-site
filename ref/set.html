@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SET：設定（保持 ON）｜三菱 FX PLC 指令</title>
+<meta name="description" content="條件成立的那一刻把元件設成 ON，之後條件消失也保持 ON，直到 RST。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/ref/set.html">
+<meta property="og:title" content="SET：設定（保持 ON）｜三菱 FX PLC 指令">
+<meta property="og:description" content="條件成立的那一刻把元件設成 ON，之後條件消失也保持 ON，直到 RST。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/ref/set.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "SET：設定（保持 ON）", "description": "條件成立的那一刻把元件設成 ON，之後條件消失也保持 ON，直到 RST。", "inLanguage": "zh-Hant"}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="../practice.html">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html" class="here">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">FX 指令說明</a> · 輸出</p>
+<h1>SET：設定（保持 ON）</h1>
+<p class="lead-text">條件成立的那一刻把元件設成 ON，之後條件消失也保持 ON，直到 RST。</p>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>SET 元件</td><td>Y、M、S</td></tr></tbody></table></div>
+<p>SET S20 是步進換步：在步進裡執行 SET S21，目前這一步會自動關掉。</p><p>吸盤、夾爪這類要跨好幾步保持的輸出，常用 SET，最後在別的步 RST。</p>
+<h2>範例</h2>
+<pre class="il">LD X000
+SET Y000
+LD X001
+RST Y000</pre>
+<p>按一下 X0，Y0 亮了就一直亮；按一下 X1 才熄。</p>
+<p><a class="btnlink go" href="../practice.html?il=LD%20X000%0ASET%20Y000%0ALD%20X001%0ARST%20Y000#FREE">在瀏覽器執行這個範例 ›</a></p>
+<h2>常見錯誤</h2><ul><li>SET 了卻沒有任何地方 RST，輸出永遠不會關。</li><li>異常時沒有統一 RST，停機後還有輸出保持著。</li></ul>
+<h2>相關指令</h2><p><a class="btnlink" href="rst.html">RST</a> <a class="btnlink" href="out.html">OUT</a> <a class="btnlink" href="stl.html">STL</a></p>
+<p class="why">範例佔 4 個程式步。本頁範例已在 LadderLab 的 FX 相容引擎實際執行驗證；指令細節以三菱 FX 系列程式設計手冊為準。</p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

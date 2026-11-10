@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E13 鑽床：並行分支與選擇分支（SFC）｜PLC 練習題（自動評分）</title>
+<meta name="description" content="圓盤工件要鑽 3 對孔（共 6 孔），兩支鑽頭同時鑽：">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E13.html">
+<meta property="og:title" content="E13 鑽床：並行分支與選擇分支（SFC）｜PLC 練習題（自動評分）">
+<meta property="og:description" content="圓盤工件要鑽 3 對孔（共 6 孔），兩支鑽頭同時鑽：">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E13.html">
+<link rel="stylesheet" href="../style.css">
+
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="../practice.html" class="here">練習題</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 練習題</a></p>
+<h1>E13 鑽床：並行分支與選擇分支（SFC）</h1>
+<div class="task">圓盤工件要鑽 3 對孔（共 6 孔），兩支鑽頭同時鑽：
+1. 按啟動 X0：夾緊 Y0。夾緊後壓力開關 X1 ON。
+2. 兩支鑽頭同時下降：左 Y1 到深度 X2、右 Y3 到深度 X4；各自到了就上升：左 Y2 回原點 X3、右 Y4 回原點 X5。
+3. 兩支都回到原點，工件旋轉 Y5（轉 60 度），轉到位 X6 ON 算一對孔（計數器 C0，設定 3）。
+4. 還沒鑽滿 3 對：回到步驟 2 再鑽；鑽滿了：鬆開 Y6（夾緊 Y0 要關掉），鬆開到位 X7 回到待機。
+回到待機時計數器要清除。
+注意（FX 手冊）：步進換步的那一個掃描，前一步和後一步會同時 ON。下降和上升這種相反動作，要在步裡加互鎖接點，否則電磁閥兩邊會同時通電一個掃描。</div>
+<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>啟動</td><td>按鈕</td></tr><tr><td>X001</td><td>夾緊壓力開關</td><td>開關</td></tr><tr><td>X002</td><td>左鑽到深度</td><td>開關</td></tr><tr><td>X003</td><td>左鑽在原點</td><td>開關</td></tr><tr><td>X004</td><td>右鑽到深度</td><td>開關</td></tr><tr><td>X005</td><td>右鑽在原點</td><td>開關</td></tr><tr><td>X006</td><td>旋轉到位</td><td>開關</td></tr><tr><td>X007</td><td>鬆開到位</td><td>開關</td></tr><tr><td>Y000</td><td>夾緊</td><td>輸出</td></tr><tr><td>Y001</td><td>左鑽下降</td><td>輸出</td></tr><tr><td>Y002</td><td>左鑽上升</td><td>輸出</td></tr><tr><td>Y003</td><td>右鑽下降</td><td>輸出</td></tr><tr><td>Y004</td><td>右鑽上升</td><td>輸出</td></tr><tr><td>Y005</td><td>工件旋轉</td><td>輸出</td></tr><tr><td>Y006</td><td>鬆開</td><td>輸出</td></tr></tbody></table></div>
+<ul class="rules"><li>安全條件：左鑽同時下降又上升</li><li>安全條件：右鑽同時下降又上升</li><li>安全條件：鑽頭還在下面時旋轉工件，鑽頭會斷</li><li>安全條件：鑽頭還在下面時旋轉工件，鑽頭會斷</li><li>安全條件：夾緊和鬆開同時輸出</li></ul>
+<p><a class="btnlink go" href="../practice.html#E13">開始寫程式，自動評分 ›</a></p>
+<p class="why">評分會在虛擬機台上跑 7 組情境，並在每個掃描檢查安全條件。</p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

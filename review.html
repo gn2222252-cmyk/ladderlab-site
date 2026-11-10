@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>章末小考 | LadderLab PLC 課程</title>
+<meta name="description" content="每一章學完的綜合預測題：看情境猜輸出，答案由模擬器實際執行程式算出來。答對八成才算完成這一章。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+  <div id="cbar" data-auto hidden></div>
+  <h1 id="title">章末小考</h1>
+  <p class="lead-text" id="lead">把這一章每一課的預測題混在一起。每題都對應一課的程式，答案是模擬器實際跑出來的。答對八成以上，這一章就算完成；答錯的題目會告訴你回哪一課複習。</p>
+  <div id="loading" class="loading"><span class="spin"></span><span>正在載入模擬引擎（第一次約 10 秒）…</span></div>
+  <div id="quiz" class="quiz-box" hidden></div>
+  <div id="result" class="recap" hidden></div>
+  <span id="ch1"></span><span id="ch2"></span><span id="ch3"></span><span id="ch4"></span><span id="ch5"></span><span id="ch6"></span>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="py/bundle.js"></script>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script src="common.js"></script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id), esc = Course.esc;
+let py = null;
+function chapterId() { return (location.hash.match(/^#ch(\d+)$/) || [, "1"])[1]; }
+function render() {
+  const cid = chapterId();
+  const ch = Course.data.chapters.find((c) => c.id === cid);
+  if (!ch) return;
+  $("title").textContent = `第 ${ch.id} 章 章末小考：${ch.t}`;
+  document.title = `第 ${ch.id} 章 章末小考 | LadderLab PLC 課程`;
+  const lessons = ch.items.filter((it) => it.k === "L");
+  const qs = [];
+  const qj = py.runPython("from quiz import questions_json; questions_json");
+  lessons.forEach((it) => JSON.parse(qj(it.id)).forEach((q) => qs.push(Object.assign(q, { from: it }))));
+  $("result").hidden = true;
+  $("quiz").hidden = false;
+  $("quiz").innerHTML = `<h3>${qs.length} 題 · 每題選一次，選了就不能改</h3>` + qs.map((q, i) =>
+    `<div class="qz" data-i="${i}"><p><b>${i + 1}.</b> <span class="why">［${esc(q.from.no)} ${esc(q.from.label)}］</span><br>${esc(q.q)}</p>` +
+    `<div class="qz-opts">${q.options.map((o) => `<button type="button" class="small-btn" data-o="${esc(o)}">${esc(o)}</button>`).join("")}</div>` +
+    `<p class="qz-res" hidden></p></div>`).join("");
+  let answered = 0, right = 0;
+  const wrong = new Map();
+  $("quiz").querySelectorAll(".qz").forEach((box) => {
+    const q = qs[+box.dataset.i];
+    box.querySelectorAll("[data-o]").forEach((b) => b.addEventListener("click", () => {
+      const ok = b.dataset.o === q.answer;
+      box.querySelectorAll("[data-o]").forEach((x) => { x.disabled = true; x.classList.toggle("right", x.dataset.o === q.answer); });
+      if (!ok) { b.classList.add("wrong"); wrong.set(q.from.id, q.from); }
+      const r = box.querySelector(".qz-res"); r.hidden = false;
+      r.innerHTML = `<b>${ok ? "✓ 對了" : "✗ 答案是 " + esc(q.answer)}</b>　${esc(q.why)}`;
+      answered++; right += ok ? 1 : 0;
+      if (answered === qs.length) finish(ch, right, qs.length, [...wrong.values()]);
+    }));
+  });
+}
+function finish(ch, right, total, wrong) {
+  const pass = right >= Math.ceil(total * 0.8);
+  if (pass) Course.markPage(`review.html#ch${ch.id}`);
+  const next = Course.data.chapters.find((c) => +c.id === +ch.id + 1);
+  $("result").hidden = false;
+  $("result").innerHTML = `<h3>${right} / ${total} 題答對 ${pass ? "· 這一章完成 ✓" : "· 還差一點（要答對八成）"}</h3>` +
+    (wrong.length ? `<p>建議回去複習：</p><ul>${wrong.map((it) => `<li><a href="${it.href}">${esc(it.no)} ${esc(it.label)}</a></li>`).join("")}</ul>` : "<p>全部答對。</p>") +
+    `<p><button type="button" class="small-btn" id="again">重新作答</button> ` +
+    (pass && next ? `<a class="btnlink go" href="${next.items[0].href}">進入第 ${next.id} 章：${esc(next.t)} ›</a>` : "") + "</p>";
+  $("again").onclick = () => { render(); window.scrollTo(0, 0); };
+  Course.bar($("cbar"), Course.findPage(`review.html#ch${ch.id}`));
+}
+(async () => {
+  try {
+    py = await bootPython();
+    $("loading").hidden = true;
+    render();
+    window.addEventListener("hashchange", () => { render(); window.scrollTo(0, 0); });
+  } catch (err) {
+    console.error(err);
+    $("loading").textContent = "模擬引擎載入失敗，請重新整理。";
+  }
+})();
+</script>
+</body>
+</html>
