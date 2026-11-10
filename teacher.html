@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="12e79cbff7">
+<meta name="ll-version" content="d9c8cffa56">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>給老師：用 LadderLab 上可程式控制實習（8 週課表、課綱對照、電腦教室設定） | LadderLab</title>
@@ -91,6 +91,7 @@
 <div class="callout warn">目前的限制：
 <ul>
   <li>匯入會<b>蓋過</b>這個瀏覽器原本的進度，請不要在同一台電腦連續匯入多位學生的檔案。</li>
+  <li>課堂小考可以用<b>考試模式</b>：把練習頁網址寫成 <code>practice.html?exam=1#E10</code>（題號換成要考的那一題），提示和「看參考解答」會隱藏，評分照常。這只是把按鈕藏起來，學生拿掉 <code>?exam=1</code> 就能看到解答，所以要搭配現場監考。</li>
   <li>進度檔是學生端產生的，不能當作防作弊的成績證明。正式評量請以實機驗收為主。</li>
 </ul></div>
 </section>
@@ -142,7 +143,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "12e79cbff7" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d9c8cffa56" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

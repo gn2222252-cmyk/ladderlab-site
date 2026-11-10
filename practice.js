@@ -50,9 +50,16 @@ function open(eid) {
   $("pfaults").querySelectorAll("input").forEach((c) => c.addEventListener("change", () => pr.set_fault(c.dataset.f, c.checked)));
   hintAt = 0; $("hints").innerHTML = "";
   $("hint").disabled = false;
+  /* exam mode (?exam=1, for teachers): no hints, no reference solution, no part import; grading still works */
+  const examMode = new URLSearchParams(location.search).get("exam") === "1";
+  $("hint").hidden = examMode; $("sol").hidden = examMode;
+  if (examMode) {
+    $("frompart").hidden = true;
+    $("task").insertAdjacentHTML("afterbegin", `<p class="callout warn">考試模式：提示和參考解答已隱藏，評分照常。要回到一般模式，把網址裡的 ?exam=1 拿掉。</p>`);
+  }
   $("results").innerHTML = ""; $("verdict").textContent = ""; $("verdict").className = "verdict"; $("wl").hidden = true;
   const prevPart = { E18b: "E18a", E18: "E18b" }[ex.id];  /* E18 in parts: start from the previous part's program */
-  $("frompart").hidden = !prevPart;
+  $("frompart").hidden = !prevPart || examMode;
   if (prevPart) { $("frompart").textContent = `帶入 ${prevPart} 的程式`; $("frompart").dataset.from = prevPart; }
   const saved = storeGet("ll_code_" + ex.id, null);
   $("code").value = saved !== null ? saved : ex.starter;

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="12e79cbff7">
+<meta name="ll-version" content="d9c8cffa56">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 練習題 | LadderLab</title>
@@ -94,13 +94,13 @@
 <script src="ledit.js?v=d905dd003e"></script>
 <script src="sfc.js?v=254aa66b02"></script>
 <script src="plants.js?v=e003305f64"></script>
-<script src="practice.js?v=24d5923b9c"></script>
+<script src="practice.js?v=3f314ade7b"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "12e79cbff7" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d9c8cffa56" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
