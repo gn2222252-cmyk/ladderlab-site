@@ -138,11 +138,42 @@ function draw() {
   $("trace-box").hidden = !l.trace.length;
   $("trace").innerHTML = l.trace.length ? `<thead><tr><th></th>${l.trace.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody></tbody>` : "";
   $("table-box").hidden = !l.table;
+  $("dtd-box").hidden = !(l.dtd && l.dtd.length);
+  $("dtd-box").innerHTML = (l.dtd || []).map((d) => `<figure class="dtd"><figcaption>${esc(d.title)}</figcaption>${dtdSvg(d)}</figure>`).join("");
   if (l.table) $("ltable").innerHTML = `<thead><tr>${l.table.head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>` +
     l.table.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`).join("") + "</tbody>";
   $("notes").hidden = !l.notes; $("notes").textContent = l.notes || "";
   $("caption").textContent = u("start");
   setPlayLabel();
+}
+/* displacement-step diagram (位移－時間圖): step lines on top, one row per cylinder, thick line = motion */
+function dtdSvg(d) {
+  const n = d.lines.length - 1, cw = 64, lw = 52, rh = 62, top = 26, gap = 16;
+  const W = lw + n * cw + 12, H = top + d.cyls.length * (rh + gap) + 22;
+  let s = `<svg class="dtd-svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(d.title)}">`;
+  for (let i = 0; i < n; i++) {
+    const st = d.states ? d.states[i] : "";
+    s += `<rect class="dtd-col" data-s="${st}" x="${lw + i * cw}" y="${top - 6}" width="${cw}" height="${H - top - 10}"/>`;
+  }
+  d.lines.forEach((t, i) => {
+    const x = lw + i * cw;
+    s += `<line class="dtd-step" x1="${x}" y1="${top - 4}" x2="${x}" y2="${H - 26}"/><text class="dtd-num" x="${x}" y="${top - 10}">${esc(t)}</text>`;
+  });
+  d.cyls.forEach((c, k) => {
+    const y0 = top + k * (rh + gap) + rh, Y = (p) => y0 - p * rh;
+    s += `<text class="dtd-cyl" x="6" y="${Y(0.5) + 5}">${esc(c.name)}</text>`;
+    c.labels.forEach(([t, p]) => {
+      s += `<line class="dtd-grid" x1="${lw}" y1="${Y(p)}" x2="${lw + n * cw}" y2="${Y(p)}"/><text class="dtd-pos" x="${lw - 4}" y="${Y(p) + 4}">${esc(t)}</text>`;
+    });
+    const pts = [`${lw},${Y(c.seg[0][0])}`].concat(c.seg.map(([a, b], i) => `${lw + (i + 1) * cw},${Y(b)}`));
+    s += `<polyline class="dtd-move" points="${pts.join(" ")}"/>`;
+    Object.entries(c.note || {}).forEach(([i, t]) => {
+      const [a, b] = c.seg[+i];
+      s += `<text class="dtd-note" x="${lw + (+i + 0.5) * cw + 6}" y="${(Y(a) + Y(b)) / 2 + 4}">${esc(t)}</text>`;
+    });
+  });
+  (d.cond || []).forEach((t, i) => { s += `<text class="dtd-cond" x="${lw + (i + 0.5) * cw}" y="${H - 8}">等 ${esc(t)}</text>`; });
+  return s + "</svg>";
 }
 function useStage(name) {
   L = Object.assign(JSON.parse(course.stage(name)), {});
@@ -273,6 +304,7 @@ function drawState() {
   $("inputs").querySelectorAll(".inp").forEach((b) => b.classList.toggle("on", !!st.inputs[b.dataset.dev]));
   $("outputs").querySelectorAll("li").forEach((li) => li.classList.toggle("on", !!st.outputs[li.dataset.dev]));
   $("sfc").querySelectorAll("li").forEach((li) => li.classList.toggle("on", st.steps.includes(li.dataset.s)));
+  $("dtd-box").querySelectorAll(".dtd-col").forEach((r) => r.classList.toggle("on", !!r.dataset.s && st.steps.includes(r.dataset.s)));
   $("vals").querySelectorAll("[data-v]").forEach((b) => {
     const d = b.dataset.v, v = d in st.values ? st.values[d] : st.watch[d];
     b.textContent = /^[DTC]\d/.test(d) ? v : (v ? "ON" : "OFF");
