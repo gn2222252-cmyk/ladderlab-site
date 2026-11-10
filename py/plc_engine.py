@@ -641,11 +641,18 @@ class PLC(object):
             k = self._word_get(ops[1])
 
             def fn():
+                # 16-bit up counter (programming manual JY997D16601 4.6, p.102-104): K0 works like K1; the current
+                # value stops at the set value; a current value above it (written by MOV) becomes the set value
+                # on the next count.
                 now = self.acc
+                setv = max(1, k())
                 if now and not self._edge[index]:
-                    self.c_val[n] = min(self.c_val[n] + 1, 32767)
+                    if self.c_val[n] < setv:
+                        self.c_val[n] += 1
+                    elif self.c_val[n] > setv:
+                        self.c_val[n] = setv
                 self._edge[index] = now
-                self.c_on[n] = 1 if self.c_val[n] >= k() else 0
+                self.c_on[n] = 1 if self.c_val[n] >= setv else 0
                 self.fresh = True
             return fn
         put = self._bit_set(name)

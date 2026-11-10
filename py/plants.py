@@ -241,10 +241,10 @@ class PneuSet(Plant):
 
 class ExamDoor(Plant):
     """工業配線乙級第五題的電動門。0 全閉 .. 1 全開，全行程 3 秒。Y0 MC1 開門（正轉）、Y1 MC2 關門（反轉）。
-    X4 LS1 全開、X5 LS2 全閉。X6 對照型光電開關（有人＝ON）、X7 積熱電驛 TH（常閉，正常＝ON）由使用者或測試設定。
+    X4 LS1 全開、X5 LS2 全閉，都是 b 接點（常閉）：門不在該端時 ON，到位壓到開關時 OFF，斷線也是 OFF（試題機具表、TB3 只接 NC）。X6 對照型光電開關（有人＝ON）、X7 積熱電驛 TH（常閉，正常＝ON）由使用者或測試設定。
     關門中光電開關被遮住超過 0.1 秒還在關＝夾到人。"""
     kind = "door2"
-    faults = [("ls1_dead", "全開限位 LS1 故障（一直 OFF）")]
+    faults = [("ls1_dead", "LS1 斷線（輸入一直 OFF，PLC 以為門已經全開）")]
 
     def __init__(self, plc):
         self.pos = 0.0
@@ -268,8 +268,8 @@ class ExamDoor(Plant):
         self.apply()
 
     def apply(self):
-        self.x(4, self.pos >= 0.99 and "ls1_dead" not in self.broken)
-        self.x(5, self.pos <= 0.01)
+        self.x(4, self.pos < 0.99 and "ls1_dead" not in self.broken)
+        self.x(5, self.pos > 0.01)
 
     def state(self):
         y = self.plc.y_out
