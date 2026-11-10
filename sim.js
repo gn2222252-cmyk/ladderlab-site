@@ -229,6 +229,51 @@ $("example").onclick = () => {
   $("note").textContent = noteFor(tab);
   showTab(tab); convert();
 };
+/* open a GX Works2 program CSV (UTF-16) or a plain instruction list / UTF-8 CSV, and save the program as a GX Works2 CSV */
+function csvText(buf) {                                   // fallback for files that are not GX Works2's UTF-16 export
+  const text = new TextDecoder("utf-8").decode(buf).replace(/^\ufeff/, "");
+  const rows = text.split(/\r?\n/).filter((l) => l.trim());
+  if (!rows.some((l) => /[\t,]/.test(l))) return rows.map((l) => l.trim()).join("\n");
+  const out = [];
+  rows.forEach((l) => {
+    const c = l.split(/\t|,/).map((x) => x.trim().replace(/^"|"$/g, ""));
+    if (/^\d+$/.test(c[0]) && c[2] && /^[A-Za-z<>=]/.test(c[2])) out.push([c[2].toUpperCase(), c[3] || ""]);
+    else if (!c[0] && !c[2] && c[3] && out.length) out[out.length - 1].push(c[3]);
+  });
+  return out.filter((r) => r[0] !== "END").map((r) => r.filter(Boolean).join(" ")).join("\n");
+}
+$("csvin").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f || !sb) return;
+  const buf = new Uint8Array(await f.arrayBuffer());
+  let il = "", info = "";
+  if (buf[0] === 0xff && buf[1] === 0xfe) {
+    let bin = ""; buf.forEach((b) => { bin += String.fromCharCode(b); });
+    const r = JSON.parse(sb.import_csv(btoa(bin)));
+    if (!r.ok) { alert("讀不懂這個檔案：" + r.msg + "\n請確認是 GX Works2 匯出的程式 CSV。"); return; }
+    il = r.il; info = `${r.plc || "未知 PLC"}，${r.count} 個指令`;
+  } else {
+    il = csvText(buf);
+    if (!il.trim()) { alert("這個檔案裡找不到指令。請用 GX Works2 匯出的程式 CSV，或一行一個指令的文字檔。"); return; }
+    info = `${il.split("\n").length} 個指令`;
+  }
+  if (mode === "monitor") setMode("write");
+  ["ladder", "stl", "sfc", "il"].forEach((t) => loadInto(t, il));
+  showTab(/\bSTL\b/i.test(il) ? "stl" : "ladder");
+  convert();
+  $("note").textContent = `已開啟 ${f.name}（${info}）。`;
+});
+$("csvout").onclick = () => {
+  if (!sb) return;
+  const b64 = sb.export_csv(currentIL().il);
+  if (!b64) { alert("程式還有錯誤，先修正（按 F4 看錯誤）再存。"); return; }
+  const bin = atob(b64), bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([bytes], { type: "text/csv" }));
+  a.download = "LadderLab_程式.csv"; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
 $("clear").onclick = () => { led.set([]); lstl.set([]); sfe.set(SfcEdit.blank()); $("il").value = ""; setMode("write"); };
 $("il").addEventListener("input", () => { save(); checkPending(); });
 (async () => {
