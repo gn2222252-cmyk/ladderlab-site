@@ -152,7 +152,7 @@ function freeIO() {
    starts at the next multiple of 8 after what is already there, which is how Mitsubishi numbers FX expansions. */
 const PLC_MODELS = [["FX3S-10M", 6, 4], ["FX3S-14M", 8, 6], ["FX3S-20M", 12, 8], ["FX3S-30M", 16, 14],
   ["FX3G-14M", 8, 6], ["FX3G-24M", 14, 10], ["FX3G-40M", 24, 16], ["FX3G-60M", 36, 24],
-  ["FX3U-16M", 8, 8], ["FX3U-32M", 16, 16], ["FX3U-48M", 24, 24], ["FX3U-64M", 32, 32], ["FX3U-80M", 40, 40]];
+  ["FX3U-16M", 8, 8], ["FX3U-32M", 16, 16], ["FX3U-48M", 24, 24], ["FX3U-64M", 32, 32], ["FX3U-80M", 40, 40], ["FX3U-128M", 64, 64]];
 const PLC_EXT = {
   "4EX-BD": { x: 4, y: 0, bd: true, n: () => "FX3G-4EX-BD（輸入擴充板 4 點，M8112～M8115）" },
   "2EYT-BD": { x: 0, y: 2, bd: true, n: () => "FX3G-2EYT-BD（輸出擴充板 2 點，M8116～M8117）" },

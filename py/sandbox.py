@@ -16,7 +16,7 @@ FX3S_Y = ["Y%03o" % n for n in range(16)]          # Y000-Y017
 
 MACHINES = [
     {"id": "free", "title": "只模擬電路（不接機構）", "plant": None,
-     "desc": "沒有預設任何用途：X0～X17 每一點都是一個可以切換的輸入，Y0～Y17 是輸出燈。畫什麼就模擬什麼，例如常開 X1 接線圈 Y1，把 X1 切到 ON，Y1 就亮。",
+     "desc": "沒有預設任何用途：每一個 X 都是可以切換的輸入，每一個 Y 是輸出燈，點數照右邊選的 PLC 機型（預設 FX3S-30M：X0～X17、Y0～Y15）。畫什麼就模擬什麼，例如常開 X1 接線圈 Y1，把 X1 切到 ON，Y1 就亮。",
      "inputs": [(x, "", "switch") for x in FX3S_X], "outputs": [(y, "") for y in FX3S_Y],
      "example": "LD X001\nOUT Y001",
      "example_note": "常開 X1 接線圈 Y1：X1 ON 時 Y1 亮。",

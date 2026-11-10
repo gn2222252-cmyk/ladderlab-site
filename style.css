@@ -492,7 +492,7 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .sim-side .box{margin-bottom:10px}
 #il{width:100%;font:14px/1.5 Consolas,monospace;border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--card);color:var(--ink)}
 .sim-help{max-width:900px;margin-top:20px}
-@media (max-width:900px){.sim-grid{grid-template-columns:1fr}}
+@media (max-width:900px){.sim-grid{grid-template-columns:minmax(0,1fr)}}
 .ledit{border:1px solid var(--line);border-radius:8px;background:var(--card)}
 .le-bar,.sf-bar{display:flex;flex-wrap:wrap;gap:3px;padding:6px;border-bottom:1px solid var(--line);background:var(--bg)}
 .le-b{display:flex;flex-direction:column;align-items:center;min-width:46px;padding:2px 4px;border:1px solid var(--line);border-radius:5px;background:var(--card);cursor:pointer;color:var(--ink)}
@@ -683,3 +683,7 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .k-disc{fill:#2a303a}}
 .plc-help summary{cursor:pointer;font-size:12px;color:var(--mute)}
 .fx-rowl{text-anchor:end;letter-spacing:0}
+/* narrow screens: nothing in the simulator may widen the page; the bench and ladders scroll inside their box */
+.sim-edit,.sim-side{min-width:0}
+.k-wrap,#kit{min-width:0;max-width:100%}
+@media (max-width:600px){.kb-rl{width:100%}.kb-term{width:28px}.sim-top{flex-wrap:wrap}}

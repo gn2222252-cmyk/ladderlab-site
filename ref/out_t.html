@@ -22,8 +22,8 @@
 <p class="crumb"><a href="index.html">FX 指令說明</a> · 計時計數</p>
 <h1>計時器 OUT T：延時</h1>
 <p class="lead-text">條件成立時開始計時，到設定值後 T 接點 ON；條件一斷，現在值歸 0。</p>
-<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>OUT T0 K30</td><td>T0～T199（100 ms 單位）</td></tr></tbody></table></div>
-<p>T0～T199 的單位是 0.1 秒，所以 K30 = 3 秒、K10 = 1 秒。</p><p>線圈和接點不一樣：OUT T0 是線圈（在計時），LD T0 是接點（時間到了才 ON）。</p><p>兩個計時器互相重置就能做閃爍。</p>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>OUT T0 K30</td><td>FX3S：T0～T31（100 ms），FX3U：T0～T199（100 ms）</td></tr></tbody></table></div>
+<p>100 ms 計時器的單位是 0.1 秒，所以 K30 = 3 秒、K10 = 1 秒。</p><p>FX3S 的計時器：T0～T31 100 ms；T32～T62 平常 100 ms，M8028 ON 時變 10 ms；T63～T127 1 ms；T128～T131 1 ms 積算、T132～T137 100 ms 積算（FX3S 硬體手冊 4.5 節）。FX3U 的 100 ms 是 T0～T199。學校的 FX3S 用 T32 以後的編號要先查表，單位可能不是 0.1 秒。</p><p>線圈和接點不一樣：OUT T0 是線圈（在計時），LD T0 是接點（時間到了才 ON）。</p><p>兩個計時器互相重置就能做閃爍。</p>
 <h2>範例</h2>
 <pre class="il">LD X000
 OUT T0 K20
