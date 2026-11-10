@@ -182,7 +182,7 @@ function openMachine(id) {
   convert();
 }
 function frame(t) {
-  const dt = Math.min(100, last ? t - last : 16); last = t;
+  const dt = Math.max(0, Math.min(100, last ? t - last : 16)); last = t;
   if (sb) {
     if (isFree()) { const want = Kit.step(dt, lastOut); Object.keys(want).forEach((d) => sb.set_input(d, want[d])); }
     sb.tick(Math.round(dt / 10) * 10);
