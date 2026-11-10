@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="07fc069200">
+<meta name="ll-version" content="5b9751a1b2">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BIN：BCD 轉成二進位（讀指撥開關）｜三菱 FX PLC 指令</title>
@@ -27,9 +27,9 @@
 <p>指撥開關每一位輸出 4 條線（1、2、4、8），兩位數就是 8 點：K2X0 = X0～X7。直接用 MOV 讀，0～9 剛好對，10 以上就錯：指撥 47 用 MOV 讀進來是 71。</p><p>BIN K2X000 D0：把 X0～X7 的兩位數 BCD 轉成 D0 = 47。</p><p>來源的某一位超過 9（不是 BCD）時不轉換，運算錯誤旗標 M8067 ON。</p><p>FX3S、FX3G、FX3U 都有（FNC 19）；16 位元範圍 0～9999。出處：三菱 FX3 程式手冊 9.10 節。</p>
 <h2>範例</h2>
 <pre class="il">LD M8000
-BIN K2X000 D0</pre>
-<p>把 X0、X1、X2 和 X6 打開（BCD 的 47 = 0100 0111），D0 會是 47；用 MOV 讀會是 71。</p>
-<p><a class="btnlink go" href="../practice.html?il=LD%20M8000%0ABIN%20K2X000%20D0#FREE">在瀏覽器執行這個範例 ›</a></p>
+BIN K1X004 D0</pre>
+<p>範例用一位數 K1X004（X4～X7，練習頁上是可以同時打開的切換開關）：打開 X4、X5、X6（BCD 0111 = 7），D0 會是 7。再打開 X7（1111 = 15，不是 BCD），PLC 不轉換、D0 留在 7，M8067 ON。</p>
+<p><a class="btnlink go" href="../practice.html?il=LD%20M8000%0ABIN%20K1X004%20D0#FREE">在瀏覽器執行這個範例 ›</a></p>
 <h2>常見錯誤</h2><ul><li>用 MOV 讀指撥開關：0～9 看不出錯，10 以上就錯。</li><li>來源寫 K 常數：手冊規定不行。</li></ul>
 <h2>相關指令</h2><p><a class="btnlink" href="bcd.html">BCD</a> <a class="btnlink" href="mov.html">MOV</a></p>
 <p class="why">範例佔 6 個程式步。本頁範例已在 LadderLab 的 FX 相容引擎實際執行驗證；指令細節以三菱 FX 系列程式設計手冊為準。</p>
@@ -42,7 +42,7 @@ BIN K2X000 D0</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "07fc069200" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "5b9751a1b2" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

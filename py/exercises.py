@@ -2604,14 +2604,24 @@ def _run_steps(ex, rig, steps):
                 if now != s[2]:
                     return "%.2f 秒時 %s 變成 %s，這段時間應該一直是 %s。" % (rig.ms / 1000.0, _label(ex, s[1]), _onoff(now), _onoff(s[2]))
         elif kind == "toggles":
-            prev, count = bit(rig.plc, s[1]), 0
+            prev, count, run, short = bit(rig.plc, s[1]), 0, 0, {0: 0, 1: 0}   # short[state]: runs of only one scan
             for _ in range(s[2] // SCAN):
                 rig.scan()
                 now = bit(rig.plc, s[1])
-                count += 1 if now != prev else 0
+                run += 1
+                if now != prev:
+                    count += 1
+                    if run == 1 and count > 1:
+                        short[int(bool(prev))] += 1
+                    run = 0
                 prev = now
             if not s[3] <= count <= s[4]:
-                return "%.1f 秒內 %s 變化了 %d 次，應該在 %d～%d 次之間。" % (s[2] / 1000.0, _label(ex, s[1]), count, s[3], s[4])
+                why = "%.1f 秒內 %s 變化了 %d 次，應該在 %d～%d 次之間。" % (s[2] / 1000.0, _label(ex, s[1]), count, s[3], s[4])
+                if count > s[4] and (short[0] or short[1]):     # tester round 6: one-scan blips look like "always on"
+                    why += ("它每次只%s一個掃描（%d ms），肉眼看起來一直%s。閃爍要讓亮和熄各維持一段時間："
+                            "用兩個計時器輪流計時（T0 計亮的時間、T1 計熄的時間），不要用一個計時器自己重設自己。") % (
+                        "熄" if short[0] >= short[1] else "亮", SCAN, "亮著" if short[0] >= short[1] else "熄著")
+                return why
         if rig.broken:
             return "安全條件違反（先修這一個，其他項目常常會跟著通過）：" + rig.broken
     rig.run(0)
