@@ -133,7 +133,7 @@ async function boot() {
     $("dos").innerHTML = L.do.map(([d, t]) => `<li data-d="${d}"><i></i>${d} ${esc2(t)}</li>`).join("");
     $("dis").innerHTML = L.di.map(([d, t]) => `<li data-d="${d}"><i></i>${d} ${esc2(t)}</li>`).join("");
     $("section").innerHTML = sections().map((s, i) => `<option value="${i}">${esc2(s.split("|")[0].trim())}</option>`).join("");
-    $("section").value = String(Math.max(0, sections().findIndex((s) => /SECTION 2/.test(s))));
+    $("section").value = String(Math.max(0, sections().findIndex((s) => /第 2 區/.test(s))));
     drawLadder();
     const want = location.hash.slice(1);
     if (fc.cases.some((c) => c.id === want)) { $("case").value = want; $("case").onchange(); }

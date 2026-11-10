@@ -2,8 +2,8 @@
 ; ';' = comment, ';;' = section title, ';#' = paragraph title.
 ; Device use: see AOI_PLC_說明.md
 
-;; SECTION 1  I/O MAP (only this section changes for the school wiring)
-;# Physical inputs
+;; 第 1 區  I/O 對照（換成學校的接線時，只改這一區）
+;# 實體輸入
 LD X000
 OUT M0
 LD X001
@@ -12,7 +12,7 @@ LD X002
 OUT M2
 LD X003
 OUT M3
-;# Sensor image M120-M135 = DI0-15, M136-M139 = DI16-19. Now fed by the machine simulation (M220-M236); replace LD M2xx with LD X0xx for a real sensor
+;# 感測器映像 M120～M135＝DI0～15、M136～M139＝DI16～19。現在由機台模擬（M220～M236）餵入；接真的感測器時，把 LD M2xx 換成 LD X0xx
 LD M220
 OUT M120
 LD M221
@@ -53,7 +53,7 @@ LD M1
 OUT M138
 LD M2
 OUT M139
-;# Physical outputs: M100-M111 = DO0-11
+;# 實體輸出：M100～M111＝DO0～11
 LD M100
 OUT Y000
 LD M101
@@ -71,8 +71,8 @@ OUT Y006
 LD M111
 OUT Y007
 
-;; SECTION 2  CONTROL
-;# Power-up: clear working data, fill defaults when D530-D532 are 0
+;; 第 2 區  控制
+;# 開機：清掉工作資料；D530～D532 是 0 時填入預設值
 LD M8002
 SET M198
 MOV K0 D100
@@ -101,7 +101,7 @@ MOV K50 D531
 LD M8002
 AND= D532 K0
 MOV K20 D532
-;# Every scan: speed, fault bits, step timer T0 (restarts when the step changes)
+;# 每一圈：速度、故障位元、步序計時器 T0（換步時重新計時）
 LD M8000
 MOV D530 D315
 MOV D550 K2M190
@@ -109,7 +109,7 @@ CMP D300 D20 M150
 MOV D300 D20
 LD M151
 OUT T0 K32767
-;# Step flags M160-M173
+;# 步序旗標 M160～M173
 LD= D300 K10
 OUT M160
 LD= D300 K20
@@ -138,7 +138,7 @@ LD= D300 K900
 OUT M172
 LD= D300 K910
 OUT M173
-;# b1 running (steps 40-120), emergency stop M192 = X3 open or D550 bit0
+;# b1 運轉中（步序 40～120）；急停 M192＝X3 斷開或 D550 bit0
 LD>= D300 K40
 AND<= D300 K120
 OUT M141
@@ -149,7 +149,7 @@ LD M192
 OUT M145
 LD M134
 OUT M144
-;# Commands: button edge OR D100, then D100 goes back to 0
+;# 命令：按鈕的上升緣或 D100，之後 D100 清回 0
 LD M0
 PLS M4
 LD M1
@@ -171,7 +171,7 @@ LD= D100 K5
 OUT M14
 LD M8000
 MOV K0 D100
-;# Stop request M21 (b3): finish this part, then Idle
+;# 停止要求 M21（b3）：做完這一件再回待機
 LD M11
 AND M141
 SET M21
@@ -180,12 +180,12 @@ OR M172
 RST M21
 LD M21
 OUT M143
-;# NG bin commands
+;# NG 料盒命令
 LD M13
 MOV K0 D313
 LD M14
 MOV D532 D313
-;# Step 10 Init: all cylinders off, wait for retract and safety
+;# 步序 10 初始化：氣缸全部關，等縮回和安全條件
 LD M160
 RST M101
 RST M102
@@ -198,17 +198,17 @@ AND M133
 ANI M192
 AND M123
 MOV K20 D300
-;# Step 20 Purge: belt 6 s with the stopper down
+;# 步序 20 清線：擋料缸放下，輸送帶跑 6 秒
 LD M161
 AND>= T0 K60
 MOV K30 D300
-;# Step 30 Idle: wait for start
+;# 步序 30 待機：等啟動
 LD M162
 AND M10
 ANI M134
 AND= D301 K0
 MOV K40 D300
-;# Step 40 RequestPart: DO4 pulse 0.3 s, wait for entry sensor
+;# 步序 40 要料：DO4 送 0.3 秒脈衝，等入口感測器
 LD M163
 AND< T0 K3
 ANI M192
@@ -216,19 +216,19 @@ OUT M104
 LD M163
 AND M124
 MOV K50 D300
-;# Step 50 ToStopper: stopper up, belt runs
+;# 步序 50 送到擋料：擋料缸升起，輸送帶運轉
 LD M164
 SET M101
 LD M164
 AND M125
 MOV K60 D300
-;# Step 60 Clamp: belt stops, clamp extends
+;# 步序 60 夾緊：輸送帶停，夾緊缸伸出
 LD M165
 SET M102
 LD M165
 AND M130
 MOV K70 D300
-;# Step 70 Inspect: light on, D306 = id, b0 only after D511 = 0 (handshake item 5)
+;# 步序 70 檢測：開光源、D306＝工件編號；D511 是 0 之後才送 b0（交握第 5 項）
 LD M166
 SET M106
 MOV D401 D306
@@ -255,7 +255,7 @@ LD M22
 ANI M23
 ANI M28
 OUT M24
-;# Step 80 Release: light off, clamp and stopper back
+;# 步序 80 放開：關光源，夾緊缸和擋料缸退回
 LD M167
 RST M106
 RST M102
@@ -264,7 +264,7 @@ LD M167
 AND M131
 AND M129
 MOV K90 D300
-;# Step 90 ToSort: belt until sort sensor, NG goes to 100, OK to 110
+;# 步序 90 送到分料：輸送帶跑到分料感測器；NG 去 100，OK 去 110
 LD M168
 AND M126
 AND= D403 K2
@@ -273,7 +273,7 @@ LD M168
 AND M126
 AND= D403 K1
 MOV K110 D300
-;# Step 100 PushNG: pusher out, back when extended, leave when retracted
+;# 步序 100 推 NG：推料缸伸出，伸到底就退回，退回後離開這一步
 LD M169
 ANI M151
 SET M103
@@ -285,7 +285,7 @@ AND M151
 AND M133
 ANI M103
 MOV K120 D300
-;# Step 110 ToExit: belt and offer until the exit sensor turned on and off again
+;# 步序 110 送到出口：輸送帶和出料訊號一直開，等出口感測器 ON 再 OFF
 LD M170
 AND M127
 SET M25
@@ -293,7 +293,7 @@ LD M170
 AND M25
 ANI M127
 MOV K120 D300
-;# Step 120 Done: count once, then choose the next step
+;# 步序 120 完成：計數一次，再決定下一步
 LD M171
 RST M25
 INC D310
@@ -314,17 +314,17 @@ LD M171
 ANI M21
 AND M134
 OUT M26
-;# Step 900 Error: end the inspection request, go to AlarmWait
+;# 步序 900 異常：結束檢測要求，進異常等待
 LD M172
 RST M140
 MOV K910 D300
-;# Step 910 AlarmWait: reset works only when the cause is gone (M27 off)
+;# 步序 910 異常等待：原因排除後（M27 OFF）按復歸才有效
 LD M173
 AND M12
 ANI M27
 MOV K0 D301
 MOV K10 D300
-;# Outputs made from steps
+;# 由步序決定的輸出
 LD M161
 OR M164
 OR M168
@@ -346,15 +346,15 @@ OR M173
 ANI M192
 OUT M108
 OUT M111
-;# Emergency stop: every held output off at once
+;# 急停：所有保持的輸出同時關掉
 LD M192
 RST M101
 RST M102
 RST M103
 RST M106
 
-;; SECTION 3  ALARMS (only the first code is kept: each rung checks D301 = 0)
-;# Heartbeat: T1 runs in steps 40-120, T2 always (used to know the cause is gone)
+;; 第 3 區  異常（只記第一個異常碼：每一條都先檢查 D301＝0）
+;# 心跳：T1 在步序 40～120 計時，T2 一直計時（用來判斷原因是否排除）
 LD M8000
 CMP D520 D22 M153
 MOV D520 D22
@@ -363,22 +363,22 @@ AND M141
 OUT T1 K20
 LD M154
 OUT T2 K20
-;# 8001 emergency stop
+;# 8001 急停
 LD M192
 AND= D301 K0
 MOV K8001 D301
-;# 8004 low air
+;# 8004 氣壓不足
 LD< D314 K450
 AND= D301 K0
 MOV K8004 D301
-;# 8101 NG bin full (after Done, or Start while full)
+;# 8101 NG 料盒滿（完成之後，或滿的時候按啟動）
 LD M162
 AND M10
 AND M134
 OR M26
 AND= D301 K0
 MOV K8101 D301
-;# 9002 / 9003 / 9001 cylinder timeouts
+;# 9002／9003／9001 氣缸逾時
 LD M160
 AND>= T0 K20
 ANI M131
@@ -408,7 +408,7 @@ LD M169
 AND>= T0 K10
 AND= D301 K0
 MOV K9003 D301
-;# 9004 part did not arrive: step 40 5 s, 50 6 s, 90 4 s, 110 4 s
+;# 9004 工件沒到：步序 40 等 5 秒、50 等 6 秒、90 等 4 秒、110 等 4 秒
 LD M163
 AND>= T0 K50
 LD M164
@@ -422,30 +422,30 @@ AND>= T0 K40
 ORB
 AND= D301 K0
 MOV K9004 D301
-;# 9005 inspection timeout (D531 x 0.1 s)
+;# 9005 檢測逾時（D531 × 0.1 秒）
 LD M166
 AND>= T0 D531
 AND= D301 K0
 MOV K9005 D301
-;# 9006 heartbeat timeout
+;# 9006 心跳逾時
 LD T1
 AND= D301 K0
 MOV K9006 D301
-;# 9007 illegal inspection result
+;# 9007 檢測結果不合法
 LD M24
 AND= D301 K0
 MOV K9007 D301
-;# 9008 servo alarm reported by the host (D510 = 3)
+;# 9008 上位機回報伺服異常（D510＝3）
 LD M28
 AND= D301 K0
 MOV K9008 D301
-;# Any alarm sends the machine to step 900
+;# 任何異常都讓機台跳到步序 900
 LD> D301 K0
 AND< D300 K900
 MOV K900 D300
 LD> D301 K0
 OUT M142
-;# M27 = alarm cause still present
+;# M27＝異常原因還在
 LD M192
 OR< D314 K450
 LD= D301 K8101
@@ -459,8 +459,8 @@ AND T2
 ORB
 OUT M27
 
-;; SECTION 4  MACHINE SIMULATION (M198 OFF switches the whole section off)
-;# 100 ms tick, belt travel D32 = speed x 2.5 (x5, then shift right one bit through K4M250)
+;; 第 4 區  機台模擬（M198 OFF 時整區關掉）
+;# 100 ms 節拍；輸送帶每拍移動 D32＝速度 × 2.5（先 × 5，再經 K4M250 右移一位）
 LD M8012
 PLS M240
 LD M198
@@ -469,7 +469,7 @@ ADD D30 D30 D31
 ADD D31 D315 D31
 MOV D31 K4M250
 MOV K4M251 D32
-;# New part 0.3 s after the request pulse starts (falling edge of DO4)
+;# 要料脈衝開始 0.3 秒後放一個新工件（DO4 的下降緣）
 LD M104
 PLF M242
 LD M242
@@ -480,7 +480,7 @@ MOV D25 D401
 MOV K0 D402
 MOV K0 D403
 INC D25
-;# Part position
+;# 工件位置
 LD M240
 AND M198
 AND M100
@@ -495,7 +495,7 @@ MOV K4000 D402
 LD M198
 AND>= D402 K9000
 MOV K9000 D402
-;# Safety and belt sensors
+;# 安全和輸送帶上的感測器
 LD M198
 ANI M192
 OUT M220
@@ -526,7 +526,7 @@ LD M198
 AND= D400 K1
 AND>= D402 K8900
 OUT M227
-;# Cylinders: stopper 0.2 s, clamp 0.3 s, pusher 0.3 s. D550 bit1 blocks the clamp extended sensor
+;# 氣缸：擋料 0.2 秒、夾緊 0.3 秒、推料 0.3 秒。D550 bit1 會擋住夾緊伸出感測器
 LD M198
 AND M101
 OUT T10 K2
@@ -558,7 +558,7 @@ LD T14
 OUT M232
 LD T15
 OUT M233
-;# Push: part in 6750-7250 goes into the NG bin
+;# 推料：工件位置在 6750～7250 時推進 NG 料盒
 LD M132
 PLS M241
 LD M241
@@ -568,7 +568,7 @@ AND>= D402 K6750
 AND<= D402 K7250
 MOV K0 D400
 INC D313
-;# Exit: at the exit with offer ON for 0.5 s, the part is taken
+;# 出口：工件到出口且出料訊號 ON 0.5 秒，就被取走
 LD M198
 AND M127
 AND M105
@@ -577,12 +577,12 @@ OUT T16 K5
 LD T16
 MOV K0 D400
 MOV K0 D402
-;# NG bin full
+;# NG 料盒滿
 LD M198
 AND>= D313 D532
 OUT M234
 
-;; SECTION 5  WORDS FOR LABVIEW
+;; 第 5 區  給 LabVIEW 的字組
 LD M8000
 MOV K2M140 D302
 MOV K4M120 D303
