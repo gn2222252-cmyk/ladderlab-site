@@ -4,6 +4,7 @@ Python side: engine/practice_bridge.py and engine/exercises.py (tests prove each
 const PALETTE = ["LD", "LDI", "AND", "ANI", "OR", "ORI", "OUT", "SET", "RST", "PLS", "STL", "RET", "ANB", "ORB", "MOV", "INC", "ZRST"];
 const DEV = ["X000", "X001", "X002", "Y000", "Y001", "Y002", "M0", "T0 K10", "C0 K5", "S0", "S20"];
 let py = null, pr = null, cat = [], ex = null, layout = null, st = null, last = 0, hintAt = 0, timer = null;
+let led = null, etab = "il", ltimer = null;
 const $ = (id) => document.getElementById(id);
 const esc2 = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -43,10 +44,12 @@ function open(eid) {
   $("pfaults").querySelectorAll("input").forEach((c) => c.addEventListener("change", () => pr.set_fault(c.dataset.f, c.checked)));
   hintAt = 0; $("hints").innerHTML = "";
   $("hint").disabled = false;
-  $("results").innerHTML = ""; $("verdict").textContent = ""; $("verdict").className = "verdict";
+  $("results").innerHTML = ""; $("verdict").textContent = ""; $("verdict").className = "verdict"; $("wl").hidden = true;
   const saved = storeGet("ll_code_" + ex.id, null);
   $("code").value = saved !== null ? saved : ex.starter;
   compileNow();
+  etab = "il";                                     // a new exercise: the ladder editor is loaded from its program
+  showEditor(storeGet("ll_editor_tab", "ladder"));
   document.body.classList.remove("toc-open");
   buildToc();
   window.scrollTo(0, 0);
@@ -90,7 +93,7 @@ function compileNow() {
     renderRungs($("ladder"), layout.map((r, i) => [r, i]), {});
     showSfc(pr.sfc(), ladderComment);
   } else {
-    $("ladder").innerHTML = `<p class="empty">${out.errors.length ? "先修正上面的錯誤，階梯圖才會出現。" : ""}</p>`;
+    $("ladder").innerHTML = `<p class="empty">${!out.errors.length || (out.errors.length === 1 && /還沒有寫任何指令/.test(out.errors[0].msg)) ? "還沒寫程式。" : "先修正上面的錯誤，階梯圖才會出現。"}</p>`;
   }
 }
 $("restart").onclick = () => { compileNow(); $("pfaults").querySelectorAll("input").forEach((c) => { c.checked = false; }); };
@@ -133,15 +136,17 @@ $("hint").onclick = () => {
 };
 $("sol").onclick = () => {
   if (!confirm("先自己試過再看比較有用。確定要看參考解答嗎？（會取代編輯器裡的程式）")) return;
-  $("code").value = pr.solution();
-  $("code").dispatchEvent(new Event("input"));
+  setCode(pr.solution());
 };
 $("reset").onclick = () => {
   if (!confirm("清掉你寫的程式，回到題目一開始的樣子？")) return;
-  $("code").value = ex.starter;
-  $("code").dispatchEvent(new Event("input"));
+  setCode(ex.starter);
 };
 function gradeNow() {
+  if (etab === "ladder" && !syncFromLadder()) {
+    $("verdict").textContent = "梯形圖還有錯誤，先修正再評分。"; $("verdict").className = "verdict bad";
+    return;
+  }
   const r = JSON.parse(pr.grade($("code").value));
   if (!r.compiled) {
     $("verdict").textContent = "程式有錯誤，還不能評分。"; $("verdict").className = "verdict bad";
@@ -167,6 +172,60 @@ $("share").onclick = async () => {
   catch (e) { prompt("複製這個連結：", url); }
 };
 
+/* ---------- ladder editor: draws the same program; the instruction list stays what is graded ---------- */
+function setCode(text) {
+  $("code").value = text;
+  $("code").dispatchEvent(new Event("input"));
+  if (etab === "ladder") loadLadder();
+}
+function devComment(dev) {
+  const n = String(dev || "").toUpperCase().replace(/^([XY])0*(\d+)$/, (m, k, d) => k + d.padStart(3, "0"));
+  const f = ex ? ex.inputs.concat(ex.outputs).find((r) => r[0] === n) : null;
+  return f ? f[1] : "";
+}
+function leadComments(text) {                     // the comment lines before the first instruction survive ladder edits
+  const out = [];
+  for (const line of text.split("\n")) { if (/^\s*(;|$)/.test(line)) out.push(line); else break; }
+  return out.join("\n").replace(/\s+$/, "");
+}
+function syncFromLadder() {
+  if (!led) return true;
+  const r = led.compile();
+  if (r.errors && r.errors.length) {
+    led.showErrors(r.errors);
+    $("errors").innerHTML = r.errors.map((e) => `<li>${e.rung !== undefined && e.rung !== null ? `第 ${e.rung + 1} 條梯級：` : ""}${esc2(e.msg)}</li>`).join("");
+    return false;
+  }
+  const head = leadComments($("code").value), il = (head ? head + "\n" : "") + r.il;
+  if (il !== $("code").value) { $("code").value = il; $("code").dispatchEvent(new Event("input")); }
+  return true;
+}
+function loadLadder() {
+  if (!led) return false;
+  const g = LEdit.fromIL($("code").value);
+  if (!g.rungs) {
+    etab = "il";                                   // nothing in the ladder editor to keep: do not sync it back
+    showEditor("il", true);
+    $("errors").innerHTML = `<li>這個程式有梯形圖編輯器畫不出來的寫法（${esc2((g.warnings || []).join("；"))}），請在「指令表」修改。</li>`;
+    return false;
+  }
+  led.set(g.rungs);
+  if (g.warnings && g.warnings.length) $("errors").innerHTML = g.warnings.map((w) => `<li>${esc2(w)}</li>`).join("");
+  return true;
+}
+function showEditor(t, quiet) {
+  if (t === "ladder" && !led) t = "il";
+  if (t === "ladder" && etab !== "ladder") { etab = "ladder"; if (!loadLadder()) return; }
+  if (t === "il" && etab === "ladder") syncFromLadder();
+  etab = t;
+  if (!quiet) storeSet("ll_editor_tab", t);
+  $("ed-ladder").hidden = t !== "ladder"; $("ladder-note").hidden = t !== "ladder";
+  document.querySelector(".editor").hidden = t === "ladder"; $("palette").hidden = t === "ladder";
+  document.querySelectorAll("#etabs button").forEach((b) => b.classList.toggle("here", b.dataset.e === t));
+  if (t === "ladder" && led && led.redraw) led.redraw();
+}
+document.querySelectorAll("#etabs button").forEach((b) => (b.onclick = () => showEditor(b.dataset.e)));
+
 /* ---------- GX Works2 CSV in and out ---------- */
 function download(name, bytes, type) {
   const a = document.createElement("a");
@@ -183,10 +242,10 @@ $("csvin").addEventListener("change", async (e) => {
   const r = JSON.parse(pr.import_csv(btoa(bin)));
   e.target.value = "";
   if (!r.ok) { alert("讀不懂這個檔案：" + r.msg + "\n請確認是 GX Works2 匯出的程式 CSV（UTF-16）。"); return; }
-  $("code").value = `; 從 GX Works2 匯入：${f.name}（${r.plc || "未知 PLC"}，${r.count} 個指令）\n` + r.il;
-  $("code").dispatchEvent(new Event("input"));
+  setCode(`; 從 GX Works2 匯入：${f.name}（${r.plc || "未知 PLC"}，${r.count} 個指令）\n` + r.il);
 });
 $("csvout").onclick = () => {
+  if (etab === "ladder" && !syncFromLadder()) { alert("梯形圖還有錯誤，先修正再下載。"); return; }
   const b64 = pr.export_csv($("code").value);
   if (!b64) { alert("程式還有錯誤，先修正再下載。"); return; }
   if (!confirm("下載成 GX Works2 程式 CSV 格式（FX3S）。\n格式和學校 FX3S 從 GX Works2 匯出的檔案逐位元組相同。\n放回 GX Works2：打開梯形圖，用「編輯 ▸ 讀取 CSV 檔案」（英文版 Edit ▸ Read from CSV File），會取代目前的程式。\n只能用在「簡單工程、不使用標籤」；建立工程時勾了「使用標籤」，選單會是灰的。\n實機匯入還等學校確認；失敗時請改用「下載指令表」照著輸入。")) return;
@@ -218,6 +277,8 @@ async function boot() {
   try {
     py = await bootPython();
     pr = py.runPython("from practice_bridge import Practice; Practice()");
+    led = LEdit.editor($("ed-ladder"), { comment: devComment, stl: true, onConvert: () => syncFromLadder(),
+      onChange: () => { clearTimeout(ltimer); ltimer = setTimeout(syncFromLadder, 500); } });
     cat = JSON.parse(py.runPython("from practice_bridge import catalog; catalog()"));
     const route = () => {
       const id = location.hash.slice(1).split("?")[0];
@@ -225,8 +286,7 @@ async function boot() {
       const shared = new URLSearchParams(location.search).get("il");
       if (shared && id === "FREE" && !route.used) {
         route.used = true;
-        $("code").value = shared;
-        $("code").dispatchEvent(new Event("input"));
+        setCode(shared);
       }
     };
     window.addEventListener("hashchange", route);

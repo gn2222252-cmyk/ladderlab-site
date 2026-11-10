@@ -22,7 +22,7 @@
     <div id="loading" class="loading"><span class="spin"></span><span>正在載入模擬引擎（第一次約 10 秒）…</span></div>
     <p class="crumb" id="crumb"></p>
     <h1 id="title"></h1>
-    <p class="hint">想用梯形圖或 SFC 畫，不想打指令？到 <a href="sim.html">模擬器</a>畫好，切到「指令表」複製過來就能評分。</p>
+    <p class="hint">可以直接畫梯形圖（F5 常開、F6 常閉、F7 線圈），也可以切到「指令表」用打的；兩邊會互相轉換，評分看的是同一個程式。想用 SFC 畫，到 <a href="sim.html">模擬器</a>畫好再切到指令表複製過來。</p>
     <div id="task" class="task"></div>
     <div class="io-spec">
       <table id="iotable"></table>
@@ -32,7 +32,7 @@
     <div class="work">
       <section class="editor-card">
         <div class="ladder-head">
-          <h2>你的程式（指令表）</h2>
+          <h2>你的程式 <span class="sim-tabs" id="etabs"><button type="button" data-e="ladder">梯形圖</button><button type="button" data-e="il">指令表</button></span></h2>
           <div class="ladder-tools">
             <button id="hint" type="button" class="small-btn">提示</button>
             <button id="sol" type="button" class="small-btn ghost">看參考解答</button>
@@ -42,6 +42,8 @@
             <button id="txtout" type="button" class="small-btn ghost">下載指令表</button>
           </div>
         </div>
+        <div id="ed-ladder" hidden></div>
+        <p id="ladder-note" class="hint" hidden>在梯形圖修改後，指令表裡的 ; 註解（開頭那幾行以外）會被拿掉；題目的提示按「提示」就看得到。梯形圖有錯時，評分會先請你修正。</p>
         <div class="palette" id="palette"></div>
         <div class="editor">
           <pre id="gutter" class="gutter" aria-hidden="true"></pre>
@@ -57,7 +59,7 @@
         <ul id="results" class="results"></ul>
         <div id="wl" class="wl-box" hidden></div>
 
-        <h2 class="sub">階梯圖（隨你的程式即時更新） <span class="view-tabs" id="vtabs" hidden><button type="button" data-v="ladder" class="here">階梯圖</button><button type="button" data-v="sfc">SFC 圖</button></span></h2>
+        <h2 class="sub">監看：試跑中的程式（通電的地方會亮） <span class="view-tabs" id="vtabs" hidden><button type="button" data-v="ladder" class="here">階梯圖</button><button type="button" data-v="sfc">SFC 圖</button></span></h2>
         <div class="ladder-wrap" id="ladderview"><div id="ladder"></div></div>
         <div class="sfc-wrap" id="sfcview" hidden></div>
       </section>
@@ -87,6 +89,7 @@
 <script src="common.js"></script>
 <script src="waitlist.js"></script>
 <script src="ladder.js"></script>
+<script src="ledit.js"></script>
 <script src="sfc.js"></script>
 <script src="plants.js"></script>
 <script src="practice.js"></script>
