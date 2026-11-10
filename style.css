@@ -681,3 +681,4 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .k-dv{display:inline-block;min-width:34px;text-align:center;font:700 26px/1.2 monospace;background:#1d2128;color:#ffd54a;border-radius:4px;padding:2px 4px}
 .k-small2{font-size:11px;color:var(--mute);text-align:center;margin:0}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .k-disc{fill:#2a303a}}
+.plc-help summary{cursor:pointer;font-size:12px;color:var(--mute)}

@@ -20,6 +20,8 @@
     <button type="button" id="clear" class="small-btn">清空</button>
     <label class="small-btn filebtn" title="GX Works2 匯出的程式 CSV，或一行一個指令的文字檔">開啟 CSV<input id="csvin" type="file" accept=".csv,.txt" hidden></label>
     <button type="button" id="csvout" class="small-btn">存成 CSV</button>
+    <button type="button" id="projout" class="small-btn" title="PLC 機型、擴充、組裝台的零件和接線、程式，全部存成一個檔">存專案</button>
+    <label class="small-btn filebtn" title="開啟存過的專案檔">開專案<input id="projin" type="file" accept=".json" hidden></label>
     <span class="sim-tabs" id="tabs"><button type="button" data-t="ladder" class="here">梯形圖</button><button type="button" data-t="stl">STL 步進梯形圖</button><button type="button" data-t="sfc">SFC</button><button type="button" data-t="il">指令表</button></span>
     <span class="sim-modes"><button type="button" id="bWrite" class="small-btn here">寫入 F2</button><button type="button" id="bConv" class="small-btn go">轉換並執行 F4</button><button type="button" id="bMon" class="small-btn">監看 F3</button></span>
   </div>
@@ -46,7 +48,7 @@
           <ul id="plcExt" class="plc-ext"></ul>
           <div class="plc-add"><select id="plcExtSel"></select><button type="button" id="plcExtAdd" class="small-btn">加裝</button></div>
           <p id="plcIOtext" class="hint"></p>
-          <p class="hint">X、Y 不夠用：FX3S 可以加裝一片擴充板（4 點輸入或 2 點輸出），FX3G、FX3U 可以接 FX2N 擴充模組，或直接換點數多的機型。擴充的編號接在主機後面，從下一個 8 的倍數開始（例如 FX3S-30M 的輸入擴充板是 X20～X23）。面板圖是 FX3S-20M 的樣子，燈只有 X0～X13、Y0～Y7；其他端子看下面的輸入、輸出和組裝台。</p></div>
+          <details class="plc-help"><summary>X、Y 不夠用怎麼辦</summary><p class="hint">X、Y 不夠用：FX3S 可以加裝一片擴充板（4 點輸入或 2 點輸出），FX3G、FX3U 可以接 FX2N 擴充模組，或直接換點數多的機型。擴充模組的編號接在主機後面，從下一個 8 的倍數開始。擴充板沒有 X、Y 編號：FX3G-4EX-BD 的輸入 BX0～BX3 在程式裡讀 M8112～M8115，FX3G-2EYT-BD 的輸出 BY0、BY1 用 M8116、M8117 驅動（FX3S 硬體手冊的特殊元件表）。面板圖是 FX3S-20M 的樣子，燈只有 X0～X13、Y0～Y7；其他端子看下面的輸入、輸出和組裝台。</p></details></div>
         <details><summary>PLC 內的程式</summary><pre id="plcprog" class="plc-prog"></pre></details></div>
       <div class="box" id="plant-box"><h3>機構</h3><canvas id="plant" width="260" height="190"></canvas><div id="pfaults"></div></div>
       <div class="box"><h3>輸入 X（點一下切換）</h3><div id="inputs" class="inputs"></div></div>
@@ -70,6 +72,7 @@
         <li><b>指令表</b>：直接打指令。</li></ul>
         三個分頁會互相轉換：在梯形圖畫好，切到指令表就看得到對應的指令。</li>
       <li><b>開啟 CSV</b>：讀 GX Works2 匯出的程式 CSV（梯形圖、STL 步進梯形圖都可以；在 GX Works2 用「工程 ▸ 匯出到檔案」之類的功能存成 CSV，學校 FX3S 匯出的格式已經測過），也可以讀一行一個指令的文字檔。讀進來會同時放進梯形圖、STL、SFC、指令表四個分頁並轉換寫入 PLC；有 STL 的程式會打開 STL 分頁。不支援的指令會列在上面的錯誤。<b>存成 CSV</b>：把目前的程式存成 GX Works2 的程式 CSV 格式（FX3S）；格式和學校匯出的檔案相同，但匯入回 GX Works2 還沒有實際操作驗證。</li>
+      <li><b>存專案／開專案</b>：把 PLC 機型和擴充、組裝台的零件位置和接線、程式一起存成一個 .json 檔，下次開啟就整台回來，也可以傳給同學。</li>
       <li><b>F4 轉換並執行</b>：灰底的梯級變白、程式送進模擬 PLC，機構開始跑。有錯會列在上面。</li>
       <li><b>F3 監看</b>：和 GX Works2 的監看模式一樣，通電的接點、線圈會亮，SFC 會標出作用中的步。按右邊的輸入操作機構。</li>
     </ol>

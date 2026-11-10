@@ -10,6 +10,7 @@ from exercises import SCAN
 from ladder_view import bit, word
 from plants import faults_of
 
+BOARD = 0o370                                     # where the page puts the expansion board terminals
 FX3S_X = ["X%03o" % n for n in range(16)]          # X000-X017 (octal), the FX3S-30M has all of them
 FX3S_Y = ["Y%03o" % n for n in range(16)]          # Y000-Y017
 
@@ -103,6 +104,10 @@ class Sandbox(Practice):
         ok = re.compile(r"^[XY][0-7]{3}$")
         self.ex["inputs"] = [(x, "", "switch") for x in xs if ok.match(x) and x[0] == "X"]
         self.ex["outputs"] = [(y, "") for y in ys if ok.match(y) and y[0] == "Y"]
+        # FX3G-4EX-BD / FX3G-2EYT-BD have no X / Y numbers: the program reads BX0-BX3 as M8112-M8115 and drives
+        # BY0-BY1 with M8116-M8117 (FX3S hardware manual, special device list). The page shows them as X370-X373 / Y370-Y371.
+        self.bx = [int(x[1:], 8) for x, _, _ in self.ex["inputs"] if int(x[1:], 8) >= BOARD]
+        self.by = [int(y[1:], 8) for y, _ in self.ex["outputs"] if int(y[1:], 8) >= BOARD]
         return json.dumps({"inputs": self.ex["inputs"], "outputs": self.ex["outputs"]})
 
     def compile(self, text):
@@ -130,10 +135,22 @@ class Sandbox(Practice):
             self.rig.power_cycle(0)
         self.running = on
 
+    bx = by = ()
+
     def tick(self, ms):
         if not self.rig:
             return
-        if self.running:
+        if self.running and (self.bx or self.by):
+            p = None
+            for _ in range(int(ms) // SCAN):
+                p = self.rig.plc
+                for n in self.bx:
+                    p.m[8112 + n - BOARD] = p.x_in[n]
+                self.rig.scan()
+                p = self.rig.plc
+                for n in self.by:
+                    p.y[n] = p.y_out[n] = p.m[8116 + n - BOARD]
+        elif self.running:
             self.rig.run(ms)
         elif self.rig.plant:
             for _ in range(int(ms) // SCAN):

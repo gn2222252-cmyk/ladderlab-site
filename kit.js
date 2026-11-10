@@ -68,7 +68,8 @@ const Kit = (() => {
   const PALETTE = ["red", "green", "yellow", "buzzer", "motor", "cyl", "tower", "cyl2", "conv", "feed", "arm", "suck", "bin", "rot", "lift", "door", "tank", "heat", "seg", "dial", "nopb", "ncpb", "switch"];
   const STOP_AT = 0.88, PICK_FROM = 0.78;          // conveyor stopper (box centre) when something picks at its outlet
   const AT = { conv: 0.85, convM: 0.3, convP: 0.5 }, PUSH_AT = 0.5, BOX = 0.075, BELT = 270;
-  const short = (d) => d ? d[0] + d.slice(1).replace(/^0+(?=\d)/, "") : "?";
+  let names = {}, lastPreset = 0;                                  // terminals shown by another name (expansion board BX0 / BY0)
+  const short = (d) => d ? names[d] || d[0] + d.slice(1).replace(/^0+(?=\d)/, "") : "?";
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const base = (k) => String(k || "").split(":")[0];
   const dAdd = (d, i) => d[0] + (parseInt(d.slice(1), 8) + i).toString(8).padStart(3, "0");
@@ -478,15 +479,15 @@ const Kit = (() => {
   function render() {
     if (!el) return;
     const segUse = {}; Object.keys(wires).forEach((t) => { if (wires[t].endsWith(".main") && RANGE4[(partById(wires[t].split(".")[0]) || {}).k]) for (let i = 1; i < 4; i++) segUse[dAdd(t, i)] = t; });
-    const term = (t) => (marks[t] ? `<span class="kb-ext">${esc(marks[t])}</span>` : "") + `<span class="kb-term ${t[0]}${wires[t] || segUse[t] ? " used" : ""}" data-t="${t}" title="${esc(label(t) || (t[0] === "X" ? "輸入端子（沒接線時是切換開關）" : "輸出端子（沒接線時只亮 PLC 上的燈）"))}"><b>${short(t)}</b><i></i></span>`;
+    const term = (t) => (marks[t] ? `<span class="kb-ext">${esc(marks[t])}</span>` : "") + `<span class="kb-term ${t[0]}${wires[t] || segUse[t] ? " used" : ""}" data-t="${t}" title="${esc((names[t] ? `${names[t]}：程式裡用 ${{ X370: "M8112", X371: "M8113", X372: "M8114", X373: "M8115", Y370: "M8116", Y371: "M8117" }[t]}。` : "") + (label(t) || (t[0] === "X" ? "輸入端子（沒接線時是切換開關）" : "輸出端子（沒接線時只亮 PLC 上的燈）")))}"><b>${short(t)}</b><i></i></span>`;
     const rows = xs.concat(ys).filter((d) => W[d] || segUse[d]).map((d) => `<tr><td><b>${short(d)}</b></td><td>${esc(label(d))}</td><td>${wires[d] ? `<button type="button" class="small-btn" data-cut="${d}">拆線</button>` : ""}</td></tr>`).join("");
     el.innerHTML = `<div class="kb-pal"><span class="hint">零件（拖到下面的組裝台，或點一下放上去）：</span>${PALETTE.map((k) => `<button type="button" class="kb-pi" data-k="${k}">${esc(PNAME[k])}</button>`).join("")}</div>` +
       `<div class="kb-bench"><div class="kb-plc"><div class="kb-row"><span class="kb-rl">${esc(model)}<br>輸入</span>${xs.map(term).join("")}</div><div class="kb-row"><span class="kb-rl">輸出</span>${ys.map(term).join("")}</div></div>` +
       `<svg class="kb-wires"></svg><div class="kb-area">${parts.map(partHtml).join("") || '<p class="hint kb-empty">組裝台是空的：從上面把零件拖進來，再從 PLC 的端子（X 藍、Y 橘）拉線到零件的端子。X 沒接線時是切換開關，Y 沒接線時只亮 PLC 面板上的燈。也可以從下面「範例機構」載入一組。</p>'}</div></div>` +
       `<p class="hint kb-legend">灰色方塊是<b>物料口</b>：從一個零件的「出口／放料」拉到另一個零件的「入口／取料」，工件就會照這個方向送過去。輸送帶出口連到夾爪取料、夾爪放料再連回輸送帶入口，工件就會一直循環（閉環）。</p>` +
       `<p class="kb-msg${msg ? " show" : ""}">${esc(msg || "拉線：按住端子拖到另一頭放開，或點一下端子再點另一頭。點一下線可以拆掉。")}</p>` +
-      `<div class="k-add"><select class="k-preset">${PRESETS.map((p, i) => `<option value="${i}">${esc(p.title)}</option>`).join("")}</select><button type="button" class="small-btn" data-preset>載入範例機構（零件、接線和程式）</button></div>` +
-      `<div class="k-add"><button type="button" class="small-btn" data-reset>機構歸位</button><button type="button" class="small-btn" data-clear>全部清空</button><label class="check small"><input type="checkbox" data-mute ${mute ? "checked" : ""}> 蜂鳴器靜音</label></div>` +
+      `<div class="k-add"><select class="k-preset">${PRESETS.map((p, i) => `<option value="${i}" ${i === lastPreset ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select><button type="button" class="small-btn" data-preset>載入範例機構（零件、接線和程式）</button></div>` +
+      `<div class="k-add"><button type="button" class="small-btn" data-reset>機構歸位</button><button type="button" class="small-btn" data-tidy>自動排列</button><button type="button" class="small-btn" data-clear>全部清空</button><label class="check small"><input type="checkbox" data-mute ${mute ? "checked" : ""}> 蜂鳴器靜音</label></div>` +
       `<details class="k-wire"><summary>接線表（${rows ? "目前接了哪些端子" : "還沒接線"}）</summary>${rows ? `<table class="k-table"><tbody>${rows}</tbody></table>` : ""}</details>`;
     msg = "";
     fitArea();
@@ -495,6 +496,7 @@ const Kit = (() => {
     el.querySelectorAll("[data-refill]").forEach((b) => (b.onclick = () => { const s = stateOf(b.dataset.refill); s.mag = Math.min(10, (s.mag === undefined ? 5 : s.mag) + 5); }));
     el.querySelectorAll("[data-empty]").forEach((b) => (b.onclick = () => { const s = stateOf(b.dataset.empty); s.metal = 0; s.plastic = 0; }));
     el.querySelector("[data-reset]").onclick = () => { sim = {}; };
+    el.querySelector("[data-tidy]").onclick = tidy;
     el.querySelector("[data-preset]").onclick = () => preset(+el.querySelector(".k-preset").value);
     el.querySelector("[data-mute]").onchange = (e) => { mute = e.target.checked; if (mute) buzz(false); };
     el.querySelectorAll("[data-cut]").forEach((b) => (b.onclick = () => { delete wires[b.dataset.cut]; commit(); }));
@@ -513,6 +515,20 @@ const Kit = (() => {
     if (window.ResizeObserver) { if (ro) ro.disconnect(); ro = new ResizeObserver(() => drawWires()); ro.observe(el.querySelector(".kb-bench")); }
     drawWires();
     if (pick) { const n = el.querySelector(pick.sel); if (n) n.classList.add("pick"); else pick = null; }
+  }
+  /* lay the parts out in rows by their real size (ports stick out above and below each part, hence the gaps) */
+  function tidy() {
+    const area = el && el.querySelector(".kb-area"); if (!area) return;
+    const width = area.clientWidth || 680;
+    let x = 8, y = 14, row = 0;
+    parts.forEach((p) => {
+      const n = area.querySelector(`.kb-part[data-id="${p.id}"]`); if (!n) return;
+      const w = n.offsetWidth, h = n.offsetHeight;
+      if (x > 8 && x + w > width - 8) { x = 8; y += row + 30; row = 0; }
+      p.x = x; p.y = y; n.style.left = x + "px"; n.style.top = y + "px";
+      x += w + 18; row = Math.max(row, h);
+    });
+    save(); fitArea(); drawWires();
   }
   function fitArea() {                            // the bench grows to hold every part
     const area = el && el.querySelector(".kb-area"); if (!area) return;
@@ -749,10 +765,10 @@ const Kit = (() => {
       note: "X0、X1、X2 是 1、2、3 樓的叫車按鈕，叫了就記住（M1～M3），到那一樓才清掉。樓層感測器 X3～X5 記住現在在哪一樓（M11～M13），樓層燈 Y2～Y4 跟著亮。要去的樓層在上面就上升 Y0，在下面就下降 Y1，兩個互鎖。把 ANI 拿掉讓兩個線圈同時 ON 會燒馬達；感測器沒停好會衝頂或蹲底。" },
     { title: "指撥設定數量：供料→吸盤→料盒（要加裝擴充板）", plc: ["FX3S-30M", ["4EX-BD"]],
       W: { X000: "nopb", X001: "ncpb", X002: "feedE:Y000", X003: "feedF:Y000", X004: "conv:Y001", X005: "armL:Y002", X006: "armR:Y002", X007: "armU:Y002", X010: "armD:Y002", X011: "armH:Y002",
-        X016: "nopb", X020: "dial", Y000: "feed", Y001: "conv", Y002: "suck", Y003: "armZ:Y002", Y004: "armG:Y002", Y005: "tower", Y006: "twY:Y005", Y007: "twG:Y005", Y010: "twB:Y005", Y011: "seg" },
+        X016: "nopb", X370: "dial", Y000: "feed", Y001: "conv", Y002: "suck", Y003: "armZ:Y002", Y004: "armG:Y002", Y005: "tower", Y006: "twY:Y005", Y007: "twG:Y005", Y010: "twB:Y005", Y011: "seg" },
       extra: ["bin"], L: [["Y000", "out", "Y001", "in"], ["Y001", "out", "Y002", "pick"], ["Y002", "place", "#0", "in"]],
-      init() { stateOf("X020").val = 3; },
-      il: ["LD M8000", "MOV K1X020 D0", "LD X000", "OR M0", "AND X001", "ANI M2", "OUT M0",
+      init() { stateOf("X370").val = 3; },
+      il: ["LD M8000", "MOV K1M8112 D0", "LD X000", "OR M0", "AND X001", "ANI M2", "OUT M0",
         "LD M0", "AND X002", "ANI M1", "ANI X003", "OUT Y000", "LD X003", "SET M1", "LD M0", "ANI X004", "OUT Y001",
         "LDF X011", "AND X006", "OUT C0 K99", "LD>= C0 D0", "AND> D0 K0", "SET M2", "LD X016", "RST C0", "RST M2",
         "LD M8000", "MOV C0 K1Y011", "LD M0", "OUT Y007", "LDI M0", "ANI M2", "OUT Y006", "LD M2", "OUT Y005",
@@ -767,15 +783,17 @@ const Kit = (() => {
         "STL S25", "RST Y004", "LDI X011", "SET S26",
         "STL S26", "RST Y003", "LD X007", "SET S27",
         "STL S27", "RST Y002", "RST M1", "LD X005", "SET S0", "RET"],
-      note: "這台用到 X0～X16 和 X20～X23，FX3S-30M 只有 X0～X17，所以加裝了 4 點輸入擴充板（X20～X23），指撥開關接在擴充板上。指撥開關設定要做幾個（預設 3），MOV K1X020 D0 讀進來。吸盤每放一個到料盒（真空 X11 由 ON 變 OFF、在放料位 X6），C0 加 1，七段顯示器（Y11～Y14）顯示數量。C0 到設定值：停機、塔燈紅 Y5 亮、蜂鳴器響 3 秒。X16 歸零再按 X0 重新開始。" },
+      note: "主機的 X0～X16 都接滿了，指撥開關要 4 點，所以加裝 FX3G-4EX-BD 輸入擴充板，指撥開關接在擴充板的 BX0～BX3。擴充板的輸入沒有 X 編號，程式要讀特殊繼電器 M8112～M8115，所以用 MOV K1M8112 D0 讀設定值（預設 3）。吸盤每放一個到料盒（真空 X11 由 ON 變 OFF、在放料位 X6），C0 加 1，七段顯示器（Y11～Y14）顯示數量。C0 到設定值：停機、塔燈紅 Y5 亮、蜂鳴器響 3 秒。X16 歸零再按 X0 重新開始。" },
   ];
   function preset(i) {
     const p = PRESETS[i] || PRESETS[0];
+    lastPreset = PRESETS[i] ? i : 0;
     const need = [];
     Object.keys(p.W).forEach((d) => { need.push(d); if (RANGE4[p.W[d]]) for (let j = 1; j < 4; j++) need.push(dAdd(d, j)); });
     if (opt && opt.setPlc && (p.plc || need.some((d) => !xs.includes(d) && !ys.includes(d)))) opt.setPlc(...(p.plc || ["FX3S-30M", []]));
     fromW(p.W, p.extra, p.L); W = derive(); sim = {}; p.init(); pick = null;
     changed(true);
+    tidy();
     if (opt && opt.onPreset) opt.onPreset(p.il.join("\n"), p.note);
   }
 
@@ -900,8 +918,8 @@ const Kit = (() => {
   }
 
   /* another PLC model or expansion: wires to terminals the new PLC does not have are removed */
-  function setIO(nx, ny, mk, name) {
-    xs = nx; ys = ny; marks = mk || {}; model = name || model;
+  function setIO(nx, ny, mk, name, nm) {
+    xs = nx; ys = ny; marks = mk || {}; model = name || model; names = nm || names;
     const gone = Object.keys(wires).filter((t) => !xs.includes(t) && !ys.includes(t));
     Object.keys(wires).forEach((t) => {
       const p = partById(wires[t].split(".")[0]);
@@ -914,9 +932,16 @@ const Kit = (() => {
   /* target: where the bench is drawn; o: {xs, ys, marks, model, onChange, onPreset, onReset, onToggle, setPlc} */
   let resize = null;
   function mount(target, o) {
-    el = target; opt = o; xs = o.xs; ys = o.ys; marks = o.marks || {}; model = o.model || "FX3S"; load(); render(); before = {}; xs.forEach((x) => { before[x] = kindOf(x); });
+    el = target; opt = o; xs = o.xs; ys = o.ys; marks = o.marks || {}; model = o.model || "FX3S"; names = o.names || {}; load(); render(); before = {}; xs.forEach((x) => { before[x] = kindOf(x); });
     if (!resize) { resize = () => drawWires(); window.addEventListener("resize", resize); }
   }
+  /* project file: the bench as data, and back */
+  function getBench() { return JSON.parse(JSON.stringify({ parts, wires, links, nid })); }
+  function setBench(b) {
+    parts = (b.parts || []).filter((p) => PORTS[p.k]); wires = b.wires || {}; links = b.links || {}; nid = b.nid || parts.length + 1;
+    Object.keys(wires).forEach((t) => { if (!xs.includes(t) && !ys.includes(t)) delete wires[t]; });
+    sim = {}; pick = null; W = derive(); changed(true);
+  }
   function unmount() { if (el) el.innerHTML = ""; el = null; buzz(false); }
-  return { mount, unmount, setIO, step, update, label, tag, inputKind, press, kindOf, PRESETS, redraw: drawWires };
+  return { mount, unmount, setIO, getBench, setBench, step, update, label, tag, inputKind, press, kindOf, PRESETS, redraw: drawWires };
 })();

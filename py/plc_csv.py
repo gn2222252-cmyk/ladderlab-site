@@ -17,7 +17,7 @@ HEADER = ('﻿"(未設定工程)"\r\n'
           '"空白欄"\t"PI陳述式"\t"便箋"\r\n')
 
 COMPARE_RE = re.compile(r"^(LD|AND|OR)(=|<>|>=|<=|>|<)$")
-SPECIAL_BITS = ("M8000", "M8002", "M8012", "M8013", "M8116", "M8117", "M8029", "M8340", "M8350")
+SPECIAL_BITS = ("M8000", "M8002", "M8012", "M8013", "M8112", "M8113", "M8114", "M8115", "M8116", "M8117", "M8029", "M8340", "M8350")
 ALLOWED = {
     "LD", "LDI", "AND", "ANI", "OR", "ORI", "ANB", "ORB", "MPS", "MRD", "MPP",
     "OUT", "SET", "RST", "PLS", "PLF", "MOV", "ADD", "SUB", "INC", "CMP", "ZCP", "END",

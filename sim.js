@@ -126,7 +126,10 @@ function watchList(il) {
   return seen.sort((a, b) => "MSTCD".indexOf(a[0]) - "MSTCD".indexOf(b[0]) || +a.slice(1) - +b.slice(1));
 }
 /* free mode: the X buttons and Y lamps follow what the learner wired (Kit) */
-const shortDev = (d) => d[0] + d.slice(1).replace(/^0+(?=\d)/, "");
+/* expansion board terminals: the page keeps them at X370-X373 / Y370-Y371, the program uses M8112-M8117 */
+const BOARD_NAMES = { X370: "BX0", X371: "BX1", X372: "BX2", X373: "BX3", Y370: "BY0", Y371: "BY1" };
+const BOARD_M = { X370: "M8112", X371: "M8113", X372: "M8114", X373: "M8115", Y370: "M8116", Y371: "M8117" };
+const shortDev = (d) => BOARD_NAMES[d] || d[0] + d.slice(1).replace(/^0+(?=\d)/, "");
 function freeIO() {
   $("inputs").innerHTML = M.inputs.map(([dev]) => {
     const k = Kit.inputKind(dev), t = Kit.tag(dev);
@@ -151,8 +154,8 @@ const PLC_MODELS = [["FX3S-10M", 6, 4], ["FX3S-14M", 8, 6], ["FX3S-20M", 12, 8],
   ["FX3G-14M", 8, 6], ["FX3G-24M", 14, 10], ["FX3G-40M", 24, 16], ["FX3G-60M", 36, 24],
   ["FX3U-16M", 8, 8], ["FX3U-32M", 16, 16], ["FX3U-48M", 24, 24], ["FX3U-64M", 32, 32], ["FX3U-80M", 40, 40]];
 const PLC_EXT = {
-  "4EX-BD": { x: 4, y: 0, bd: true, n: (f) => (f === "FX3S" ? "FX3S" : "FX3G") + "-4EX-BD（輸入擴充板 4 點）" },
-  "2EYT-BD": { x: 0, y: 2, bd: true, n: () => "FX3G-2EYT-BD（輸出擴充板 2 點）" },
+  "4EX-BD": { x: 4, y: 0, bd: true, n: () => "FX3G-4EX-BD（輸入擴充板 4 點，M8112～M8115）" },
+  "2EYT-BD": { x: 0, y: 2, bd: true, n: () => "FX3G-2EYT-BD（輸出擴充板 2 點，M8116～M8117）" },
   "8EX": { x: 8, y: 0, n: () => "FX2N-8EX（輸入擴充模組 8 點）" }, "16EX": { x: 16, y: 0, n: () => "FX2N-16EX（輸入擴充模組 16 點）" },
   "8EYR": { x: 0, y: 8, n: () => "FX2N-8EYR（輸出擴充模組 8 點）" }, "16EYR": { x: 0, y: 16, n: () => "FX2N-16EYR（輸出擴充模組 16 點）" },
 };
@@ -162,8 +165,9 @@ const plcFam = (m) => m.slice(0, 4);
 /* what may be added to this model: [allowed, reason] */
 function extAllowed(model, ext, add) {
   const fam = plcFam(model), e = PLC_EXT[add], m = PLC_MODELS.find((r) => r[0] === model);
-  const boards = ext.filter((k) => PLC_EXT[k].bd).length, slots = fam === "FX3S" ? 1 : fam === "FX3G" ? (m[1] + m[2] >= 40 ? 2 : 1) : 0;
-  if (e.bd && boards >= slots) return [false, fam === "FX3U" ? "FX3U 沒有 I/O 擴充板，要用擴充模組" : `${model} 只能裝 ${slots} 片擴充板`];
+  const boards = ext.filter((k) => PLC_EXT[k].bd).length;
+  if (e.bd && fam === "FX3U") return [false, "FX3U 沒有 I/O 擴充板，要用擴充模組"];
+  if (e.bd && boards >= 1) return [false, "I/O 擴充板只能裝一片（4 點輸入或 2 點輸出擇一）"];
   if (!e.bd && fam === "FX3S") return [false, "FX3S 不能接擴充模組，只能裝一片擴充板；點數不夠要換 FX3G 或 FX3U"];
   const total = m[1] + m[2] + ext.concat(add).reduce((a, k) => a + PLC_EXT[k].x + PLC_EXT[k].y, 0);
   const max = fam === "FX3G" ? 128 : fam === "FX3U" ? 256 : 999;
@@ -178,16 +182,23 @@ function plcIO(cfg) {
   let nx = m[1], ny = m[2];
   cfg.ext.forEach((k) => {
     const e = PLC_EXT[k], tag = k.replace(/-BD$/, " 擴充板").replace(/^(\d+)(EX|EYR)$/, "FX2N-$1$2");
+    if (e.bd) {                                        // boards are read / driven through M8112-M8117, not X / Y
+      for (let i = 0; i < e.x; i++) xs.push(o8("X", 0o370 + i));
+      for (let i = 0; i < e.y; i++) ys.push(o8("Y", 0o370 + i));
+      marks[e.x ? "X370" : "Y370"] = tag;
+      return;
+    }
     if (e.x) { const st = Math.ceil(nx / 8) * 8; marks[o8("X", st)] = tag; for (let i = 0; i < e.x; i++) xs.push(o8("X", st + i)); nx = st + e.x; }
     if (e.y) { const st = Math.ceil(ny / 8) * 8; marks[o8("Y", st)] = tag; for (let i = 0; i < e.y; i++) ys.push(o8("Y", st + i)); ny = st + e.y; }
   });
   return { xs, ys, marks };
 }
-const spans = (list) => {                                        // ["X000".."X017","X020"..] -> "X0～X17、X20～X23"
-  const out = []; let a = null, b = null;
+const spans = (all) => {                                         // ["X000".."X017","X020"..] -> "X0～X17、X20～X23"
+  const out = []; let a = null, b = null, list = all.filter((d) => !BOARD_NAMES[d]), bd = all.filter((d) => BOARD_NAMES[d]);
   list.forEach((d) => { const n = parseInt(d.slice(1), 8); if (b !== null && n === parseInt(b.slice(1), 8) + 1) b = d; else { if (a) out.push([a, b]); a = b = d; } });
   if (a) out.push([a, b]);
-  return out.map(([x, y]) => x === y ? shortDev(x) : `${shortDev(x)}～${shortDev(y)}`).join("、");
+  return out.map(([x, y]) => x === y ? shortDev(x) : `${shortDev(x)}～${shortDev(y)}`).join("、") +
+    (bd.length ? `＋擴充板 ${shortDev(bd[0])}～${shortDev(bd[bd.length - 1])}（程式用 ${BOARD_M[bd[0]]}～${BOARD_M[bd[bd.length - 1]]}）` : "");
 };
 function applyPlc(model, ext, live) {
   const cfg = { model, ext: [] };
@@ -198,7 +209,7 @@ function applyPlc(model, ext, live) {
   if (sb && isFree()) {
     const r = JSON.parse(sb.set_io(JSON.stringify(io.xs), JSON.stringify(io.ys)));
     M.inputs = r.inputs; M.outputs = r.outputs;
-    if (live) { Kit.setIO(io.xs, io.ys, io.marks, cfg.model); freeIO(); }
+    if (live) { Kit.setIO(io.xs, io.ys, io.marks, cfg.model, BOARD_NAMES); freeIO(); }
   }
   renderPlcCfg(io);
   rangeWarn();
@@ -225,7 +236,12 @@ function rangeWarn() {
     if (t[0] === "K") { const k = t[2], st = parseInt(t.slice(3), 8); for (let i = 0; i < 4 * +t[1]; i++) if (!have.has(n3(k, st + i))) miss.add(n3(k, st + i)); }
     else if (!have.has(n3(t[0], parseInt(t.slice(1), 8)))) miss.add(n3(t[0], parseInt(t.slice(1), 8)));
   });
-  w.hidden = !miss.size;
+  const il = loadedIL.toUpperCase(), noBoard = [];
+  if (/\bM811[2-5]\b/.test(il) && !have.has("X370")) noBoard.push("M8112～M8115 是 FX3G-4EX-BD 的輸入");
+  if (/\bM811[67]\b/.test(il) && !have.has("Y370")) noBoard.push("M8116、M8117 是 FX3G-2EYT-BD 的輸出");
+  [...miss].forEach((d) => { if (BOARD_NAMES[d]) miss.delete(d); });
+  w.hidden = !miss.size && !noBoard.length;
+  if (!miss.size && noBoard.length) { w.innerHTML = `⚠ ${noBoard.join("；")}，但現在沒有加裝這片擴充板，讀到的都是 OFF。可以在右邊「軟 PLC」加裝。`; return; }
   if (miss.size) w.innerHTML = `⚠ 程式用到 <b>${[...miss].slice(0, 8).map(shortDev).join("、")}${miss.size > 8 ? "…" : ""}</b>，但 ${escS(plcCfg.model)}${plcCfg.ext.length ? "＋擴充" : ""} 沒有這些端子（真的 PLC 上這些點不會有輸入、也接不到東西）。可以在右邊「軟 PLC」換大一點的機型，或加裝擴充板／擴充模組。`;
 }
 function kitPreset(il, note) {
@@ -245,7 +261,7 @@ function openMachine(id) {
   $("kit-box").hidden = !free;
   if (free) {
     const io = applyPlc(plcCfg.model, plcCfg.ext, false);
-    Kit.mount($("kit"), { xs: io.xs, ys: io.ys, marks: io.marks, model: plcCfg.model, onChange: freeIO, onPreset: kitPreset, onReset: (x) => sb.set_input(x, 0), onToggle: (x) => sb.toggle(x),
+    Kit.mount($("kit"), { xs: io.xs, ys: io.ys, marks: io.marks, model: plcCfg.model, names: BOARD_NAMES, onChange: freeIO, onPreset: kitPreset, onReset: (x) => sb.set_input(x, 0), onToggle: (x) => sb.toggle(x),
       setPlc: (m, e) => applyPlc(m, e, true) });
   } else { renderPlcCfg(); Kit.unmount(); }
   if (free) freeIO();
@@ -352,6 +368,31 @@ $("csvin").addEventListener("change", async (e) => {
 });
 $("plcModel").onchange = (e) => applyPlc(e.target.value, plcCfg.ext, true);
 $("plcExtAdd").onclick = () => { const k = $("plcExtSel").value; if (k && extAllowed(plcCfg.model, plcCfg.ext, k)[0]) applyPlc(plcCfg.model, plcCfg.ext.concat(k), true); };
+/* project file: PLC model and expansions, the assembled machine and the program in one JSON file */
+$("projout").onclick = () => {
+  if (!sb || !isFree()) { alert("專案檔存的是「只模擬電路」的組裝台；請先在上面選「只模擬電路」。"); return; }
+  const data = { ladderlab: "sim-project", version: 1, plc: plcCfg, bench: Kit.getBench(), program: currentIL().il, tab };
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }));
+  a.download = "LadderLab_專案.json"; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+$("projin").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f || !sb) return;
+  let d = null;
+  try { d = JSON.parse(await f.text()); } catch (err) { d = null; }
+  if (!d || d.ladderlab !== "sim-project") { alert("這不是 LadderLab 模擬器的專案檔（.json）。"); return; }
+  if (!isFree()) { $("machine").value = "free"; openMachine("free"); }
+  if (d.plc && d.plc.model) applyPlc(d.plc.model, d.plc.ext || [], true);
+  if (d.bench) Kit.setBench(d.bench);
+  const il = String(d.program || "");
+  if (mode === "monitor") setMode("write");
+  ["ladder", "stl", "sfc", "il"].forEach((t) => loadInto(t, il));
+  showTab(["ladder", "stl", "sfc", "il"].includes(d.tab) ? d.tab : (/\bSTL\b/i.test(il) ? "stl" : "ladder"));
+  convert();
+  $("note").textContent = `已開啟專案 ${f.name}（${plcCfg.model}${plcCfg.ext.length ? "＋擴充" : ""}）。`;
+});
 $("csvout").onclick = () => {
   if (!sb) return;
   const b64 = sb.export_csv(currentIL().il);
