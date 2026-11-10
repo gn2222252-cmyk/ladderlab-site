@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3.10 數字的輸入與顯示：指撥開關、BCD／BIN、七段顯示器｜PLC 互動課程</title>
+<meta name="description" content="PLC 裡的數字是二進位，人看的是十進位。指撥開關和七段顯示器是「一位數字用 4 條線」（1、2、4、8），這叫 BCD：25 的 BCD 是 0010｜0101（十位 2、個位 5），二進位卻是 0001 1001。所以讀指撥開關用 BI">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A14.html">
+<meta property="og:title" content="3.10 數字的輸入與顯示：指撥開關、BCD／BIN、七段顯示器｜PLC 互動課程">
+<meta property="og:description" content="PLC 裡的數字是二進位，人看的是十進位。指撥開關和七段顯示器是「一位數字用 4 條線」（1、2、4、8），這叫 BCD：25 的 BCD 是 0010｜0101（十位 2、個位 5），二進位卻是 0001 1001。所以讀指撥開關用 BI">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A14.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "A14 數字的輸入與顯示：指撥開關、BCD／BIN、七段顯示器", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../sim.html">模擬器</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 3 章　FX 常用指令</p>
+<h1>3.10 數字的輸入與顯示：指撥開關、BCD／BIN、七段顯示器</h1>
+<p class="lesson-goal"><b>本課目標</b>讀指撥開關、送七段顯示器時用對 BIN、BCD，看懂 K2X000 這種位數指定。</p>
+<div class="text">PLC 裡的數字是二進位，人看的是十進位。指撥開關和七段顯示器是「一位數字用 4 條線」（1、2、4、8），這叫 BCD：25 的 BCD 是 0010｜0101（十位 2、個位 5），二進位卻是 0001 1001。所以讀指撥開關用 BIN（BCD → 二進位），送七段顯示器用 BCD（二進位 → BCD）。直接用 MOV 搬，0～9 剛好一樣，10 以上就錯：指撥 12 用 MOV 讀進來是 18。
+K2X000 是「從 X0 開始的 2 位數」＝X0～X7：X0～X3 是個位、X4～X7 是十位。K2Y000 就是 Y0～Y7。起點建議用末位是 0 的編號。
+本課：兩位數指撥設定目標（BIN 讀進 D0），工件感測器 X10 每來一個 C0 加 1，C0 用 BCD 送到 Y0～Y7 的兩位數七段顯示器；數滿或目標被調小，Y10 數滿燈亮；X11 歸零。D1 是用 MOV 直接搬的對照組。</div>
+<p><a class="btnlink go" href="../learn.html#A14">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>指撥</th><th>X7～X0（BCD）</th><th>BIN 讀到</th><th>MOV 讀到</th></tr></thead><tbody><tr><td>05</td><td>0000 0101</td><td>5</td><td>5</td></tr><tr><td>12</td><td>0001 0010</td><td>12</td><td>18</td></tr><tr><td>25</td><td>0010 0101</td><td>25</td><td>37</td></tr><tr><td>99</td><td>1001 1001</td><td>99</td><td>153</td></tr></tbody></table></div>
+<div class="notes">BCD、BIN 的來源不能寫 K 常數（手冊規定）；16 位元範圍 0～9999，K1～K4。
+指撥在 00 時用 AND&gt; D0 K0 擋住不計數：計數器設定值 0 會當成 1，第一個工件就算數滿（FX3 程式手冊 4.6 節）。
+計數器到設定值後現在值停住不再加；目標調大後可以繼續數。
+指撥轉到一半可能讀到不是 BCD 的組合，BIN 會讓 M8067（運算錯誤）ON，實機可以用它判斷這一次讀值無效。
+K2Y000 只送兩位：C0 超過 99 時百位沒有地方顯示，要三位數用 K3Y000（Y0～Y13）。FX3S-30M 只到 Y15，不能用 K4Y000。</div>
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD M8000
+BIN K2X000 D0
+LD M8000
+MOV K2X000 D1
+LD X010
+AND&gt; D0 K0
+OUT C0 D0
+LD M8000
+BCD C0 K2Y000
+LD M8000
+CMP C0 D0 M20
+LD M20
+OR M21
+AND&gt; D0 K0
+OUT Y010
+LD X011
+RST C0</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20M8000%0ABIN%20K2X000%20D0%0ALD%20M8000%0AMOV%20K2X000%20D1%0ALD%20X010%0AAND%3E%20D0%20K0%0AOUT%20C0%20D0%0ALD%20M8000%0ABCD%20C0%20K2Y000%0ALD%20M8000%0ACMP%20C0%20D0%20M20%0ALD%20M20%0AOR%20M21%0AAND%3E%20D0%20K0%0AOUT%20Y010%0ALD%20X011%0ARST%20C0#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>一位數字 4 條線（BCD），PLC 內部是二進位</li><li>讀進來用 BIN，送出去用 BCD；MOV 只在 0～9 對</li><li>K2X000 = X0～X7，個位在低位</li></ul><p class="trap"><b>常見錯誤：</b>用 MOV 讀指撥開關，測 0～9 都正常，到了 10 以上數量就錯。</p></div>
+<h2>預測看看</h2><div class="qz"><p>指撥撥到 36（個位 6＝X1、X2；十位 3＝X4、X5），用 MOV 讀進來的 D1 是多少？</p><details><summary>看答案</summary><p><b>54</b>　BCD 的 36 是 0011 0110，MOV 照位元原樣搬，二進位 0011 0110 = 54。要得到 36 要用 BIN。</p></details></div><div class="qz"><p>目標撥 02（X1），工件來 3 次，Y10（數滿燈）是？</p><details><summary>看答案</summary><p><b>ON</b>　C0 數到 2 就等於目標（M21），數滿燈亮；計數器到設定值後停在 2。</p></details></div>
+<p class="pager"><a class="btnlink" href="A12.html">‹ 上一課：3.9 移位：跑馬燈與工件追蹤</a> <a class="btnlink" href="5.html">下一課：4.1 用自保持寫流程：開始打結</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

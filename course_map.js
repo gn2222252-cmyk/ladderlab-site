@@ -314,6 +314,14 @@ window.COURSE = {
      "goal": "用 SFTL／SFTR 讓一排位元移動，做出跑馬燈和工件追蹤。"
     },
     {
+     "k": "L",
+     "id": "A14",
+     "href": "learn.html#A14",
+     "no": "3.10",
+     "label": "數字的輸入與顯示：指撥開關、BCD／BIN、七段顯示器",
+     "goal": "讀指撥開關、送七段顯示器時用對 BIN、BCD，看懂 K2X000 這種位數指定。"
+    },
+    {
      "k": "E",
      "id": "E26",
      "href": "practice.html#E26",
