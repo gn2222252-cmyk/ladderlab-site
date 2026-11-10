@@ -2497,9 +2497,20 @@ class Rig(object):
             if self.broken is not None:
                 break
             if kind == "never_both" and bit(self.plc, a) and bit(self.plc, b):
-                self.broken = "%.2f 秒時 %s 和 %s 同時 ON：%s" % (self.ms / 1000.0, a, b, why)
+                self.broken = "%.2f 秒時 %s 和 %s 同時 ON：%s%s" % (self.ms / 1000.0, a, b, why, self._context())
             elif kind == "plant_flag" and self.plant is not None and getattr(self.plant, a, False):
-                self.broken = "%.2f 秒時%s" % (self.ms / 1000.0, why)
+                self.broken = "%.2f 秒時%s%s" % (self.ms / 1000.0, why, self._context())
+
+    def _context(self):
+        """Where the program was when a safety rule broke (tester U10: the message did not say which step)."""
+        steps = ["S%d" % i for i, v in enumerate(self.plc.s) if v][:4]
+        outs = [_label(self.ex, d) for d, _ in self.ex.get("outputs", []) if bit(self.plc, d)][:6]
+        parts = []
+        if steps:
+            parts.append("當時作用的步：" + "、".join(steps))
+        if outs:
+            parts.append("ON 的輸出：" + "、".join(outs))
+        return "（%s）" % "；".join(parts) if parts else ""
 
     def run(self, ms):
         for _ in range(int(ms) // SCAN):
@@ -2647,8 +2658,15 @@ def grade(ex, text):
     for dev in ex.get("forbid", []):
         if dev in used:
             results.append({"name": "不能使用 %s" % dev, "ok": False, "why": "這題要自己用計時器做，不能用 %s。" % dev})
+    seen = set()                                          # tester U10: one safety violation, said once in full
     for name, steps in ex["tests"]:
         why = run_test(ex, program, steps)
+        m = re.match(r"安全條件違反（[^）]*）：[\d.]+ 秒時 ?(.*?)(（當時|（ON 的|$)", why or "")
+        if m:
+            core = m.group(1)
+            if core in seen:
+                why = "同上一項的安全條件違反（%s），修好那一個再看這一項。" % core.rstrip("：，。")[:40]
+            seen.add(core)
         results.append({"name": name, "ok": why is None, "why": why or ""})
     passed = all(r["ok"] for r in results)
     notes = [] if passed else _double_coils(text)
