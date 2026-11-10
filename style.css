@@ -716,3 +716,10 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .ladder-fold > summary { cursor: pointer; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--mute); }
 .ladder-fold > summary b { color: inherit; color: var(--fg, inherit); }
 .ladder-fold[open] > summary { margin-bottom: 10px; }
+/* practice page: below 1500 px the exercise list becomes a drawer, so the ladder editor gets the width (tester U7: 1366 px) */
+@media (max-width:1500px){
+  body.practice-page .learn-grid{grid-template-columns:minmax(0,1fr);max-width:none}
+  body.practice-page .only-narrow{display:inline-block}
+  body.practice-page .toc{display:none;position:fixed;left:0;top:0;bottom:0;width:300px;max-height:none;z-index:60;background:var(--card);border-right:1px solid var(--line);box-shadow:4px 0 18px rgba(0,0,0,.18);padding:12px}
+  body.practice-page.toc-open .toc{display:block}
+}
