@@ -42,6 +42,15 @@ class Plant(object):
         self.apply()
 
     def step(self, ms):
+        if self.kind == "ab2":                      # two 5/2 double-solenoid cylinders: A Y0+/Y1-, B Y2+/Y3-; both coils
+            v = ms / 1400.0                         # OFF keeps the last valve position, so a cylinder runs on to its end
+            y = self.plc.y_out
+            self.da = 1 if y[0] and not y[1] else -1 if y[1] and not y[0] else getattr(self, "da", 0)
+            self.db = 1 if y[2] and not y[3] else -1 if y[3] and not y[2] else getattr(self, "db", 0)
+            self.z = min(1.0, max(0.0, self.z + self.da * v))
+            self.zb = min(1.0, max(0.0, self.zb + self.db * v))
+            self.apply()
+            return
         if self.kind == "ab":                       # two single-solenoid cylinders: A on Y0, B on Y1
             v = ms / 1400.0
             self.z = min(1.0, self.z + v) if self.plc.y_out[0] else max(0.0, self.z - v)
@@ -69,6 +78,11 @@ class Plant(object):
         self.apply()
 
     def apply(self):
+        if self.kind == "ab2":
+            x = self.plc.x_in
+            x[8], x[9] = int(self.z <= 0.02), int(self.z >= 0.98)      # X10 a0, X11 a1
+            x[10], x[11] = int(self.zb <= 0.02), int(self.zb >= 0.98)  # X12 b0, X13 b1
+            return
         if self.kind == "panel":
             self.plc.x_in[0] = 1 if self.z >= 0.98 else 0
             self.plc.x_in[1] = 1 if self.z <= 0.02 else 0

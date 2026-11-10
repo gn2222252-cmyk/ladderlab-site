@@ -292,7 +292,7 @@ const pc = $("plant").getContext("2d");
 function drawPlant(p) {
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   pc.clearRect(0, 0, 200, 130);
-  if (p.kind === "ab") { drawAB(p, css); return; }
+  if (p.kind === "ab" || p.kind === "ab2") { drawAB(p, css); return; }
   if (p.kind === "panel") {                    // one double-solenoid cylinder lying down: X1 back (home), X0 front
     pc.fillStyle = css("--rail"); pc.fillRect(20, 50, 80, 28);
     pc.fillStyle = css("--belt"); pc.fillRect(100, 60, 10 + p.z * 60, 8);
@@ -312,8 +312,9 @@ function drawPlant(p) {
 
 let panel = null;
 function fxMap(o) { const m = {}; Object.keys(o).forEach((d) => { m[d[0] + parseInt(d.slice(1), 10)] = o[d]; }); return m; }
-function drawAB(p, css) {               // two horizontal single-solenoid cylinders, A on top, B below
-  [["A", p.z, 20, "X2", "X3"], ["B", p.zb, 78, "X4", "X5"]].forEach(([name, z, y, back, front]) => {
+function drawAB(p, css) {               // two horizontal cylinders, A on top, B below
+  const two = p.kind === "ab2";               // ab2: double solenoid, sensors a0 X10, a1 X11, b0 X12, b1 X13
+  [["A", p.z, 20, two ? "a0 X10" : "X2", two ? "a1 X11" : "X3"], ["B", p.zb, 78, two ? "b0 X12" : "X4", two ? "b1 X13" : "X5"]].forEach(([name, z, y, back, front]) => {
     pc.fillStyle = css("--rail"); pc.fillRect(10, y, 70, 24);
     pc.fillStyle = css("--belt"); pc.fillRect(80, y + 9, 10 + z * 70, 6);
     pc.fillStyle = "#d0a020"; pc.fillRect(90 + z * 70, y + 2, 10, 20);

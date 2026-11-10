@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>4.7 一般階梯圖怎麼轉步進｜PLC 互動課程</title>
+<title>4.8 一般階梯圖怎麼轉步進｜PLC 互動課程</title>
 <meta name="description" content="不用重想邏輯，照五個步驟轉就好。下面會從「用自保持寫流程」那課的程式開始，一步步換成「步進（STL）」那課的寫法，最後實際跑起來。">
 <link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-4.html">
-<meta property="og:title" content="4.7 一般階梯圖怎麼轉步進｜PLC 互動課程">
+<meta property="og:title" content="4.8 一般階梯圖怎麼轉步進｜PLC 互動課程">
 <meta property="og:description" content="不用重想邏輯，照五個步驟轉就好。下面會從「用自保持寫流程」那課的程式開始，一步步換成「步進（STL）」那課的寫法，最後實際跑起來。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-4.html">
@@ -20,7 +20,7 @@
 </header>
 <main class="wide static-main">
 <p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 4 章　順序控制：步進 STL 與 SFC</p>
-<h1>4.7 一般階梯圖怎麼轉步進</h1>
+<h1>4.8 一般階梯圖怎麼轉步進</h1>
 <p class="lesson-goal"><b>本課目標</b>把一份自保持寫的流程，照五個步驟改寫成步進。</p>
 <div class="text">不用重想邏輯，照五個步驟轉就好。下面會從「用自保持寫流程」那課的程式開始，一步步換成「步進（STL）」那課的寫法，最後實際跑起來。
 底下的對照表就是轉換公式。按「▶ 播放示範」。</div>
@@ -57,7 +57,7 @@ OUT Y002</pre>
 <p><a class="btnlink" href="../practice.html?il=LD%20X000%0AOR%20M0%0AANI%20M1%0AOUT%20M0%0ALD%20M0%0AAND%20X001%0AOR%20M1%0AANI%20M2%0AOUT%20M1%0ALD%20M1%0AAND%20T0%0AOR%20M2%0AANI%20M3%0AOUT%20M2%0ALD%20M2%0AAND%20X002%0AOUT%20M3%0ALD%20M1%0AOUT%20T0%20K20%0ALD%20M0%0AOUT%20Y000%0ALD%20M1%0AOR%20M2%0AOUT%20Y001%0ALD%20M2%0AOUT%20Y002#FREE">只執行這段程式 ›</a></p>
 <div class="recap"><h3>重點整理</h3><ul><li>每個自保持的 M 對應一步 S</li><li>開始條件變成上一步的換步條件</li><li>結束條件不用寫，SET 下一步會自動關</li></ul><p class="trap"><b>常見錯誤：</b>轉換時把輸出保留在一般階梯，又在步裡寫一次，變成雙線圈。</p></div>
 <h2>預測看看</h2><div class="qz"><p>按一下 X0，2.5 秒後 M1（吸附步）是？</p><details><summary>看答案</summary><p><b>ON</b>　下降 2 秒到下限後換到 M1，吸附計時 2 秒還沒到。</p></details></div>
-<p class="pager"><a class="btnlink" href="6-5.html">‹ 上一課：4.6 先畫步序再寫程式：從動作描述到 STL</a> <a class="btnlink" href="7.html">下一課：4.8 兩條流程同時跑</a></p>
+<p class="pager"><a class="btnlink" href="6-7.html">‹ 上一課：4.7 看懂位移－時間圖：從圖到步序表到 STL</a> <a class="btnlink" href="7.html">下一課：4.9 兩條流程同時跑</a></p>
 </main>
 <footer>
   <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>

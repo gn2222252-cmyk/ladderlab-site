@@ -411,6 +411,14 @@ window.COURSE = {
      "goal": "把動作描述整理成步序表，再照表寫出 STL。"
     },
     {
+     "k": "L",
+     "id": "6-7",
+     "href": "learn.html#6-7",
+     "no": "4.7",
+     "label": "看懂位移－時間圖：從圖到步序表到 STL",
+     "goal": "看懂位移－時間圖，把每一格寫成一步，再寫成 STL。"
+    },
+    {
      "k": "E",
      "id": "E10",
      "href": "practice.html#E10",
@@ -444,7 +452,7 @@ window.COURSE = {
      "k": "L",
      "id": "6-4",
      "href": "learn.html#6-4",
-     "no": "4.7",
+     "no": "4.8",
      "label": "一般階梯圖怎麼轉步進",
      "goal": "把一份自保持寫的流程，照五個步驟改寫成步進。"
     },
@@ -452,7 +460,7 @@ window.COURSE = {
      "k": "L",
      "id": "7",
      "href": "learn.html#7",
-     "no": "4.8",
+     "no": "4.9",
      "label": "兩條流程同時跑",
      "goal": "寫出並行分支與並行合併。"
     },
@@ -460,7 +468,7 @@ window.COURSE = {
      "k": "L",
      "id": "A7",
      "href": "learn.html#A7",
-     "no": "4.9",
+     "no": "4.10",
      "label": "步進的選擇分支：OK 和 NG",
      "goal": "寫出選擇分支：依條件只走其中一條。"
     },
@@ -504,7 +512,7 @@ window.COURSE = {
      "k": "L",
      "id": "6-3",
      "href": "learn.html#6-3",
-     "no": "4.10",
+     "no": "4.11",
      "label": "通用嗎？換廠牌怎麼辦",
      "goal": "知道 STL 是三菱專用，換廠牌時用步序暫存器寫同一件事。"
     },

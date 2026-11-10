@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>4.9 步進的選擇分支：OK 和 NG｜PLC 互動課程</title>
+<title>4.10 步進的選擇分支：OK 和 NG｜PLC 互動課程</title>
 <meta name="description" content="上一課的並行分支是「兩條一起走」；選擇分支是「兩條只走一條」。">
 <link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A7.html">
-<meta property="og:title" content="4.9 步進的選擇分支：OK 和 NG｜PLC 互動課程">
+<meta property="og:title" content="4.10 步進的選擇分支：OK 和 NG｜PLC 互動課程">
 <meta property="og:description" content="上一課的並行分支是「兩條一起走」；選擇分支是「兩條只走一條」。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A7.html">
@@ -20,7 +20,7 @@
 </header>
 <main class="wide static-main">
 <p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 4 章　順序控制：步進 STL 與 SFC</p>
-<h1>4.9 步進的選擇分支：OK 和 NG</h1>
+<h1>4.10 步進的選擇分支：OK 和 NG</h1>
 <p class="lesson-goal"><b>本課目標</b>寫出選擇分支：依條件只走其中一條。</p>
 <div class="text">上一課的並行分支是「兩條一起走」；選擇分支是「兩條只走一條」。
 選擇分支：同一步寫兩條換步條件，依條件只走一條，例如檢測 OK 走出料，NG 走剔除。X1 代表檢測結果。</div>
@@ -55,7 +55,7 @@ RET</pre>
 <p><a class="btnlink" href="../practice.html?il=LD%20M8002%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0ASET%20S20%0ASTL%20S20%0AOUT%20T0%20K15%0ALD%20T0%0AAND%20X001%0ASET%20S21%0ALD%20T0%0AANI%20X001%0ASET%20S22%0ASTL%20S21%0AOUT%20Y000%0AOUT%20T1%20K15%0ALD%20T1%0ASET%20S0%0ASTL%20S22%0AOUT%20Y001%0AOUT%20T2%20K15%0ALD%20T2%0ASET%20S0%0ARET#FREE">只執行這段程式 ›</a></p>
 <div class="recap"><h3>重點整理</h3><ul><li>同一步寫兩個換步條件，條件要互斥</li><li>OK 走出料、NG 走剔除</li><li>兩條最後都回到同一步</li></ul><p class="trap"><b>常見錯誤：</b>兩個換步條件可能同時成立，結果兩步一起被 SET。</p></div>
 <h2>預測看看</h2><div class="qz"><p>檢測 NG（X1 OFF）時按 X0，2 秒後 Y1（NG 動作）是？</p><details><summary>看答案</summary><p><b>ON</b>　1.5 秒檢測完，X1 OFF 走 S22（NG 那條路）。</p></details></div><div class="qz"><p>檢測 OK（X1 ON）時按 X0，2 秒後 Y1 是？</p><details><summary>看答案</summary><p><b>OFF</b>　選擇分支：X1 ON 走 S21（OK），NG 那條不會動。</p></details></div>
-<p class="pager"><a class="btnlink" href="7.html">‹ 上一課：4.8 兩條流程同時跑</a> <a class="btnlink" href="6-3.html">下一課：4.10 通用嗎？換廠牌怎麼辦</a></p>
+<p class="pager"><a class="btnlink" href="7.html">‹ 上一課：4.9 兩條流程同時跑</a> <a class="btnlink" href="6-3.html">下一課：4.11 通用嗎？換廠牌怎麼辦</a></p>
 </main>
 <footer>
   <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
