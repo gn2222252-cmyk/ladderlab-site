@@ -212,6 +212,7 @@ function applyPlc(model, ext, live) {
     if (live) { Kit.setIO(io.xs, io.ys, io.marks, cfg.model, BOARD_NAMES); freeIO(); }
   }
   renderPlcCfg(io);
+  if (fx && fx.setModel) fx.setModel(cfg.model, io.xs, io.ys);
   rangeWarn();
   return io;
 }
@@ -263,7 +264,11 @@ function openMachine(id) {
     const io = applyPlc(plcCfg.model, plcCfg.ext, false);
     Kit.mount($("kit"), { xs: io.xs, ys: io.ys, marks: io.marks, model: plcCfg.model, names: BOARD_NAMES, onChange: freeIO, onPreset: kitPreset, onReset: (x) => sb.set_input(x, 0), onToggle: (x) => sb.toggle(x),
       setPlc: (m, e) => applyPlc(m, e, true) });
-  } else { renderPlcCfg(); Kit.unmount(); }
+  } else {
+    renderPlcCfg(); Kit.unmount();
+    const io20 = plcIO({ model: "FX3S-20M", ext: [] });
+    if (fx && fx.setModel) fx.setModel("FX3S-20M", io20.xs, io20.ys);
+  }
   if (free) freeIO();
   else {
     $("inputs").innerHTML = M.inputs.map(([dev, label, kind]) => `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}><i></i><span><b>${dev}</b> ${escS(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");

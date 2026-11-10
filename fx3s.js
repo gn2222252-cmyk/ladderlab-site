@@ -27,6 +27,23 @@ const FX3S = (() => {
     if (name[0] === "X") { const i = INS.indexOf(name); return [404 + (i % 8) * 9.5, i < 8 ? 184 : 196]; }
     const i = OUTS.indexOf(name); return [404 + i * 9.5, 300];
   }
+  /* the IN / OUT lamp blocks: 8 lamps a row (octal), rows labelled 0, 10, 20 ... like the printed panel */
+  function ledsSvg(ins, outs) {
+    let s = "";
+    const block = (list, y0, pitch) => {
+      const rows = {};
+      list.forEach((n) => { const v = parseInt(n.slice(1), 8); (rows[v >> 3] = rows[v >> 3] || []).push([n, v & 7]); });
+      Object.keys(rows).map(Number).sort((a, b) => a - b).forEach((r, i) => {
+        const y = y0 + i * pitch;
+        s += `<text class="fx-tiny fx-rowl" x="402" y="${y + 2.4}">${r ? r.toString(8) + "0" : "0"}</text>`;
+        rows[r].forEach(([n, c]) => { s += `<rect class="fx-led" data-led="${n}" x="${404 + c * 9.5}" y="${y - 3}" width="6" height="6" rx="1"/>`; });
+      });
+    };
+    s += `<text class="fx-tiny" x="404" y="176">0 1 2 3 4 5 6 7</text><text class="fx-tiny" x="404" y="292">0 1 2 3 4 5 6 7</text>`;
+    block(ins, 184, ins.length > 24 ? 9 : 12);
+    block(outs, 300, 9);
+    return s;
+  }
   function panelSvg() {
     let s = `<rect class="fx-din" x="${BX - 26}" y="${BY + 120}" width="${BW + 52}" height="70" rx="3"/>` +
       `<rect class="fx-body" x="${BX}" y="${BY}" width="${BW}" height="${BH}" rx="8"/>` +
@@ -43,8 +60,7 @@ const FX3S = (() => {
     s += `<text class="fx-model" x="232" y="226">FX3S-20MT/ES</text><text class="fx-sub" x="232" y="246">12 點輸入 · 8 點電晶體輸出</text>` +
       `<text class="fx-sub" x="232" y="262">AC 電源型（示意圖）</text>`;
     s += `<text class="fx-cap" x="384" y="188">IN</text><text class="fx-cap" x="380" y="304">OUT</text>`;
-    s += `<text class="fx-tiny" x="404" y="176">0 1 2 3 4 5 6 7</text><text class="fx-tiny" x="404" y="209">10 11 12 13</text><text class="fx-tiny" x="404" y="292">0 1 2 3 4 5 6 7</text>`;
-    INS.concat(OUTS).forEach((n) => { const [x, y] = ledPos(n); s += `<rect class="fx-led" data-led="${n}" x="${x}" y="${y - 3}" width="6" height="6" rx="1"/>`; });
+    s += `<g class="fx-leds">${ledsSvg(INS, OUTS)}</g>`;
     ["POW", "RUN", "ERR"].forEach((n, i) => {
       s += `<rect class="fx-led st" data-led="${n}" x="404" y="${232 + i * 11}" width="6" height="6" rx="1"/><text class="fx-tiny" x="414" y="${238 + i * 11}">${n}</text>`;
     });
@@ -137,7 +153,19 @@ const FX3S = (() => {
     const m = mount(el);
     m.svg.setAttribute("viewBox", `${BX - 30} ${BY - 8} ${BW + 60} ${BH + 16}`);
     m.setLeds({ POW: 1, RUN: 1, SW: 1 });
-    return { svg: m.svg, update(x, y, st) { m.setLeds(Object.assign({ POW: 1, RUN: 1, SW: 1 }, st || {}, x, y)); } };
+    return {
+      svg: m.svg, update(x, y, st) { m.setLeds(Object.assign({ POW: 1, RUN: 1, SW: 1 }, st || {}, x, y)); },
+      /* another model: the lamps follow its inputs / outputs (xs / ys like "X000"); the terminal strip stays the 20M drawing */
+      setModel(name, xs, ys) {
+        const sh = (d) => d[0] + d.slice(1).replace(/^0+(?=\d)/, "");
+        const ins = xs.filter((d) => parseInt(d.slice(1), 8) < 0o370).map(sh), outs = ys.filter((d) => parseInt(d.slice(1), 8) < 0o370).map(sh);
+        m.svg.querySelector(".fx-leds").innerHTML = ledsSvg(ins, outs);
+        m.svg.querySelector(".fx-model").textContent = name.length > 9 ? name : name + (name.includes("FX3S-20M") ? "T/ES" : "");
+        const sub = m.svg.querySelectorAll(".fx-sub");
+        sub[0].textContent = `${ins.length} 點輸入 · ${outs.length} 點輸出`;
+        sub[1].textContent = /FX3S-20M/.test(name) ? "AC 電源型（示意圖）" : "燈號照機型；端子排畫的是 20M（示意）";
+      },
+    };
   }
 
   /* Step by step wiring animation. scene: {devs:{id:[kind,x,y,opts]}, wires:{id:{pts,c,label}}, steps:[{say,point,wires,devs,leds,flow}]} */
