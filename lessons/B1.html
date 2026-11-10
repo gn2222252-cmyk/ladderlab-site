@@ -1,18 +1,18 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="328b1e1184">
+<meta name="ll-version" content="3dbb359403">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>5.5 雙龍門手動點動：按了為什麼不動？｜PLC 互動課程</title>
-<meta name="description" content="手動按鈕送來的是「動作請求」，不是直接接到馬達。PLC 還要確認手動允許、方向限位正常，而且相反方向沒有同時被要求。任何一道條件不成立，輸出都不動。">
+<title>5.5 手動點動：按了為什麼不動？｜PLC 互動課程</title>
+<meta name="description" content="手動按鈕送來的是「動作請求」，不是直接接到馬達。PLC 還要確認三件事：手動允許（現在是手動模式、安全條件成立）、這個方向還沒到限位、相反方向沒有同時被要求。任何一道條件不成立，輸出都不動。">
 <link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/B1.html">
-<meta property="og:title" content="5.5 雙龍門手動點動：按了為什麼不動？｜PLC 互動課程">
-<meta property="og:description" content="手動按鈕送來的是「動作請求」，不是直接接到馬達。PLC 還要確認手動允許、方向限位正常，而且相反方向沒有同時被要求。任何一道條件不成立，輸出都不動。">
+<meta property="og:title" content="5.5 手動點動：按了為什麼不動？｜PLC 互動課程">
+<meta property="og:description" content="手動按鈕送來的是「動作請求」，不是直接接到馬達。PLC 還要確認三件事：手動允許（現在是手動模式、安全條件成立）、這個方向還沒到限位、相反方向沒有同時被要求。任何一道條件不成立，輸出都不動。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/B1.html">
 <link rel="stylesheet" href="../style.css?v=0cb42899ca">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "B1 雙龍門手動點動：按了為什麼不動？", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "B1 手動點動：按了為什麼不動？", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
 </head>
 <body class="static">
 <header class="top">
@@ -21,13 +21,13 @@
 </header>
 <main class="wide static-main">
 <p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 5 章　讓機台可靠：異常、手動與復歸</p>
-<h1>5.5 雙龍門手動點動：按了為什麼不動？</h1>
+<h1>5.5 手動點動：按了為什麼不動？</h1>
 <p class="lesson-goal"><b>本課目標</b>知道手動按鈕是「請求」，PLC 還要檢查允許條件才輸出。</p>
-<div class="text">手動按鈕送來的是「動作請求」，不是直接接到馬達。PLC 還要確認手動允許、方向限位正常，而且相反方向沒有同時被要求。任何一道條件不成立，輸出都不動。
-本課用 X0/X1 模擬 HMI 的前進/後退命令；實際雙龍門由 LabVIEW 寫 D107，再由 PLC 解碼成 M110～M125。限位和方向互鎖仍要由 PLC 判斷。</div>
+<div class="text">手動按鈕送來的是「動作請求」，不是直接接到馬達。PLC 還要確認三件事：手動允許（現在是手動模式、安全條件成立）、這個方向還沒到限位、相反方向沒有同時被要求。任何一道條件不成立，輸出都不動。
+本課用 X0／X1 當前進、後退按鈕，X4 當手動允許。點動是「按住才動、放開就停」。</div>
 <p><a class="btnlink go" href="../learn.html#B1">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
-<div class="table-box"><table class="gtable"><thead><tr><th>條件</th><th>本課規則</th><th>實機對照</th></tr></thead><tbody><tr><td>手動允許</td><td>X4 必須 ON</td><td>Manual Allowed；PLC 模式/安全條件未滿足時不准點動</td></tr><tr><td>前進</td><td>X0 ON、X2 OFF、X1 OFF</td><td>請求 + 未到前限位 + 沒有反向命令</td></tr><tr><td>後退</td><td>X1 ON、X3 OFF、X0 OFF</td><td>請求 + 未到後限位 + 沒有正向命令</td></tr><tr><td>輸出</td><td>放開請求即 OFF</td><td>點動命令按住有效，放開撤銷</td></tr></tbody></table></div>
-
+<div class="table-box"><table class="gtable"><thead><tr><th>條件</th><th>本課規則</th><th>實機對照</th></tr></thead><tbody><tr><td>手動允許</td><td>X4 必須 ON</td><td>手動模式而且安全條件成立；不成立時不准點動</td></tr><tr><td>前進</td><td>X0 ON、X2 OFF、X1 OFF</td><td>請求 + 未到前限位 + 沒有反向命令</td></tr><tr><td>後退</td><td>X1 ON、X3 OFF、X0 OFF</td><td>請求 + 未到後限位 + 沒有正向命令</td></tr><tr><td>輸出</td><td>放開請求即 OFF</td><td>點動命令按住有效，放開撤銷</td></tr></tbody></table></div>
+<div class="notes">延伸閱讀（雙龍門）：實際的雙龍門沒有實體點動按鈕，前進、後退請求是上位機 LabVIEW 寫進 D107，PLC 再把 D107 的位元解碼成 M110～M125。不管請求從哪裡來，限位和方向互鎖都要由 PLC 判斷。</div>
 <h2>這一課的程式（指令表）</h2>
 <pre class="il">LD X000
 AND X004
@@ -52,7 +52,7 @@ OUT Y001</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "328b1e1184" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "3dbb359403" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

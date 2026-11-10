@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="328b1e1184">
+<meta name="ll-version" content="3dbb359403">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>5.6 復歸與原點：清掉步序不代表機構已回原點｜PLC 互動課程</title>
@@ -45,7 +45,7 @@ RET</pre>
 <p><a class="btnlink" href="../practice.html?il=LD%20M8002%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0AANI%20X002%0ASET%20S20%0ASTL%20S20%0AOUT%20Y001%0ALD%20X001%0ASET%20S0%0ALD%20X002%0ASET%20S0%0ARET#FREE">只執行這段程式 ›</a></p>
 <div class="recap"><h3>重點整理</h3><ul><li>清步序只代表程式狀態</li><li>原點要靠機構移動加原點感測器確認</li><li>取消回原點後，原點還不算建立</li></ul><p class="trap"><b>常見錯誤：</b>按復歸清掉步序就讓自動啟動，機構其實停在中間。</p></div>
 <h2>預測看看</h2><div class="qz"><p>按 Home X0，再按取消 X1，S0（待機）是？</p><details><summary>看答案</summary><p><b>ON</b>　取消把步序清回待機。</p></details></div><div class="qz"><p>這時原點感測器 X2 是？</p><details><summary>看答案</summary><p><b>OFF</b>　步序回待機不代表機構回到原點，要原點感測器 ON 才算。</p></details></div>
-<p class="pager"><a class="btnlink" href="B1.html">‹ 上一課：5.5 雙龍門手動點動：按了為什麼不動？</a> <a class="btnlink" href="C2.html">下一課：5.7 循環停止：收到 Stop 後在安全邊界停</a></p>
+<p class="pager"><a class="btnlink" href="B1.html">‹ 上一課：5.5 手動點動：按了為什麼不動？</a> <a class="btnlink" href="C2.html">下一課：5.7 循環停止：收到 Stop 後在安全邊界停</a></p>
 </main>
 <footer>
   <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
@@ -55,7 +55,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "328b1e1184" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "3dbb359403" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
