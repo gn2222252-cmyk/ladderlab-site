@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="31a87f29a6">
+<meta name="ll-version" content="fb46b3a0db">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E1 按鈕點燈｜PLC 練習題（自動評分）</title>
@@ -36,7 +36,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "31a87f29a6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "fb46b3a0db" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
