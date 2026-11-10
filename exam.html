@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="7918d85c59">
+<meta name="ll-version" content="607b7f6836">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>氣壓乙級、工業配線乙級 PLC 術科練習：線上模擬與自動評分 | LadderLab</title>
@@ -142,7 +142,7 @@
       <tr><td>10</td><td>限時模擬</td><td>隨機一題</td><td>30 分鐘內在紙上畫出 A4 外部接線圖＋A3 階梯圖，再 40 分鐘內寫完程式並全部通過</td></tr>
       <tr><td>11～12</td><td>學校實機</td><td>第 3、4 題、第二站</td><td>配線、壓接、輸出確認（CB 串接）、人機介面、伺服、荷重元、高壓盤</td></tr>
     </tbody></table></div>
-  <p class="why">E23 的積算計時器請用學校 FX3S 的 T132～T137（本站模擬器也認得 FX3U 的 T250～T255）。輸出確認（第二題）本站還沒有練習，要在學校練。</p>
+  <p class="why">E23 用學校 FX3S 的積算計時器 T132～T137（FX3U 是 T250～T255，本站模擬器兩種都認得）。輸出確認（第二題）本站還沒有練習，要在學校練。</p>
   <h3>考試當天（官方時間配當表）</h3>
   <p>試場有兩種排法：分兩組（一組上午考第一站、另一組上午考第二站，下午交換），或不分組（上午第一站、下午第二站）。</p>
   <div class="table-box"><table class="gtable small">
@@ -170,7 +170,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "7918d85c59" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "607b7f6836" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

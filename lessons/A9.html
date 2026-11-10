@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="7918d85c59">
+<meta name="ll-version" content="607b7f6836">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>5.1 接線：現場常閉 ≠ 程式常閉｜PLC 互動課程</title>
@@ -25,7 +25,8 @@
 <p class="lesson-goal"><b>本課目標</b>分清楚現場的常開／常閉和程式的接點，急停接法正確。</p>
 <div class="text">最常搞混的觀念：接點有兩個世界。現場按鈕的常開、常閉是實體接線；程式的接點只看 X 是 ON 還是 OFF。
 急停和重要的停止鈕要接常閉：平常有電，X 是 ON；按下或斷線都變 OFF。所以程式裡要用常開接點（AND X1）。
-如果接常開按鈕、程式用常閉，平常能用，但電線斷了按鈕就失效，機器停不下來。雙龍門的急停 X13 就是接常閉。</div>
+如果接常開按鈕、程式用常閉，平常能用，但電線斷了按鈕就失效，機器停不下來。雙龍門的急停 X13 就是接常閉。
+接常閉進 PLC 還不夠：急停一定要再用硬體（安全繼電器、接觸器）直接切斷馬達和電磁閥的動力，PLC 只負責讀狀態、清步序。詳見「急停、安全迴路」頁（safety.html）。</div>
 <p><a class="btnlink go" href="../learn.html#A9">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
 <div class="table-box"><table class="gtable"><thead><tr><th>FX3S-20MT/ES 接線重點</th><th>內容</th></tr></thead><tbody><tr><td>輸入</td><td>這台用漏型接法，S/S 接 24V，配 NPN 感測器</td></tr><tr><td>輸出</td><td>電晶體漏型輸出，COM 接 0V，負載接 +24V 和 Y。Y0～Y3 各一個 COM，Y4～Y7 共用 COM4</td></tr><tr><td>急停</td><td>接常閉，第二組接點直接切斷輸出電源，不靠程式</td></tr><tr><td>極限開關</td><td>常閉串在馬達迴路，超程直接斷電，不進 PLC</td></tr><tr><td>互鎖</td><td>程式互鎖之外，正反轉還要加硬體互鎖</td></tr></tbody></table></div>
 
@@ -47,7 +48,7 @@ OUT Y000</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "7918d85c59" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "607b7f6836" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

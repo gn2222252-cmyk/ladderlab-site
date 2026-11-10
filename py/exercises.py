@@ -944,32 +944,32 @@ OUT M51
 LD S21
 OR S33
 AND M21
-OUT T251 K100
+OUT T133 K100
 ; ---- 步進
 LD M8002
 SET S0
 STL S0
-RST T250
-RST T251
-RST T252
-RST T253
-RST T254
-RST T255
+RST T132
+RST T133
+RST T134
+RST T135
+RST T136
+RST T137
 LD M61
 SET S20
 LD M60
 SET S30
 STL S20
 LD M21
-OUT T250 K50
-LD T250
+OUT T132 K50
+LD T132
 SET S21
 LD M60
 SET S30
 LD M41
 SET S0
 STL S21
-LD T251
+LD T133
 SET S22
 LD M60
 SET S30
@@ -988,8 +988,8 @@ LD M43
 SET S0
 STL S30
 LD M21
-OUT T252 K50
-LD T252
+OUT T134 K50
+LD T134
 OR M41
 SET S31
 LD M42
@@ -998,28 +998,28 @@ LD M43
 SET S0
 STL S31
 LD M21
-OUT T253 K100
-LD T253
+OUT T135 K100
+LD T135
 OR M42
 SET S32
 LD M43
 SET S0
 STL S32
 LD M21
-OUT T254 K50
-LD T254
+OUT T136 K50
+LD T136
 OR M43
 SET S0
 STL S33
 LD M21
-OUT T255 K100
-LD T255
+OUT T137 K100
+LD T137
 SET S32
 LD M42
-AND T251
+AND T133
 SET S32
 LD M42
-ANI T251
+ANI T133
 SET S0
 LD M43
 SET S0
@@ -1039,7 +1039,7 @@ OR S33
 AND M21
 OUT Y001
 LD S33
-AND T251
+AND T133
 OR S22
 OR S30
 OR S31
@@ -2019,12 +2019,12 @@ EXERCISES = [
      "outputs": [("Y000", "MC1 M1 運轉"), ("Y001", "MC2 M2 運轉"), ("Y002", "MC3 M3 運轉"), ("Y003", "PL1 M1 運轉"), ("Y004", "PL2 M2 運轉"),
                  ("Y005", "PL3 M3 運轉"), ("Y006", "PL4 電源指示"), ("Y007", "PL5 過載指示"), ("Y010", "BZ 蜂鳴器")],
      "rules": [],
-     "starter": "; 啟動流程 S20→S21→S22、停止流程 S30→S31→S32，過載就跳到停止流程的對應位置\n; 緊急停止要「接著做、延續剩餘計時」：用停電保持型計時器 T250～T255，離開流程時記得 RST\n",
+     "starter": "; 啟動流程 S20→S21→S22、停止流程 S30→S31→S32，過載就跳到停止流程的對應位置\n; 緊急停止要「接著做、延續剩餘計時」：用累計型計時器 T132～T137（學校 FX3S 的編號；FX3U 是 T250～T255），離開流程時記得 RST\n",
      "hints": ["馬達不要寫在步裡，最後統一輸出：MC1 = (S20 或 S21 或 S22 或 S30) 且「沒有緊急停止」。這樣同一個線圈不會散在很多步裡。",
                "緊急停止時步序不要清掉，只要讓輸出和計時器停：一個旗標 M21 =「PB6 沒按、也沒在暫停」，每個計時器和輸出都 AND M21。",
-               "T250～T255 是累計型（線圈 OFF 時保留現值），剛好用在「延續剩下的計時」。回到 S0 時把它們全部 RST。",
+               "T132～T137 是 FX3S 的累計型（線圈 OFF 時保留現值；FX3U 是 T250～T255），剛好用在「延續剩下的計時」。回到 S0 時把它們全部 RST。",
                "過載只算正在轉的那台：LD Y000 ANI X004 OUT M41。三台都轉時 TH1 → 跳到 S31（M2、M3 轉 10 秒），TH2 → S32，TH3 → S0。",
-               "只有 M1、M2 在轉時 TH1 跳：另開一步 S33，M2 轉 10 秒；M3 要等原本的 10 秒啟動計時到，所以 T251 在 S21 和 S33 都要計（寫在 STL 外面：LD S21 OR S33 AND M21 OUT T251 K100）。",
+               "只有 M1、M2 在轉時 TH1 跳：另開一步 S33，M2 轉 10 秒；M3 要等原本的 10 秒啟動計時到，所以 T133 在 S21 和 S33 都要計（寫在 STL 外面：LD S21 OR S33 AND M21 OUT T133 K100）。",
                "交互閃爍：PL4 = M8013，PL1 = MC1 且不是（S30 且 M8013）。BZ 是互斥：過載且 COS 在 1，或沒過載且 COS 在 2。"],
      "solution": _E23_IL,
      "tests": [("上電 PL4 亮；COS 2 BZ 響、切回 1 停", _E23_ON + [("is", "Y006", 1), ("is", "Y000", 0), ("is", "Y010", 0), ("set", "X002", 1),

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="7918d85c59">
+<meta name="ll-version" content="607b7f6836">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>4.3 步進和一般階梯圖差在哪｜PLC 互動課程</title>
@@ -24,7 +24,8 @@
 <h1>4.3 步進和一般階梯圖差在哪</h1>
 <p class="lesson-goal"><b>本課目標</b>說出步進和一般階梯圖在執行上的差別。</p>
 <div class="text">兩種都是階梯圖，也都是合法寫法，差別在 PLC 這一圈要算哪些行。
-一般階梯圖：每一條每一圈都算。步進階梯圖：程式切成一步一步，只有作用中的步才算，其他步整段跳過；RET 之後的一般階梯每圈照算。
+一般階梯圖：每一條每一圈都算。步進階梯圖：程式切成一步一步，只有作用中的步才算，不作用的步不執行；RET 之後的一般階梯每圈照算。
+精確一點說（程式手冊 35.1.2 節）：一步剛離開時，PLC 會把它當成「條件全部 OFF」再算一圈，所以這一步的 OUT 線圈變 OFF、一般計時器歸零；累計型計時器、計數器和 SET 的元件保持原狀，要自己 RST。之後這一步完全不執行，裡面的 MOV 這類指令也不做。換步的那一圈，前後兩步會同時作用。
 下面程式上半是步進，最後一條是一般階梯。按「▶ 播放示範」看差別，底下是完整對照。</div>
 <p><a class="btnlink go" href="../learn.html#6-1">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
 <div class="table-box"><table class="gtable"><thead><tr><th></th><th>一般階梯圖（自保持）</th><th>步進階梯圖（STL）</th></tr></thead><tbody><tr><td>每一圈算哪些</td><td>全部都算</td><td>只算作用中的步，加上 RET 後的一般階梯</td></tr><tr><td>怎麼記住第幾步</td><td>自保持線圈 M</td><td>狀態元件 S</td></tr><tr><td>怎麼換步</td><td>下一步回頭切斷上一步</td><td>SET 下一步，上一步自動關</td></tr><tr><td>輸出怎麼關</td><td>自己寫切斷條件</td><td>離開這一步自動 OFF</td></tr><tr><td>同一個線圈</td><td>只能寫一次</td><td>不同步裡可以各寫一次</td></tr><tr><td>適合</td><td>急停、互鎖、開關</td><td>有先後順序的動作</td></tr></tbody></table></div>
@@ -47,7 +48,7 @@ RET
 LD X003
 OUT Y002</pre>
 <p><a class="btnlink" href="../practice.html?il=LD%20M8002%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0ASET%20S20%0ASTL%20S20%0AOUT%20Y000%0ALD%20X001%0ASET%20S21%0ASTL%20S21%0AOUT%20Y001%0ALD%20X002%0ASET%20S0%0ARET%0ALD%20X003%0AOUT%20Y002#FREE">只執行這段程式 ›</a></p>
-<div class="recap"><h3>重點整理</h3><ul><li>一般階梯每圈每行都算</li><li>步進只算作用中的步，其他步整段跳過</li><li>RET 之後回到一般階梯</li></ul><p class="trap"><b>常見錯誤：</b>把每圈都要算的東西（例如急停、互鎖）寫在某一步裡，那一步不作用就沒在算。</p></div>
+<div class="recap"><h3>重點整理</h3><ul><li>一般階梯每圈每行都算</li><li>步進只算作用中的步；剛離開的步會用條件 OFF 再算一圈，OUT 變 OFF</li><li>RET 之後回到一般階梯</li></ul><p class="trap"><b>常見錯誤：</b>把每圈都要算的東西（例如急停、互鎖）寫在某一步裡，那一步不作用就沒在算。</p></div>
 <h2>預測看看</h2><div class="qz"><p>還在 S0 待機時按住 X3（RET 後的一般階梯），Y2 是？</p><details><summary>看答案</summary><p><b>ON</b>　RET 後面的一般階梯每個掃描都會算，不管現在在哪一步。</p></details></div><div class="qz"><p>進 S20 後按 X1 換到 S21，Y0 是？</p><details><summary>看答案</summary><p><b>OFF</b>　Y0 是在 S20 裡 OUT 的，離開 S20 就自動 OFF。</p></details></div>
 <p class="pager"><a class="btnlink" href="6.html">‹ 上一課：4.2 步進（STL）：同一件事，不打結</a> <a class="btnlink" href="6-2.html">下一課：4.4 步進的寫法規則</a></p>
 </main>
@@ -59,7 +60,7 @@ OUT Y002</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "7918d85c59" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "607b7f6836" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
