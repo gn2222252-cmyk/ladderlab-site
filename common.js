@@ -40,3 +40,26 @@ function drawCylinder(ctx, p) {
   if (p.stuck) { ctx.fillStyle = "#c62828"; ctx.fillText("卡住", 10, 20); }
   ctx.fillStyle = cssVar("--line"); ctx.fillRect(40, 116, 120, 6);
 }
+
+/* new-version notice: the hosted pages carry <meta name="ll-version">; version.json beside common.js has the latest */
+(function () {
+  const meta = document.querySelector('meta[name="ll-version"]');
+  const me = document.currentScript && document.currentScript.src;
+  if (!meta || !me || location.protocol === "file:") return;
+  const url = new URL("version.json", me).href;
+  function check() {
+    fetch(url + "?t=" + Date.now(), { cache: "no-store" }).then((r) => r.json()).then((d) => {
+      if (!d.version || d.version === meta.content || document.getElementById("ll-newver")) return;
+      const bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = () => {
+        fetch(location.href, { cache: "reload" }).catch(() => null).finally(() => location.reload());
+      };
+      document.body.appendChild(bar);
+    }).catch(() => null);
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) check(); });
+})();

@@ -39,6 +39,8 @@ _ONE_PAIR = [("set", "X003", 0), ("set", "X005", 0), ("set", "X002", 1), ("set",
 # Taiwan pneumatics level B (氣壓乙級) question 08000-1090201 "PLC-氣壓控制－變速迴路": the PLC part.
 # Inputs and outputs follow a fixed practice layout (at the test the examiner assigns two terminals).
 _E18_START = [("set", "X002", 1), ("set", "X003", 1), ("set", "X006", 1), ("wait", 100)]
+_E18_OVERRUN = ("A 缸沒有停在 a1，還在往 a2 走。A 是 5 口 3 位置中封閥：等下一次按 ST 的時候，A+（Y0）如果還開著，"
+                "氣缸就會衝過 a1。到 a1 就要把 A+ 關掉，例如步裡寫 LDI X011 / OUT Y000，讓 A 停在 a1 等。")
 _E18_ST = [("set", "X000", 1), ("wait", 60), ("set", "X000", 0), ("wait", 60)]
 _E18_EMS_RESET = [("set", "X002", 1), ("set", "X003", 1), ("set", "X006", 1), ("wait", 100), ("set", "X000", 1), ("wait", 60), ("set", "X000", 0),
                   ("wait", 2300), ("set", "X002", 0), ("wait", 1500), ("set", "X002", 1), ("set", "X003", 0), ("wait", 100),
@@ -1797,7 +1799,7 @@ EXERCISES = [
                ("單一循環：完成後停在原點，綠燈亮、不再動作", _E18_START + _E18_ST + [("wait", 9000), ("is", "Y007", 0), ("is", "Y006", 1),
                                                            ("is", "X010", 1), ("is", "X013", 1), ("is", "X015", 1), ("stays", "Y000", 0, 1500)]),
                ("手動步進：按一次只走一個時段", [("set", "X002", 1), ("set", "X003", 1), ("set", "X005", 1), ("wait", 100)] + _E18_ST +
-                [("wait", 1500), ("is", "X011", 1), ("stays", "Y002", 0, 800)] + _E18_ST + [("wait", 1200), ("is", "X014", 1), ("stays", "Y001", 0, 500)]),
+                [("wait", 1500), ("is", "Y000", 0, _E18_OVERRUN), ("is", "X011", 1), ("stays", "Y002", 0, 800)] + _E18_ST + [("wait", 1200), ("is", "X014", 1), ("stays", "Y001", 0, 500)]),
                ("連續循環：自動重複，按 STOP 做完這一循環才停", [("set", "X002", 1), ("set", "X003", 1), ("set", "X007", 1), ("wait", 100)] + _E18_ST +
                 [("wait", 9000), ("is", "Y007", 1), ("wait", 2000), ("set", "X001", 1), ("wait", 60), ("set", "X001", 0), ("wait", 300),
                  ("is", "Y007", 1), ("wait", 8000), ("is", "Y007", 0), ("is", "Y006", 1), ("stays", "Y000", 0, 1500)]),
@@ -2489,7 +2491,8 @@ def run_test(ex, program, steps):
         elif kind == "is":
             now = int(bool(bit(rig.plc, s[1])))
             if now != s[2]:
-                return "%.2f 秒時 %s 應該是 %s，實際是 %s。" % (rig.ms / 1000.0, _label(ex, s[1]), _onoff(s[2]), _onoff(now))
+                return "%.2f 秒時 %s 應該是 %s，實際是 %s。%s" % (rig.ms / 1000.0, _label(ex, s[1]), _onoff(s[2]), _onoff(now),
+                                                         s[3] if len(s) > 3 else "")
         elif kind == "one_of":                     # exactly one of these devices is ON
             on = [d for d in s[1].split() if bit(rig.plc, d)]
             if len(on) != 1:

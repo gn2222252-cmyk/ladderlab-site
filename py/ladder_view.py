@@ -279,8 +279,9 @@ def describe(node, comment):
             t = describe(n, comment)
             parts.append("（%s）" % t if isinstance(n, Parallel) else t)
         return " 而且 ".join(parts)
-    if isinstance(node, Parallel):
-        return " 或 ".join(describe(n, comment) for n in node.items)
+    if isinstance(node, Parallel):           # (X0 而且 X1) 或 X2: bracket a series branch so the order is clear
+        return " 或 ".join("（%s）" % describe(n, comment) if isinstance(n, Series) and len(n.items) > 1
+                           else describe(n, comment) for n in node.items)
     if isinstance(node, Contact) and node.negated:
         return "不是 " + leaf_name(node, comment)
     return leaf_name(node, comment)

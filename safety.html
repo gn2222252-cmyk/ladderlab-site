@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
+<meta name="ll-version" content="c60e3a73e6">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>急停、安全迴路與硬體互鎖：為什麼不能只靠 PLC 程式 | LadderLab</title>
 <meta name="description" content="急停按下去到底是誰讓機器停？三菱 FX3S 手冊要求的外部急停迴路、安全電驛的角色、正反轉接觸器的程式／電氣／機械三層互鎖、換向延遲與工業配線乙級的相關規定。">
-<link rel="stylesheet" href="style.css?v=5f8ed510af">
+<link rel="stylesheet" href="style.css?v=9b65ef72d1">
 </head>
 <body class="learn guide-page">
 <header class="top">
@@ -159,7 +160,7 @@ OUT Y001      ; 反轉</pre>
       <ul class="steps-list">
         <li><b>氣壓殘壓</b>：電磁閥斷電後，管路和氣缸裡的空氣不會自己消失。一拆接頭，氣缸可能突然衝出去。氣源要有<b>殘壓排氣閥</b>（關斷氣源時把下游空氣排掉），拆修前關氣、排氣，再看壓力錶歸零。</li>
         <li><b>復氣時的衝擊</b>：下游排空後重新送氣，氣缸會被突然灌滿的空氣推得很猛，這就是檢定題說的「爆衝」。<b>緩啟動閥（soft-start）</b>讓壓力慢慢上升，到一定壓力才全開；廠商也說明它是運轉功能，不是安全功能。</li>
-        <li><b>單線圈閥（彈簧復歸）</b>斷電會回到彈簧那一側。設計時要問：氣缸回到哪一邊才安全？就把那一邊放在彈簧側。<b>雙線圈閥（5/2）</b>斷電保持最後的閥位，氣缸會走完這一行程；<b>三位置中封閥</b>斷電停在原位。</li>
+        <li><b>單線圈閥（彈簧復歸）</b>斷電會回到彈簧那一側。設計時要問：氣缸回到哪一邊才安全？就把那一邊放在彈簧側。<b>雙線圈閥（5/2）</b>斷電保持最後的閥位，氣缸會走完這一行程；<b>三位置中封閥</b>斷電停在原位，但它會把壓縮空氣封在氣缸兩側：拆修前一定要先排氣；垂直負載或管路洩漏時氣缸還是會慢慢掉或飄移，要另外加止回閥或機械鎖。</li>
         <li><b>夾爪和吸盤斷氣會掉料</b>：機電整合丙級規定急停時夾住、吸住的料件不可掉落，所以夾爪常用雙線圈閥（斷電保持夾緊）；氣壓乙級第 5、6 題要求真空蓄壓迴路，斷電後仍能吸住一段時間。</li>
         <li><b>停止類別</b>（IEC 60204-1 的分類，這裡只講意思）：類別 0＝直接切斷致動器的電源讓它自己停；類別 1＝先受控減速，停住之後才切電；類別 2＝受控停下、電源保持。急停一般用類別 0 或 1，用哪一類要依風險評估決定。</li>
       </ul>
@@ -194,7 +195,7 @@ OUT Y001      ; 反轉</pre>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=140a0c67c9"></script>
 <script src="course.js?v=196817d51d"></script>
-<script src="common.js?v=20ae5aa5c1"></script>
+<script src="common.js?v=3e453b2134"></script>
 <script>
   document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
   document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));

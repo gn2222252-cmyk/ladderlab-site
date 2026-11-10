@@ -687,3 +687,6 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .sim-edit,.sim-side{min-width:0}
 .k-wrap,#kit{min-width:0;max-width:100%}
 @media (max-width:600px){.kb-rl{width:100%}.kb-term{width:28px}.sim-top{flex-wrap:wrap}}
+.newver { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 1000; background: var(--accent, #2563eb); color: #fff;
+  padding: 10px 14px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.25); font-size: 15px; display: flex; gap: 10px; align-items: center; }
+.newver button { background: #fff; color: #111; border: 0; border-radius: 6px; padding: 5px 10px; cursor: pointer; font: inherit; }

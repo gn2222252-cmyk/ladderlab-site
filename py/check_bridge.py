@@ -42,7 +42,7 @@ OUT_WORDS = {"OUT": "讓 %s ON", "SET": "鎖定 %s ON", "RST": "清除 %s", "PLS
 def _out_text(op, ops, comments):
     name = lambda d: "%s（%s）" % (d, comments[d]) if comments.get(d) else d
     if op == "OUT" and len(ops) == 2:
-        return "%s 計時／計數，設定 %s" % (name(ops[0]), ops[1])
+        return "%s %s，設定 %s" % (name(ops[0]), "計時" if ops[0][0] == "T" else "計數", ops[1])
     if op == "MOV":
         return "把 %s 複製到 %s" % (ops[0], name(ops[1]))
     if op in ("ADD", "SUB"):

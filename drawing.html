@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
+<meta name="ll-version" content="c60e3a73e6">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>考前畫圖練習：PLC I/O 配線圖與外部接線圖 | LadderLab</title>
 <meta name="description" content="氣壓乙級第 1 階段的 PLC I/O 配線圖、工業配線乙級第一站的 A4 PLC 外部接線圖：要畫哪些東西、評審表看什麼、常被扣分的地方，附自我檢查表。">
-<link rel="stylesheet" href="style.css?v=5f8ed510af">
+<link rel="stylesheet" href="style.css?v=9b65ef72d1">
 </head>
 <body class="learn guide-page">
 <header class="top">
@@ -41,7 +42,7 @@
       <div class="table-box"><table class="gtable small">
         <thead><tr><th>要畫的東西</th><th>重點</th></tr></thead>
         <tbody>
-          <tr><td>PLC 本體</td><td>寫型號（你自備的那一台，例如 FX3U-32MT/ES），端子名稱照實機印的寫：S/S、X0…、COM1…、Y0…</td></tr>
+          <tr><td>PLC 本體</td><td>寫型號（你自備的那一台，例如 FX3U-48MT/ES；氣壓乙級至少要 24 入 16 出，FX3U-32M 不夠），端子名稱照實機印的寫：S/S、X0…、COM1…、Y0…</td></tr>
           <tr><td>電源</td><td>PLC 本體電源（AC 型接 L、N，並接地）；DC24V 電源供應器的 +24V、0V</td></tr>
           <tr><td>輸入共點</td><td>S/S 接 +24V（漏型，配 NPN）還是 0V（源型，配 PNP），要和感測器型式一致（<a href="wiring.html">接線頁</a>）</td></tr>
           <tr><td>輸入元件（官方 I/O 表）</td><td>X0 ST、X1 STOP（按鈕，a 接點（常開））；X2 EMS（急停，<b>b 接點（常閉）</b>）；X3 復歸／運轉（二段選擇開關）；X4 復歸鈕；X5～X7 手動步進、單一、連續（多段選擇開關）</td></tr>
@@ -137,7 +138,7 @@
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=140a0c67c9"></script>
 <script src="course.js?v=196817d51d"></script>
-<script src="common.js?v=20ae5aa5c1"></script>
+<script src="common.js?v=3e453b2134"></script>
 <script>
   document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
   document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));
