@@ -159,7 +159,7 @@ const PLC_EXT = {
   "8EX": { x: 8, y: 0, n: () => "FX2N-8EX（輸入擴充模組 8 點）" }, "16EX": { x: 16, y: 0, n: () => "FX2N-16EX（輸入擴充模組 16 點）" },
   "8EYR": { x: 0, y: 8, n: () => "FX2N-8EYR（輸出擴充模組 8 點）" }, "16EYR": { x: 0, y: 16, n: () => "FX2N-16EYR（輸出擴充模組 16 點）" },
 };
-let plcCfg = { model: "FX3S-30M", ext: [] };
+let plcCfg = { model: "FX3S-20M", ext: [] };   // the school's FX3S-20MT/ES
 try { const c = JSON.parse(localStorage.getItem("ll_plc") || "null"); if (c && PLC_MODELS.some((m) => m[0] === c.model)) plcCfg = { model: c.model, ext: (c.ext || []).filter((e) => PLC_EXT[e]) }; } catch (e) { /* private mode */ }
 const plcFam = (m) => m.slice(0, 4);
 /* what may be added to this model: [allowed, reason] */

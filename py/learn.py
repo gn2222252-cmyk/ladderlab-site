@@ -48,12 +48,13 @@ class Plant(object):
             self.zb = min(1.0, self.zb + v) if self.plc.y_out[1] else max(0.0, self.zb - v)
             self.apply()
             return
-        if self.kind == "panel":                    # double solenoid: Y0 extend, Y1 retract, stays put when both OFF
-            v = ms / 2000.0
+        if self.kind == "panel":                    # 5/2 double solenoid: Y0 extend, Y1 retract; both OFF keeps the last
+            v = ms / 2000.0                         # valve position, so the cylinder runs on to the end of its stroke
             if self.plc.y_out[0] and not self.plc.y_out[1]:
-                self.z = min(1.0, self.z + v)
+                self.dir = 1
             elif self.plc.y_out[1] and not self.plc.y_out[0]:
-                self.z = max(0.0, self.z - v)
+                self.dir = -1
+            self.z = min(1.0, max(0.0, self.z + getattr(self, "dir", 0) * v))
             self.apply()
             return
         if self.kind == "cylinder":

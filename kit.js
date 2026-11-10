@@ -244,9 +244,10 @@ const Kit = (() => {
       }
       if (k === "arm" || k === "suck") stepArm(y, s, k, dt);
       if (k === "cyl2") {
-        const ex = on(y), re = on(subsOf(y, "cylR")[0]);       // double solenoid: stays where it is when both are OFF
-        if (ex && !re) s.pos = Math.min(1, s.pos + dt / 600);
-        if (re && !ex) s.pos = Math.max(0, s.pos - dt / 600);
+        const ex = on(y), re = on(subsOf(y, "cylR")[0]);       // 5/2 double solenoid: both OFF keeps the last valve position
+        if (ex && !re) s.dir = 1;
+        if (re && !ex) s.dir = -1;
+        s.pos = Math.max(0, Math.min(1, s.pos + (s.dir || 0) * dt / 600));
       }
       if (k === "lift") {
         const up = on(y), dn = on(subsOf(y, "liftDn")[0]);
@@ -484,7 +485,7 @@ const Kit = (() => {
     el.innerHTML = `<div class="kb-pal"><span class="hint">零件（拖到下面的組裝台，或點一下放上去）：</span>${PALETTE.map((k) => `<button type="button" class="kb-pi" data-k="${k}">${esc(PNAME[k])}</button>`).join("")}</div>` +
       `<div class="kb-bench"><div class="kb-plc"><div class="kb-row"><span class="kb-rl">${esc(model)}<br>輸入</span>${xs.map(term).join("")}</div><div class="kb-row"><span class="kb-rl">輸出</span>${ys.map(term).join("")}</div></div>` +
       `<svg class="kb-wires"></svg><div class="kb-area">${parts.map(partHtml).join("") || '<p class="hint kb-empty">組裝台是空的：從上面把零件拖進來，再從 PLC 的端子（X 藍、Y 橘）拉線到零件的端子。X 沒接線時是切換開關，Y 沒接線時只亮 PLC 面板上的燈。也可以從下面「範例機構」載入一組。</p>'}</div></div>` +
-      `<p class="hint kb-legend">灰色方塊是<b>物料口</b>：從一個零件的「出口／放料」拉到另一個零件的「入口／取料」，工件就會照這個方向送過去。輸送帶出口連到夾爪取料、夾爪放料再連回輸送帶入口，工件就會一直循環（閉環）。</p>` +
+      `<p class="hint kb-legend">灰色方塊是<b>物料口</b>：從一個零件的「出口／放料」拉到另一個零件的「入口／取料」，工件就會照這個方向送過去。輸送帶出口連到夾爪取料、夾爪放料再連回輸送帶入口，工件就會一直循環（循環輸送）。</p>` +
       `<p class="kb-msg${msg ? " show" : ""}">${esc(msg || "拉線：按住端子拖到另一頭放開，或點一下端子再點另一頭。點一下線可以拆掉。")}</p>` +
       `<div class="k-add"><select class="k-preset">${PRESETS.map((p, i) => `<option value="${i}" ${i === lastPreset ? "selected" : ""}>${esc(p.title)}</option>`).join("")}</select><button type="button" class="small-btn" data-preset>載入範例機構（零件、接線和程式）</button></div>` +
       `<div class="k-add"><button type="button" class="small-btn" data-reset>機構歸位</button><button type="button" class="small-btn" data-tidy>自動排列</button><button type="button" class="small-btn" data-clear>全部清空</button><label class="check small"><input type="checkbox" data-mute ${mute ? "checked" : ""}> 蜂鳴器靜音</label></div>` +
@@ -497,7 +498,7 @@ const Kit = (() => {
     el.querySelectorAll("[data-empty]").forEach((b) => (b.onclick = () => { const s = stateOf(b.dataset.empty); s.metal = 0; s.plastic = 0; }));
     el.querySelector("[data-reset]").onclick = () => { sim = {}; };
     el.querySelector("[data-tidy]").onclick = tidy;
-    el.querySelector("[data-preset]").onclick = () => preset(+el.querySelector(".k-preset").value);
+    el.querySelector("[data-preset]").onclick = () => { if (parts.length && !confirm("載入範例會取代目前組裝台的零件、接線和程式。要繼續嗎？（想留著的話，先按上面的「存專案」備份）")) return; preset(+el.querySelector(".k-preset").value); };
     el.querySelector("[data-mute]").onchange = (e) => { mute = e.target.checked; if (mute) buzz(false); };
     el.querySelectorAll("[data-cut]").forEach((b) => (b.onclick = () => { delete wires[b.dataset.cut]; commit(); }));
     el.querySelectorAll("[data-rm]").forEach((b) => (b.onclick = () => removePart(b.dataset.rm)));
@@ -710,7 +711,7 @@ const Kit = (() => {
       init() {},
       il: ["LD X000", "ANI X001", "OUT Y000", "LD X000", "OUT Y001", "LD X001", "OUT Y002"],
       note: "X0 開關打開運轉（綠燈 Y1）。溫度低於 60°C 時加熱器 Y0 ON，到 60°C 溫度開關 X1 ON 就斷開，溫度會在 60°C 附近上下跳：這就是 ON／OFF 控溫。到溫時紅燈 Y2 亮。" },
-    { title: "閉環：輸送帶＋夾爪取放，工件一直循環", W: { X000: "nopb", X001: "ncpb", X002: "conv:Y000", X003: "armL:Y001", X004: "armR:Y001", X005: "armU:Y001", X006: "armD:Y001", X007: "armH:Y001",
+    { title: "循環輸送：輸送帶＋夾爪取放，工件一直循環", W: { X000: "nopb", X001: "ncpb", X002: "conv:Y000", X003: "armL:Y001", X004: "armR:Y001", X005: "armU:Y001", X006: "armD:Y001", X007: "armH:Y001",
         Y000: "conv", Y001: "arm", Y002: "armZ:Y001", Y003: "armG:Y001", Y004: "green" },
       L: [["Y000", "out", "Y001", "pick"], ["Y001", "place", "Y000", "in"]],
       init() { stateOf("Y000").boxes = [{ p: 0.1, m: true }, { p: 0.45, m: false }]; },
@@ -724,7 +725,7 @@ const Kit = (() => {
         "STL S25", "RST Y003", "OUT T1 K3", "LD T1", "SET S26",
         "STL S26", "RST Y002", "LD X005", "SET S27",
         "STL S27", "RST Y001", "LD X003", "SET S0", "RET"],
-      note: "按 X0 啟動。輸送帶 Y0 把工件送到出口的擋料，末端光電 X2 ON 就停。夾爪用 STL 一步一步做：下降 Y2 → 到下限 X6 夾緊 Y3 → 夾到 X7 上升 → 到上限 X5 橫移 Y1 → 到放料位 X4 下降 → 鬆開 → 上升 → 回取料位 X3。放料口連回輸送帶入口，工件就一直循環。每一步都等感測器確認才走下一步，而且只在上限才橫移：下降時橫移會撞機。按 X1 急停，輸送帶停，夾爪做完這一輪停在原點。" },
+      note: "按 X0 啟動。輸送帶 Y0 把工件送到出口的擋料，末端光電 X2 ON 就停。夾爪用 STL 一步一步做：下降 Y2 → 到下限 X6 夾緊 Y3 → 夾到 X7 上升 → 到上限 X5 橫移 Y1 → 到放料位 X4 下降 → 鬆開 → 上升 → 回取料位 X3。放料口連回輸送帶入口，工件就一直循環。每一步都等感測器確認才走下一步，而且只在上限才橫移：下降時橫移會撞機。X1 是停止按鈕（常閉）：按下後輸送帶停、夾爪做完這一輪停在原點。這是「循環停止」，不是急停；真正的急停要切斷輸出、清掉步序（見課程 5.9 和「急停與硬體互鎖」指南）。" },
     { title: "供料器→輸送帶→吸盤→料盒（計數）", W: { X000: "nopb", X001: "ncpb", X002: "feedE:Y000", X003: "feedF:Y000", X004: "conv:Y001", X005: "armL:Y002", X006: "armR:Y002", X007: "armU:Y002", X010: "armD:Y002", X011: "armH:Y002",
         Y000: "feed", Y001: "conv", Y002: "suck", Y003: "armZ:Y002", Y004: "armG:Y002", Y005: "red" },
       extra: ["bin"], L: [["Y000", "out", "Y001", "in"], ["Y001", "out", "Y002", "pick"], ["Y002", "place", "#0", "in"]],
@@ -752,7 +753,7 @@ const Kit = (() => {
         "STL S22", "RST Y000", "SET Y001", "LD X004", "SET S23",
         "STL S23", "RST Y001", "SET Y002", "LD X005", "SET S24",
         "STL S24", "RST Y002", "LD M0", "SET S20", "LDI M0", "SET S0", "RET"],
-      note: "按 X0 啟動（塔燈綠 Y5）。分度盤 Y0 轉，先離開定位、再碰到定位感測器 X2 就停（轉 90°）；雙動氣缸伸出線圈 Y1 打到前限 X4，換縮回線圈 Y2 回到後限 X5，再轉下一站。雙動氣缸兩個線圈都 OFF 時會停在原位，所以用 SET／RST。按 X1 停止：塔燈紅 Y3 亮、蜂鳴器 Y6 響，做完這一站停下；放開 X1 後塔燈黃 Y4 表示待機。" },
+      note: "按 X0 啟動（塔燈綠 Y5）。分度盤 Y0 轉，先離開定位、再碰到定位感測器 X2 就停（轉 90°）；雙動氣缸伸出線圈 Y1 打到前限 X4，換縮回線圈 Y2 回到後限 X5，再轉下一站。雙動氣缸兩個線圈都 OFF 時會保持最後的閥位（氣缸繼續走到底，不會中途停），所以用 SET／RST。按 X1 停止：塔燈紅 Y3 亮、蜂鳴器 Y6 響，做完這一站停下；放開 X1 後塔燈黃 Y4 表示待機。" },
     { title: "三層電梯：叫車、上下行、樓層燈", W: { X000: "nopb", X001: "nopb", X002: "nopb", X003: "liftA:Y000", X004: "liftB:Y000", X005: "liftC:Y000",
         Y000: "lift", Y001: "liftDn:Y000", Y002: "yellow", Y003: "yellow", Y004: "yellow" },
       init() {},
