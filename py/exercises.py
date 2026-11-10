@@ -1718,7 +1718,7 @@ EXERCISES = [
              "開門和關門馬達不能同時通電，而且絕對不能夾到人。",
      "inputs": [("X000", "開到底", "sensor"), ("X001", "關到底", "sensor"), ("X002", "有人", "toggle"), ("X003", "防夾光電被遮", "toggle")],
      "outputs": [("Y000", "開門馬達"), ("Y001", "關門馬達")],
-     "rules": [("never_both", "Y000", "Y001", "開門和關門馬達同時通電"), ("plant_flag", "crush", "", "關門時夾到人")],
+     "rules": [("never_both", "Y000", "Y001", "開門和關門馬達同時通電"), ("plant_flag", "crush", "", "關門時夾到人。光電被遮的那一圈，關門輸出 Y1 還是 ON：防夾、有人這類安全條件要直接串在 Y1 那條（例如 ANI X003、ANI X002），不要等換步（見機台設計方法第 5 節）")],
      "starter": "", "hints": ["先做「需要開門」M0：LD X002、OR X003、OUT M0。",
                               "開門自保持到開到底：LD M0、OR Y000、ANI X000、ANI Y001、OUT Y000。",
                               "沒人 2 秒：LDI M0、OUT T0 K20。關門：LD T0、ANI X001、ANI Y000、ANI M0、OUT Y001。ANI M0 讓有人時立刻停止關門。"],

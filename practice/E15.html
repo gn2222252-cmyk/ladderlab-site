@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="607b7f6836">
+<meta name="ll-version" content="6e8d50fdab">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E15 自動門（防夾安全）｜PLC 練習題（自動評分）</title>
@@ -27,7 +27,7 @@
 關門途中有人來、或防夾光電 X3 被遮住，要立刻改成開門。
 開門和關門馬達不能同時通電，而且絕對不能夾到人。</div>
 <div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>開到底</td><td>感測器</td></tr><tr><td>X001</td><td>關到底</td><td>感測器</td></tr><tr><td>X002</td><td>有人</td><td>開關</td></tr><tr><td>X003</td><td>防夾光電被遮</td><td>開關</td></tr><tr><td>Y000</td><td>開門馬達</td><td>輸出</td></tr><tr><td>Y001</td><td>關門馬達</td><td>輸出</td></tr></tbody></table></div>
-<ul class="rules"><li>安全條件：開門和關門馬達同時通電</li><li>安全條件：關門時夾到人</li></ul>
+<ul class="rules"><li>安全條件：開門和關門馬達同時通電</li><li>安全條件：關門時夾到人。光電被遮的那一圈，關門輸出 Y1 還是 ON：防夾、有人這類安全條件要直接串在 Y1 那條（例如 ANI X003、ANI X002），不要等換步（見機台設計方法第 5 節）</li></ul>
 <p><a class="btnlink go" href="../practice.html#E15">開始寫程式，自動評分 ›</a></p>
 <p class="why">評分會在虛擬機台上跑 5 組情境，並在每個掃描檢查安全條件。</p>
 </main>
@@ -39,7 +39,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "607b7f6836" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6e8d50fdab" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

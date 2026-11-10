@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="607b7f6836">
+<meta name="ll-version" content="6e8d50fdab">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>機台設計方法：從需求到 PLC 程式與試車 | LadderLab</title>
@@ -87,7 +87,7 @@
         <thead><tr><th>致動器</th><th>PLC 怎麼控制</th><th>重點</th></tr></thead>
         <tbody>
           <tr><td>單線圈電磁閥（彈簧復歸）</td><td>一個輸出：ON 動作、OFF 彈回</td><td>斷電會回到原位：適合「斷電要回安全位置」的動作</td></tr>
-          <tr><td>雙線圈電磁閥</td><td>兩個輸出：各打一下切換</td><td>斷電保持原位置（雙龍門的 4V220）；兩個線圈不能同時 ON</td></tr>
+          <tr><td>雙線圈電磁閥</td><td>兩個輸出：各打一下切換</td><td>兩個線圈都斷電時保持最後的閥位，氣缸會走到行程底（雙龍門的 4V220）；要停在中間得用三位置中封閥；兩個線圈不能同時 ON</td></tr>
           <tr><td>三相馬達（正反轉）</td><td>兩個輸出接兩個接觸器</td><td>程式互鎖之外，接觸器要做<b>電氣互鎖</b>（輔助接點），再加熱電驛保護</td></tr>
           <tr><td>伺服／步進馬達</td><td>脈衝或通訊</td><td>需要原點復歸、極限、驅動器警報輸入</td></tr>
         </tbody></table></div>
@@ -123,7 +123,7 @@
           <tr><td>X000</td><td>開到底</td><td>限位開關（常開）</td><td>門全開</td><td>OFF：以為沒開到 → 開門逾時報警</td><td>停止開門</td></tr>
           <tr><td>X001</td><td>關到底</td><td>限位開關（常開）</td><td>門全關</td><td>OFF → 關門逾時報警</td><td>停止關門</td></tr>
           <tr><td>X002</td><td>有人</td><td>紅外／微波感測</td><td>偵測到人</td><td>OFF：沒人時不會開（使用者會發現）</td><td>開門請求</td></tr>
-          <tr><td>X003</td><td>防夾光電</td><td>對射光電（遮光 ON）</td><td>門口有東西</td><td>設計時要讓「故障＝不安全」不會發生：常用遮光或斷線都視為有人</td><td>關門中立刻反轉</td></tr>
+          <tr><td>X003</td><td>防夾光電</td><td>對射光電（本例簡化成遮光 ON）</td><td>門口有東西</td><td>本例為了好懂寫成遮光 ON，但這樣線斷了 X003 是 OFF，PLC 以為沒人，是不安全的那一側。實機要選<b>入光 ON</b>（收到光才 ON），程式把 OFF 當成有人：遮光或斷線都會停</td><td>關門中立刻反轉</td></tr>
           <tr><td>Y000</td><td>開門</td><td>接觸器 KM1</td><td>馬達正轉</td><td>—</td><td>與 Y001 互鎖</td></tr>
           <tr><td>Y001</td><td>關門</td><td>接觸器 KM2</td><td>馬達反轉</td><td>—</td><td>與 Y000 互鎖</td></tr>
         </tbody></table></div>
@@ -141,23 +141,24 @@
           <tr><td>S21 保持開</td><td>—</td><td>沒人且光電沒遮，持續 2 秒 → S22</td><td>有人就重新計時</td><td>—</td></tr>
           <tr><td>S22 關門</td><td>Y001</td><td>關到底 X001 → S0</td><td>有人或光電被遮 → 回 S20</td><td>5 秒沒關到 → 故障</td></tr>
         </tbody></table></div>
+      <div class="callout warn"><b>安全條件要直接串在輸出上，不要等換步。</b>步序表寫「有人或光電被遮 → 回 S20」，但換步要到下一圈才發生：光電剛被遮的那一圈，S22 裡的關門輸出 Y001 還是 ON。所以關門那條要直接串防夾和有人的接點（例如 <code>ANI X003</code>、<code>ANI X002</code>），條件一成立當圈就斷。急停、安全門也一樣。E15 的評分會抓這一圈。</div>
       <p>這個步序表直接就是 SFC：S0 → S20 → S21 → S22，S22 有一條選擇分支回 S20。用 STL 寫或用自保持寫都可以，練習題 E15 的參考解答用自保持，你可以試著改寫成 STL，切到「SFC 圖」對照。</p>
     </section>
 
     <section id="d6">
       <h2>6　程式架構：分區寫，不要想到哪寫到哪</h2>
-      <p>雙龍門的程式（課程 B1～C4、故障排除用的那台）就是這樣分區的，大型機台幾乎都是這個骨架：</p>
+      <p>雙龍門的程式（課程第 5 章 <a href="learn.html#A8">5.2</a>～<a href="learn.html#C3">5.8</a>、故障排除用的那台）就是這樣分區的，大型機台幾乎都是這個骨架。課程 6.1 的範本是精簡版（沒有命令、原點、狀態區）；分區的先後可以依機台調整，不變的重點是：<b>Y 只在最後的輸出區驅動</b>。</p>
       <div class="table-box"><table class="gtable small">
         <thead><tr><th>區</th><th>內容</th><th>為什麼</th></tr></thead>
         <tbody>
           <tr><td>1 初始化</td><td>M8002：清步序、清停電保持區、參數預設值</td><td>上電狀態可預期</td></tr>
           <tr><td>2 命令</td><td>按鈕、HMI 命令轉成單次脈衝</td><td>避免按住時重複觸發</td></tr>
           <tr><td>3 模式與安全</td><td>自動／手動、急停、異常中</td><td>所有動作的總開關</td></tr>
-          <tr><td>4 原點復歸</td><td>回到已知位置</td><td>清步序不等於機構回原點（課程 B2）</td></tr>
+          <tr><td>4 原點復歸</td><td>回到已知位置</td><td>清步序不等於機構回原點（課程 <a href="learn.html#B2">5.6</a>）</td></tr>
           <tr><td>5 自動流程</td><td>步序（STL 或 D 暫存器）</td><td>只決定「想要」哪些動作</td></tr>
-          <tr><td>6 手動</td><td>點動，也要過互鎖與限位</td><td>維修時用（課程 B1）</td></tr>
-          <tr><td>7 逾時監視</td><td>每個等感測器的步配計時器，記第一個異常碼</td><td>故障一定停得下來（課程 A8、C4）</td></tr>
-          <tr><td>8 輸出仲裁</td><td><b>唯一驅動 Y 的地方</b>：(自動 或 手動) 且 互鎖 且 沒異常</td><td>不會雙線圈；互鎖只寫一次（課程 C3）</td></tr>
+          <tr><td>6 手動</td><td>點動，也要過互鎖與限位</td><td>維修時用（課程 <a href="learn.html#B1">5.5</a>）</td></tr>
+          <tr><td>7 逾時監視</td><td>每個等感測器的步配計時器，記第一個異常碼</td><td>故障一定停得下來（課程 <a href="learn.html#A8">5.2</a>、<a href="learn.html#C4">5.3</a>）</td></tr>
+          <tr><td>8 輸出仲裁</td><td><b>唯一驅動 Y 的地方</b>：(自動 或 手動) 且 互鎖 且 沒異常</td><td>不會雙線圈；互鎖只寫一次（課程 <a href="learn.html#C3">5.8</a>）</td></tr>
           <tr><td>9 狀態</td><td>燈號、給 HMI 的字組</td><td>操作員和上位機看得懂</td></tr>
         </tbody></table></div>
     </section>
@@ -222,7 +223,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "607b7f6836" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6e8d50fdab" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
