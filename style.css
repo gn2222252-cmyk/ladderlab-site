@@ -712,3 +712,7 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .tocgrp { margin: 6px 0; }
 .tocgrp > summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 4px 0; display: flex; justify-content: space-between; gap: 6px; }
 .toc-count { font-weight: 400; color: var(--mute); font-size: 12px; }
+.ladder-fold { margin-top: 14px; }
+.ladder-fold > summary { cursor: pointer; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--mute); }
+.ladder-fold > summary b { color: inherit; color: var(--fg, inherit); }
+.ladder-fold[open] > summary { margin-bottom: 10px; }

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="3dbb359403">
+<meta name="ll-version" content="0f031f1551">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>F1 按啟動沒反應｜PLC 故障排除</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="早班報修：原點復歸正常，可是按「啟動」機台完全不動，也沒有異常燈。昨天晚班有人做過手動調整。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/faults/F1.html">
-<link rel="stylesheet" href="../style.css?v=0cb42899ca">
+<link rel="stylesheet" href="../style.css?v=fa62d436ea">
 
 </head>
 <body class="static">
@@ -34,7 +34,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "3dbb359403" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "0f031f1551" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

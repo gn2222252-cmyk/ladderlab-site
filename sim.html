@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="3dbb359403">
+<meta name="ll-version" content="0f031f1551">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 模擬器：畫梯形圖、SFC，接上機構跑 | LadderLab</title>
 <meta name="description" content="像 GX Works2 一樣用 F5、F6、F7 畫梯形圖，或畫 SFC，按 F4 轉換後直接在虛擬機構上跑：氣缸、輸送帶分料、步進馬達滑台（DRVI／DRVA 定位）。">
-<link rel="stylesheet" href="style.css?v=0cb42899ca">
+<link rel="stylesheet" href="style.css?v=fa62d436ea">
 </head>
 <body class="static simpage">
 <header class="top">
@@ -99,7 +99,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "3dbb359403" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "0f031f1551" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
