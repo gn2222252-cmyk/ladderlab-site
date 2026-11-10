@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8a619cd1c8">
+<meta name="ll-version" content="93de055c5d">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GX Works2 實作：FX3S 的階梯圖、STL 與 SFC | LadderLab</title>
@@ -28,7 +28,7 @@
       <li><a href="#g5">7 實作 B：用階梯圖寫 STL</a></li>
       <li><a href="#g6">8 實作 C：SFC 工程</a></li>
       <li><a href="#g7">9 SFC 分支：鑽床</a></li>
-      <li><a href="#g3">10 接 PLC 之前</a></li>
+      <li><a href="#g3">10 接 PLC 之前（上機前檢查清單）</a></li>
       <li><a href="#g8">11 寫入 FX3S 與監看</a></li>
       <li><a href="#g9">12 沒有 PLC 時怎麼練</a></li>
       <li><a href="#g10">13 GX Developer 對照</a></li>
@@ -331,6 +331,25 @@ RET</pre>
         <li><b>FX3S 的 USB 埠</b>在面板右邊的小蓋子裡，位置和接法看 <a href="wiring.html#w6">FX3S 實機與接線：接電腦寫程式</a>。第一次連線需要 USB 驅動（安裝 GX Works2 時一起裝的），學校電腦通常已經裝好。</li>
         <li><b>安全：</b>第一次寫入新程式前，先確認輸出接的負載（馬達、氣缸）可以安全動作，或先把負載移開。</li>
       </ul>
+      <h3 id="g3check">上機前檢查清單：送電、寫入、強制之前先問自己</h3>
+      <p>程式在模擬器跑對了，不代表接上機台就安全。三菱手冊開頭的安全注意事項要求：在運轉中修改程式、強制輸出、切換 RUN／STOP 之前，先確認操作安全。標「建議」的是業界常見做法，手冊沒有逐條規定。</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>時機</th><th>檢查</th><th>為什麼</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="4">送電前（電源關著）</td><td>電源接對：AC 型接 L、N 和接地；DC 型接＋、－。輸入、輸出元件的接線也對過一次</td><td>電源接錯、DC 輸入線碰到電源線、輸出短路，都可能燒壞 PLC（硬體手冊 14.1.1 節）</td></tr>
+          <tr><td>外部電源不要接到 PLC 的 24V 供電端子</td><td>下排的 24V、0V 是 PLC 送出來的電，不是入口（<a href="wiring.html">接線頁</a>）</td></tr>
+          <tr><td>建議：用三用電表電阻檔確認 L–N、24V–0V 沒有短路，每個 COM 接到對的極性</td><td>手冊只要求「確認接線正確」，沒有規定量哪幾點</td></tr>
+          <tr><td>要做耐壓、絕緣電阻測試時，先把 PLC 的輸入、輸出、電源線全部拆掉</td><td>直接對接好 PLC 的盤測試會打壞 PLC（14.1.1 節）</td></tr>
+          <tr><td rowspan="3">送電後、寫入前</td><td>RUN／STOP 開關先撥在 STOP 再送電</td><td>舊程式不會一送電就讓機台動（14.1.4 節）</td></tr>
+          <tr><td>建議：I/O 點檢。一個一個按按鈕、遮感測器，看面板上的 IN 燈有沒有亮，對照 I/O 表打勾</td><td>燈不亮是接線問題，不要急著改程式</td></tr>
+          <tr><td>建議：先把 PLC 裡原本的程式讀出來另存（<span class="menu">線上(O)</span> → <span class="menu">PLC讀取(R)</span>）</td><td>學校的 PLC 可能留著別人的程式，覆蓋了就找不回來</td></tr>
+          <tr><td>寫入時</td><td>照手冊順序：程式檢查（轉換沒錯）→ 寫入 → <span class="menu">PLC驗證(V)</span> 確認寫進去的和電腦上的一樣 → PLC 診斷沒有錯誤</td><td>14.1.4 節的開機前程序</td></tr>
+          <tr><td rowspan="3">強制 ON／OFF</td><td>RUN 中強制 ON／OFF 只維持一個掃描：OUT 驅動的 Y 下一圈就被程式蓋回去，看起來「沒反應」；但 SET 或自保持的元件強制一次就會<b>留住</b></td><td>手冊說強制主要用來清計時器、計數器、資料暫存器，以及控制 SET／RST 和自保持（14.3.2 節）。所以強制可能讓機構動了停不下來</td></tr>
+          <tr><td>STOP 中強制的結果會保留（X 除外，STOP 時輸入照樣刷新）</td><td>同上</td></tr>
+          <tr><td>強制會繞過程式裡的互鎖：強制 Y0 時，程式寫的「Y0 串 /Y1」擋不住。強制前確認人離開機構、手放在急停上</td><td>正反轉、上下這類一定要有硬體互鎖（<a href="safety.html">急停與安全迴路</a>）</td></tr>
+          <tr><td>第一次 RUN</td><td>建議：手放在急停上，先用手動或單一循環，不要一開始就連續循環；開 <span class="menu">監視(M)</span> 對照階梯圖和 IN／OUT 燈。學生練習時 RUN 中寫入一律先切 STOP</td><td>出問題時看得到卡在哪個條件</td></tr>
+        </tbody></table></div>
+      <p class="why">出處：FX3S 硬體手冊 JY997D48601 卷首安全注意事項（STARTUP AND MAINTENANCE PRECAUTIONS）、14.1.1 節（送電前檢查）、14.1.4 節（開機程序）、14.3.2～14.3.3 節（測試功能、RUN 中寫入）。</p>
     </section>
 
     <!-- 8 -->
@@ -450,7 +469,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8a619cd1c8" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "93de055c5d" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
