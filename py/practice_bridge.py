@@ -33,6 +33,7 @@ class Practice(object):
         meta["rules"] = [r[3] for r in e.get("rules", [])]
         meta["tests"] = [t[0] for t in e["tests"]]
         meta["forbid"] = e.get("forbid", [])
+        meta["latched"] = bool(e.get("latched"))
         from plants import faults_of
         meta["faults"] = faults_of(e.get("plant"))
         return json.dumps(meta, ensure_ascii=False)
@@ -90,6 +91,11 @@ class Practice(object):
         if self.rig:
             n = int(dev[1:], 8)
             self.rig.plc.x_in[n] = 0 if self.rig.plc.x_in[n] else 1
+
+    def power_cycle(self):
+        """The 停電再復電 button of exercises with power-loss retention (E19-E21, E30)."""
+        if self.rig:
+            self.rig.power_cycle(500)
 
     def stuck(self, on):
         if self.rig and self.rig.plant:

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6e8d50fdab">
+<meta name="ll-version" content="039b8ea19c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GX Works2 實作：FX3S 的階梯圖、STL 與 SFC | LadderLab</title>
@@ -436,9 +436,9 @@ RET</pre>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=3455c9664b"></script>
+<script src="py/bundle.js?v=b56eae4a64"></script>
 <script src="config.js?v=eca98dd0d9"></script>
-<script src="course_map.js?v=140a0c67c9"></script>
+<script src="course_map.js?v=a539c27dc9"></script>
 <script src="course.js?v=196817d51d"></script>
 <script src="common.js?v=20ae5aa5c1"></script>
 <script src="waitlist.js?v=92656de277"></script>
@@ -450,7 +450,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6e8d50fdab" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "039b8ea19c" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

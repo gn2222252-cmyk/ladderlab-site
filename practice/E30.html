@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="039b8ea19c">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E30 停電：接著做或從頭來｜PLC 練習題（自動評分）</title>
+<meta name="description" content="吸盤氣缸一個循環：在上限按啟動 X0 → 下降到下限 X1 → 吸盤 Y1 吸 1 秒 → 吸著上升到上限 X2。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E30.html">
+<meta property="og:title" content="E30 停電：接著做或從頭來｜PLC 練習題（自動評分）">
+<meta property="og:description" content="吸盤氣缸一個循環：在上限按啟動 X0 → 下降到下限 X1 → 吸盤 Y1 吸 1 秒 → 吸著上升到上限 X2。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E30.html">
+<link rel="stylesheet" href="../style.css?v=217ddf855f">
+
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="../practice.html" class="here">練習題</a><a href="../sim.html">模擬器</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 練習題</a></p>
+<h1>E30 停電：接著做或從頭來</h1>
+<div class="task">吸盤氣缸一個循環：在上限按啟動 X0 → 下降到下限 X1 → 吸盤 Y1 吸 1 秒 → 吸著上升到上限 X2。
+停電後復電，不管選哪一種，氣缸都不能自己動。X4 選停電處理：
+・X4 ON「接著做」：按啟動，從停電前那一步繼續。上升中停電的話，吸盤要繼續吸。
+・X4 OFF「從頭來」：步序清掉。氣缸還沒回上限時按啟動無效；先按復歸 X5 讓氣缸上升到上限，再按啟動才從第一步開始。
+PLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255。按「停電再復電」可以自己試。</div>
+<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>啟動</td><td>按鈕</td></tr><tr><td>X001</td><td>下限感測器</td><td>感測器</td></tr><tr><td>X002</td><td>上限感測器</td><td>感測器</td></tr><tr><td>X004</td><td>停電處理（ON＝接著做）</td><td>開關</td></tr><tr><td>X005</td><td>復歸</td><td>按鈕</td></tr><tr><td>Y000</td><td>下降</td><td>輸出</td></tr><tr><td>Y001</td><td>吸盤</td><td>輸出</td></tr><tr><td>Y002</td><td>上升</td><td>輸出</td></tr></tbody></table></div>
+<ul class="rules"><li>安全條件：下降和上升同時輸出</li></ul>
+<p><a class="btnlink go" href="../practice.html#E30">開始寫程式，自動評分 ›</a></p>
+<p class="why">評分會在虛擬機台上跑 5 組情境，並在每個掃描檢查安全條件。</p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "039b8ea19c" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

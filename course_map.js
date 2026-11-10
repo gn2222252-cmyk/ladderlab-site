@@ -322,6 +322,12 @@ window.COURSE = {
      "goal": "用 SFTL／SFTR 讓一排位元移動，做出跑馬燈和工件追蹤。"
     },
     {
+     "k": "E",
+     "id": "E26",
+     "href": "practice.html#E26",
+     "label": "練習 E26 跑馬燈（八燈依序點亮）"
+    },
+    {
      "k": "L",
      "id": "A14",
      "href": "learn.html#A14",
@@ -334,12 +340,6 @@ window.COURSE = {
      "id": "E29",
      "href": "practice.html#E29",
      "label": "練習 E29 包裝計數：每箱幾個、顯示已裝幾箱（BCD）"
-    },
-    {
-     "k": "E",
-     "id": "E26",
-     "href": "practice.html#E26",
-     "label": "練習 E26 跑馬燈（八燈依序點亮）"
     },
     {
      "k": "G",
@@ -582,6 +582,12 @@ window.COURSE = {
      "goal": "知道停電後哪些元件會記住，並在 M8002 那一圈決定接著做或從頭來。"
     },
     {
+     "k": "E",
+     "id": "E30",
+     "href": "practice.html#E30",
+     "label": "練習 E30 停電：接著做或從頭來"
+    },
+    {
      "k": "L",
      "id": "B1",
      "href": "learn.html#B1",
@@ -606,12 +612,24 @@ window.COURSE = {
      "goal": "寫出循環停止：記住 Stop，做完這一輪才停。"
     },
     {
+     "k": "E",
+     "id": "E31",
+     "href": "practice.html#E31",
+     "label": "練習 E31 循環停止：做完這一輪才停"
+    },
+    {
      "k": "L",
      "id": "C3",
      "href": "learn.html#C3",
      "no": "5.8",
      "label": "輸出仲裁：自動與手動最後都經過互鎖",
      "goal": "把自動和手動的請求集中到一個輸出段，再統一加互鎖。"
+    },
+    {
+     "k": "E",
+     "id": "E32",
+     "href": "practice.html#E32",
+     "label": "練習 E32 手動和自動共用輸出（輸出仲裁）"
     },
     {
      "k": "L",

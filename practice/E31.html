@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="039b8ea19c">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E31 循環停止：做完這一輪才停｜PLC 練習題（自動評分）</title>
+<meta name="description" content="在上限按啟動 X0，開始連續循環：下降 → 吸 1 秒 → 上升，回到上限等 0.5 秒再開始下一輪。運轉中 Y4 亮。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E31.html">
+<meta property="og:title" content="E31 循環停止：做完這一輪才停｜PLC 練習題（自動評分）">
+<meta property="og:description" content="在上限按啟動 X0，開始連續循環：下降 → 吸 1 秒 → 上升，回到上限等 0.5 秒再開始下一輪。運轉中 Y4 亮。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E31.html">
+<link rel="stylesheet" href="../style.css?v=217ddf855f">
+
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="../practice.html" class="here">練習題</a><a href="../sim.html">模擬器</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 練習題</a></p>
+<h1>E31 循環停止：做完這一輪才停</h1>
+<div class="task">在上限按啟動 X0，開始連續循環：下降 → 吸 1 秒 → 上升，回到上限等 0.5 秒再開始下一輪。運轉中 Y4 亮。
+運轉中按停止 X3，不會立刻停：Y5 亮，這一輪做完回到上限才停，停好後 Y4、Y5 都熄。
+如果是在上限等待時按停止，就不再開始下一輪。停好之後可以再按啟動。
+（這是「循環停止」，和急停不同：急停要立刻切斷動力。）</div>
+<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>啟動</td><td>按鈕</td></tr><tr><td>X001</td><td>下限感測器</td><td>感測器</td></tr><tr><td>X002</td><td>上限感測器</td><td>感測器</td></tr><tr><td>X003</td><td>循環停止</td><td>按鈕</td></tr><tr><td>Y000</td><td>下降</td><td>輸出</td></tr><tr><td>Y001</td><td>吸盤</td><td>輸出</td></tr><tr><td>Y002</td><td>上升</td><td>輸出</td></tr><tr><td>Y004</td><td>運轉燈</td><td>輸出</td></tr><tr><td>Y005</td><td>循環停止中</td><td>輸出</td></tr></tbody></table></div>
+<ul class="rules"><li>安全條件：下降和上升同時輸出</li></ul>
+<p><a class="btnlink go" href="../practice.html#E31">開始寫程式，自動評分 ›</a></p>
+<p class="why">評分會在虛擬機台上跑 4 組情境，並在每個掃描檢查安全條件。</p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "039b8ea19c" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

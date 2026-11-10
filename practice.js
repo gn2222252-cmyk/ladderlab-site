@@ -38,6 +38,10 @@ function open(eid) {
     `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}>` +
     `<i></i><span><b>${dev}</b> ${esc2(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");
   $("inputs").querySelectorAll(".inp").forEach(wireInput);
+  if (ex.latched) {
+    $("inputs").insertAdjacentHTML("beforeend", `<button type="button" class="inp power" id="powerbtn"><i></i><span><b>⚡</b> 停電再復電</span><small>電源</small></button>`);
+    $("powerbtn").onclick = () => pr.power_cycle();
+  }
   $("outputs").innerHTML = ex.outputs.map(([dev, label]) => `<li data-dev="${dev}"><i></i><b>${dev}</b> ${esc2(label)}</li>`).join("") || "<li>（這題看 D0）</li>";
   $("plant-box").hidden = !ex.plant;
   $("pfaults").innerHTML = (ex.faults || []).map(([k, t]) => `<label class="check small"><input type="checkbox" data-f="${k}"> 製造故障：${esc2(t)}</label>`).join("");
