@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E29 包裝計數：每箱幾個、顯示已裝幾箱（BCD）｜PLC 練習題（自動評分）</title>
+<meta name="description" content="包裝線：一位數指撥開關（X0～X3，BCD 的 1、2、4、8）設定「每箱幾個」（1～9）。工件感測器 X4 每來一個工件算一個，滿一箱就重新數下一箱；兩位數七段顯示器（Y0～Y3 個位、Y4～Y7 十位，都是 BCD）顯示「已經裝滿幾箱」">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E29.html">
+<meta property="og:title" content="E29 包裝計數：每箱幾個、顯示已裝幾箱（BCD）｜PLC 練習題（自動評分）">
+<meta property="og:description" content="包裝線：一位數指撥開關（X0～X3，BCD 的 1、2、4、8）設定「每箱幾個」（1～9）。工件感測器 X4 每來一個工件算一個，滿一箱就重新數下一箱；兩位數七段顯示器（Y0～Y3 個位、Y4～Y7 十位，都是 BCD）顯示「已經裝滿幾箱」">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E29.html">
+<link rel="stylesheet" href="../style.css?v=5f8ed510af">
+
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="../practice.html" class="here">練習題</a><a href="../sim.html">模擬器</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 練習題</a></p>
+<h1>E29 包裝計數：每箱幾個、顯示已裝幾箱（BCD）</h1>
+<div class="task">包裝線：一位數指撥開關（X0～X3，BCD 的 1、2、4、8）設定「每箱幾個」（1～9）。工件感測器 X4 每來一個工件算一個，滿一箱就重新數下一箱；兩位數七段顯示器（Y0～Y3 個位、Y4～Y7 十位，都是 BCD）顯示「已經裝滿幾箱」（00～99）。按 X5 全部歸零。指撥在 0 時不計數。
+這台是學校的 FX3S-20M：8 個輸出剛好全部用來顯示。箱數超過 9 箱時，沒用 BCD 送出就會顯示錯。</div>
+<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>指撥 1</td><td>開關</td></tr><tr><td>X001</td><td>指撥 2</td><td>開關</td></tr><tr><td>X002</td><td>指撥 4</td><td>開關</td></tr><tr><td>X003</td><td>指撥 8</td><td>開關</td></tr><tr><td>X004</td><td>工件感測器</td><td>按鈕</td></tr><tr><td>X005</td><td>歸零</td><td>按鈕</td></tr><tr><td>Y000</td><td>個位 1</td><td>輸出</td></tr><tr><td>Y001</td><td>個位 2</td><td>輸出</td></tr><tr><td>Y002</td><td>個位 4</td><td>輸出</td></tr><tr><td>Y003</td><td>個位 8</td><td>輸出</td></tr><tr><td>Y004</td><td>十位 1</td><td>輸出</td></tr><tr><td>Y005</td><td>十位 2</td><td>輸出</td></tr><tr><td>Y006</td><td>十位 4</td><td>輸出</td></tr><tr><td>Y007</td><td>十位 8</td><td>輸出</td></tr></tbody></table></div>
+
+<p><a class="btnlink go" href="../practice.html#E29">開始寫程式，自動評分 ›</a></p>
+<p class="why">評分會在虛擬機台上跑 6 組情境。</p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

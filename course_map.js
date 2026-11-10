@@ -331,6 +331,12 @@ window.COURSE = {
     },
     {
      "k": "E",
+     "id": "E29",
+     "href": "practice.html#E29",
+     "label": "練習 E29 包裝計數：每箱幾個、顯示已裝幾箱（BCD）"
+    },
+    {
+     "k": "E",
      "id": "E26",
      "href": "practice.html#E26",
      "label": "練習 E26 跑馬燈（八燈依序點亮）"

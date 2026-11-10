@@ -692,7 +692,7 @@ const Kit = (() => {
       init() { stateOf("Y004").boxes = [{ p: 0.2, m: false }, { p: 0.5, m: true }]; },
       il: ["LD X000", "OR M0", "AND X001", "OUT M0", "LD M0", "ANI X003", "OUT Y004", "OUT Y002", "LDI M0", "OR X003", "OUT Y001",
         "LD M0", "AND X003", "OUT T0 K20", "LD M0", "AND X003", "ANI T0", "OUT Y003"],
-      note: "X0 啟動、X1 急停（常閉，平常 ON，所以程式用常開接點 AND X1）。運轉時輸送帶 Y4 轉、綠燈 Y2 亮。工件到末端光電 X3：輸送帶停、紅燈 Y1 亮、蜂鳴器 Y3 響 2 秒。按「拿走」後自動繼續。" },
+      note: "X0 啟動、X1 停止（常閉，平常 ON，所以程式用常開接點 AND X1；這只是程式裡的停止，真正的急停要用硬體切斷電源，見「急停與硬體互鎖」頁）。運轉時輸送帶 Y4 轉、綠燈 Y2 亮。工件到末端光電 X3：輸送帶停、紅燈 Y1 亮、蜂鳴器 Y3 響 2 秒。按「拿走」後自動繼續。" },
     { title: "金屬分料：輸送帶＋推料氣缸＋七段計數", W: { X000: "nopb", X001: "ncpb", X002: "convM:Y000", X003: "convP:Y000", X004: "pushF:Y001", Y000: "conv", Y001: "push:Y000", Y004: "seg" },
       init() { stateOf("Y000").boxes = [{ p: 0.05, m: true }]; },
       il: ["LD X000", "OR M0", "AND X001", "OUT M0", "LD X002", "SET M1", "LD X003", "AND M1", "SET Y001", "LD X004", "RST Y001", "RST M1",
