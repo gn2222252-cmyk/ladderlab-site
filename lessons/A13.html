@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="0f031f1551">
+<meta name="ll-version" content="8c5ca2acd2">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>5.4 停電：哪些東西會記住｜PLC 互動課程</title>
@@ -27,8 +27,9 @@
 FX3S 跟很多教材用的 FX3U 不一樣：FX3S 的 S0～S127（S0～S9 初始步也保持）、M384～M511、D128～D255 預設斷電保持（存在 EEPROM），S20 這種一般步停電後還記得自己在哪一步。D0、M0 這些一般元件則會清成 0。
 這一課的模擬照 FX3S 的保持範圍。按右邊的「⚡ 停電再復電」看看哪些東西留下來：步序 S21 留著、D128 留著、D0 歸零。</div>
 <p><a class="btnlink go" href="../learn.html#A13">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
-<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>FX3S</th><th>FX3U（預設）</th><th>停電後</th></tr></thead><tbody><tr><td>步 S</td><td>S10～S127 保持（S0～S9 初始步也保持）</td><td>S500～S899 保持</td><td>保持的步復電後仍在作用</td></tr><tr><td>輔助繼電器 M</td><td>M384～M511</td><td>M500～M1023</td><td>其他 M 清成 OFF</td></tr><tr><td>資料暫存器 D</td><td>D128～D255</td><td>D200～D511</td><td>其他 D 清成 0</td></tr><tr><td>計數器 C</td><td>C16～C31</td><td>C100～C199</td><td>保持現在值</td></tr><tr><td>計時器 T</td><td>T128～T137 積算型</td><td>T246～T255 積算型</td><td>一般計時器歸零</td></tr><tr><td>輸出 Y</td><td>全部 OFF</td><td>全部 OFF</td><td>由程式在復電後重新決定</td></tr></tbody></table></div>
-<div class="notes">復電後的第一圈 M8002 會 ON 一次。這一圈是你決定「接著做還是從頭來」的地方：
+<div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>FX3S（學校，EEPROM）</th><th>FX3G（EEPROM）</th><th>FX3U（電池，預設值，可用參數改）</th><th>停電後</th></tr></thead><tbody><tr><td>步 S</td><td>S0～S127（S0～S9 初始步也保持）</td><td>S0～S899</td><td>S500～S899（S1000 以後固定保持）</td><td>保持的步復電後仍在作用</td></tr><tr><td>輔助繼電器 M</td><td>M384～M511</td><td>M384～M1535</td><td>M500～M1023（M1024 以後固定保持）</td><td>其他 M 清成 OFF</td></tr><tr><td>資料暫存器 D</td><td>D128～D255</td><td>D128～D1099</td><td>D200～D511（D512 以後固定保持）</td><td>其他 D 清成 0</td></tr><tr><td>計數器 C</td><td>C16～C31</td><td>C16～C199</td><td>C100～C199</td><td>保持現在值</td></tr><tr><td>計時器 T</td><td>T128～T137 積算型</td><td>T246～T255 積算型</td><td>T246～T255 積算型</td><td>一般計時器歸零</td></tr><tr><td>輸出 Y</td><td>全部 OFF</td><td>全部 OFF</td><td>全部 OFF</td><td>由程式在復電後重新決定</td></tr></tbody></table></div>
+<div class="notes">上表出處：FX3 程式手冊 JY997D16601 4.1 節元件表（停電保持範圍）、2.6.4 節（FX3U 可用參數改範圍；FX3S 手冊沒有列可改的設定）。FX3G 的 32 位元與高速計數器另有保持範圍，本站不用。
+復電後的第一圈 M8002 會 ON 一次。這一圈是你決定「接著做還是從頭來」的地方：
 接著做：只有在沒有任何步在作用時才 SET S0（本課的寫法）。
 從頭來：M8002 時 ZRST S0 S127 清掉所有步，再 SET S0。
 常見錯誤：照 FX3U 的習慣只寫 M8002 SET S0，放到 FX3S 上，停電前在 S21，復電後 S0 和 S21 同時作用。按上方「常見錯誤」那個程式試試。
@@ -70,7 +71,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "0f031f1551" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8c5ca2acd2" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

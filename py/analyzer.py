@@ -121,7 +121,7 @@ def analyze(items, cpu="FX3S", comments=None):
                                  "msg": "OUT %s 寫在步進區外面。OUT S 只能在 STL～RET 裡當跳躍；一般階梯圖要用 SET。" % ops[0]})
             if op == "OUT" and ops[0][0] == "C" and len(ops) > 1 and ops[1] in ("K0", "H0"):
                 warnings.append({"kind": "counter_k0", "dev": ops[0], "lines": [line],
-                                 "msg": "OUT %s K0：計數器設定值 0 和 K1 一樣，第一次計數就 ON（程式手冊 4.6.4 節）。要「設定是 0 就不計數」，請在計數條件串 AND> D K0。" % ops[0]})
+                                 "msg": "OUT %s K0：計數器設定值 0 和 K1 一樣，第一次計數就 ON（FX3 程式手冊 4.6 節，計數器）。要「設定是 0 就不計數」，請在計數條件串 AND> D K0。" % ops[0]})
             if in_stl and cur:
                 if op in ("SET", "OUT") and ops[0][0] == "S" and _norm(ops[0]) not in cur["states"]:
                     cur["exits"] += 1

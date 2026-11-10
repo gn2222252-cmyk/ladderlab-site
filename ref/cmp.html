@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="0f031f1551">
+<meta name="ll-version" content="8c5ca2acd2">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CMP：比較並輸出三個結果｜三菱 FX PLC 指令</title>
@@ -24,7 +24,7 @@
 <h1>CMP：比較並輸出三個結果</h1>
 <p class="lead-text">比較兩個數，結果放在連續三個 M：大於、等於、小於各一個。</p>
 <div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>CMP 來源1 來源2 M起點</td><td>FX3S 手冊：來源 K、H、D、T、C、V、Z、KnX／KnY／KnM／KnS；結果佔 3 點的 Y、M、S（程式手冊 9.1 節）。本站模擬器的結果用 M</td></tr></tbody></table></div>
-<p>CMP K10 D0 M10：K10 &gt; D0 時 M10 ON；相等時 M11 ON；K10 &lt; D0 時 M12 ON。</p><p>只需要一個比較時，比較接點（LD=、LD&gt;）更直觀。</p><p>陷阱：CMP 的條件變 OFF 之後，M10～M12 會保持最後一次的結果，不會自己清掉。要清除就用 ZRST M10 M12 或 RST。</p>
+<p>CMP K10 D0 M10：K10 &gt; D0 時 M10 ON；相等時 M11 ON；K10 &lt; D0 時 M12 ON。</p><p>CMP 是帶正負號的 16 位元比較：D0 = -5 時比 K10 小（M10 ON）。D0 用 16 進位看是 FFFBh，但不會被當成很大的正數。</p><p>只需要一個比較時，比較接點（LD=、LD&gt;）更直觀。</p><p>陷阱：CMP 的條件變 OFF 之後，M10～M12 會保持最後一次的結果，不會自己清掉。要清除就用 ZRST M10 M12 或 RST。</p>
 <h2>範例</h2>
 <pre class="il">LD M8000
 MOV K5 D0
@@ -43,7 +43,7 @@ CMP K10 D0 M10</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "0f031f1551" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8c5ca2acd2" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

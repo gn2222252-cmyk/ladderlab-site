@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="0f031f1551">
+<meta name="ll-version" content="8c5ca2acd2">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ZRST：區間整批清除｜三菱 FX PLC 指令</title>
@@ -34,7 +34,7 @@ LD X001
 ZRST M0 M2</pre>
 <p>按 X0 三個 M 都 ON；按 X1 一次全清。</p>
 <p><a class="btnlink go" href="../practice.html?il=LD%20X000%0ASET%20M0%0ASET%20M1%0ASET%20M2%0ALD%20X001%0AZRST%20M0%20M2#FREE">在瀏覽器執行這個範例 ›</a></p>
-<h2>常見錯誤</h2><ul><li>起點和終點不同類（例如 M0 和 S10），轉換錯誤。</li></ul>
+<h2>常見錯誤</h2><ul><li>起點和終點不同類（例如 M0 和 S10），轉換錯誤。</li><li>起點寫得比終點大：實機只清起點那一個元件（程式手冊 12.1 節）；本站模擬器會直接報錯，提醒你寫反了。</li><li>16 位元和 32 位元計數器不能放在同一個 ZRST 範圍（例如 ZRST C190 C210）。</li></ul>
 <h2>相關指令</h2><p><a class="btnlink" href="rst.html">RST</a> <a class="btnlink" href="stl.html">STL</a></p>
 <p class="why">範例佔 10 個程式步。本頁範例已在 LadderLab 的 FX 相容引擎實際執行驗證；指令細節以三菱 FX 系列程式設計手冊為準。</p>
 </main>
@@ -46,7 +46,7 @@ ZRST M0 M2</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "0f031f1551" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8c5ca2acd2" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
