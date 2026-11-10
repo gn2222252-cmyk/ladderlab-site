@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b3fa0fdc2">
+<meta name="ll-version" content="b38ea99503">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 課程地圖：三菱 FX3S 從零到會設計、會除錯 | LadderLab</title>
@@ -67,6 +67,18 @@
 "use strict";
 const d = Course.doneSets(), esc = Course.esc;
 let all = 0, got = 0;
+/* the LabVIEW course keeps its own progress (labview/assets/course.js): lessons ticked done and the best mock exam */
+function lvProgress() {
+  let lv = {}, best = null;
+  try { lv = JSON.parse(localStorage.getItem("gantry-lv-course-v1") || "{}") || {}; } catch (e) { lv = {}; }
+  try { best = JSON.parse(localStorage.getItem("gantry-lv-exam-best") || "null"); } catch (e) { best = null; }
+  const done = Object.keys(lv.done || {}).filter((k) => lv.done[k]);
+  if (!done.length && !best) return "";
+  const part = (re) => done.filter((k) => re.test(k)).length;
+  return `<p class="why">LabVIEW 課程進度：基礎與專案 ${part(/^L\d/)}/22、檔案 I/O ${part(/^F\d/)}/5、架構 ${part(/^A\d/)}/9、CLAD ${part(/^C/)}/19` +
+    (best && typeof best.pct === "number" ? `；模擬考最佳 ${Math.round(best.pct)}%` : "") +
+    (lv.last ? `　<a href="labview/index.html#${esc(lv.last)}">回到上次的課 ›</a>` : "") + "</p>";
+}
 function card(sec) {
   const n = sec.items.filter((it) => Course.isDone(it, d)).length;
   if (sec.main) { all += sec.items.length; got += n; }
@@ -76,7 +88,7 @@ function card(sec) {
     return `<li class="k-${it.k}${ok ? " ok" : ""}"><a href="${it.href}"${it.k === "G" ? ` data-g="${esc(it.id)}"` : ""}>${ok ? "✓ " : ""}${text}</a></li>`;
   }).join("");
   const head = sec.main ? `<span class="ch-no">${sec.id}</span>` : `<span class="ch-no side">支</span>`;
-  const after = sec.after ? `<p class="why">建議在第 ${sec.after} 章之後</p>` : "";
+  const after = (sec.after ? `<p class="why">建議在第 ${sec.after} 章之後</p>` : "") + (sec.id === "Y" ? lvProgress() : "");
   return `<section class="chapter${n === sec.items.length ? " done" : ""}" id="ch${sec.id}"><div class="chap-head">${head}<div><h2>${esc(sec.t)}</h2>` +
     `<p>${esc(sec.why)}</p>${after}</div></div>` +
     `<div class="ch-can"><b>學完你會</b><ul>${sec.can.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>` +
@@ -100,7 +112,7 @@ renderWaitlist(document.getElementById("wl"), "path", "想在 Pro 開放時第�
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b3fa0fdc2" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "b38ea99503" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
