@@ -30,6 +30,7 @@
     <section class="sim-edit">
       <div id="state" class="sim-state">寫入模式：在下面畫程式，按 F4 轉換並送進模擬 PLC。</div>
       <div id="pending" class="sim-pending" hidden>⚠ 畫面上的程式改過了，<b>還沒轉換寫入 PLC</b>。PLC 現在跑的還是上一次寫入的程式（右邊「PLC 內的程式」）。按 <kbd>F4</kbd> 轉換並寫入。</div>
+      <p id="rangewarn" class="sim-pending" hidden></p>
       <ul id="errors" class="errors"></ul>
       <div id="ed-ladder"></div>
       <div id="ed-stl" hidden></div>
@@ -41,6 +42,11 @@
     <aside class="sim-side">
       <div class="box" id="plc-box"><h3>軟 PLC（FX3S 模擬）</h3><div id="fxlive" title="點面板上的 RUN／STOP 開關也可以切換"></div>
         <div class="plc-ctl"><button type="button" id="bRun" class="small-btn">切到 STOP</button><span id="plcinfo" class="hint"></span></div>
+        <div id="plc-cfg" class="plc-cfg" hidden><label>機型 <select id="plcModel"></select></label>
+          <ul id="plcExt" class="plc-ext"></ul>
+          <div class="plc-add"><select id="plcExtSel"></select><button type="button" id="plcExtAdd" class="small-btn">加裝</button></div>
+          <p id="plcIOtext" class="hint"></p>
+          <p class="hint">X、Y 不夠用：FX3S 可以加裝一片擴充板（4 點輸入或 2 點輸出），FX3G、FX3U 可以接 FX2N 擴充模組，或直接換點數多的機型。擴充的編號接在主機後面，從下一個 8 的倍數開始（例如 FX3S-30M 的輸入擴充板是 X20～X23）。面板圖是 FX3S-20M 的樣子，燈只有 X0～X13、Y0～Y7；其他端子看下面的輸入、輸出和組裝台。</p></div>
         <details><summary>PLC 內的程式</summary><pre id="plcprog" class="plc-prog"></pre></details></div>
       <div class="box" id="plant-box"><h3>機構</h3><canvas id="plant" width="260" height="190"></canvas><div id="pfaults"></div></div>
       <div class="box"><h3>輸入 X（點一下切換）</h3><div id="inputs" class="inputs"></div></div>
@@ -54,7 +60,8 @@
     <ol>
       <li><b>先只模擬電路</b>：預設是「只模擬電路」，X0～X17 每一點都是可以切換的輸入，Y0～Y17 是輸出燈，沒有預設任何用途。例如畫常開 X1 接線圈 Y1，點 X1 讓它 ON，Y1 就亮。程式用到的 M、T、C、D、S 會自動列在「元件監看」。</li>
       <li><b>軟 PLC</b>：右上角是模擬的 FX3S。F4 等於把程式寫入 PLC，面板上 IN／OUT 燈跟著亮。RUN／STOP 開關撥到 STOP，輸出全部 OFF；撥回 RUN 重新開始掃描，第一次掃描 M8002 會 ON。程式改了沒轉換，上面會出現黃色提醒，PLC 還在跑舊的程式。程式有錯時不會寫入，ERR 燈亮。</li>
-      <li><b>組裝台（自己組機構）</b>：在「只模擬電路」下面。從零件列把紅綠黃燈、蜂鳴器、馬達、氣缸、輸送帶、鐵捲門、水槽、加熱器、七段顯示器、按鈕、急停、切換開關拖到組裝台，零件可以隨便擺。再從上方 FX3S 的端子拉線到零件的端子：Y（橘）接裝置的線圈，例如輸送帶的「馬達」、「推料」，鐵捲門的「上升」、「下降」，水槽的「進水」、「排水」；X（藍）接感測器和按鈕，例如氣缸前限／後限、輸送帶末端光電、金屬感測器、推料位、推到底、鐵捲門上下限、高低液位、溫度開關。按住端子拖到另一頭放開，或點一下端子再點另一頭，就接上一條線；點一下線就拆掉。七段顯示器接 BCD 起點，會自動佔連續 4 個 Y。通電的線會亮起來。PLC 輸出驅動裝置，裝置的感測器再回到 X，就像真的接線。另外有供料器、夾爪取放、吸盤取放和料盒。零件下方的灰色方塊是<b>物料口</b>：從「出口／放料」拉到另一個零件的「入口／取料」，工件就照這個方向送過去；輸送帶出口連到夾爪取料、夾爪放料再連回輸送帶入口，工件會一直循環。取放機構下降時橫移會撞機，程式要做互鎖。「範例機構」有七組現成的零件、接線和程式：輸送帶警示、金屬分料計數、鐵捲門互鎖、水槽自動補水、加熱器控溫、輸送帶＋夾爪閉環、供料器→輸送帶→吸盤→料盒。</li>
+      <li><b>組裝台（自己組機構）</b>：在「只模擬電路」下面。從零件列把紅綠黃燈、蜂鳴器、馬達、氣缸、輸送帶、鐵捲門、水槽、加熱器、七段顯示器、按鈕、急停、切換開關拖到組裝台，零件可以隨便擺。再從上方 FX3S 的端子拉線到零件的端子：Y（橘）接裝置的線圈，例如輸送帶的「馬達」、「推料」，鐵捲門的「上升」、「下降」，水槽的「進水」、「排水」；X（藍）接感測器和按鈕，例如氣缸前限／後限、輸送帶末端光電、金屬感測器、推料位、推到底、鐵捲門上下限、高低液位、溫度開關。按住端子拖到另一頭放開，或點一下端子再點另一頭，就接上一條線；點一下線就拆掉。七段顯示器接 BCD 起點，會自動佔連續 4 個 Y。通電的線會亮起來。PLC 輸出驅動裝置，裝置的感測器再回到 X，就像真的接線。另外有供料器、夾爪取放、吸盤取放和料盒。零件下方的灰色方塊是<b>物料口</b>：從「出口／放料」拉到另一個零件的「入口／取料」，工件就照這個方向送過去；輸送帶出口連到夾爪取料、夾爪放料再連回輸送帶入口，工件會一直循環。取放機構下降時橫移會撞機，程式要做互鎖。還有塔燈（紅黃綠＋蜂鳴器）、雙動氣缸（伸出、縮回兩個線圈，都 OFF 會停在原位）、三層電梯、分度盤（每轉 90° 定位）、指撥開關（BCD 佔 4 個 X）。「範例機構」有十組現成的零件、接線和程式：輸送帶警示、金屬分料計數、鐵捲門互鎖、水槽自動補水、加熱器控溫、輸送帶＋夾爪閉環、供料器→輸送帶→吸盤→料盒、分度盤加工站、三層電梯、指撥設定數量（要加裝擴充板）。</li>
+      <li><b>X、Y 不夠用</b>：在右邊「軟 PLC」選機型（FX3S、FX3G、FX3U 各種點數），或加裝擴充板（FX3S 只能裝一片）、FX2N 擴充模組（FX3G、FX3U）。擴充的端子會出現在組裝台的端子排上。程式用到這台 PLC 沒有的端子，上面會出現黃色提醒。</li>
       <li><b>需要時再接機構（選用）</b>：上面的選單可以接氣缸、輸送帶分料、步進馬達滑台、紅綠燈、三層電梯、機械手臂、儲槽液位。接機構時，X、Y 會照那台機構的接線，每台都有範例程式和可以製造的故障。</li>
       <li><b>寫程式</b>：三種寫法都可以，和 GX Works2 的建立工程時選的語言一樣。
         <ul><li><b>梯形圖</b>：點格子，按 F5 常開、F6 常閉、Shift+F5 並聯、F7 線圈、F8 應用指令（SET、MOV、STL、DRVA…）、F9 橫線、Shift+F9 直線。也可以直接打 <code>LD X0</code>、<code>OUT Y0</code>。</li>

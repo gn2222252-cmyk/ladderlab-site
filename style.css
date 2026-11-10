@@ -662,3 +662,22 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .k-held{display:none}
 .k-binbox{fill:none;stroke:#5d6573;stroke-width:2.5}
 .k-card.burnt .k-cylbody{stroke:#e53935}
+/* PLC model / expansion, new bench devices */
+.plc-cfg{margin-top:8px;font-size:13px}
+.plc-cfg select{max-width:100%;font-size:13px}
+.plc-ext{list-style:none;padding:0;margin:6px 0}
+.plc-ext li{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:6px;padding:2px 6px;margin:3px 0;font-size:12px}
+.plc-add{display:flex;gap:6px;align-items:center}
+.plc-add select{flex:1;min-width:0}
+.kb-ext{align-self:stretch;writing-mode:vertical-rl;font-size:10px;color:#fff;background:#5d6573;border-radius:3px;padding:2px 1px;margin:0 2px}
+.k-tw{opacity:.25}.k-tw.tr{fill:#e53935}.k-tw.ty{fill:#f6c026}.k-tw.tg{fill:#2fbf5b}
+.k-tw.lit{opacity:1}.k-tw.tr.lit{filter:drop-shadow(0 0 6px #ff3b30)}.k-tw.ty.lit{filter:drop-shadow(0 0 6px #f6c026)}.k-tw.tg.lit{filter:drop-shadow(0 0 6px #2fbf5b)}
+.k-card.buzzing .k-wave{animation:kbuzz .3s steps(2) infinite}
+.k-air2.on{stroke:var(--on)}
+.k-car2{fill:#cfd6e0;stroke:#5d6573;stroke-width:1.5}.k-cardoor{stroke:#5d6573}
+.k-motor-t2{font-size:9px;fill:var(--ink)}
+.k-disc{fill:#e9ecef;stroke:#5d6573;stroke-width:2}.k-station{fill:#c98b3c;stroke:#7a5017}.k-pointer{fill:#e53935}
+.k-dial{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 0}
+.k-dv{display:inline-block;min-width:34px;text-align:center;font:700 26px/1.2 monospace;background:#1d2128;color:#ffd54a;border-radius:4px;padding:2px 4px}
+.k-small2{font-size:11px;color:var(--mute);text-align:center;margin:0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .k-disc{fill:#2a303a}}

@@ -13,10 +13,13 @@ const Kit = (() => {
     door: ["鐵捲門", "鐵門"], tank: ["水槽", "水槽"], heat: ["加熱器", "加熱"],
     seg: ["七段顯示器（BCD，佔連續 4 點）", "七段"],
     arm: ["夾爪取放機構（橫移線圈）", "夾爪"], suck: ["吸盤取放機構（橫移線圈）", "吸盤"], feed: ["供料器（推料氣缸）", "供料"],
+    tower: ["塔燈（紅燈）", "塔燈"], cyl2: ["雙動氣缸（伸出線圈）", "雙動"], lift: ["三層電梯（上升線圈）", "電梯"], rot: ["分度盤（旋轉馬達）", "分度"],
   };
   const SUB = {                                   // a Y that is part of the device on another Y: [name, short, parent kind]
     doorDn: ["下降線圈", "下降", "door"], tankOut: ["排水閥", "排水", "tank"], push: ["推料氣缸", "推料", "conv"],
     armZ: ["下降氣缸", "下降", ["arm", "suck"]], armG: ["夾爪／吸盤閥", "夾吸", ["arm", "suck"]],
+    cylR: ["縮回線圈", "縮回", "cyl2"], liftDn: ["下降線圈", "下降", "lift"],
+    twY: ["黃燈", "塔黃", "tower"], twG: ["綠燈", "塔綠", "tower"], twB: ["蜂鳴器", "塔鳴", "tower"],
   };
   const IN = {
     switch: ["切換開關（點一下 ON／OFF）", "開關"], nopb: ["按鈕（常開，按住才 ON）", "按鈕"],
@@ -30,9 +33,13 @@ const Kit = (() => {
     heatT: ["溫度開關（60°C 以上 ON）", "溫度"],
     armL: ["取料位感測器", "取料位"], armR: ["放料位感測器", "放料位"], armU: ["上限感測器", "上限"], armD: ["下限感測器", "下限"],
     armH: ["夾到／吸到工件感測器", "夾到"], feedE: ["料倉有料感測器", "有料"], feedF: ["推到底感測器", "推到底"],
+    liftA: ["1 樓位置感測器", "1F"], liftB: ["2 樓位置感測器", "2F"], liftC: ["3 樓位置感測器", "3F"],
+    rotP: ["定位感測器（每轉 90° ON）", "定位"], rotO: ["原點感測器（0° ON）", "原點"],
   };
   const SENS_OF = { cyl: ["cylF", "cylB"], conv: ["conv", "convM", "convP"], push: ["pushF"], door: ["doorU", "doorL"], tank: ["tankH", "tankL"], heat: ["heatT"],
-    arm: ["armL", "armR", "armU", "armD", "armH"], suck: ["armL", "armR", "armU", "armD", "armH"], feed: ["feedE", "feedF"] };
+    arm: ["armL", "armR", "armU", "armD", "armH"], suck: ["armL", "armR", "armU", "armD", "armH"], feed: ["feedE", "feedF"],
+    cyl2: ["cylF", "cylB"], lift: ["liftA", "liftB", "liftC"], rot: ["rotP", "rotO"] };
+  const RANGE4 = { seg: "七段顯示器", dial: "指撥開關" };   // devices that take four terminals in a row (BCD)
   const ARMP = (g, h) => [["main", "Y", "橫移"], ["armZ", "Y", "下降"], ["armG", "Y", g], ["armL", "X", "取料位"], ["armR", "X", "放料位"], ["armU", "X", "上限"], ["armD", "X", "下限"], ["armH", "X", h], ["pick", "Mi", "取料"], ["place", "Mo", "放料"]];
   /* the terminals on each part: [port, X or Y, label]. "main" is the device's own coil (or the button's contact).
      Mi / Mo are material ports, not wires: where a workpiece comes in (Mi) or goes out (Mo). Linking a conveyor's outlet
@@ -45,23 +52,29 @@ const Kit = (() => {
     arm: ARMP("夾爪", "夾到"), suck: ARMP("吸盤", "真空"),
     feed: [["main", "Y", "推料"], ["feedE", "X", "有料"], ["feedF", "X", "推到底"], ["out", "Mo", "出口"]],
     bin: [["in", "Mi", "入口"]],
+    tower: [["main", "Y", "紅"], ["twY", "Y", "黃"], ["twG", "Y", "綠"], ["twB", "Y", "蜂鳴"]],
+    cyl2: [["main", "Y", "伸出"], ["cylR", "Y", "縮回"], ["cylF", "X", "前限"], ["cylB", "X", "後限"]],
+    lift: [["main", "Y", "上升"], ["liftDn", "Y", "下降"], ["liftA", "X", "1F"], ["liftB", "X", "2F"], ["liftC", "X", "3F"]],
+    rot: [["main", "Y", "旋轉"], ["rotP", "X", "定位"], ["rotO", "X", "原點"]],
+    dial: [["main", "X", "BCD 起點"]],
     door: [["main", "Y", "上升"], ["doorDn", "Y", "下降"], ["doorU", "X", "上限"], ["doorL", "X", "下限"]],
     tank: [["main", "Y", "進水"], ["tankOut", "Y", "排水"], ["tankH", "X", "高液位"], ["tankL", "X", "低液位"]],
     heat: [["main", "Y", "加熱"], ["heatT", "X", "溫度"]],
     nopb: [["main", "X", "常開"]], ncpb: [["main", "X", "常閉"]], switch: [["main", "X", "接點"]],
   };
-  const PNAME = Object.assign({}, ...Object.keys(OUT).map((k) => ({ [k]: OUT[k][1] })), { red: "紅燈", green: "綠燈", yellow: "黃燈", buzzer: "蜂鳴器", motor: "馬達", cyl: "氣缸", conv: "輸送帶", door: "鐵捲門", heat: "加熱器", seg: "七段顯示器", nopb: "按鈕", ncpb: "急停", switch: "切換開關", arm: "夾爪取放", suck: "吸盤取放", feed: "供料器", bin: "料盒" });
-  const WIDTH = { cyl: 250, conv: 330, door: 170, tank: 170, heat: 170, nopb: 92, ncpb: 92, switch: 92, arm: 230, suck: 230, feed: 160, bin: 130 };
-  const HEIGHT = { cyl: 150, conv: 260, door: 190, tank: 190, heat: 180, nopb: 120, ncpb: 120, switch: 120, arm: 260, suck: 260, feed: 220, bin: 150 };
-  const PALETTE = ["red", "green", "yellow", "buzzer", "motor", "cyl", "conv", "feed", "arm", "suck", "bin", "door", "tank", "heat", "seg", "nopb", "ncpb", "switch"];
+  const PNAME = Object.assign({}, ...Object.keys(OUT).map((k) => ({ [k]: OUT[k][1] })), { red: "紅燈", green: "綠燈", yellow: "黃燈", buzzer: "蜂鳴器", motor: "馬達", cyl: "氣缸", conv: "輸送帶", door: "鐵捲門", heat: "加熱器", seg: "七段顯示器", nopb: "按鈕", ncpb: "急停", switch: "切換開關", arm: "夾爪取放", suck: "吸盤取放", feed: "供料器", bin: "料盒", tower: "塔燈", cyl2: "雙動氣缸", lift: "三層電梯", rot: "分度盤", dial: "指撥開關" });
+  const WIDTH = { cyl: 250, conv: 330, door: 170, tank: 170, heat: 170, nopb: 92, ncpb: 92, switch: 92, arm: 230, suck: 230, feed: 160, bin: 130, tower: 110, cyl2: 250, lift: 150, rot: 150, dial: 124 };
+  const HEIGHT = { cyl: 150, conv: 260, door: 190, tank: 190, heat: 180, nopb: 120, ncpb: 120, switch: 120, arm: 260, suck: 260, feed: 220, bin: 150, tower: 190, cyl2: 160, lift: 230, rot: 190, dial: 130 };
+  const PALETTE = ["red", "green", "yellow", "buzzer", "motor", "cyl", "tower", "cyl2", "conv", "feed", "arm", "suck", "bin", "rot", "lift", "door", "tank", "heat", "seg", "dial", "nopb", "ncpb", "switch"];
   const STOP_AT = 0.88, PICK_FROM = 0.78;          // conveyor stopper (box centre) when something picks at its outlet
   const AT = { conv: 0.85, convM: 0.3, convP: 0.5 }, PUSH_AT = 0.5, BOX = 0.075, BELT = 270;
   const short = (d) => d ? d[0] + d.slice(1).replace(/^0+(?=\d)/, "") : "?";
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const base = (k) => String(k || "").split(":")[0];
+  const dAdd = (d, i) => d[0] + (parseInt(d.slice(1), 8) + i).toString(8).padStart(3, "0");
   const yAdd = (y, i) => "Y" + (parseInt(y.slice(1), 8) + i).toString(8).padStart(3, "0");
 
-  let W = {}, pressed = {}, sim = {}, el = null, opt = null, xs = [], ys = [], outs = {}, ins = {}, mute = false, audio = null;
+  let W = {}, pressed = {}, sim = {}, el = null, opt = null, xs = [], ys = [], marks = {}, model = "FX3S", outs = {}, ins = {}, mute = false, audio = null;
   let parts = [], wires = {}, links = {}, nid = 1, msg = "", pick = null, ro = null;   // wires: terminal -> "partId.port"; links: "pid.out" -> "pid.in"
 
   /* ---------- bench model -> wiring map ---------- */
@@ -72,6 +85,7 @@ const Kit = (() => {
       const main = termOf(p.id + ".main");
       if (IN[p.k]) { if (main) w[main] = p.k; return; }
       if (main) w[main] = p.k;
+      if (p.k === "dial" && main) for (let i = 1; i < 4; i++) w[dAdd(main, i)] = "dialB:" + main;
       PORTS[p.k].slice(1).forEach(([port, ty]) => {
         if (ty[0] === "M") return;
         const t = termOf(p.id + "." + port); if (!t) return;
@@ -124,7 +138,7 @@ const Kit = (() => {
     ys.forEach((y) => { const [s, m] = String(w[y] || "").split(":"); if (SUB[s] && owner[m]) { wires[y] = owner[m].id + "." + s; owner[y] = owner[m]; } });
     xs.forEach((x) => {
       const k = w[x]; if (!k) return;
-      if (IN[k]) { const p = addPart(k); wires[x] = p.id + ".main"; return; }
+      if (IN[k] || k === "dial") { const p = addPart(k); wires[x] = p.id + ".main"; return; }
       const [s, m] = k.split(":");
       if (SENS[s] && owner[m]) wires[x] = owner[m].id + "." + s;
     });
@@ -172,6 +186,8 @@ const Kit = (() => {
       return k ? "（裝置的主線圈還沒接）" : "";
     }
     if (IN[k]) return W[dev] ? IN[k][0] : "";
+    if (k === "dial") return "指撥開關的第 0 位元（1）";
+    if (base(k) === "dialB") { const m = k.split(":")[1]; return `${short(m)} 指撥開關的第 ${parseInt(dev.slice(1), 8) - parseInt(m.slice(1), 8)} 位元（${1 << (parseInt(dev.slice(1), 8) - parseInt(m.slice(1), 8))}）`; }
     const l = link(k);
     return l ? `${short(l[1])} ${devName(l[1])}的${SENS[l[0]][0]}` : "（感測器所在的裝置還沒接 Y）";
   }
@@ -184,6 +200,7 @@ const Kit = (() => {
       return segOwner(dev) ? "七段" : (k ? "未接" : "");
     }
     if (IN[k]) return W[dev] ? IN[k][1] : "";
+    if (k === "dial" || base(k) === "dialB") return "指撥";
     const l = link(k);
     return l ? SENS[l[0]][1] : "未接";
   }
@@ -225,6 +242,21 @@ const Kit = (() => {
         off.forEach((x) => { if (!(tgt && give(outTo, x))) s.done++; });
       }
       if (k === "arm" || k === "suck") stepArm(y, s, k, dt);
+      if (k === "cyl2") {
+        const ex = on(y), re = on(subsOf(y, "cylR")[0]);       // double solenoid: stays where it is when both are OFF
+        if (ex && !re) s.pos = Math.min(1, s.pos + dt / 600);
+        if (re && !ex) s.pos = Math.max(0, s.pos - dt / 600);
+      }
+      if (k === "lift") {
+        const up = on(y), dn = on(subsOf(y, "liftDn")[0]);
+        if (up && dn) s.burnt = true;
+        if (!s.burnt && !s.crash) {
+          s.pos += ((up ? 1 : 0) - (dn ? 1 : 0)) * dt / 2500;
+          if (s.pos > 2.1) { s.pos = 2.1; s.crash = "衝頂！"; }
+          if (s.pos < -0.1) { s.pos = -0.1; s.crash = "蹲底！"; }
+        }
+      }
+      if (k === "rot" && on(y)) s.ang = (s.ang + dt * 0.045) % 360;
       if (k === "feed") {
         const fp = partOfY(y);
         if (s.mag === undefined) s.mag = 5;
@@ -254,6 +286,8 @@ const Kit = (() => {
       const k = W[x]; if (!k) return;
       if (k === "nopb") want[x] = pressed[x] ? 1 : 0;
       else if (k === "ncpb") want[x] = pressed[x] ? 0 : 1;
+      else if (k === "dial") want[x] = (stateOf(x).val || 0) & 1;
+      else if (base(k) === "dialB") { const m = k.split(":")[1]; want[x] = ((stateOf(m).val || 0) >> (parseInt(x.slice(1), 8) - parseInt(m.slice(1), 8))) & 1; }
       else if (k !== "switch") {
         const l = link(k);
         let v = 0;
@@ -275,11 +309,14 @@ const Kit = (() => {
           if (t === "armH") v = s.hold ? 1 : 0;
           if (t === "feedE") v = (s.mag === undefined ? 5 : s.mag) > 0 ? 1 : 0;
           if (t === "feedF") v = s.pos >= 0.98 ? 1 : 0;
+          if (t === "liftA" || t === "liftB" || t === "liftC") v = Math.abs(s.pos - "ABC".indexOf(t[4])) < 0.035 ? 1 : 0;
+          if (t === "rotP") { const d = s.ang % 90; v = Math.min(d, 90 - d) < 4 ? 1 : 0; }
+          if (t === "rotO") { const d = s.ang % 360; v = Math.min(d, 360 - d) < 4 ? 1 : 0; }
         }
         want[x] = v;
       }
     });
-    buzz(ys.some((y) => W[y] === "buzzer" && outs[y]));
+    buzz(ys.some((y) => outs[y] && (W[y] === "buzzer" || (base(W[y]) === "twB" && subLink(W[y])))));
     return want;
   }
 
@@ -335,8 +372,9 @@ const Kit = (() => {
       return `<div class="k-card"${dy}><svg viewBox="0 0 90 92"><path class="k-wave" d="M66 26q8 12 0 24M74 20q13 18 0 36M24 26q-8 12 0 24M16 20q-13 18 0 36"/><circle class="k-buz" cx="45" cy="38" r="22"/><circle class="k-buzhole" cx="45" cy="38" r="5"/><rect class="k-base" x="31" y="66" width="28" height="18" rx="3"/></svg></div>`;
     if (k === "motor")
       return `<div class="k-card"${dy}><svg viewBox="0 0 90 92"><circle class="k-mbody" cx="45" cy="40" r="30"/><g class="k-fan"><path d="M45 40 L45 14 A12 12 0 0 1 55 30Z M45 40 L68 53 A12 12 0 0 1 52 60Z M45 40 L22 53 A12 12 0 0 1 28 32Z"/></g><circle class="k-hub" cx="45" cy="40" r="5"/><rect class="k-base" x="31" y="72" width="28" height="12" rx="3"/></svg></div>`;
-    if (k === "cyl") {
+    if (k === "cyl" || k === "cyl2") {
       const s = sensorsOf(y).map(([x, t]) => sensMark(x, t === "cylF" ? 79 : 19, 26)).join("");
+      if (k === "cyl2") { const r = subsOf(y, "cylR")[0]; return `<div class="k-card"${dy}><svg viewBox="0 0 230 92"><rect class="k-cylbody" x="10" y="30" width="112" height="32" rx="4"/><rect class="k-piston" x="14" y="33" width="10" height="26"/><rect class="k-rod" x="24" y="41" width="118" height="10"/><rect class="k-head" x="142" y="34" width="10" height="24" rx="2"/>${s}<path class="k-air" d="M30 70v10h-14"/><path class="k-air k-air2" d="M106 70v10h14"/><text class="k-small" x="10" y="90">${y ? short(y) : ""} 伸出</text><text class="k-small" x="124" y="90">${r ? short(r) : ""} 縮回</text></svg></div>`; }
       return `<div class="k-card"${dy}><svg viewBox="0 0 230 92"><rect class="k-cylbody" x="10" y="30" width="112" height="32" rx="4"/><rect class="k-piston" x="14" y="33" width="10" height="26"/><rect class="k-rod" x="24" y="41" width="118" height="10"/><rect class="k-head" x="142" y="34" width="10" height="24" rx="2"/>${s}<path class="k-air" d="M30 70v10h-14"/><text class="k-small" x="40" y="86">電磁閥 ON：伸出</text></svg></div>`;
     }
     if (k === "conv") {
@@ -369,6 +407,29 @@ const Kit = (() => {
       const s = sensorsOf(y).map(([x]) => sensMark(x, 112, 70)).join("");
       return `<div class="k-card"${dy}><svg viewBox="0 0 130 100"><rect class="k-oven" x="8" y="10" width="80" height="74" rx="4"/><path class="k-coil" d="M16 66l8-10 8 10 8-10 8 10 8-10 8 10 8-10 8 10"/><text class="k-temp" x="48" y="38" text-anchor="middle"></text><rect class="k-therm" x="98" y="14" width="6" height="44" rx="3"/><rect class="k-merc" x="99" y="57" width="4" height="0"/>${s}</svg></div>`;
     }
+    if (k === "tower") {
+      const sub = (n) => subsOf(y, n)[0], lab = (t, yy) => t ? `<text class="k-small" x="54" y="${yy}">${short(t)}</text>` : "";
+      return `<div class="k-card"${dy}><svg viewBox="0 0 90 122"><path class="k-wave" d="M50 4q6 6 0 12M38 4q-6 6 0 12"/><rect class="k-buz k-twb" x="30" y="4" width="20" height="10" rx="3"/>` +
+        `<rect class="k-tw tr" x="26" y="16" width="28" height="22" rx="2"/><rect class="k-tw ty" x="26" y="40" width="28" height="22" rx="2"/><rect class="k-tw tg" x="26" y="64" width="28" height="22" rx="2"/>` +
+        `<rect class="k-base" x="37" y="86" width="6" height="22"/><rect class="k-base" x="24" y="106" width="32" height="8" rx="2"/>` +
+        `${lab(y, 31)}${lab(sub("twY"), 55)}${lab(sub("twG"), 79)}${lab(sub("twB"), 12)}</svg></div>`;
+    }
+    if (k === "lift") {
+      const dn = subsOf(y, "liftDn")[0], fy = (n) => 132 - n * 56;
+      const s = sensorsOf(y).map(([x, t]) => sensMark(x, 96, fy("ABC".indexOf(t[4])) - 14)).join("");
+      return `<div class="k-card"${dy}><svg viewBox="0 0 120 140"><rect class="k-frame" x="30" y="2" width="52" height="132"/>` +
+        [0, 1, 2].map((n) => `<path class="k-floor" d="M22 ${fy(n)}H90"/><text class="k-small" x="4" y="${fy(n) - 12}">${n + 1}F</text>`).join("") +
+        `<g class="k-cab"><rect class="k-car2" x="36" y="${fy(0) - 34}" width="40" height="34" rx="2"/><path class="k-cardoor" d="M56 ${fy(0) - 30}V${fy(0) - 2}"/></g>` +
+        `<text class="k-motor-t2" x="56" y="10" text-anchor="middle">${y ? "▲" + short(y) : "▲"}${dn ? " ▼" + short(dn) : ""}</text>${s}<text class="k-warn" x="56" y="78" text-anchor="middle"></text></svg></div>`;
+    }
+    if (k === "rot") {
+      const s = sensorsOf(y).map(([x, t]) => sensMark(x, 116, t === "rotP" ? 14 : 104)).join("");
+      return `<div class="k-card"${dy}><svg viewBox="0 0 130 118"><circle class="k-disc" cx="60" cy="60" r="46"/><g class="k-rotg">` +
+        [0, 1, 2, 3].map((i) => `<g transform="rotate(${i * 90} 60 60)"><rect class="k-station" x="51" y="18" width="18" height="16" rx="2"/><text class="k-small" x="60" y="30" text-anchor="middle">${i + 1}</text></g>`).join("") +
+        `<circle class="k-hub" cx="60" cy="60" r="6"/></g><path class="k-pointer" d="M54 2H66L60 12Z"/><text class="k-small k-ang" x="60" y="116" text-anchor="middle"></text>${s}</svg></div>`;
+    }
+    if (k === "dial")
+      return `<div class="k-card"${y ? ` data-dial="${y}"` : ""}><div class="k-dial"><button type="button" class="small-btn" data-dd="-1" data-dx="${y}">−</button><b class="k-dv">0</b><button type="button" class="small-btn" data-dd="1" data-dx="${y}">＋</button></div><p class="k-small2">${y ? short(y) + "～" + short(dAdd(y, 3)) + "（BCD）" : "佔連續 4 個 X"}</p></div>`;
     if (k === "arm" || k === "suck") {
       const sx = { armL: [24, 12], armR: [196, 12], armU: [212, 46], armD: [212, 116], armH: [110, 150] };
       const s = sensorsOf(y).map(([x, t]) => sensMark(x, sx[t][0], sx[t][1])).join("");
@@ -416,11 +477,11 @@ const Kit = (() => {
   }
   function render() {
     if (!el) return;
-    const segUse = {}; Object.keys(wires).forEach((t) => { if (wires[t].endsWith(".main") && (parts.find((p) => p.id === wires[t].split(".")[0]) || {}).k === "seg") for (let i = 1; i < 4; i++) segUse[yAdd(t, i)] = t; });
-    const term = (t) => `<span class="kb-term ${t[0]}${wires[t] || segUse[t] ? " used" : ""}" data-t="${t}" title="${esc(label(t) || (t[0] === "X" ? "輸入端子（沒接線時是切換開關）" : "輸出端子（沒接線時只亮 PLC 上的燈）"))}"><b>${short(t)}</b><i></i></span>`;
+    const segUse = {}; Object.keys(wires).forEach((t) => { if (wires[t].endsWith(".main") && RANGE4[(partById(wires[t].split(".")[0]) || {}).k]) for (let i = 1; i < 4; i++) segUse[dAdd(t, i)] = t; });
+    const term = (t) => (marks[t] ? `<span class="kb-ext">${esc(marks[t])}</span>` : "") + `<span class="kb-term ${t[0]}${wires[t] || segUse[t] ? " used" : ""}" data-t="${t}" title="${esc(label(t) || (t[0] === "X" ? "輸入端子（沒接線時是切換開關）" : "輸出端子（沒接線時只亮 PLC 上的燈）"))}"><b>${short(t)}</b><i></i></span>`;
     const rows = xs.concat(ys).filter((d) => W[d] || segUse[d]).map((d) => `<tr><td><b>${short(d)}</b></td><td>${esc(label(d))}</td><td>${wires[d] ? `<button type="button" class="small-btn" data-cut="${d}">拆線</button>` : ""}</td></tr>`).join("");
     el.innerHTML = `<div class="kb-pal"><span class="hint">零件（拖到下面的組裝台，或點一下放上去）：</span>${PALETTE.map((k) => `<button type="button" class="kb-pi" data-k="${k}">${esc(PNAME[k])}</button>`).join("")}</div>` +
-      `<div class="kb-bench"><div class="kb-plc"><div class="kb-row"><span class="kb-rl">FX3S<br>輸入</span>${xs.map(term).join("")}</div><div class="kb-row"><span class="kb-rl">輸出</span>${ys.map(term).join("")}</div></div>` +
+      `<div class="kb-bench"><div class="kb-plc"><div class="kb-row"><span class="kb-rl">${esc(model)}<br>輸入</span>${xs.map(term).join("")}</div><div class="kb-row"><span class="kb-rl">輸出</span>${ys.map(term).join("")}</div></div>` +
       `<svg class="kb-wires"></svg><div class="kb-area">${parts.map(partHtml).join("") || '<p class="hint kb-empty">組裝台是空的：從上面把零件拖進來，再從 PLC 的端子（X 藍、Y 橘）拉線到零件的端子。X 沒接線時是切換開關，Y 沒接線時只亮 PLC 面板上的燈。也可以從下面「範例機構」載入一組。</p>'}</div></div>` +
       `<p class="hint kb-legend">灰色方塊是<b>物料口</b>：從一個零件的「出口／放料」拉到另一個零件的「入口／取料」，工件就會照這個方向送過去。輸送帶出口連到夾爪取料、夾爪放料再連回輸送帶入口，工件就會一直循環（閉環）。</p>` +
       `<p class="kb-msg${msg ? " show" : ""}">${esc(msg || "拉線：按住端子拖到另一頭放開，或點一下端子再點另一頭。點一下線可以拆掉。")}</p>` +
@@ -430,6 +491,7 @@ const Kit = (() => {
     msg = "";
     fitArea();
     el.querySelector("[data-clear]").onclick = () => { parts = []; wires = {}; links = {}; sim = {}; commit(); };
+    el.querySelectorAll("[data-dd]").forEach((b) => (b.onclick = () => { if (!b.dataset.dx) return; const s = stateOf(b.dataset.dx); s.val = ((s.val || 0) + +b.dataset.dd + 10) % 10; }));
     el.querySelectorAll("[data-refill]").forEach((b) => (b.onclick = () => { const s = stateOf(b.dataset.refill); s.mag = Math.min(10, (s.mag === undefined ? 5 : s.mag) + 5); }));
     el.querySelectorAll("[data-empty]").forEach((b) => (b.onclick = () => { const s = stateOf(b.dataset.empty); s.metal = 0; s.plastic = 0; }));
     el.querySelector("[data-reset]").onclick = () => { sim = {}; };
@@ -469,7 +531,7 @@ const Kit = (() => {
       const tn = bench.querySelector(`.kb-term[data-t="${t}"]`), pn = bench.querySelector(`.kb-port[data-port="${wires[t]}"]`);
       if (!tn || !pn) return;
       const p = centre(pn, box), list = [t];
-      if (W[t] === "seg") for (let i = 1; i < 4; i++) list.push(yAdd(t, i));
+      if (RANGE4[W[t]]) for (let i = 1; i < 4; i++) list.push(dAdd(t, i));
       list.forEach((d, i) => {
         const n = bench.querySelector(`.kb-term[data-t="${d}"]`); if (!n) return;
         out += `<path class="kb-w ${t[0]}" data-t="${d}" data-cut="${t}" d="${curve(centre(n, box), [p[0] + i * 3, p[1]])}"><title>${short(d)} → ${esc(PNAME[base(W[t])] || "")}（點一下拆掉）</title></path>`;
@@ -505,13 +567,14 @@ const Kit = (() => {
     const [pid, port] = pp.split("."), part = parts.find((p) => p.id === pid);
     for (const s of Object.keys(wires)) {
       const sp = parts.find((p) => p.id === wires[s].split(".")[0]);
-      if (sp && sp.k === "seg" && wires[s].endsWith(".main") && wires[s] !== pp) for (let i = 1; i < 4; i++) if (yAdd(s, i) === t) { msg = `${short(t)} 已經給 ${short(s)} 的七段顯示器用了（佔 ${short(s)}～${short(yAdd(s, 3))}）。`; return render(); }
+      if (sp && RANGE4[sp.k] && wires[s].endsWith(".main") && wires[s] !== pp) for (let i = 1; i < 4; i++) if (dAdd(s, i) === t) { msg = `${short(t)} 已經給 ${short(s)} 的${RANGE4[sp.k]}用了（佔 ${short(s)}～${short(dAdd(s, 3))}）。`; return render(); }
     }
-    if (part && part.k === "seg" && port === "main") {
+    if (part && RANGE4[part.k] && port === "main") {
+      const all = t[0] === "X" ? xs : ys, nm = RANGE4[part.k];
       for (let i = 1; i < 4; i++) {
-        const d = yAdd(t, i);
-        if (!ys.includes(d)) { msg = `七段顯示器要連續 4 個 Y，從 ${short(t)} 開始不夠。`; return render(); }
-        if (wires[d]) { msg = `七段顯示器從 ${short(t)} 開始要佔到 ${short(yAdd(t, 3))}，但 ${short(d)} 已經接了別的東西。`; return render(); }
+        const d = dAdd(t, i);
+        if (!all.includes(d)) { msg = `${nm}要連續 4 個 ${t[0]}，從 ${short(t)} 開始不夠（這台 PLC 沒有 ${short(d)}）。`; return render(); }
+        if (wires[d]) { msg = `${nm}從 ${short(t)} 開始要佔到 ${short(dAdd(t, 3))}，但 ${short(d)} 已經接了別的東西。`; return render(); }
       }
     }
     Object.keys(wires).forEach((s) => { if (wires[s] === pp) delete wires[s]; });
@@ -662,9 +725,55 @@ const Kit = (() => {
         "STL S26", "RST Y003", "LD X007", "SET S27",
         "STL S27", "RST Y002", "RST M1", "LD X005", "SET S0", "RET"],
       note: "按 X0 啟動。供料器 Y0 從料倉推出一個工件到輸送帶入口（推到底 X3 記住 M1，不再推）。輸送帶 Y1 送到出口，光電 X4 ON 就停。吸盤：下降 Y3 → 下限 X10 開真空 Y4 → 真空 X11 上升 → 橫移 Y2 → 放料位下降 → 關真空 → 上升 → 回原點，同時 RST M1 讓供料器推下一個。料盒會分別算金屬和塑膠。料倉 5 個用完，有料 X2 OFF，紅燈 Y5 亮，按「補料」再繼續。" },
+    { title: "加工站：分度盤＋雙動氣缸＋塔燈", W: { X000: "nopb", X001: "ncpb", X002: "rotP:Y000", X003: "rotO:Y000", X004: "cylF:Y001", X005: "cylB:Y001",
+        Y000: "rot", Y001: "cyl2", Y002: "cylR:Y001", Y003: "tower", Y004: "twY:Y003", Y005: "twG:Y003", Y006: "twB:Y003" },
+      init() {},
+      il: ["LD X000", "OR M0", "AND X001", "OUT M0", "LD M0", "OUT Y005", "LDI M0", "AND X001", "OUT Y004", "LDI X001", "OUT Y003",
+        "LDI X001", "AND M8013", "OUT Y006", "LD M8002", "SET S0",
+        "STL S0", "LD M0", "AND X005", "SET S20",
+        "STL S20", "SET Y000", "LDI X002", "SET S21",
+        "STL S21", "LD X002", "SET S22",
+        "STL S22", "RST Y000", "SET Y001", "LD X004", "SET S23",
+        "STL S23", "RST Y001", "SET Y002", "LD X005", "SET S24",
+        "STL S24", "RST Y002", "LD M0", "SET S20", "LDI M0", "SET S0", "RET"],
+      note: "按 X0 啟動（塔燈綠 Y5）。分度盤 Y0 轉，先離開定位、再碰到定位感測器 X2 就停（轉 90°）；雙動氣缸伸出線圈 Y1 打到前限 X4，換縮回線圈 Y2 回到後限 X5，再轉下一站。雙動氣缸兩個線圈都 OFF 時會停在原位，所以用 SET／RST。按 X1 停止：塔燈紅 Y3 亮、蜂鳴器 Y6 響，做完這一站停下；放開 X1 後塔燈黃 Y4 表示待機。" },
+    { title: "三層電梯：叫車、上下行、樓層燈", W: { X000: "nopb", X001: "nopb", X002: "nopb", X003: "liftA:Y000", X004: "liftB:Y000", X005: "liftC:Y000",
+        Y000: "lift", Y001: "liftDn:Y000", Y002: "yellow", Y003: "yellow", Y004: "yellow" },
+      init() {},
+      il: ["LD X000", "SET M1", "LD X001", "SET M2", "LD X002", "SET M3",
+        "LD X003", "SET M11", "RST M12", "RST M13", "LD X004", "SET M12", "RST M11", "RST M13", "LD X005", "SET M13", "RST M11", "RST M12",
+        "LD M1", "AND X003", "RST M1", "LD M2", "AND X004", "RST M2", "LD M3", "AND X005", "RST M3",
+        "LD M2", "OR M3", "AND M11", "LD M3", "AND M12", "ORB", "ANI Y001", "OUT Y000",
+        "LD M1", "OR M2", "AND M13", "LD M1", "AND M12", "ORB", "ANI Y000", "OUT Y001",
+        "LD M11", "OUT Y002", "LD M12", "OUT Y003", "LD M13", "OUT Y004"],
+      note: "X0、X1、X2 是 1、2、3 樓的叫車按鈕，叫了就記住（M1～M3），到那一樓才清掉。樓層感測器 X3～X5 記住現在在哪一樓（M11～M13），樓層燈 Y2～Y4 跟著亮。要去的樓層在上面就上升 Y0，在下面就下降 Y1，兩個互鎖。把 ANI 拿掉讓兩個線圈同時 ON 會燒馬達；感測器沒停好會衝頂或蹲底。" },
+    { title: "指撥設定數量：供料→吸盤→料盒（要加裝擴充板）", plc: ["FX3S-30M", ["4EX-BD"]],
+      W: { X000: "nopb", X001: "ncpb", X002: "feedE:Y000", X003: "feedF:Y000", X004: "conv:Y001", X005: "armL:Y002", X006: "armR:Y002", X007: "armU:Y002", X010: "armD:Y002", X011: "armH:Y002",
+        X016: "nopb", X020: "dial", Y000: "feed", Y001: "conv", Y002: "suck", Y003: "armZ:Y002", Y004: "armG:Y002", Y005: "tower", Y006: "twY:Y005", Y007: "twG:Y005", Y010: "twB:Y005", Y011: "seg" },
+      extra: ["bin"], L: [["Y000", "out", "Y001", "in"], ["Y001", "out", "Y002", "pick"], ["Y002", "place", "#0", "in"]],
+      init() { stateOf("X020").val = 3; },
+      il: ["LD M8000", "MOV K1X020 D0", "LD X000", "OR M0", "AND X001", "ANI M2", "OUT M0",
+        "LD M0", "AND X002", "ANI M1", "ANI X003", "OUT Y000", "LD X003", "SET M1", "LD M0", "ANI X004", "OUT Y001",
+        "LDF X011", "AND X006", "OUT C0 K99", "LD>= C0 D0", "AND> D0 K0", "SET M2", "LD X016", "RST C0", "RST M2",
+        "LD M8000", "MOV C0 K1Y011", "LD M0", "OUT Y007", "LDI M0", "ANI M2", "OUT Y006", "LD M2", "OUT Y005",
+        "LD M2", "OUT T2 K30", "LD M2", "ANI T2", "OUT Y010",
+        "LD M8002", "SET S0",
+        "STL S0", "LD M0", "AND X004", "AND X005", "AND X007", "SET S20",
+        "STL S20", "SET Y003", "LD X010", "SET S21",
+        "STL S21", "SET Y004", "LD X011", "SET S22",
+        "STL S22", "RST Y003", "LD X007", "SET S23",
+        "STL S23", "SET Y002", "LD X006", "SET S24",
+        "STL S24", "SET Y003", "LD X010", "SET S25",
+        "STL S25", "RST Y004", "LDI X011", "SET S26",
+        "STL S26", "RST Y003", "LD X007", "SET S27",
+        "STL S27", "RST Y002", "RST M1", "LD X005", "SET S0", "RET"],
+      note: "這台用到 X0～X16 和 X20～X23，FX3S-30M 只有 X0～X17，所以加裝了 4 點輸入擴充板（X20～X23），指撥開關接在擴充板上。指撥開關設定要做幾個（預設 3），MOV K1X020 D0 讀進來。吸盤每放一個到料盒（真空 X11 由 ON 變 OFF、在放料位 X6），C0 加 1，七段顯示器（Y11～Y14）顯示數量。C0 到設定值：停機、塔燈紅 Y5 亮、蜂鳴器響 3 秒。X16 歸零再按 X0 重新開始。" },
   ];
   function preset(i) {
     const p = PRESETS[i] || PRESETS[0];
+    const need = [];
+    Object.keys(p.W).forEach((d) => { need.push(d); if (RANGE4[p.W[d]]) for (let j = 1; j < 4; j++) need.push(dAdd(d, j)); });
+    if (opt && opt.setPlc && (p.plc || need.some((d) => !xs.includes(d) && !ys.includes(d)))) opt.setPlc(...(p.plc || ["FX3S-30M", []]));
     fromW(p.W, p.extra, p.L); W = derive(); sim = {}; p.init(); pick = null;
     changed(true);
     if (opt && opt.onPreset) opt.onPreset(p.il.join("\n"), p.note);
@@ -685,8 +794,9 @@ const Kit = (() => {
       const y = c.dataset.y, s = stateOf(y), k = W[y], q = (sel) => c.querySelector(sel);
       c.classList.toggle("on", on(y));
       if (k === "motor") q(".k-fan").setAttribute("transform", `rotate(${s.ang.toFixed(1)} 45 40)`);
-      if (k === "cyl") {
+      if (k === "cyl" || k === "cyl2") {
         const dx = s.pos * 60;
+        if (k === "cyl2") { q(".k-air").classList.toggle("on", on(y)); q(".k-air2").classList.toggle("on", on(subsOf(y, "cylR")[0])); }
         q(".k-piston").setAttribute("x", 14 + dx); q(".k-rod").setAttribute("x", 24 + dx); q(".k-head").setAttribute("x", 142 + dx);
       }
       if (k === "conv") {
@@ -727,6 +837,25 @@ const Kit = (() => {
         const h = Math.max(0, Math.min(42, (s.temp - 20) / 100 * 42));
         q(".k-merc").setAttribute("y", (57 - h).toFixed(1)); q(".k-merc").setAttribute("height", h.toFixed(1));
       }
+      if (k === "tower") {
+        q(".tr").classList.toggle("lit", on(y)); q(".ty").classList.toggle("lit", on(subsOf(y, "twY")[0]));
+        q(".tg").classList.toggle("lit", on(subsOf(y, "twG")[0])); c.classList.toggle("buzzing", on(subsOf(y, "twB")[0]));
+        c.classList.remove("on");
+      }
+      if (k === "lift") {
+        q(".k-cab").setAttribute("transform", `translate(0 ${(-s.pos * 56).toFixed(1)})`);
+        q(".k-warn").textContent = s.burnt ? "馬達燒毀！" : (s.crash || "");
+        c.classList.toggle("burnt", !!(s.burnt || s.crash));
+        if ((s.burnt || s.crash) && !q("[data-fix]")) {
+          c.insertAdjacentHTML("beforeend", `<button type="button" class="small-btn" data-fix="${y}">修好</button>`);
+          q("[data-fix]").onclick = () => { const t = stateOf(y); t.burnt = false; t.crash = ""; t.pos = Math.max(0, Math.min(2, Math.round(t.pos))); };
+        }
+        if (!(s.burnt || s.crash) && q("[data-fix]")) q("[data-fix]").remove();
+      }
+      if (k === "rot") {
+        q(".k-rotg").setAttribute("transform", `rotate(${s.ang.toFixed(1)} 60 60)`);
+        q(".k-ang").textContent = Math.round(s.ang) + "°";
+      }
       if (k === "arm" || k === "suck") {
         const x = s.x || 0, z = s.z || 0, g = s.g || 0, gap = 4 + (1 - g) * 6;
         q(".k-car").setAttribute("transform", `translate(${(40 + x * 140).toFixed(1)} 0)`);
@@ -759,6 +888,7 @@ const Kit = (() => {
         c.classList.toggle("on", v > 0);
       }
     });
+    el.querySelectorAll(".k-card[data-dial]").forEach((c) => { c.querySelector(".k-dv").textContent = String(stateOf(c.dataset.dial).val || 0); });
     el.querySelectorAll(".k-card[data-bin]").forEach((c) => {
       const s = stateOf(c.dataset.bin);
       c.querySelector(".k-bm").textContent = `金屬 ${s.metal || 0} 個`; c.querySelector(".k-bp").textContent = `塑膠 ${s.plastic || 0} 個`;
@@ -769,12 +899,24 @@ const Kit = (() => {
     paint();
   }
 
-  /* target: where the bench is drawn; o: {xs, ys, onChange, onPreset, onReset, onToggle} */
+  /* another PLC model or expansion: wires to terminals the new PLC does not have are removed */
+  function setIO(nx, ny, mk, name) {
+    xs = nx; ys = ny; marks = mk || {}; model = name || model;
+    const gone = Object.keys(wires).filter((t) => !xs.includes(t) && !ys.includes(t));
+    Object.keys(wires).forEach((t) => {
+      const p = partById(wires[t].split(".")[0]);
+      if (p && RANGE4[p.k] && wires[t].endsWith(".main")) for (let i = 1; i < 4; i++) if (!xs.includes(dAdd(t, i)) && !ys.includes(dAdd(t, i))) gone.push(t);
+    });
+    [...new Set(gone)].forEach((t) => delete wires[t]);
+    if (gone.length) msg = `換成 ${model}：${[...new Set(gone)].map(short).join("、")} 這台沒有，接到它們的線拆掉了。`;
+    if (el) commit();
+  }
+  /* target: where the bench is drawn; o: {xs, ys, marks, model, onChange, onPreset, onReset, onToggle, setPlc} */
   let resize = null;
   function mount(target, o) {
-    el = target; opt = o; xs = o.xs; ys = o.ys; load(); render(); before = {}; xs.forEach((x) => { before[x] = kindOf(x); });
+    el = target; opt = o; xs = o.xs; ys = o.ys; marks = o.marks || {}; model = o.model || "FX3S"; load(); render(); before = {}; xs.forEach((x) => { before[x] = kindOf(x); });
     if (!resize) { resize = () => drawWires(); window.addEventListener("resize", resize); }
   }
   function unmount() { if (el) el.innerHTML = ""; el = null; buzz(false); }
-  return { mount, unmount, step, update, label, tag, inputKind, press, kindOf, PRESETS, redraw: drawWires };
+  return { mount, unmount, setIO, step, update, label, tag, inputKind, press, kindOf, PRESETS, redraw: drawWires };
 })();

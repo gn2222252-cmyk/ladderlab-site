@@ -97,6 +97,14 @@ class Sandbox(Practice):
     watched = ()
     running = True
 
+    def set_io(self, xs, ys):
+        """Free mode: the terminals of the PLC the learner picked (model plus expansion boards / blocks)."""
+        xs, ys = json.loads(xs), json.loads(ys)
+        ok = re.compile(r"^[XY][0-7]{3}$")
+        self.ex["inputs"] = [(x, "", "switch") for x in xs if ok.match(x) and x[0] == "X"]
+        self.ex["outputs"] = [(y, "") for y in ys if ok.match(y) and y[0] == "Y"]
+        return json.dumps({"inputs": self.ex["inputs"], "outputs": self.ex["outputs"]})
+
     def compile(self, text):
         """Writes a program into the soft PLC. The switches keep their positions (they are wired, not part of the program)."""
         keep = list(self.rig.plc.x_in) if self.rig else None

@@ -97,6 +97,7 @@ function convert() {
   errLed = false; loadedIL = cur.il;
   $("plcprog").textContent = cur.il.trim() ? cur.il.trim() + "\nEND" : "END";
   $("pending").hidden = true;
+  rangeWarn();
   layout = out.rungs;
   const wl = watchList(cur.il);
   sb.watch(JSON.stringify(wl));
@@ -144,6 +145,89 @@ function freeIO() {
   if (layout) { ladderComment = comment; renderRungs($("mon-ladder"), layout.map((r, i) => [r, i]), {}); }
   if (led) { led.redraw && led.redraw(); }
 }
+/* free mode: which PLC the soft PLC is. Main units number their X / Y from 0 (octal); a board or an expansion block
+   starts at the next multiple of 8 after what is already there, which is how Mitsubishi numbers FX expansions. */
+const PLC_MODELS = [["FX3S-10M", 6, 4], ["FX3S-14M", 8, 6], ["FX3S-20M", 12, 8], ["FX3S-30M", 16, 14],
+  ["FX3G-14M", 8, 6], ["FX3G-24M", 14, 10], ["FX3G-40M", 24, 16], ["FX3G-60M", 36, 24],
+  ["FX3U-16M", 8, 8], ["FX3U-32M", 16, 16], ["FX3U-48M", 24, 24], ["FX3U-64M", 32, 32], ["FX3U-80M", 40, 40]];
+const PLC_EXT = {
+  "4EX-BD": { x: 4, y: 0, bd: true, n: (f) => (f === "FX3S" ? "FX3S" : "FX3G") + "-4EX-BD（輸入擴充板 4 點）" },
+  "2EYT-BD": { x: 0, y: 2, bd: true, n: () => "FX3G-2EYT-BD（輸出擴充板 2 點）" },
+  "8EX": { x: 8, y: 0, n: () => "FX2N-8EX（輸入擴充模組 8 點）" }, "16EX": { x: 16, y: 0, n: () => "FX2N-16EX（輸入擴充模組 16 點）" },
+  "8EYR": { x: 0, y: 8, n: () => "FX2N-8EYR（輸出擴充模組 8 點）" }, "16EYR": { x: 0, y: 16, n: () => "FX2N-16EYR（輸出擴充模組 16 點）" },
+};
+let plcCfg = { model: "FX3S-30M", ext: [] };
+try { const c = JSON.parse(localStorage.getItem("ll_plc") || "null"); if (c && PLC_MODELS.some((m) => m[0] === c.model)) plcCfg = { model: c.model, ext: (c.ext || []).filter((e) => PLC_EXT[e]) }; } catch (e) { /* private mode */ }
+const plcFam = (m) => m.slice(0, 4);
+/* what may be added to this model: [allowed, reason] */
+function extAllowed(model, ext, add) {
+  const fam = plcFam(model), e = PLC_EXT[add], m = PLC_MODELS.find((r) => r[0] === model);
+  const boards = ext.filter((k) => PLC_EXT[k].bd).length, slots = fam === "FX3S" ? 1 : fam === "FX3G" ? (m[1] + m[2] >= 40 ? 2 : 1) : 0;
+  if (e.bd && boards >= slots) return [false, fam === "FX3U" ? "FX3U 沒有 I/O 擴充板，要用擴充模組" : `${model} 只能裝 ${slots} 片擴充板`];
+  if (!e.bd && fam === "FX3S") return [false, "FX3S 不能接擴充模組，只能裝一片擴充板；點數不夠要換 FX3G 或 FX3U"];
+  const total = m[1] + m[2] + ext.concat(add).reduce((a, k) => a + PLC_EXT[k].x + PLC_EXT[k].y, 0);
+  const max = fam === "FX3G" ? 128 : fam === "FX3U" ? 256 : 999;
+  if (total > max) return [false, `${fam} 最多 ${max} 點`];
+  return [true, ""];
+}
+function plcIO(cfg) {
+  const m = PLC_MODELS.find((r) => r[0] === cfg.model) || PLC_MODELS[3], o8 = (k, n) => k + n.toString(8).padStart(3, "0");
+  const xs = [], ys = [], marks = {};
+  for (let i = 0; i < m[1]; i++) xs.push(o8("X", i));
+  for (let i = 0; i < m[2]; i++) ys.push(o8("Y", i));
+  let nx = m[1], ny = m[2];
+  cfg.ext.forEach((k) => {
+    const e = PLC_EXT[k], tag = k.replace(/-BD$/, " 擴充板").replace(/^(\d+)(EX|EYR)$/, "FX2N-$1$2");
+    if (e.x) { const st = Math.ceil(nx / 8) * 8; marks[o8("X", st)] = tag; for (let i = 0; i < e.x; i++) xs.push(o8("X", st + i)); nx = st + e.x; }
+    if (e.y) { const st = Math.ceil(ny / 8) * 8; marks[o8("Y", st)] = tag; for (let i = 0; i < e.y; i++) ys.push(o8("Y", st + i)); ny = st + e.y; }
+  });
+  return { xs, ys, marks };
+}
+const spans = (list) => {                                        // ["X000".."X017","X020"..] -> "X0～X17、X20～X23"
+  const out = []; let a = null, b = null;
+  list.forEach((d) => { const n = parseInt(d.slice(1), 8); if (b !== null && n === parseInt(b.slice(1), 8) + 1) b = d; else { if (a) out.push([a, b]); a = b = d; } });
+  if (a) out.push([a, b]);
+  return out.map(([x, y]) => x === y ? shortDev(x) : `${shortDev(x)}～${shortDev(y)}`).join("、");
+};
+function applyPlc(model, ext, live) {
+  const cfg = { model, ext: [] };
+  (ext || []).forEach((k) => { if (PLC_EXT[k] && extAllowed(model, cfg.ext, k)[0]) cfg.ext.push(k); });
+  plcCfg = cfg;
+  try { localStorage.setItem("ll_plc", JSON.stringify(cfg)); } catch (e) { /* private mode */ }
+  const io = plcIO(cfg);
+  if (sb && isFree()) {
+    const r = JSON.parse(sb.set_io(JSON.stringify(io.xs), JSON.stringify(io.ys)));
+    M.inputs = r.inputs; M.outputs = r.outputs;
+    if (live) { Kit.setIO(io.xs, io.ys, io.marks, cfg.model); freeIO(); }
+  }
+  renderPlcCfg(io);
+  rangeWarn();
+  return io;
+}
+function renderPlcCfg(io) {
+  io = io || plcIO(plcCfg);
+  $("plc-box").querySelector("h3").textContent = isFree() ? `軟 PLC（${plcCfg.model} 模擬）` : "軟 PLC（FX3S 模擬）";
+  $("plc-cfg").hidden = !isFree();
+  if (!isFree()) return;
+  $("plcModel").innerHTML = ["FX3S", "FX3G", "FX3U"].map((f) => `<optgroup label="${f}">${PLC_MODELS.filter((m) => plcFam(m[0]) === f).map((m) => `<option value="${m[0]}" ${m[0] === plcCfg.model ? "selected" : ""}>${m[0]}（${m[1]} 入／${m[2]} 出）</option>`).join("")}</optgroup>`).join("");
+  $("plcExt").innerHTML = plcCfg.ext.map((k, i) => `<li>${escS(PLC_EXT[k].n(plcFam(plcCfg.model)))} <button type="button" class="kb-rm" data-xi="${i}" title="拆掉">×</button></li>`).join("");
+  $("plcExtSel").innerHTML = Object.keys(PLC_EXT).map((k) => { const [ok, why] = extAllowed(plcCfg.model, plcCfg.ext, k); return `<option value="${k}" ${ok ? "" : "disabled"} title="${escS(why)}">${escS(PLC_EXT[k].n(plcFam(plcCfg.model)))}${ok ? "" : "（不能裝）"}</option>`; }).join("");
+  $("plcIOtext").textContent = `輸入 ${io.xs.length} 點：${spans(io.xs)}　輸出 ${io.ys.length} 點：${spans(io.ys)}`;
+  $("plcExt").querySelectorAll("[data-xi]").forEach((b) => (b.onclick = () => { const e = plcCfg.ext.slice(); e.splice(+b.dataset.xi, 1); applyPlc(plcCfg.model, e, true); }));
+}
+/* the program uses terminals this PLC does not have */
+function rangeWarn() {
+  const w = $("rangewarn"); if (!w) return;
+  if (!isFree() || !loadedIL) { w.hidden = true; return; }
+  const have = new Set(M.inputs.map((r) => r[0]).concat(M.outputs.map((r) => r[0]))), miss = new Set();
+  const n3 = (k, n) => k + n.toString(8).padStart(3, "0");
+  (loadedIL.toUpperCase().match(/\bK[1-4][XY][0-7]+\b|\b[XY][0-7]+\b/g) || []).forEach((t) => {
+    if (t[0] === "K") { const k = t[2], st = parseInt(t.slice(3), 8); for (let i = 0; i < 4 * +t[1]; i++) if (!have.has(n3(k, st + i))) miss.add(n3(k, st + i)); }
+    else if (!have.has(n3(t[0], parseInt(t.slice(1), 8)))) miss.add(n3(t[0], parseInt(t.slice(1), 8)));
+  });
+  w.hidden = !miss.size;
+  if (miss.size) w.innerHTML = `⚠ 程式用到 <b>${[...miss].slice(0, 8).map(shortDev).join("、")}${miss.size > 8 ? "…" : ""}</b>，但 ${escS(plcCfg.model)}${plcCfg.ext.length ? "＋擴充" : ""} 沒有這些端子（真的 PLC 上這些點不會有輸入、也接不到東西）。可以在右邊「軟 PLC」換大一點的機型，或加裝擴充板／擴充模組。`;
+}
 function kitPreset(il, note) {
   ["ladder", "stl", "sfc", "il"].forEach((t) => loadInto(t, il));
   tab = "ladder";
@@ -159,8 +243,11 @@ function openMachine(id) {
   $("inputs").classList.toggle("free-io", free); $("outputs").classList.toggle("free-io", free);
   $("plant-box").hidden = !M.plant;
   $("kit-box").hidden = !free;
-  if (free) Kit.mount($("kit"), { xs: M.inputs.map((r) => r[0]), ys: M.outputs.map((r) => r[0]), onChange: freeIO, onPreset: kitPreset, onReset: (x) => sb.set_input(x, 0), onToggle: (x) => sb.toggle(x) });
-  else Kit.unmount();
+  if (free) {
+    const io = applyPlc(plcCfg.model, plcCfg.ext, false);
+    Kit.mount($("kit"), { xs: io.xs, ys: io.ys, marks: io.marks, model: plcCfg.model, onChange: freeIO, onPreset: kitPreset, onReset: (x) => sb.set_input(x, 0), onToggle: (x) => sb.toggle(x),
+      setPlc: (m, e) => applyPlc(m, e, true) });
+  } else { renderPlcCfg(); Kit.unmount(); }
   if (free) freeIO();
   else {
     $("inputs").innerHTML = M.inputs.map(([dev, label, kind]) => `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}><i></i><span><b>${dev}</b> ${escS(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");
@@ -263,6 +350,8 @@ $("csvin").addEventListener("change", async (e) => {
   convert();
   $("note").textContent = `已開啟 ${f.name}（${info}）。`;
 });
+$("plcModel").onchange = (e) => applyPlc(e.target.value, plcCfg.ext, true);
+$("plcExtAdd").onclick = () => { const k = $("plcExtSel").value; if (k && extAllowed(plcCfg.model, plcCfg.ext, k)[0]) applyPlc(plcCfg.model, plcCfg.ext.concat(k), true); };
 $("csvout").onclick = () => {
   if (!sb) return;
   const b64 = sb.export_csv(currentIL().il);
