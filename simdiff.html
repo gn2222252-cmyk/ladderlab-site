@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="766a2131e6">
+<meta name="ll-version" content="043a094a9b">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>模擬器和 FX3S 實機的差異：程式上實機前要檢查什麼 | LadderLab</title>
 <meta name="description" content="LadderLab 模擬器和三菱 FX3S 實機的差異：計時器編號與解析度、停電保持、32 位元指令、ZRST、掃描時間、相鄰步計時器，以及上實機前的檢查清單。">
-<link rel="stylesheet" href="style.css?v=86174b7c15">
+<link rel="stylesheet" href="style.css?v=0cb42899ca">
 </head>
 <body class="learn guide-page">
 <header class="top">
@@ -74,7 +74,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "766a2131e6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "043a094a9b" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

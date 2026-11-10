@@ -14,7 +14,9 @@ function buildToc() {
   const byId = Object.fromEntries(cat.map((e) => [e.id, e]));
   const groups = window.Course ? Course.data.chapters.concat(Course.data.tracks).map((sec) => {
     const es = sec.items.filter((it) => it.k === "E" && byId[it.id]).map((it) => byId[it.id]);
-    return es.length ? `<h3>${esc2(Course.secName(sec))}</h3><ol>${es.map(li).join("")}</ol>` : "";
+    if (!es.length) return "";                    /* only the current chapter open (tester round 10: 30+ items were too many) */
+    const here = ex && es.some((e) => e.id === ex.id), n = es.filter((e) => passed.includes(e.id)).length;
+    return `<details class="tocgrp"${here || (!ex && sec.main && sec.id === "1") ? " open" : ""}><summary>${esc2(Course.secName(sec))}<span class="toc-count">${n}/${es.length}</span></summary><ol>${es.map(li).join("")}</ol></details>`;
   }).join("") : `<ol>${cat.map(li).join("")}</ol>`;
   $("toc").innerHTML = `<p class="toc-note"><a href="path.html">‹ 課程地圖</a></p><h3>自由練習</h3><ol><li><a href="#FREE" class="${ex && ex.id === "FREE" ? "here" : ""}"><b>✎</b> 自己寫、分享給別人</a></li></ol>` +
     groups + `<p class="toc-note">Pro 題目在開放前免費試用。</p>`;

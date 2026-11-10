@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="766a2131e6">
+<meta name="ll-version" content="043a094a9b">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 故障排除實戰 | LadderLab</title>
 <meta name="description" content="機台壞了怎麼找原因？看報修單、讀異常碼、看 I/O 與階梯圖，找出故障、修好並親手復機。雙龍門取放機 8 個真實故障案例。">
-<link rel="stylesheet" href="style.css?v=86174b7c15">
+<link rel="stylesheet" href="style.css?v=0cb42899ca">
 </head>
 <body class="learn">
 <header class="top">
@@ -88,7 +88,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=9dac6c9667"></script>
+<script src="py/bundle.js?v=5b2e85b67b"></script>
 <script src="course_map.js?v=a539c27dc9"></script>
 <script src="course.js?v=9f95046c87"></script>
 <script src="common.js?v=20ae5aa5c1"></script>
@@ -100,7 +100,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "766a2131e6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "043a094a9b" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

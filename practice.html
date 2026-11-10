@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="766a2131e6">
+<meta name="ll-version" content="043a094a9b">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 練習題 | LadderLab</title>
 <meta name="description" content="自己寫 PLC 程式，在虛擬機台上自動評分：按鈕、自保持、正反轉互鎖、計時、計數、步進、逾時異常。">
-<link rel="stylesheet" href="style.css?v=86174b7c15">
+<link rel="stylesheet" href="style.css?v=0cb42899ca">
 </head>
 <body class="learn">
 <header class="top">
@@ -83,7 +83,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=9dac6c9667"></script>
+<script src="py/bundle.js?v=5b2e85b67b"></script>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=a539c27dc9"></script>
 <script src="course.js?v=9f95046c87"></script>
@@ -93,13 +93,13 @@
 <script src="ledit.js?v=d905dd003e"></script>
 <script src="sfc.js?v=254aa66b02"></script>
 <script src="plants.js?v=e003305f64"></script>
-<script src="practice.js?v=6fe85dcc1c"></script>
+<script src="practice.js?v=9f2e062d73"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "766a2131e6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "043a094a9b" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="766a2131e6">
+<meta name="ll-version" content="043a094a9b">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E31 循環停止：做完這一輪才停｜PLC 練習題（自動評分）</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="在上限按啟動 X0，開始連續循環：下降 → 吸 1 秒 → 上升，回到上限等 0.5 秒再開始下一輪。運轉中 Y4 亮。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E31.html">
-<link rel="stylesheet" href="../style.css?v=86174b7c15">
+<link rel="stylesheet" href="../style.css?v=0cb42899ca">
 
 </head>
 <body class="static">
@@ -25,7 +25,7 @@
 <div class="task">在上限按啟動 X0，開始連續循環：下降 → 吸 1 秒 → 上升，回到上限等 0.5 秒再開始下一輪。運轉中 Y4 亮。
 運轉中按停止 X3，不會立刻停：Y5 亮，這一輪做完回到上限才停，停好後 Y4、Y5 都熄。
 如果是在上限等待時按停止，就不再開始下一輪。停好之後可以再按啟動。
-（這是「循環停止」，和急停不同：急停要立刻切斷動力。）</div>
+（這是「循環停止」，和急停不同：急停要立刻切斷動力。練習把停止鈕簡化成常開按鈕；實機的停止鈕要接常閉，見 5.1。）</div>
 <div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>啟動</td><td>按鈕</td></tr><tr><td>X001</td><td>下限感測器</td><td>感測器</td></tr><tr><td>X002</td><td>上限感測器</td><td>感測器</td></tr><tr><td>X003</td><td>循環停止</td><td>按鈕</td></tr><tr><td>Y000</td><td>下降</td><td>輸出</td></tr><tr><td>Y001</td><td>吸盤</td><td>輸出</td></tr><tr><td>Y002</td><td>上升</td><td>輸出</td></tr><tr><td>Y004</td><td>運轉燈</td><td>輸出</td></tr><tr><td>Y005</td><td>循環停止中</td><td>輸出</td></tr></tbody></table></div>
 <ul class="rules"><li>安全條件：下降和上升同時輸出</li></ul>
 <p><a class="btnlink go" href="../practice.html#E31">開始寫程式，自動評分 ›</a></p>
@@ -39,7 +39,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "766a2131e6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "043a094a9b" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

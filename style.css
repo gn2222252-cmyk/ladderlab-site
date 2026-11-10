@@ -709,3 +709,6 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 /* wiring diagrams on the drawing page */
 .wirefig { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow-x: auto; }
 .wirefig figcaption { font-size: 14px; color: var(--mute); margin-top: 6px; }
+.tocgrp { margin: 6px 0; }
+.tocgrp > summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 4px 0; display: flex; justify-content: space-between; gap: 6px; }
+.toc-count { font-weight: 400; color: var(--mute); font-size: 12px; }
