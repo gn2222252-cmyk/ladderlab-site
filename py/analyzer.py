@@ -39,9 +39,22 @@ def _expand_range(a, b):
     return [fmt(n) for n in range(lo, hi + 1)]
 
 
+# inputs / outputs of each main unit (same table as the simulator's PLC models)
+MODELS = {"FX3S-10M": (6, 4), "FX3S-14M": (8, 6), "FX3S-20M": (12, 8), "FX3S-30M": (16, 14),
+          "FX3G-14M": (8, 6), "FX3G-24M": (14, 10), "FX3G-40M": (24, 16), "FX3G-60M": (36, 24),
+          "FX3U-16M": (8, 8), "FX3U-32M": (16, 16), "FX3U-48M": (24, 24), "FX3U-64M": (32, 32), "FX3U-80M": (40, 40), "FX3U-128M": (64, 64)}
+
+
+def _octal_names(kind, count):
+    return "%s0～%s%s" % (kind, kind, oct(count - 1)[2:]) if count else ""
+
+
 def analyze(items, cpu="FX3S", comments=None):
-    """items: [(line, op, operands)]. Returns a report dict."""
+    """items: [(line, op, operands)]. cpu is a series (FX3S) or a model (FX3S-20M, checks the I/O range too)."""
     comments = comments or {}
+    model = cpu if cpu in MODELS else None
+    cpu = cpu.split("-")[0]
+    blocks, cur, last_op = [], None, None          # STL blocks: states, first line, exits, timers, targets
     refs = {}                           # dev -> {"read": [lines], "write": [(line, op, in_stl)]}
 
     def ref(dev, kind, line, op=None, in_stl=False):
@@ -58,6 +71,7 @@ def analyze(items, cpu="FX3S", comments=None):
     prev_ld_m8002 = False
     warnings = []
     for line, op, ops in items:
+        prev_op, last_op = last_op, op
         steps += instruction_steps(op, ops)
         if op in PULSE_FORMS:
             op = op[:-1]                        # MOVP behaves like MOV for the cross reference
@@ -65,9 +79,14 @@ def analyze(items, cpu="FX3S", comments=None):
         if op == "STL":
             in_stl, uses_stl = True, True
             ref(ops[0], "read", line)
+            if prev_op == "STL" and cur:              # STL S22 / STL S42: a parallel merge is one block
+                cur["states"].append(_norm(ops[0]))
+            else:
+                cur = {"states": [_norm(ops[0])], "line": line, "exits": 0, "timers": set(), "targets": set()}
+                blocks.append(cur)
             continue
         if op == "RET":
-            in_stl = False
+            in_stl, cur = False, None
             continue
         if op in READ_OPS:
             ref(ops[0], "read", line)
@@ -100,6 +119,15 @@ def analyze(items, cpu="FX3S", comments=None):
             if op == "OUT" and ops[0][0] == "S" and not in_stl:
                 warnings.append({"kind": "out_s_outside", "lines": [line], "dev": ops[0],
                                  "msg": "OUT %s 寫在步進區外面。OUT S 只能在 STL～RET 裡當跳躍；一般階梯圖要用 SET。" % ops[0]})
+            if op == "OUT" and ops[0][0] == "C" and len(ops) > 1 and ops[1] in ("K0", "H0"):
+                warnings.append({"kind": "counter_k0", "dev": ops[0], "lines": [line],
+                                 "msg": "OUT %s K0：計數器設定值 0 和 K1 一樣，第一次計數就 ON（程式手冊 4.6.4 節）。要「設定是 0 就不計數」，請在計數條件串 AND> D K0。" % ops[0]})
+            if in_stl and cur:
+                if op in ("SET", "OUT") and ops[0][0] == "S" and _norm(ops[0]) not in cur["states"]:
+                    cur["exits"] += 1
+                    cur["targets"].add(_norm(ops[0]))
+                if op == "OUT" and ops[0][0] == "T":
+                    cur["timers"].add(_norm(ops[0]))
             ref(ops[0], "write", line, op, in_stl)
             if len(ops) > 1 and DEV.match(ops[1]):
                 ref(ops[1], "read", line)
@@ -177,6 +205,36 @@ def analyze(items, cpu="FX3S", comments=None):
     if uses_stl and not initial:
         warnings.append({"kind": "no_initial", "dev": "S0", "lines": [],
                          "msg": "有用步進（STL），但沒找到 M8002 → SET S0～S9 啟動初始步。確認初始步有被打開，否則一步都不會動。"})
+    for blk in blocks:
+        name = "、".join(blk["states"])
+        if not blk["exits"]:
+            warnings.append({"kind": "state_dead_end", "dev": blk["states"][0], "lines": [blk["line"]],
+                             "msg": "步 %s 沒有出口：裡面沒有 SET 或 OUT 到別的步，進去就出不來（除非別處用 ZRST 或 RST 清掉）。" % name})
+        for st in blk["states"]:
+            entered = [w for w in refs.get(st, {}).get("write", []) if w[1] in ("SET", "OUT")]
+            if not entered:
+                warnings.append({"kind": "state_never_entered", "dev": st, "lines": [blk["line"]],
+                                 "msg": "步 %s 寫了程式，但沒有任何地方 SET 或 OUT 它，這一步永遠不會執行。是不是前一步跳錯號碼？" % st})
+    owner = {st: blk for blk in blocks for st in blk["states"]}
+    warnings = [w for w in warnings if not (w["kind"] == "read_never_set" and w["dev"] in owner)]   # said better below
+    for blk in blocks:
+        for t in sorted(blk["targets"]):
+            nxt = owner.get(t)
+            shared = sorted(blk["timers"] & nxt["timers"]) if nxt and nxt is not blk else []
+            if shared:
+                warnings.append({"kind": "adjacent_timer", "dev": shared[0], "lines": [blk["line"], nxt["line"]],
+                                 "msg": "相鄰的步 %s → %s 都用了 %s：轉移時計時器不會歸零，下一步可能一進去就計時完成（程式手冊 35.1.7 節）。請換成不同的計時器。"
+                                        % (blk["states"][0], t, "、".join(shared))})
+    if model:
+        n_in, n_out = MODELS[model]
+        for dev, r in sorted(refs.items(), key=lambda kv: _sort_key(kv[0])):
+            m = DEV.match(dev)
+            if m and m.group(1) in "XY" and (r["read"] or r["write"]):
+                limit_n = n_in if m.group(1) == "X" else n_out
+                if int(m.group(2), 8) >= limit_n:
+                    warnings.append({"kind": "io_range", "dev": dev, "lines": (r["read"] + [w[0] for w in r["write"]])[:5],
+                                     "msg": "%s 超出 %s 的%s範圍（%s），實機上沒有這個端子。要換點數多的機型，或改接到現有的端子；有接擴充模組的話請忽略。"
+                                            % (dev, model, "輸入" if m.group(1) == "X" else "輸出", _octal_names(m.group(1), limit_n))})
     limit = CAPACITY.get(cpu)
     if limit and steps > limit:
         warnings.append({"kind": "capacity", "dev": "", "lines": [],
@@ -190,7 +248,7 @@ def analyze(items, cpu="FX3S", comments=None):
             io.append({"dev": dev, "comment": comments.get(dev, ""), "reads": r["read"], "writes": [w[0] for w in r["write"]],
                        "how": sorted({w[1] for w in r["write"]})})
     counts = {k: len([d for d in io if d["dev"][0] == k]) for k in "XYMSTCD"}
-    return {"steps": steps, "cpu": cpu, "limit": limit, "instructions": len(items), "counts": counts, "devices": io,
+    return {"steps": steps, "cpu": model or cpu, "limit": limit, "instructions": len(items), "counts": counts, "devices": io,
             "warnings": warnings}
 
 
