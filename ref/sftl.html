@@ -22,8 +22,8 @@
 <p class="crumb"><a href="index.html">FX 指令說明</a> · 數值</p>
 <h1>SFTL／SFTR：位元移位（跑馬燈、工件追蹤）</h1>
 <p class="lead-text">把一排連續的位元往高號（SFTL）或低號（SFTR）推 n2 格，空出來的位置由來源補進來。</p>
-<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>SFTL 來源 目的起點 K位元數 K移動格數</td><td>來源 X、Y、M、S；目的 Y、M、S</td></tr></tbody></table></div>
-<p>SFTLP X1 Y0 K8 K1：Y0～Y7 這 8 個位元往上推一格，Y0 補進 X1 現在的狀態。學校常見的「八燈依序點亮」就是它。</p><p>輸送帶工件追蹤也是同一招：每走一個工位推一格，來源是「這個位置有沒有工件」。</p><p>一定要用脈衝版 SFTLP（或前面接 PLS）。用 SFTL，條件 ON 的每一圈都推一次，燈一下子就全部跑完。</p><p>FX3S 的 Y 只有 Y0～Y15，位元數不要超過實際的點數。</p>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>SFTL 來源 目的起點 K位元數 K移動格數</td><td>來源 X、Y、M、S；目的 Y、M、S；位元數 n1、移動格數 n2 用 K、H，n2 ≤ n1 ≤ 1024（程式手冊 11.6 節）</td></tr></tbody></table></div>
+<p>SFTLP X1 Y0 K8 K1：Y0～Y7 這 8 個位元往上推一格，Y0 補進 X1 現在的狀態。學校常見的「八燈依序點亮」就是它。</p><p>輸送帶工件追蹤也是同一招：每走一個工位推一格，來源是「這個位置有沒有工件」。</p><p>一定要用脈衝版 SFTLP（或前面接 PLS）。用 SFTL，條件 ON 的每一圈都推一次，燈一下子就全部跑完。</p><p>學校的 FX3S-20M 只有 Y0～Y7，K8 就用光全部輸出；FX3S-30M 到 Y15。位元數不要超過實際的點數。</p>
 <h2>範例</h2>
 <pre class="il">LD X000
 SFTLP X001 Y000 K8 K1</pre>

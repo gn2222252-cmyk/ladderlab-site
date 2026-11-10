@@ -22,8 +22,8 @@
 <p class="crumb"><a href="index.html">FX 指令說明</a> · 數值</p>
 <h1>CMP：比較並輸出三個結果</h1>
 <p class="lead-text">比較兩個數，結果放在連續三個 M：大於、等於、小於各一個。</p>
-<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>CMP 來源1 來源2 M起點</td><td>K、D；結果 M、M+1、M+2</td></tr></tbody></table></div>
-<p>CMP K10 D0 M10：K10 &gt; D0 時 M10 ON；相等時 M11 ON；K10 &lt; D0 時 M12 ON。</p><p>只需要一個比較時，比較接點（LD=、LD&gt;）更直觀。</p>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>CMP 來源1 來源2 M起點</td><td>FX3S 手冊：來源 K、H、D、T、C、V、Z、KnX／KnY／KnM／KnS；結果佔 3 點的 Y、M、S（程式手冊 9.1 節）。本站模擬器的結果用 M</td></tr></tbody></table></div>
+<p>CMP K10 D0 M10：K10 &gt; D0 時 M10 ON；相等時 M11 ON；K10 &lt; D0 時 M12 ON。</p><p>只需要一個比較時，比較接點（LD=、LD&gt;）更直觀。</p><p>陷阱：CMP 的條件變 OFF 之後，M10～M12 會保持最後一次的結果，不會自己清掉。要清除就用 ZRST M10 M12 或 RST。</p>
 <h2>範例</h2>
 <pre class="il">LD M8000
 MOV K5 D0

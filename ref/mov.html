@@ -22,7 +22,7 @@
 <p class="crumb"><a href="index.html">FX 指令說明</a> · 數值</p>
 <h1>MOV：傳送數值</h1>
 <p class="lead-text">條件成立時把來源的值複製到目的地。常用來設定參數、切換步序號碼。</p>
-<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>MOV 來源 目的</td><td>來源：K 常數、D、T、C；目的：D</td></tr></tbody></table></div>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>MOV 來源 目的</td><td>FX3S 手冊：來源 K、H、D、T、C、V、Z、KnX／KnY／KnM／KnS；目的 D、T、C、V、Z、KnY／KnM／KnS（程式手冊 9.3 節）。本站模擬器支援來源 K、H、D、T、C、KnX 等位數指定，目的 D 與 KnY／KnM</td></tr></tbody></table></div>
 <p>條件一直成立時，每個掃描都會複製一次。只想做一次要配合 PLS 或 M8002。</p><p>像 AOI 機台用 MOV K50 D300 換步序，就是用一個數字記住機台在哪一步。</p>
 <h2>範例</h2>
 <pre class="il">LD X000

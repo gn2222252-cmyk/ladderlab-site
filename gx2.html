@@ -270,7 +270,7 @@ RET</pre>
           <p class="why">步放在第 1、4、7… 行，移轉放在第 2、5、8… 行。移轉旁的數字（0、1、2）只是<b>移轉編號</b>，不是 X0、X1！條件要寫在移轉裡面。</p>
           <figure class="shot"><a href="img/gx2/g16c.png" target="_blank" rel="noopener"><img src="img/gx2/g16c.png" alt="輸入 SFC 符號的圖形符號下拉清單：STEP、JUMP、豎線" loading="lazy"></a><figcaption>在步的那幾行，圖形符號可以選 STEP、JUMP 或豎線。JUMP 就是從這裡選。</figcaption></figure>
           <figure class="shot wide"><a href="img/gx2/g17.png" target="_blank" rel="noopener"><img src="img/gx2/g17.png" alt="畫好的 SFC 圖：初始步 0、移轉 0、步 20、移轉 1、步 21、移轉 2、JUMP 20，每個編號前面都有問號" loading="lazy"></a><figcaption>圖畫好了。每個編號前面都還有 <b>?</b>，因為裡面的程式都還沒寫。被 JUMP 指到的步 20，方框裡多了一個黑點。</figcaption></figure>
-          <p class="why">FX 的規則（官方）：S0～S9 是初始步，每個 SFC 塊要從其中一個開始，所以最多 10 個 SFC 塊；一般步從 S10 以後（三菱慣例從 S20 開始，S10～S19 留給 IST 指令）；每個塊最多 512 步；步號在整個程式不能重複。</p></li>
+          <p class="why">FX 的規則（官方）：S0～S9 是初始步，每個 SFC 塊要從其中一個開始，所以最多 10 個 SFC 塊；一般步從 S10 以後（三菱慣例從 S20 開始，S10～S19 留給 IST 指令）；每個塊最多 512 步；步號在整個程式不能重複。另外，FX3S 本身只有 S0～S255，所以實際能用的步比 512 少：所有 SFC 塊加起來，一般步最多 246 個（S10～S255）。</p></li>
         <li><b>寫每一步的動作。</b>在左邊點一下步 20，右邊就是它的梯形圖（分頁標題是「步序編號20」）。在右邊輸入 <kbd>F7</kbd> <code>Y0</code> 和 <kbd>F7</kbd> <code>T0 K10</code>（一樣要畫成上下兩個分支），<b>按 F4 轉換</b>。左邊步 20 前面的 ? 會消失。
           <figure class="shot wide"><a href="img/gx2/g18.png" target="_blank" rel="noopener"><img src="img/gx2/g18.png" alt="步 20 的梯形圖：Y000 線圈和 T0 K10 線圈兩個分支，左邊 SFC 圖的步 20 問號消失" loading="lazy"></a><figcaption>步 20 寫好並轉換：左邊的「?20」變成「20」。</figcaption></figure>
           步 21 同樣寫 <code>Y1</code>、<code>T1 K10</code>。步 0 是待機，沒有動作，可以不寫。
@@ -426,7 +426,7 @@ RET</pre>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=520d6e546b"></script>
+<script src="py/bundle.js?v=1254877303"></script>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=140a0c67c9"></script>
 <script src="course.js?v=196817d51d"></script>
