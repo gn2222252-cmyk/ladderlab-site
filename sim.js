@@ -159,7 +159,7 @@ function openMachine(id) {
   $("inputs").classList.toggle("free-io", free); $("outputs").classList.toggle("free-io", free);
   $("plant-box").hidden = !M.plant;
   $("kit-box").hidden = !free;
-  if (free) Kit.mount($("kit"), { xs: M.inputs.map((r) => r[0]), ys: M.outputs.map((r) => r[0]), onChange: freeIO, onPreset: kitPreset, onReset: (x) => sb.set_input(x, 0) });
+  if (free) Kit.mount($("kit"), { xs: M.inputs.map((r) => r[0]), ys: M.outputs.map((r) => r[0]), onChange: freeIO, onPreset: kitPreset, onReset: (x) => sb.set_input(x, 0), onToggle: (x) => sb.toggle(x) });
   else Kit.unmount();
   if (free) freeIO();
   else {
