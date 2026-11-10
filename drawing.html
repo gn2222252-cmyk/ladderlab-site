@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="86cc847726">
+<meta name="ll-version" content="766a2131e6">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>考前畫圖練習：PLC I/O 配線圖與外部接線圖 | LadderLab</title>
 <meta name="description" content="氣壓乙級第 1 階段的 PLC I/O 配線圖、工業配線乙級第一站的 A4 PLC 外部接線圖：要畫哪些東西、評審表看什麼、常被扣分的地方，附自我檢查表。">
-<link rel="stylesheet" href="style.css?v=fcceb47bcb">
+<link rel="stylesheet" href="style.css?v=86174b7c15">
 </head>
 <body class="learn guide-page">
 <header class="top">
@@ -42,7 +42,7 @@
       <div class="table-box"><table class="gtable small">
         <thead><tr><th>要畫的東西</th><th>重點</th></tr></thead>
         <tbody>
-          <tr><td>PLC 本體</td><td>寫型號（你自備的那一台，例如 FX3U-48MT/ES；氣壓乙級至少要 24 入 16 出，FX3U-32M 不夠），端子名稱照實機印的寫：S/S、X0…、COM1…、Y0…</td></tr>
+          <tr><td>PLC 本體</td><td>寫型號（你自備的那一台，例如下圖的 FX3G-40MT/ES：24 入 16 出，剛好符合氣壓乙級；FX3U-32M 只有 16 入，不夠），端子名稱照實機印的寫：S/S、X0…、COM1…、Y0…</td></tr>
           <tr><td>電源</td><td>PLC 本體電源（AC 型接 L、N，並接地）；DC24V 電源供應器的 +24V、0V</td></tr>
           <tr><td>輸入共點</td><td>S/S 接 +24V（漏型，配 NPN）還是 0V（源型，配 PNP），要和感測器型式一致（<a href="wiring.html">接線頁</a>）</td></tr>
           <tr><td>輸入元件（官方 I/O 表）</td><td>X0 ST、X1 STOP（按鈕，a 接點（常開））；X2 EMS（急停，<b>b 接點（常閉）</b>）；X3 復歸／運轉（二段選擇開關）；X4 復歸鈕；X5～X7 手動步進、單一、連續（多段選擇開關）</td></tr>
@@ -51,6 +51,763 @@
           <tr><td>輸出負載（官方 I/O 表）</td><td>Y0～Y5＝SOL A+、A-、B+、B-、C+、C-；加上自己編號的綠、紅、黃燈和快速閥。負載另一端接回正確的電源極性</td></tr>
           <tr><td>和氣壓迴路圖一致</td><td>電磁閥線圈、感測器位置的數量和名稱，要和氣壓控制迴路圖<b>完全相同</b>（雙線圈閥兩個線圈、單線圈閥一個）</td></tr>
         </tbody></table></div>
+      <h3>範例：E18 用 FX3G-40MT/ES 的 PLC I/O 配線圖</h3>
+      <p>端子排列和輸出共點分組照三菱 FX3G 硬體手冊 JY997D31301 4.7.4 節的端子圖：COM0＝Y0、COM1＝Y1、COM2＝Y2～Y3、COM3＝Y4～Y7、COM4＝Y10～Y13、COM5＝Y14～Y17。
+      <b>每一個用到的 COM 都要接到外部電源的 0V</b>。四點共用一個 COM 時合計只能 0.8 A。左邊的 24V、0V 是 PLC 送出來的服務電源（400 mA），只給輸入用；電磁閥用外部 DC24V 電源。</p>
+      <figure class="wirefig"><svg class="plcwire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="100%" style="max-width:900px;height:auto" role="img" aria-label="FX3G-40MT/ES PLC I/O 配線圖（E18）">
+<style>
+.plcwire{font-family:system-ui,"Microsoft JhengHei","PingFang TC",sans-serif}
+.plcwire .w{stroke:currentColor;stroke-width:1.6;fill:none}
+.plcwire .d{stroke:var(--accent,var(--on,#1e6fff));stroke-width:2;fill:none}
+.plcwire .df{fill:var(--accent,var(--on,#1e6fff))}
+.plcwire .dot{fill:currentColor}
+.plcwire .box{stroke:currentColor;stroke-width:2;fill:none}
+.plcwire text{fill:currentColor;font-size:12px}
+.plcwire .t{font-size:12.5px;font-weight:600}
+.plcwire .m{font-size:10.5px;fill-opacity:.72}
+.plcwire .h{font-size:14px;font-weight:700}
+</style>
+<rect class="box" x="300" y="36" width="280" height="624" rx="6"/>
+<text x="440" y="330" class="h" text-anchor="middle">三菱 FX3G-40MT/ES</text>
+<text x="440" y="350" class="m" text-anchor="middle">AC 電源型</text>
+<text x="440" y="366" class="m" text-anchor="middle">DC24V 輸入 24 點（漏型）</text>
+<text x="440" y="382" class="m" text-anchor="middle">電晶體輸出 16 點（漏型）</text>
+<text x="308" y="64" class="t">L</text>
+<circle class="dot" cx="300" cy="60" r="2.8"/>
+<text x="308" y="88" class="t">N</text>
+<circle class="dot" cx="300" cy="84" r="2.8"/>
+<path class="w" d="M316 101 V109 M308 109 h16 M311 112 h10 M314 115 h4"/>
+<circle class="dot" cx="300" cy="108" r="2.8"/>
+<text x="308" y="148" class="t">S/S</text>
+<circle class="dot" cx="300" cy="144" r="2.8"/>
+<text x="308" y="172" class="t">24V</text>
+<circle class="dot" cx="300" cy="168" r="2.8"/>
+<text x="308" y="196" class="t">0V</text>
+<circle class="dot" cx="300" cy="192" r="2.8"/>
+<text x="308" y="232" class="t">X0</text>
+<circle class="dot" cx="300" cy="228" r="2.8"/>
+<text x="308" y="260" class="t">X1</text>
+<circle class="dot" cx="300" cy="256" r="2.8"/>
+<text x="308" y="288" class="t">X2</text>
+<circle class="dot" cx="300" cy="284" r="2.8"/>
+<text x="308" y="316" class="t">X3</text>
+<circle class="dot" cx="300" cy="312" r="2.8"/>
+<text x="308" y="344" class="t">X4</text>
+<circle class="dot" cx="300" cy="340" r="2.8"/>
+<text x="308" y="372" class="t">X5</text>
+<circle class="dot" cx="300" cy="368" r="2.8"/>
+<text x="308" y="400" class="t">X6</text>
+<circle class="dot" cx="300" cy="396" r="2.8"/>
+<text x="308" y="428" class="t">X7</text>
+<circle class="dot" cx="300" cy="424" r="2.8"/>
+<text x="308" y="456" class="t">X10</text>
+<circle class="dot" cx="300" cy="452" r="2.8"/>
+<text x="308" y="484" class="t">X11</text>
+<circle class="dot" cx="300" cy="480" r="2.8"/>
+<text x="308" y="512" class="t">X12</text>
+<circle class="dot" cx="300" cy="508" r="2.8"/>
+<text x="308" y="540" class="t">X13</text>
+<circle class="dot" cx="300" cy="536" r="2.8"/>
+<text x="308" y="568" class="t">X14</text>
+<circle class="dot" cx="300" cy="564" r="2.8"/>
+<text x="308" y="596" class="t">X15</text>
+<circle class="dot" cx="300" cy="592" r="2.8"/>
+<text x="308" y="624" class="t">X16</text>
+<circle class="dot" cx="300" cy="620" r="2.8"/>
+<line class="w" x1="150" y1="60" x2="300" y2="60"/>
+<text x="146" y="64" text-anchor="end">AC 100～240V　L</text>
+<line class="w" x1="150" y1="84" x2="300" y2="84"/>
+<text x="146" y="88" text-anchor="end">AC 100～240V　N</text>
+<line class="w" x1="150" y1="108" x2="300" y2="108"/>
+<text x="146" y="112" text-anchor="end">接地</text>
+<path class="w" d="M300 144 H274 V168 H300"/>
+<circle class="dot" cx="274" cy="168" r="2.8"/>
+<text x="268" y="148" class="m" text-anchor="end">跳線</text>
+<text x="268" y="172" class="m" text-anchor="end">服務電源 24V</text>
+<line class="w" x1="300" y1="192" x2="36" y2="192"/>
+<line class="w" x1="36" y1="192" x2="36" y2="620"/>
+<circle class="dot" cx="36" cy="192" r="2.8"/>
+<text x="42" y="186" class="m">輸入共同回線（PLC 0V）</text>
+<line class="w" x1="36" y1="228" x2="200" y2="228"/>
+<line class="w" x1="228" y1="228" x2="300" y2="228"/>
+<circle class="dot" cx="36" cy="228" r="2.8"/>
+<line class="w" x1="200" y1="228" x2="210" y2="228"/>
+<line class="w" x1="218" y1="228" x2="228" y2="228"/>
+<line class="d" x1="210" y1="220" x2="210" y2="236"/>
+<line class="d" x1="218" y1="220" x2="218" y2="236"/>
+<text x="44" y="223">ST 啟動</text>
+<text x="232" y="223" class="m">按鈕</text>
+<line class="w" x1="36" y1="256" x2="200" y2="256"/>
+<line class="w" x1="228" y1="256" x2="300" y2="256"/>
+<circle class="dot" cx="36" cy="256" r="2.8"/>
+<line class="w" x1="200" y1="256" x2="210" y2="256"/>
+<line class="w" x1="218" y1="256" x2="228" y2="256"/>
+<line class="d" x1="210" y1="248" x2="210" y2="264"/>
+<line class="d" x1="218" y1="248" x2="218" y2="264"/>
+<text x="44" y="251">STOP 停止</text>
+<text x="232" y="251" class="m">按鈕</text>
+<line class="w" x1="36" y1="284" x2="200" y2="284"/>
+<line class="w" x1="228" y1="284" x2="300" y2="284"/>
+<circle class="dot" cx="36" cy="284" r="2.8"/>
+<line class="w" x1="200" y1="284" x2="210" y2="284"/>
+<line class="w" x1="218" y1="284" x2="228" y2="284"/>
+<line class="d" x1="210" y1="276" x2="210" y2="292"/>
+<line class="d" x1="218" y1="276" x2="218" y2="292"/>
+<line class="d" x1="207" y1="292" x2="221" y2="276"/>
+<text x="44" y="279">EMS 緊急停止</text>
+<text x="232" y="279" class="m">蕈狀鈕</text>
+<line class="w" x1="36" y1="312" x2="200" y2="312"/>
+<line class="w" x1="228" y1="312" x2="300" y2="312"/>
+<circle class="dot" cx="36" cy="312" r="2.8"/>
+<line class="w" x1="200" y1="312" x2="210" y2="312"/>
+<line class="w" x1="218" y1="312" x2="228" y2="312"/>
+<line class="d" x1="210" y1="304" x2="210" y2="320"/>
+<line class="d" x1="218" y1="304" x2="218" y2="320"/>
+<text x="44" y="307">復歸／運轉</text>
+<text x="232" y="307" class="m">二段選擇</text>
+<line class="w" x1="36" y1="340" x2="200" y2="340"/>
+<line class="w" x1="228" y1="340" x2="300" y2="340"/>
+<circle class="dot" cx="36" cy="340" r="2.8"/>
+<line class="w" x1="200" y1="340" x2="210" y2="340"/>
+<line class="w" x1="218" y1="340" x2="228" y2="340"/>
+<line class="d" x1="210" y1="332" x2="210" y2="348"/>
+<line class="d" x1="218" y1="332" x2="218" y2="348"/>
+<text x="44" y="335">復歸鈕</text>
+<text x="232" y="335" class="m">按鈕</text>
+<line class="w" x1="36" y1="368" x2="200" y2="368"/>
+<line class="w" x1="228" y1="368" x2="300" y2="368"/>
+<circle class="dot" cx="36" cy="368" r="2.8"/>
+<line class="w" x1="200" y1="368" x2="210" y2="368"/>
+<line class="w" x1="218" y1="368" x2="228" y2="368"/>
+<line class="d" x1="210" y1="360" x2="210" y2="376"/>
+<line class="d" x1="218" y1="360" x2="218" y2="376"/>
+<text x="44" y="363">手動步進</text>
+<text x="232" y="363" class="m">三段選擇</text>
+<line class="w" x1="36" y1="396" x2="200" y2="396"/>
+<line class="w" x1="228" y1="396" x2="300" y2="396"/>
+<circle class="dot" cx="36" cy="396" r="2.8"/>
+<line class="w" x1="200" y1="396" x2="210" y2="396"/>
+<line class="w" x1="218" y1="396" x2="228" y2="396"/>
+<line class="d" x1="210" y1="388" x2="210" y2="404"/>
+<line class="d" x1="218" y1="388" x2="218" y2="404"/>
+<text x="44" y="391">單一循環</text>
+<text x="232" y="391" class="m">三段選擇</text>
+<line class="w" x1="36" y1="424" x2="200" y2="424"/>
+<line class="w" x1="228" y1="424" x2="300" y2="424"/>
+<circle class="dot" cx="36" cy="424" r="2.8"/>
+<line class="w" x1="200" y1="424" x2="210" y2="424"/>
+<line class="w" x1="218" y1="424" x2="228" y2="424"/>
+<line class="d" x1="210" y1="416" x2="210" y2="432"/>
+<line class="d" x1="218" y1="416" x2="218" y2="432"/>
+<text x="44" y="419">連續循環</text>
+<text x="232" y="419" class="m">三段選擇</text>
+<line class="w" x1="36" y1="452" x2="200" y2="452"/>
+<line class="w" x1="228" y1="452" x2="300" y2="452"/>
+<circle class="dot" cx="36" cy="452" r="2.8"/>
+<line class="w" x1="200" y1="452" x2="210" y2="452"/>
+<line class="w" x1="218" y1="452" x2="228" y2="452"/>
+<line class="d" x1="210" y1="444" x2="210" y2="460"/>
+<line class="d" x1="218" y1="444" x2="218" y2="460"/>
+<rect class="d" x="196" y="441" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="448" class="m">棕＋</text>
+<text x="192" y="448" class="m" text-anchor="end">藍－</text>
+<text x="44" y="447">a0　磁簧</text>
+<line class="w" x1="36" y1="480" x2="200" y2="480"/>
+<line class="w" x1="228" y1="480" x2="300" y2="480"/>
+<circle class="dot" cx="36" cy="480" r="2.8"/>
+<line class="w" x1="200" y1="480" x2="210" y2="480"/>
+<line class="w" x1="218" y1="480" x2="228" y2="480"/>
+<line class="d" x1="210" y1="472" x2="210" y2="488"/>
+<line class="d" x1="218" y1="472" x2="218" y2="488"/>
+<rect class="d" x="196" y="469" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="476" class="m">棕＋</text>
+<text x="192" y="476" class="m" text-anchor="end">藍－</text>
+<text x="44" y="475">a1　磁簧</text>
+<line class="w" x1="36" y1="508" x2="200" y2="508"/>
+<line class="w" x1="228" y1="508" x2="300" y2="508"/>
+<circle class="dot" cx="36" cy="508" r="2.8"/>
+<line class="w" x1="200" y1="508" x2="210" y2="508"/>
+<line class="w" x1="218" y1="508" x2="228" y2="508"/>
+<line class="d" x1="210" y1="500" x2="210" y2="516"/>
+<line class="d" x1="218" y1="500" x2="218" y2="516"/>
+<rect class="d" x="196" y="497" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="504" class="m">棕＋</text>
+<text x="192" y="504" class="m" text-anchor="end">藍－</text>
+<text x="44" y="503">a2　磁簧</text>
+<line class="w" x1="36" y1="536" x2="200" y2="536"/>
+<line class="w" x1="228" y1="536" x2="300" y2="536"/>
+<circle class="dot" cx="36" cy="536" r="2.8"/>
+<line class="w" x1="200" y1="536" x2="210" y2="536"/>
+<line class="w" x1="218" y1="536" x2="228" y2="536"/>
+<line class="d" x1="210" y1="528" x2="210" y2="544"/>
+<line class="d" x1="218" y1="528" x2="218" y2="544"/>
+<rect class="d" x="196" y="525" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="532" class="m">棕＋</text>
+<text x="192" y="532" class="m" text-anchor="end">藍－</text>
+<text x="44" y="531">b0　磁簧</text>
+<line class="w" x1="36" y1="564" x2="200" y2="564"/>
+<line class="w" x1="228" y1="564" x2="300" y2="564"/>
+<circle class="dot" cx="36" cy="564" r="2.8"/>
+<line class="w" x1="200" y1="564" x2="210" y2="564"/>
+<line class="w" x1="218" y1="564" x2="228" y2="564"/>
+<line class="d" x1="210" y1="556" x2="210" y2="572"/>
+<line class="d" x1="218" y1="556" x2="218" y2="572"/>
+<rect class="d" x="196" y="553" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="560" class="m">棕＋</text>
+<text x="192" y="560" class="m" text-anchor="end">藍－</text>
+<text x="44" y="559">b1　磁簧</text>
+<line class="w" x1="36" y1="592" x2="200" y2="592"/>
+<line class="w" x1="228" y1="592" x2="300" y2="592"/>
+<circle class="dot" cx="36" cy="592" r="2.8"/>
+<line class="w" x1="200" y1="592" x2="210" y2="592"/>
+<line class="w" x1="218" y1="592" x2="228" y2="592"/>
+<line class="d" x1="210" y1="584" x2="210" y2="600"/>
+<line class="d" x1="218" y1="584" x2="218" y2="600"/>
+<rect class="d" x="196" y="581" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="588" class="m">棕＋</text>
+<text x="192" y="588" class="m" text-anchor="end">藍－</text>
+<text x="44" y="587">c0　磁簧</text>
+<line class="w" x1="36" y1="620" x2="200" y2="620"/>
+<line class="w" x1="228" y1="620" x2="300" y2="620"/>
+<circle class="dot" cx="36" cy="620" r="2.8"/>
+<line class="w" x1="200" y1="620" x2="210" y2="620"/>
+<line class="w" x1="218" y1="620" x2="228" y2="620"/>
+<line class="d" x1="210" y1="612" x2="210" y2="628"/>
+<line class="d" x1="218" y1="612" x2="218" y2="628"/>
+<rect class="d" x="196" y="609" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="616" class="m">棕＋</text>
+<text x="192" y="616" class="m" text-anchor="end">藍－</text>
+<text x="44" y="615">c1　磁簧</text>
+<rect class="box" x="752" y="8" width="144" height="40" rx="4"/>
+<text x="824" y="25" text-anchor="middle">外部 DC24V 電源</text>
+<text x="830" y="43" class="m" text-anchor="middle">＋24V</text>
+<text x="872" y="43" class="m" text-anchor="middle">0V</text>
+<line class="w" x1="830" y1="48" x2="830" y2="630"/>
+<line class="w" x1="872" y1="48" x2="872" y2="556"/>
+<text x="572" y="84" class="t" text-anchor="end">COM0</text>
+<circle class="dot" cx="580" cy="80" r="2.8"/>
+<path class="w" d="M580 80 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="80" r="2.8"/>
+<text x="590" y="75" class="m">接外部 0V</text>
+<text x="572" y="121" class="t" text-anchor="end">Y0</text>
+<circle class="dot" cx="580" cy="117" r="2.8"/>
+<line class="w" x1="580" y1="117" x2="680" y2="117"/>
+<line class="w" x1="724" y1="117" x2="830" y2="117"/>
+<circle class="dot" cx="830" cy="117" r="2.8"/>
+<text x="590" y="112">SOL A+</text>
+<rect class="d" x="680" y="110" width="44" height="14" rx="2"/>
+<path class="w" d="M672 117 V100 H696 M710 100 H732 V117"/>
+<path class="df" d="M696 94 L708 100 L696 106 Z"/>
+<line class="d" x1="709" y1="94" x2="709" y2="106"/>
+<circle class="dot" cx="672" cy="117" r="2.8"/>
+<circle class="dot" cx="732" cy="117" r="2.8"/>
+<text x="572" y="166" class="t" text-anchor="end">COM1</text>
+<circle class="dot" cx="580" cy="162" r="2.8"/>
+<path class="w" d="M580 162 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="162" r="2.8"/>
+<text x="590" y="157" class="m">接外部 0V</text>
+<text x="572" y="203" class="t" text-anchor="end">Y1</text>
+<circle class="dot" cx="580" cy="199" r="2.8"/>
+<line class="w" x1="580" y1="199" x2="680" y2="199"/>
+<line class="w" x1="724" y1="199" x2="830" y2="199"/>
+<circle class="dot" cx="830" cy="199" r="2.8"/>
+<text x="590" y="194">SOL A-</text>
+<rect class="d" x="680" y="192" width="44" height="14" rx="2"/>
+<path class="w" d="M672 199 V182 H696 M710 182 H732 V199"/>
+<path class="df" d="M696 176 L708 182 L696 188 Z"/>
+<line class="d" x1="709" y1="176" x2="709" y2="188"/>
+<circle class="dot" cx="672" cy="199" r="2.8"/>
+<circle class="dot" cx="732" cy="199" r="2.8"/>
+<text x="572" y="248" class="t" text-anchor="end">COM2</text>
+<circle class="dot" cx="580" cy="244" r="2.8"/>
+<path class="w" d="M580 244 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="244" r="2.8"/>
+<text x="590" y="239" class="m">接外部 0V</text>
+<text x="572" y="285" class="t" text-anchor="end">Y2</text>
+<circle class="dot" cx="580" cy="281" r="2.8"/>
+<line class="w" x1="580" y1="281" x2="680" y2="281"/>
+<line class="w" x1="724" y1="281" x2="830" y2="281"/>
+<circle class="dot" cx="830" cy="281" r="2.8"/>
+<text x="590" y="276">SOL B+</text>
+<rect class="d" x="680" y="274" width="44" height="14" rx="2"/>
+<path class="w" d="M672 281 V264 H696 M710 264 H732 V281"/>
+<path class="df" d="M696 258 L708 264 L696 270 Z"/>
+<line class="d" x1="709" y1="258" x2="709" y2="270"/>
+<circle class="dot" cx="672" cy="281" r="2.8"/>
+<circle class="dot" cx="732" cy="281" r="2.8"/>
+<text x="572" y="322" class="t" text-anchor="end">Y3</text>
+<circle class="dot" cx="580" cy="318" r="2.8"/>
+<line class="w" x1="580" y1="318" x2="680" y2="318"/>
+<line class="w" x1="724" y1="318" x2="830" y2="318"/>
+<circle class="dot" cx="830" cy="318" r="2.8"/>
+<text x="590" y="313">SOL B-</text>
+<rect class="d" x="680" y="311" width="44" height="14" rx="2"/>
+<path class="w" d="M672 318 V301 H696 M710 301 H732 V318"/>
+<path class="df" d="M696 295 L708 301 L696 307 Z"/>
+<line class="d" x1="709" y1="295" x2="709" y2="307"/>
+<circle class="dot" cx="672" cy="318" r="2.8"/>
+<circle class="dot" cx="732" cy="318" r="2.8"/>
+<text x="572" y="367" class="t" text-anchor="end">COM3</text>
+<circle class="dot" cx="580" cy="363" r="2.8"/>
+<path class="w" d="M580 363 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="363" r="2.8"/>
+<text x="590" y="358" class="m">接外部 0V</text>
+<text x="572" y="404" class="t" text-anchor="end">Y4</text>
+<circle class="dot" cx="580" cy="400" r="2.8"/>
+<line class="w" x1="580" y1="400" x2="680" y2="400"/>
+<line class="w" x1="724" y1="400" x2="830" y2="400"/>
+<circle class="dot" cx="830" cy="400" r="2.8"/>
+<text x="590" y="395">SOL C+</text>
+<rect class="d" x="680" y="393" width="44" height="14" rx="2"/>
+<path class="w" d="M672 400 V383 H696 M710 383 H732 V400"/>
+<path class="df" d="M696 377 L708 383 L696 389 Z"/>
+<line class="d" x1="709" y1="377" x2="709" y2="389"/>
+<circle class="dot" cx="672" cy="400" r="2.8"/>
+<circle class="dot" cx="732" cy="400" r="2.8"/>
+<text x="572" y="441" class="t" text-anchor="end">Y5</text>
+<circle class="dot" cx="580" cy="437" r="2.8"/>
+<line class="w" x1="580" y1="437" x2="680" y2="437"/>
+<line class="w" x1="724" y1="437" x2="830" y2="437"/>
+<circle class="dot" cx="830" cy="437" r="2.8"/>
+<text x="590" y="432">SOL C-</text>
+<rect class="d" x="680" y="430" width="44" height="14" rx="2"/>
+<path class="w" d="M672 437 V420 H696 M710 420 H732 V437"/>
+<path class="df" d="M696 414 L708 420 L696 426 Z"/>
+<line class="d" x1="709" y1="414" x2="709" y2="426"/>
+<circle class="dot" cx="672" cy="437" r="2.8"/>
+<circle class="dot" cx="732" cy="437" r="2.8"/>
+<text x="572" y="478" class="t" text-anchor="end">Y6</text>
+<circle class="dot" cx="580" cy="474" r="2.8"/>
+<line class="w" x1="580" y1="474" x2="680" y2="474"/>
+<line class="w" x1="724" y1="474" x2="830" y2="474"/>
+<circle class="dot" cx="830" cy="474" r="2.8"/>
+<text x="590" y="469">綠燈</text>
+<line class="w" x1="680" y1="474" x2="693" y2="474"/>
+<line class="w" x1="711" y1="474" x2="724" y2="474"/>
+<circle class="d" cx="702" cy="474" r="9"/>
+<path class="d" d="M695.65 467.65 l12.7 12.7 M708.35 467.65 l-12.7 12.7"/>
+<text x="572" y="515" class="t" text-anchor="end">Y7</text>
+<circle class="dot" cx="580" cy="511" r="2.8"/>
+<line class="w" x1="580" y1="511" x2="680" y2="511"/>
+<line class="w" x1="724" y1="511" x2="830" y2="511"/>
+<circle class="dot" cx="830" cy="511" r="2.8"/>
+<text x="590" y="506">紅燈</text>
+<line class="w" x1="680" y1="511" x2="693" y2="511"/>
+<line class="w" x1="711" y1="511" x2="724" y2="511"/>
+<circle class="d" cx="702" cy="511" r="9"/>
+<path class="d" d="M695.65 504.65 l12.7 12.7 M708.35 504.65 l-12.7 12.7"/>
+<text x="572" y="560" class="t" text-anchor="end">COM4</text>
+<circle class="dot" cx="580" cy="556" r="2.8"/>
+<path class="w" d="M580 556 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="556" r="2.8"/>
+<text x="590" y="551" class="m">接外部 0V</text>
+<text x="572" y="597" class="t" text-anchor="end">Y10</text>
+<circle class="dot" cx="580" cy="593" r="2.8"/>
+<line class="w" x1="580" y1="593" x2="680" y2="593"/>
+<line class="w" x1="724" y1="593" x2="830" y2="593"/>
+<circle class="dot" cx="830" cy="593" r="2.8"/>
+<text x="590" y="588">黃燈</text>
+<line class="w" x1="680" y1="593" x2="693" y2="593"/>
+<line class="w" x1="711" y1="593" x2="724" y2="593"/>
+<circle class="d" cx="702" cy="593" r="9"/>
+<path class="d" d="M695.65 586.65 l12.7 12.7 M708.35 586.65 l-12.7 12.7"/>
+<text x="572" y="634" class="t" text-anchor="end">Y11</text>
+<circle class="dot" cx="580" cy="630" r="2.8"/>
+<line class="w" x1="580" y1="630" x2="680" y2="630"/>
+<line class="w" x1="724" y1="630" x2="830" y2="630"/>
+<circle class="dot" cx="830" cy="630" r="2.8"/>
+<text x="590" y="625">快速閥</text>
+<rect class="d" x="680" y="623" width="44" height="14" rx="2"/>
+<path class="w" d="M672 630 V613 H696 M710 613 H732 V630"/>
+<path class="df" d="M696 607 L708 613 L696 619 Z"/>
+<line class="d" x1="709" y1="607" x2="709" y2="619"/>
+<circle class="dot" cx="672" cy="630" r="2.8"/>
+<circle class="dot" cx="732" cy="630" r="2.8"/>
+<text x="590" y="664" class="m">負載接在 Y 和＋24V 之間；電磁閥並聯續流二極體</text>
+<text x="590" y="680" class="m">（陰極接＋24V）。COM5、Y12～Y17 未使用。</text>
+<text x="36" y="686" class="m">X17～X27 未使用。輸入元件一端接 X，另一端接 PLC 0V；S/S 接 24V＝漏型輸入。</text>
+</svg>
+        <figcaption>漏型（sink）：S/S 跳線到 24V，輸入元件一端接 X、另一端接 PLC 0V；二線式磁簧開關棕線（＋）接 X、藍線（－）接 0V（依感測器型錄為準）。電晶體輸出：負載接在 Y 和外部＋24V 之間，COM 接外部 0V；電磁閥並聯續流二極體，陰極（有線的一端）接＋24V。</figcaption>
+      </figure>
+      <h3>找錯練習：這張圖有 4 個錯</h3>
+      <p>同一張配線圖，故意畫錯 4 個地方。每一個都是評審表「極性連接或接線邏輯有錯誤」或重大缺點會扣的。先自己找，再打開答案。</p>
+      <figure class="wirefig"><svg class="plcwire" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="100%" style="max-width:900px;height:auto" role="img" aria-label="FX3G-40MT/ES PLC I/O 配線圖（E18），找錯版">
+<style>
+.plcwire{font-family:system-ui,"Microsoft JhengHei","PingFang TC",sans-serif}
+.plcwire .w{stroke:currentColor;stroke-width:1.6;fill:none}
+.plcwire .d{stroke:var(--accent,var(--on,#1e6fff));stroke-width:2;fill:none}
+.plcwire .df{fill:var(--accent,var(--on,#1e6fff))}
+.plcwire .dot{fill:currentColor}
+.plcwire .box{stroke:currentColor;stroke-width:2;fill:none}
+.plcwire text{fill:currentColor;font-size:12px}
+.plcwire .t{font-size:12.5px;font-weight:600}
+.plcwire .m{font-size:10.5px;fill-opacity:.72}
+.plcwire .h{font-size:14px;font-weight:700}
+</style>
+<rect class="box" x="300" y="36" width="280" height="624" rx="6"/>
+<text x="440" y="330" class="h" text-anchor="middle">三菱 FX3G-40MT/ES</text>
+<text x="440" y="350" class="m" text-anchor="middle">AC 電源型</text>
+<text x="440" y="366" class="m" text-anchor="middle">DC24V 輸入 24 點（漏型）</text>
+<text x="440" y="382" class="m" text-anchor="middle">電晶體輸出 16 點（漏型）</text>
+<text x="308" y="64" class="t">L</text>
+<circle class="dot" cx="300" cy="60" r="2.8"/>
+<text x="308" y="88" class="t">N</text>
+<circle class="dot" cx="300" cy="84" r="2.8"/>
+<path class="w" d="M316 101 V109 M308 109 h16 M311 112 h10 M314 115 h4"/>
+<circle class="dot" cx="300" cy="108" r="2.8"/>
+<text x="308" y="148" class="t">S/S</text>
+<circle class="dot" cx="300" cy="144" r="2.8"/>
+<text x="308" y="172" class="t">24V</text>
+<circle class="dot" cx="300" cy="168" r="2.8"/>
+<text x="308" y="196" class="t">0V</text>
+<circle class="dot" cx="300" cy="192" r="2.8"/>
+<text x="308" y="232" class="t">X0</text>
+<circle class="dot" cx="300" cy="228" r="2.8"/>
+<text x="308" y="260" class="t">X1</text>
+<circle class="dot" cx="300" cy="256" r="2.8"/>
+<text x="308" y="288" class="t">X2</text>
+<circle class="dot" cx="300" cy="284" r="2.8"/>
+<text x="308" y="316" class="t">X3</text>
+<circle class="dot" cx="300" cy="312" r="2.8"/>
+<text x="308" y="344" class="t">X4</text>
+<circle class="dot" cx="300" cy="340" r="2.8"/>
+<text x="308" y="372" class="t">X5</text>
+<circle class="dot" cx="300" cy="368" r="2.8"/>
+<text x="308" y="400" class="t">X6</text>
+<circle class="dot" cx="300" cy="396" r="2.8"/>
+<text x="308" y="428" class="t">X7</text>
+<circle class="dot" cx="300" cy="424" r="2.8"/>
+<text x="308" y="456" class="t">X10</text>
+<circle class="dot" cx="300" cy="452" r="2.8"/>
+<text x="308" y="484" class="t">X11</text>
+<circle class="dot" cx="300" cy="480" r="2.8"/>
+<text x="308" y="512" class="t">X12</text>
+<circle class="dot" cx="300" cy="508" r="2.8"/>
+<text x="308" y="540" class="t">X13</text>
+<circle class="dot" cx="300" cy="536" r="2.8"/>
+<text x="308" y="568" class="t">X14</text>
+<circle class="dot" cx="300" cy="564" r="2.8"/>
+<text x="308" y="596" class="t">X15</text>
+<circle class="dot" cx="300" cy="592" r="2.8"/>
+<text x="308" y="624" class="t">X16</text>
+<circle class="dot" cx="300" cy="620" r="2.8"/>
+<line class="w" x1="150" y1="60" x2="300" y2="60"/>
+<text x="146" y="64" text-anchor="end">AC 100～240V　L</text>
+<line class="w" x1="150" y1="84" x2="300" y2="84"/>
+<text x="146" y="88" text-anchor="end">AC 100～240V　N</text>
+<line class="w" x1="150" y1="108" x2="300" y2="108"/>
+<text x="146" y="112" text-anchor="end">接地</text>
+<path class="w" d="M300 144 H274 V192 H300"/>
+<circle class="dot" cx="274" cy="192" r="2.8"/>
+<text x="268" y="148" class="m" text-anchor="end">跳線</text>
+<text x="268" y="172" class="m" text-anchor="end">服務電源 24V</text>
+<line class="w" x1="300" y1="192" x2="36" y2="192"/>
+<line class="w" x1="36" y1="192" x2="36" y2="620"/>
+<circle class="dot" cx="36" cy="192" r="2.8"/>
+<text x="42" y="186" class="m">輸入共同回線（PLC 0V）</text>
+<line class="w" x1="36" y1="228" x2="200" y2="228"/>
+<line class="w" x1="228" y1="228" x2="300" y2="228"/>
+<circle class="dot" cx="36" cy="228" r="2.8"/>
+<line class="w" x1="200" y1="228" x2="210" y2="228"/>
+<line class="w" x1="218" y1="228" x2="228" y2="228"/>
+<line class="d" x1="210" y1="220" x2="210" y2="236"/>
+<line class="d" x1="218" y1="220" x2="218" y2="236"/>
+<text x="44" y="223">ST 啟動</text>
+<text x="232" y="223" class="m">按鈕</text>
+<line class="w" x1="36" y1="256" x2="200" y2="256"/>
+<line class="w" x1="228" y1="256" x2="300" y2="256"/>
+<circle class="dot" cx="36" cy="256" r="2.8"/>
+<line class="w" x1="200" y1="256" x2="210" y2="256"/>
+<line class="w" x1="218" y1="256" x2="228" y2="256"/>
+<line class="d" x1="210" y1="248" x2="210" y2="264"/>
+<line class="d" x1="218" y1="248" x2="218" y2="264"/>
+<text x="44" y="251">STOP 停止</text>
+<text x="232" y="251" class="m">按鈕</text>
+<line class="w" x1="36" y1="284" x2="200" y2="284"/>
+<line class="w" x1="228" y1="284" x2="300" y2="284"/>
+<circle class="dot" cx="36" cy="284" r="2.8"/>
+<line class="w" x1="200" y1="284" x2="210" y2="284"/>
+<line class="w" x1="218" y1="284" x2="228" y2="284"/>
+<line class="d" x1="210" y1="276" x2="210" y2="292"/>
+<line class="d" x1="218" y1="276" x2="218" y2="292"/>
+<text x="44" y="279">EMS 緊急停止</text>
+<text x="232" y="279" class="m">蕈狀鈕</text>
+<line class="w" x1="36" y1="312" x2="200" y2="312"/>
+<line class="w" x1="228" y1="312" x2="300" y2="312"/>
+<circle class="dot" cx="36" cy="312" r="2.8"/>
+<line class="w" x1="200" y1="312" x2="210" y2="312"/>
+<line class="w" x1="218" y1="312" x2="228" y2="312"/>
+<line class="d" x1="210" y1="304" x2="210" y2="320"/>
+<line class="d" x1="218" y1="304" x2="218" y2="320"/>
+<text x="44" y="307">復歸／運轉</text>
+<text x="232" y="307" class="m">二段選擇</text>
+<line class="w" x1="36" y1="340" x2="200" y2="340"/>
+<line class="w" x1="228" y1="340" x2="300" y2="340"/>
+<circle class="dot" cx="36" cy="340" r="2.8"/>
+<line class="w" x1="200" y1="340" x2="210" y2="340"/>
+<line class="w" x1="218" y1="340" x2="228" y2="340"/>
+<line class="d" x1="210" y1="332" x2="210" y2="348"/>
+<line class="d" x1="218" y1="332" x2="218" y2="348"/>
+<text x="44" y="335">復歸鈕</text>
+<text x="232" y="335" class="m">按鈕</text>
+<line class="w" x1="36" y1="368" x2="200" y2="368"/>
+<line class="w" x1="228" y1="368" x2="300" y2="368"/>
+<circle class="dot" cx="36" cy="368" r="2.8"/>
+<line class="w" x1="200" y1="368" x2="210" y2="368"/>
+<line class="w" x1="218" y1="368" x2="228" y2="368"/>
+<line class="d" x1="210" y1="360" x2="210" y2="376"/>
+<line class="d" x1="218" y1="360" x2="218" y2="376"/>
+<text x="44" y="363">手動步進</text>
+<text x="232" y="363" class="m">三段選擇</text>
+<line class="w" x1="36" y1="396" x2="200" y2="396"/>
+<line class="w" x1="228" y1="396" x2="300" y2="396"/>
+<circle class="dot" cx="36" cy="396" r="2.8"/>
+<line class="w" x1="200" y1="396" x2="210" y2="396"/>
+<line class="w" x1="218" y1="396" x2="228" y2="396"/>
+<line class="d" x1="210" y1="388" x2="210" y2="404"/>
+<line class="d" x1="218" y1="388" x2="218" y2="404"/>
+<text x="44" y="391">單一循環</text>
+<text x="232" y="391" class="m">三段選擇</text>
+<line class="w" x1="36" y1="424" x2="200" y2="424"/>
+<line class="w" x1="228" y1="424" x2="300" y2="424"/>
+<circle class="dot" cx="36" cy="424" r="2.8"/>
+<line class="w" x1="200" y1="424" x2="210" y2="424"/>
+<line class="w" x1="218" y1="424" x2="228" y2="424"/>
+<line class="d" x1="210" y1="416" x2="210" y2="432"/>
+<line class="d" x1="218" y1="416" x2="218" y2="432"/>
+<text x="44" y="419">連續循環</text>
+<text x="232" y="419" class="m">三段選擇</text>
+<line class="w" x1="36" y1="452" x2="200" y2="452"/>
+<line class="w" x1="228" y1="452" x2="300" y2="452"/>
+<circle class="dot" cx="36" cy="452" r="2.8"/>
+<line class="w" x1="200" y1="452" x2="210" y2="452"/>
+<line class="w" x1="218" y1="452" x2="228" y2="452"/>
+<line class="d" x1="210" y1="444" x2="210" y2="460"/>
+<line class="d" x1="218" y1="444" x2="218" y2="460"/>
+<rect class="d" x="196" y="441" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="448" class="m">棕＋</text>
+<text x="192" y="448" class="m" text-anchor="end">藍－</text>
+<text x="44" y="447">a0　磁簧</text>
+<line class="w" x1="36" y1="480" x2="200" y2="480"/>
+<line class="w" x1="228" y1="480" x2="300" y2="480"/>
+<circle class="dot" cx="36" cy="480" r="2.8"/>
+<line class="w" x1="200" y1="480" x2="210" y2="480"/>
+<line class="w" x1="218" y1="480" x2="228" y2="480"/>
+<line class="d" x1="210" y1="472" x2="210" y2="488"/>
+<line class="d" x1="218" y1="472" x2="218" y2="488"/>
+<rect class="d" x="196" y="469" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="476" class="m">藍－</text>
+<text x="192" y="476" class="m" text-anchor="end">棕＋</text>
+<text x="44" y="475">a1　磁簧</text>
+<line class="w" x1="36" y1="508" x2="200" y2="508"/>
+<line class="w" x1="228" y1="508" x2="300" y2="508"/>
+<circle class="dot" cx="36" cy="508" r="2.8"/>
+<line class="w" x1="200" y1="508" x2="210" y2="508"/>
+<line class="w" x1="218" y1="508" x2="228" y2="508"/>
+<line class="d" x1="210" y1="500" x2="210" y2="516"/>
+<line class="d" x1="218" y1="500" x2="218" y2="516"/>
+<rect class="d" x="196" y="497" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="504" class="m">棕＋</text>
+<text x="192" y="504" class="m" text-anchor="end">藍－</text>
+<text x="44" y="503">a2　磁簧</text>
+<line class="w" x1="36" y1="536" x2="200" y2="536"/>
+<line class="w" x1="228" y1="536" x2="300" y2="536"/>
+<circle class="dot" cx="36" cy="536" r="2.8"/>
+<line class="w" x1="200" y1="536" x2="210" y2="536"/>
+<line class="w" x1="218" y1="536" x2="228" y2="536"/>
+<line class="d" x1="210" y1="528" x2="210" y2="544"/>
+<line class="d" x1="218" y1="528" x2="218" y2="544"/>
+<rect class="d" x="196" y="525" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="532" class="m">棕＋</text>
+<text x="192" y="532" class="m" text-anchor="end">藍－</text>
+<text x="44" y="531">b0　磁簧</text>
+<line class="w" x1="36" y1="564" x2="200" y2="564"/>
+<line class="w" x1="228" y1="564" x2="300" y2="564"/>
+<circle class="dot" cx="36" cy="564" r="2.8"/>
+<line class="w" x1="200" y1="564" x2="210" y2="564"/>
+<line class="w" x1="218" y1="564" x2="228" y2="564"/>
+<line class="d" x1="210" y1="556" x2="210" y2="572"/>
+<line class="d" x1="218" y1="556" x2="218" y2="572"/>
+<rect class="d" x="196" y="553" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="560" class="m">棕＋</text>
+<text x="192" y="560" class="m" text-anchor="end">藍－</text>
+<text x="44" y="559">b1　磁簧</text>
+<line class="w" x1="36" y1="592" x2="200" y2="592"/>
+<line class="w" x1="228" y1="592" x2="300" y2="592"/>
+<circle class="dot" cx="36" cy="592" r="2.8"/>
+<line class="w" x1="200" y1="592" x2="210" y2="592"/>
+<line class="w" x1="218" y1="592" x2="228" y2="592"/>
+<line class="d" x1="210" y1="584" x2="210" y2="600"/>
+<line class="d" x1="218" y1="584" x2="218" y2="600"/>
+<rect class="d" x="196" y="581" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="588" class="m">棕＋</text>
+<text x="192" y="588" class="m" text-anchor="end">藍－</text>
+<text x="44" y="587">c0　磁簧</text>
+<line class="w" x1="36" y1="620" x2="200" y2="620"/>
+<line class="w" x1="228" y1="620" x2="300" y2="620"/>
+<circle class="dot" cx="36" cy="620" r="2.8"/>
+<line class="w" x1="200" y1="620" x2="210" y2="620"/>
+<line class="w" x1="218" y1="620" x2="228" y2="620"/>
+<line class="d" x1="210" y1="612" x2="210" y2="628"/>
+<line class="d" x1="218" y1="612" x2="218" y2="628"/>
+<rect class="d" x="196" y="609" width="36" height="22" rx="8" stroke-dasharray="3 2"/>
+<text x="240" y="616" class="m">棕＋</text>
+<text x="192" y="616" class="m" text-anchor="end">藍－</text>
+<text x="44" y="615">c1　磁簧</text>
+<rect class="box" x="752" y="8" width="144" height="40" rx="4"/>
+<text x="824" y="25" text-anchor="middle">外部 DC24V 電源</text>
+<text x="830" y="43" class="m" text-anchor="middle">＋24V</text>
+<text x="872" y="43" class="m" text-anchor="middle">0V</text>
+<line class="w" x1="830" y1="48" x2="830" y2="630"/>
+<line class="w" x1="872" y1="48" x2="872" y2="556"/>
+<text x="572" y="84" class="t" text-anchor="end">COM0</text>
+<circle class="dot" cx="580" cy="80" r="2.8"/>
+<path class="w" d="M580 80 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="80" r="2.8"/>
+<text x="590" y="75" class="m">接外部 0V</text>
+<text x="572" y="121" class="t" text-anchor="end">Y0</text>
+<circle class="dot" cx="580" cy="117" r="2.8"/>
+<line class="w" x1="580" y1="117" x2="680" y2="117"/>
+<line class="w" x1="724" y1="117" x2="830" y2="117"/>
+<circle class="dot" cx="830" cy="117" r="2.8"/>
+<text x="590" y="112">SOL A+</text>
+<rect class="d" x="680" y="110" width="44" height="14" rx="2"/>
+<path class="w" d="M672 117 V100 H696 M710 100 H732 V117"/>
+<path class="df" d="M696 94 L708 100 L696 106 Z"/>
+<line class="d" x1="709" y1="94" x2="709" y2="106"/>
+<circle class="dot" cx="672" cy="117" r="2.8"/>
+<circle class="dot" cx="732" cy="117" r="2.8"/>
+<text x="572" y="166" class="t" text-anchor="end">COM1</text>
+<circle class="dot" cx="580" cy="162" r="2.8"/>
+<path class="w" d="M580 162 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="162" r="2.8"/>
+<text x="590" y="157" class="m">接外部 0V</text>
+<text x="572" y="203" class="t" text-anchor="end">Y1</text>
+<circle class="dot" cx="580" cy="199" r="2.8"/>
+<line class="w" x1="580" y1="199" x2="680" y2="199"/>
+<line class="w" x1="724" y1="199" x2="830" y2="199"/>
+<circle class="dot" cx="830" cy="199" r="2.8"/>
+<text x="590" y="194">SOL A-</text>
+<rect class="d" x="680" y="192" width="44" height="14" rx="2"/>
+<path class="w" d="M672 199 V182 H696 M710 182 H732 V199"/>
+<path class="df" d="M696 176 L708 182 L696 188 Z"/>
+<line class="d" x1="709" y1="176" x2="709" y2="188"/>
+<circle class="dot" cx="672" cy="199" r="2.8"/>
+<circle class="dot" cx="732" cy="199" r="2.8"/>
+<text x="572" y="248" class="t" text-anchor="end">COM2</text>
+<circle class="dot" cx="580" cy="244" r="2.8"/>
+<path class="w" d="M580 244 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="244" r="2.8"/>
+<text x="590" y="239" class="m">接外部 0V</text>
+<text x="572" y="285" class="t" text-anchor="end">Y2</text>
+<circle class="dot" cx="580" cy="281" r="2.8"/>
+<line class="w" x1="580" y1="281" x2="680" y2="281"/>
+<line class="w" x1="724" y1="281" x2="830" y2="281"/>
+<circle class="dot" cx="830" cy="281" r="2.8"/>
+<text x="590" y="276">SOL B+</text>
+<rect class="d" x="680" y="274" width="44" height="14" rx="2"/>
+<path class="w" d="M672 281 V264 H696 M710 264 H732 V281"/>
+<path class="df" d="M696 258 L708 264 L696 270 Z"/>
+<line class="d" x1="709" y1="258" x2="709" y2="270"/>
+<circle class="dot" cx="672" cy="281" r="2.8"/>
+<circle class="dot" cx="732" cy="281" r="2.8"/>
+<text x="572" y="322" class="t" text-anchor="end">Y3</text>
+<circle class="dot" cx="580" cy="318" r="2.8"/>
+<line class="w" x1="580" y1="318" x2="680" y2="318"/>
+<line class="w" x1="724" y1="318" x2="830" y2="318"/>
+<circle class="dot" cx="830" cy="318" r="2.8"/>
+<text x="590" y="313">SOL B-</text>
+<rect class="d" x="680" y="311" width="44" height="14" rx="2"/>
+<path class="w" d="M672 318 V301 H696 M710 301 H732 V318"/>
+<path class="df" d="M696 295 L708 301 L696 307 Z"/>
+<line class="d" x1="709" y1="295" x2="709" y2="307"/>
+<circle class="dot" cx="672" cy="318" r="2.8"/>
+<circle class="dot" cx="732" cy="318" r="2.8"/>
+<text x="572" y="367" class="t" text-anchor="end">COM3</text>
+<circle class="dot" cx="580" cy="363" r="2.8"/>
+<text x="572" y="404" class="t" text-anchor="end">Y4</text>
+<circle class="dot" cx="580" cy="400" r="2.8"/>
+<line class="w" x1="580" y1="400" x2="680" y2="400"/>
+<line class="w" x1="724" y1="400" x2="830" y2="400"/>
+<circle class="dot" cx="830" cy="400" r="2.8"/>
+<text x="590" y="395">SOL C+</text>
+<rect class="d" x="680" y="393" width="44" height="14" rx="2"/>
+<path class="w" d="M672 400 V383 H696 M710 383 H732 V400"/>
+<path class="df" d="M696 377 L708 383 L696 389 Z"/>
+<line class="d" x1="709" y1="377" x2="709" y2="389"/>
+<circle class="dot" cx="672" cy="400" r="2.8"/>
+<circle class="dot" cx="732" cy="400" r="2.8"/>
+<text x="572" y="441" class="t" text-anchor="end">Y5</text>
+<circle class="dot" cx="580" cy="437" r="2.8"/>
+<line class="w" x1="580" y1="437" x2="680" y2="437"/>
+<line class="w" x1="724" y1="437" x2="830" y2="437"/>
+<circle class="dot" cx="830" cy="437" r="2.8"/>
+<text x="590" y="432">SOL C-</text>
+<rect class="d" x="680" y="430" width="44" height="14" rx="2"/>
+<path class="w" d="M672 437 V420 H696 M710 420 H732 V437"/>
+<path class="df" d="M696 414 L708 420 L696 426 Z"/>
+<line class="d" x1="709" y1="414" x2="709" y2="426"/>
+<circle class="dot" cx="672" cy="437" r="2.8"/>
+<circle class="dot" cx="732" cy="437" r="2.8"/>
+<text x="572" y="478" class="t" text-anchor="end">Y6</text>
+<circle class="dot" cx="580" cy="474" r="2.8"/>
+<line class="w" x1="580" y1="474" x2="680" y2="474"/>
+<line class="w" x1="724" y1="474" x2="830" y2="474"/>
+<circle class="dot" cx="830" cy="474" r="2.8"/>
+<text x="590" y="469">綠燈</text>
+<line class="w" x1="680" y1="474" x2="693" y2="474"/>
+<line class="w" x1="711" y1="474" x2="724" y2="474"/>
+<circle class="d" cx="702" cy="474" r="9"/>
+<path class="d" d="M695.65 467.65 l12.7 12.7 M708.35 467.65 l-12.7 12.7"/>
+<text x="572" y="515" class="t" text-anchor="end">Y7</text>
+<circle class="dot" cx="580" cy="511" r="2.8"/>
+<line class="w" x1="580" y1="511" x2="680" y2="511"/>
+<line class="w" x1="724" y1="511" x2="830" y2="511"/>
+<circle class="dot" cx="830" cy="511" r="2.8"/>
+<text x="590" y="506">紅燈</text>
+<line class="w" x1="680" y1="511" x2="693" y2="511"/>
+<line class="w" x1="711" y1="511" x2="724" y2="511"/>
+<circle class="d" cx="702" cy="511" r="9"/>
+<path class="d" d="M695.65 504.65 l12.7 12.7 M708.35 504.65 l-12.7 12.7"/>
+<text x="572" y="560" class="t" text-anchor="end">COM4</text>
+<circle class="dot" cx="580" cy="556" r="2.8"/>
+<path class="w" d="M580 556 H824 a6 6 0 0 1 12 0 H872"/>
+<circle class="dot" cx="872" cy="556" r="2.8"/>
+<text x="590" y="551" class="m">接外部 0V</text>
+<text x="572" y="597" class="t" text-anchor="end">Y10</text>
+<circle class="dot" cx="580" cy="593" r="2.8"/>
+<line class="w" x1="580" y1="593" x2="680" y2="593"/>
+<line class="w" x1="724" y1="593" x2="830" y2="593"/>
+<circle class="dot" cx="830" cy="593" r="2.8"/>
+<text x="590" y="588">黃燈</text>
+<line class="w" x1="680" y1="593" x2="693" y2="593"/>
+<line class="w" x1="711" y1="593" x2="724" y2="593"/>
+<circle class="d" cx="702" cy="593" r="9"/>
+<path class="d" d="M695.65 586.65 l12.7 12.7 M708.35 586.65 l-12.7 12.7"/>
+<text x="572" y="634" class="t" text-anchor="end">Y11</text>
+<circle class="dot" cx="580" cy="630" r="2.8"/>
+<line class="w" x1="580" y1="630" x2="680" y2="630"/>
+<line class="w" x1="724" y1="630" x2="830" y2="630"/>
+<circle class="dot" cx="830" cy="630" r="2.8"/>
+<text x="590" y="625">快速閥</text>
+<rect class="d" x="680" y="623" width="44" height="14" rx="2"/>
+<path class="w" d="M672 630 V613 H696 M710 613 H732 V630"/>
+<path class="df" d="M696 607 L708 613 L696 619 Z"/>
+<line class="d" x1="709" y1="607" x2="709" y2="619"/>
+<circle class="dot" cx="672" cy="630" r="2.8"/>
+<circle class="dot" cx="732" cy="630" r="2.8"/>
+<text x="590" y="664" class="m">負載接在 Y 和＋24V 之間；電磁閥並聯續流二極體</text>
+<text x="590" y="680" class="m">（陰極接＋24V）。COM5、Y12～Y17 未使用。</text>
+<text x="36" y="686" class="m">X17～X27 未使用。輸入元件一端接 X，另一端接 PLC 0V。</text>
+</svg></figure>
+      <details class="callout"><summary><b>看答案</b></summary>
+        <ol>
+          <li><b>S/S 的跳線接到 0V</b>，應該接 24V。S/S 接 0V 就變成源型輸入，可是元件另一端也接在 0V，所有輸入都不會 ON。</li>
+          <li><b>X11（a1）磁簧開關的棕線、藍線接反</b>。棕＋要接 X11，藍－要接 0V；接反時帶 LED 的二線式開關不會導通。</li>
+          <li><b>COM3 沒有接到外部 0V</b>，所以 Y4～Y7（C+、C-、綠燈、紅燈）都不會動作。程式和 PLC 的輸出燈看起來都對，負載就是不動。</li>
+          <li><b>X2 EMS 畫成 a 接點（常開）</b>，應該是 b 接點（常閉）。接常開時斷線就停不下來，急停功能做不出來。</li>
+        </ol>
+      </details>
     </section>
 
     <section id="p2">
@@ -137,7 +894,7 @@
 <footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機、勞動部技能檢定中心無關。</p></footer>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=a539c27dc9"></script>
-<script src="course.js?v=0bc6a2b68d"></script>
+<script src="course.js?v=9f95046c87"></script>
 <script src="common.js?v=20ae5aa5c1"></script>
 <script>
   document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
@@ -148,7 +905,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "86cc847726" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "766a2131e6" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

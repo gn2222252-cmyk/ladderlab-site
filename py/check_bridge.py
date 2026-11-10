@@ -12,7 +12,7 @@ from plc_csv import LadderError, load_csv, plc_info
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-def _items(text):
+def _items(text, cpu="FX3S"):
     """Accepts any instruction list (no exercise limits), keeps the editor line numbers."""
     out, errors = [], []
     for number, raw in enumerate(text.splitlines(), 1):
@@ -23,13 +23,13 @@ def _items(text):
         if w[0] == "END":
             continue
         out.append((number, w[0], [normalize(x) for x in w[1:]]))
-    _, _, errs = compile_il(text)
+    _, _, errs = compile_il(text, cpu[:4])
     errors = [{"line": n, "msg": m} for n, m in errs]
     return out, errors
 
 
 def check_text(text, cpu="FX3S"):
-    items, errors = _items(text)
+    items, errors = _items(text, cpu)
     report = analyze(items, cpu, _comments(text))
     report["errors"] = errors
     return json.dumps(report, ensure_ascii=False)

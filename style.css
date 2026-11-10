@@ -706,3 +706,6 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .dtd-move { fill: none; stroke: var(--accent, #2563eb); stroke-width: 3; stroke-linejoin: round; }
 .dtd-col { fill: transparent; }
 .dtd-col.on { fill: rgba(245, 158, 11, .18); stroke: #f59e0b; stroke-width: 2; }
+/* wiring diagrams on the drawing page */
+.wirefig { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow-x: auto; }
+.wirefig figcaption { font-size: 14px; color: var(--mute); margin-top: 6px; }

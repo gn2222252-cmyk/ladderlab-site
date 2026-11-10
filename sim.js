@@ -207,7 +207,7 @@ function applyPlc(model, ext, live) {
   try { localStorage.setItem("ll_plc", JSON.stringify(cfg)); } catch (e) { /* private mode */ }
   const io = plcIO(cfg);
   if (sb && isFree()) {
-    const r = JSON.parse(sb.set_io(JSON.stringify(io.xs), JSON.stringify(io.ys)));
+    const r = JSON.parse(sb.set_io(JSON.stringify(io.xs), JSON.stringify(io.ys), cfg.model));
     M.inputs = r.inputs; M.outputs = r.outputs;
     if (live) { Kit.setIO(io.xs, io.ys, io.marks, cfg.model, BOARD_NAMES); freeIO(); }
   }

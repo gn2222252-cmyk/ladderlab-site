@@ -98,9 +98,11 @@ class Sandbox(Practice):
     watched = ()
     running = True
 
-    def set_io(self, xs, ys):
-        """Free mode: the terminals of the PLC the learner picked (model plus expansion boards / blocks)."""
+    def set_io(self, xs, ys, model=""):
+        """Free mode: the terminals of the PLC the learner picked (model plus expansion boards / blocks).
+        model (e.g. FX3U-48M) sets which timer / counter numbers the program may use."""
         xs, ys = json.loads(xs), json.loads(ys)
+        self.ex["cpu"] = model[:4] if model[:4] in ("FX3S", "FX3G", "FX3U") else "FX3S"
         ok = re.compile(r"^[XY][0-7]{3}$")
         self.ex["inputs"] = [(x, "", "switch") for x in xs if ok.match(x) and x[0] == "X"]
         self.ex["outputs"] = [(y, "") for y in ys if ok.match(y) and y[0] == "Y"]

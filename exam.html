@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="86cc847726">
+<meta name="ll-version" content="766a2131e6">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>氣壓乙級、工業配線乙級 PLC 術科練習：線上模擬與自動評分 | LadderLab</title>
 <meta name="description" content="技術士技能檢定氣壓乙級（08000）、工業配線乙級（01300）PLC 試題的程式練習：手動步進、單一循環、連續循環、急停、復歸、停電，在瀏覽器的三支氣壓缸模擬上自動評分。">
-<link rel="stylesheet" href="style.css?v=fcceb47bcb">
+<link rel="stylesheet" href="style.css?v=86174b7c15">
 </head>
 <body class="static">
 <header class="top">
@@ -161,7 +161,7 @@
 <footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機、勞動部技能檢定中心無關。</p></footer>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=a539c27dc9"></script>
-<script src="course.js?v=0bc6a2b68d"></script>
+<script src="course.js?v=9f95046c87"></script>
 <script src="common.js?v=20ae5aa5c1"></script>
 <script src="waitlist.js?v=92656de277"></script>
 <script>renderWaitlist(document.getElementById("wl"), "exam", "其他 5 題做好時通知我");</script>
@@ -170,7 +170,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "86cc847726" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "766a2131e6" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

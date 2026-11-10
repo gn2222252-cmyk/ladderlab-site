@@ -43,7 +43,7 @@ class Practice(object):
 
     def compile(self, text):
         """Builds the ladder and restarts the machine. Returns errors and the rung layout."""
-        items, program, errors = compile_il(text)
+        items, program, errors = compile_il(text, self.ex.get("cpu", "FX3S"))
         if errors:
             self.rig = None
             return json.dumps({"errors": [{"line": n, "msg": m} for n, m in errors], "rungs": []}, ensure_ascii=False)
@@ -78,7 +78,7 @@ class Practice(object):
 
     def export_csv(self, text):
         """The learner's program as a GX Works2 style CSV (base64). Errors give an empty string."""
-        items, program, errors = compile_il(text)
+        items, program, errors = compile_il(text, self.ex.get("cpu", "FX3S"))
         if errors:
             return ""
         return base64.b64encode(csv_bytes([(op, ops) for _, op, ops in items])).decode("ascii")

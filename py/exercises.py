@@ -1864,7 +1864,7 @@ EXERCISES = [
                ("停電恢復後要先復歸", _E18_START + _E18_ST + [("wait", 2300), ("power_cycle", 1500), ("wait", 200), ("is", "Y006", 0)] + _E18_ST +
                 [("stays", "Y000", 0, 800), ("stays", "Y002", 0, 300)])]},
 
-    {"id": "E19", "lesson": "C2", "free": False, "title": "氣壓乙級 PLC 題：釋壓迴路（08000-1090202）",
+    {"id": "E19", "cpu": "FX3U", "lesson": "C2", "free": False, "title": "氣壓乙級 PLC 題：釋壓迴路（08000-1090202）",
      "plant": "pneu_relief", "exam": True, "latched": {"S": (500, 899), "M": (500, 1023), "D": (200, 511), "T": (246, 255), "C": (100, 199)},
      "task": "依 08000-1090202「PLC-氣壓控制－釋壓迴路」的操作功能（只練 PLC 程式）。I/O 和 E18 相同，不用 Y11。\n"
              "動作順序：A+ 到 a1 → B+ → A- → C+ → B- → A+ 到 a2 → A-、C- 同時回原點。\n"
@@ -1905,7 +1905,7 @@ EXERCISES = [
                 [("wait", 300), ("power_cycle", 300), ("toggles", "Y010", 1500, 2, 4)] + _E19_ST + [("stays", "Y003", 0, 300), ("stays", "Y001", 0, 300)] +
                 _E19_RST + [("wait", 4000), ("is", "Y006", 1), ("is", "X010", 1), ("is", "X013", 1)])]},
 
-    {"id": "E20", "lesson": "C3", "free": False, "title": "氣壓乙級 PLC 題：平衡迴路（08000-1090203）",
+    {"id": "E20", "cpu": "FX3U", "lesson": "C3", "free": False, "title": "氣壓乙級 PLC 題：平衡迴路（08000-1090203）",
      "plant": "pneu_q3", "exam": True,
      "task": "依 08000-1090203「PLC-氣壓控制－平衡迴路」的操作功能（只練 PLC 程式）。C 是負載缸：三個位置 c0、c1、c2，原點在 c2（上方）。\n"
              "動作順序：A+ → B+ → C- 到 c1 → A- → C- 到 c0 → A+ → B- → C+ 回 c2 → A-。\n"
@@ -1946,7 +1946,7 @@ EXERCISES = [
                ("復歸中黃燈閃爍，完成後可以啟動", _E20_EMS_RESET + [("toggles", "Y010", 1500, 2, 4), ("wait", 2500), ("is", "Y006", 1),
                                                              ("set", "X003", 1), ("wait", 100)] + _E20_ST + [("wait", 300), ("is", "Y007", 1)])]},
 
-    {"id": "E21", "lesson": "C4", "free": False, "title": "氣壓乙級 PLC 題：鎖固迴路（08000-1090204）",
+    {"id": "E21", "cpu": "FX3U", "lesson": "C4", "free": False, "title": "氣壓乙級 PLC 題：鎖固迴路（08000-1090204）",
      "plant": "pneu_q3", "exam": True,
      "task": "依 08000-1090204「PLC-氣壓控制－鎖固迴路」的操作功能（只練 PLC 程式）。I/O 同 E20（C 為負載缸，原點 c2）。\n"
              "動作順序：A+ → A- → C- 到 c1 → A+ → A- → C- 到 c0 → B+ → B- → C+ 回 c2。\n"
@@ -2389,8 +2389,28 @@ def _translate(msg):
     return msg
 
 
-def compile_il(text):
-    """(items, program, errors). errors: [(line number, message)]. Comments after ';' and blank lines are ignored."""
+# Timer / counter numbers each CPU family has (C200-C255 are reported separately: 32-bit and high-speed counters).
+# FX3S: T0-T137, C0-C31 (programming manual JY997D16601N 4.1, p.83-84). FX3G/FX3U go further; the engine stops at 255.
+CPU_TC = {"FX3S": {"T": 137, "C": 31}, "FX3G": {"T": 255, "C": 199}, "FX3U": {"T": 255, "C": 199}}
+
+
+def _cpu_range(o, cpu):
+    """A message when operand o is a timer / counter the CPU does not have, else None."""
+    m = re.match(r"^([TC])(\d+)$", o)
+    if not m:
+        return None
+    kind, n = m.group(1), int(m.group(2))
+    top = CPU_TC.get(cpu, CPU_TC["FX3S"])[kind]
+    if n <= top or (kind == "C" and n >= 200):
+        return None
+    return "%s：%s 沒有這個%s（%s 只有 %s0～%s%d，FX3G、FX3U 才有更多）。請改用範圍內的編號%s" % (
+        o, cpu, "計時器" if kind == "T" else "計數器", cpu, kind, kind, top,
+        "；自由練習可以在模擬器右邊換成 FX3U 機型" if cpu == "FX3S" else "")
+
+
+def compile_il(text, cpu="FX3S"):
+    """(items, program, errors). errors: [(line number, message)]. Comments after ';' and blank lines are ignored.
+    cpu: FX3S, FX3G or FX3U; timer and counter numbers outside that family are errors."""
     items, lines, errors = [], [], []
     for number, raw in enumerate(text.splitlines(), 1):
         code = raw.split(";", 1)[0].strip().upper()
@@ -2408,6 +2428,8 @@ def compile_il(text):
                 hint = "（X、Y 是八進位，沒有 8 和 9）" if re.match(r"^[XY]\d+$", o) else (
                     "：變址（V、Z）實機 FX3S 可以用，本站模擬器還不支援" if re.match(r"^\w+[VZ]\d$", o) or re.match(r"^[VZ]\d$", o) else "")
                 errors.append((number, "看不懂元件 %s%s" % (o, hint)))
+            elif _cpu_range(o, cpu):
+                errors.append((number, _cpu_range(o, cpu)))
         items.append(("ins", op, ops))
         lines.append(number)
     if errors:
@@ -2597,7 +2619,7 @@ def _run_steps(ex, rig, steps):
 
 
 def grade(ex, text):
-    items, program, errors = compile_il(text)
+    items, program, errors = compile_il(text, ex.get("cpu", "FX3S"))
     if errors:
         return {"compiled": False, "errors": [{"line": n, "msg": m} for n, m in errors], "results": [], "passed": False}
     used = " ".join(" ".join(i[2]) for i in items)
