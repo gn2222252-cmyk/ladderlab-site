@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="86cc847726">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全班進度表：合併學生的進度檔 | LadderLab</title>
+<meta name="description" content="老師一次選取多位學生匯出的 LadderLab 進度檔，在瀏覽器裡合併成「學生 × 章節、練習題」的全班進度表，可以複製到 Excel 或下載 CSV。檔案不會上傳。">
+<link rel="stylesheet" href="style.css?v=fcceb47bcb">
+<style>
+  .mtable td, .mtable th { text-align: center; white-space: nowrap; }
+  .mtable td:first-child, .mtable th:first-child { text-align: left; position: sticky; left: 0; background: var(--card); }
+  .mtable .ok { color: var(--on); font-weight: 700; }
+  .mtable .no { opacity: .35; }
+  .drop { border: 2px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center; margin: 12px 0; }
+  .drop.over { border-color: var(--on); }
+  .mbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+</style>
+</head>
+<body class="learn guide-page">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="contents">
+    <h3>給老師</h3>
+    <ol>
+      <li><a href="teacher.html">回教師頁</a></li>
+      <li><a href="#m-how">怎麼用</a></li>
+      <li><a href="#m-table">全班進度表</a></li>
+    </ol>
+    <p class="toc-note">檔案只在這個瀏覽器裡讀取，不會上傳到任何地方。關掉頁面就清掉了。</p>
+  </nav>
+
+  <main class="lesson guide">
+    <p class="crumb">給老師</p>
+    <h1>全班進度表：合併學生的進度檔</h1>
+    <section id="m-how">
+      <h2>怎麼用</h2>
+      <ol>
+        <li>學生在<a href="path.html">課程地圖</a>按「匯出進度」，把下載的 <code>.json</code> 檔改成「座號_姓名.json」交給你。</li>
+        <li>把全部檔案拖進下面的框，或按「選擇檔案」一次選多個。</li>
+        <li>表格出來後，按「複製表格」貼到 Excel 或 Google 試算表，或按「下載 CSV」。</li>
+      </ol>
+      <div class="callout warn">進度檔是學生端產生的，可以被修改，不能當作防作弊的成績證明。正式評量請以實機驗收為主，這張表用來看誰卡在哪裡。</div>
+    </section>
+    <section id="m-table">
+      <h2>全班進度表</h2>
+      <div class="drop" id="drop">把學生的進度檔拖到這裡，或 <label class="btnlink">選擇檔案<input type="file" id="files" accept=".json,application/json" multiple hidden></label></div>
+      <div class="mbar"><span id="count" class="why">還沒有檔案。</span>
+        <label class="check small"><input type="checkbox" id="showl"> 也列出每一課</label>
+        <button type="button" id="copy" disabled>複製表格</button><button type="button" id="csv" disabled>下載 CSV</button><button type="button" id="clear" disabled>清除</button></div>
+      <div class="table-box"><table class="gtable small mtable" id="table"></table></div>
+      <p class="why" id="bad"></p>
+    </section>
+  </main>
+</div>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="course_map.js?v=a539c27dc9"></script>
+<script src="course.js?v=0bc6a2b68d"></script>
+<script src="common.js?v=20ae5aa5c1"></script>
+<script>
+"use strict";
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const C = window.COURSE, KEYS = { L: "ll_done", E: "ll_pass", F: "ll_faults", A: "ll_aoi" };
+  const students = [];          // {name, saved, sets}
+  let rows = [];
+
+  function parse(name, text) {
+    const data = JSON.parse(text);
+    if (!data || data.ladderlab !== "progress" || typeof data.items !== "object") throw new Error("不是 LadderLab 進度檔");
+    const sets = {};
+    Object.keys(KEYS).forEach((k) => {
+      let v = [];
+      try { v = JSON.parse(data.items[KEYS[k]] || "[]"); } catch (e) { v = []; }
+      sets[k] = new Set(Array.isArray(v) ? v : []);
+    });
+    let g = {};
+    try { g = JSON.parse(data.items.ll_path_g || "{}"); } catch (e) { g = {}; }
+    sets.G = new Set(Object.keys(g || {}));
+    return { name: name.replace(/\.json$/i, ""), saved: data.saved || "", sets };
+  }
+  function columns() {
+    const cols = [];
+    C.chapters.forEach((ch) => {
+      cols.push({ kind: "chapter", ch, head: `第 ${ch.id} 章` });
+      ch.items.forEach((it) => {
+        if (it.k === "E" || ($("showl").checked && it.k === "L")) cols.push({ kind: "item", it, head: it.k === "E" ? it.id : it.no });
+      });
+    });
+    C.tracks.forEach((tr) => tr.items.forEach((it) => { if (it.k === "E") cols.push({ kind: "item", it, head: it.id }); }));
+    return cols;
+  }
+  function render() {
+    students.sort((a, b) => a.name.localeCompare(b.name, "zh-Hant", { numeric: true }));
+    const cols = columns();
+    const mainAll = C.chapters.reduce((n, ch) => n + ch.items.length, 0);
+    const head = ["學生", "存檔日", "主線完成"].concat(cols.map((c) => c.head));
+    rows = students.map((s) => {
+      const done = (it) => s.sets[it.k] && s.sets[it.k].has(it.id);
+      const main = C.chapters.reduce((n, ch) => n + ch.items.filter(done).length, 0);
+      return [s.name, s.saved, `${main}/${mainAll}`].concat(cols.map((c) => c.kind === "chapter"
+        ? `${c.ch.items.filter(done).length}/${c.ch.items.length}` : (done(c.it) ? "✓" : "")));
+    });
+    $("table").innerHTML = students.length ? `<thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>` +
+      rows.map((r) => `<tr>${r.map((v, i) => `<td class="${v === "✓" ? "ok" : (i > 2 && v === "" ? "no" : "")}">${esc(v || (i > 2 ? "·" : ""))}</td>`).join("")}</tr>`).join("") + "</tbody>" : "";
+    rows.unshift(head);
+    $("count").textContent = students.length ? `${students.length} 位學生` : "還沒有檔案。";
+    ["copy", "csv", "clear"].forEach((id) => { $(id).disabled = !students.length; });
+  }
+  async function add(files) {
+    const bad = [];
+    for (const f of files) {
+      try {
+        const s = parse(f.name, await f.text());
+        const i = students.findIndex((x) => x.name === s.name);
+        if (i >= 0) students[i] = s; else students.push(s);
+      } catch (e) { bad.push(f.name); }
+    }
+    $("bad").textContent = bad.length ? `讀不懂的檔案（不是課程地圖匯出的進度檔）：${bad.join("、")}` : "";
+    render();
+  }
+  $("files").addEventListener("change", (e) => { add([...e.target.files]); e.target.value = ""; });
+  const drop = $("drop");
+  drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); add([...e.dataTransfer.files]); });
+  $("showl").addEventListener("change", render);
+  $("clear").onclick = () => { students.length = 0; $("bad").textContent = ""; render(); };
+  $("copy").onclick = async () => {
+    const tsv = rows.map((r) => r.join("\t")).join("\n");
+    try { await navigator.clipboard.writeText(tsv); $("count").textContent = `已複製 ${students.length} 位學生，貼到 Excel 即可。`; }
+    catch (e) { window.prompt("複製下面的文字，貼到 Excel：", tsv); }
+  };
+  $("csv").onclick = () => {
+    const csv = "﻿" + rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = `LadderLab_全班進度_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  window.__mergeAdd = add;       // used by the page test
+})();
+</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "86cc847726" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
