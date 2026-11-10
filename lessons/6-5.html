@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>4.5 先畫步序再寫程式：從動作描述到 STL｜PLC 互動課程</title>
+<title>4.6 先畫步序再寫程式：從動作描述到 STL｜PLC 互動課程</title>
 <meta name="description" content="前面的步進程式都是現成的。自己寫的時候，先不要開軟體，照這四步在紙上做：">
 <link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-5.html">
-<meta property="og:title" content="4.5 先畫步序再寫程式：從動作描述到 STL｜PLC 互動課程">
+<meta property="og:title" content="4.6 先畫步序再寫程式：從動作描述到 STL｜PLC 互動課程">
 <meta property="og:description" content="前面的步進程式都是現成的。自己寫的時候，先不要開軟體，照這四步在紙上做：">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-5.html">
@@ -20,7 +20,7 @@
 </header>
 <main class="wide static-main">
 <p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 4 章　順序控制：步進 STL 與 SFC</p>
-<h1>4.5 先畫步序再寫程式：從動作描述到 STL</h1>
+<h1>4.6 先畫步序再寫程式：從動作描述到 STL</h1>
 <p class="lesson-goal"><b>本課目標</b>把動作描述整理成步序表，再照表寫出 STL。</p>
 <div class="text">前面的步進程式都是現成的。自己寫的時候，先不要開軟體，照這四步在紙上做：
 ① 寫下動作描述：「按啟動，推料缸 A 伸出，夾爪缸 B 伸出，B 縮回，A 縮回」。② 縮寫成 A+ B+ B- A-（氣壓乙級的寫法）。③ 一個動作就是一步，換步條件就是「這個動作做完」的感測器：A+ 做完是 A 的前端感測器 X3。④ 填成底下的步序表，再照表打 STL。
@@ -58,7 +58,7 @@ RET</pre>
 <p><a class="btnlink" href="../practice.html?il=LD%20M8002%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0AAND%20X002%0AAND%20X004%0ASET%20S20%0ASTL%20S20%0ASET%20Y000%0ALD%20X003%0ASET%20S21%0ASTL%20S21%0AOUT%20Y001%0ALD%20X005%0ASET%20S22%0ASTL%20S22%0ALD%20X004%0ASET%20S23%0ASTL%20S23%0ARST%20Y000%0ALD%20X002%0ASET%20S0%0ARET#FREE">只執行這段程式 ›</a></p>
 <div class="recap"><h3>重點整理</h3><ul><li>一個動作一步，換步條件是「這個動作完成」的感測器</li><li>單線圈電磁閥要保持的動作用 SET／RST</li><li>S0 加上原位檢查才准啟動</li></ul><p class="trap"><b>常見錯誤：</b>用計時器猜動作時間來換步；氣壓一不足就撞機。</p></div>
 <h2>預測看看</h2><div class="qz"><p>按啟動後 2 秒（A 已伸出、B 正在伸出），Y0 是？</p><details><summary>看答案</summary><p><b>ON</b>　A 在 S20 用 SET Y0，進 S21 之後還是保持 ON，A 不會縮回。</p></details></div><div class="qz"><p>按啟動後 2 秒，S21（B+）是？</p><details><summary>看答案</summary><p><b>ON</b>　A 大約 1.4 秒伸到底，X3 ON 就換到 S21；換步看的是感測器，不是時間。</p></details></div>
-<p class="pager"><a class="btnlink" href="6-2.html">‹ 上一課：4.4 步進的寫法規則</a> <a class="btnlink" href="6-4.html">下一課：4.6 一般階梯圖怎麼轉步進</a></p>
+<p class="pager"><a class="btnlink" href="6-6.html">‹ 上一課：4.5 步進的陷阱：OUT 和 SET、共用計時器、往回跳</a> <a class="btnlink" href="6-4.html">下一課：4.7 一般階梯圖怎麼轉步進</a></p>
 </main>
 <footer>
   <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>

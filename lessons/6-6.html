@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.5 步進的陷阱：OUT 和 SET、共用計時器、往回跳｜PLC 互動課程</title>
+<meta name="description" content="步進大多很直覺，但有三條規則不知道就會寫出「偶爾怪怪的」程式（三菱程式手冊 JY997D16601 第 35 章）。">
+<link rel="canonical" href="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-6.html">
+<meta property="og:title" content="4.5 步進的陷阱：OUT 和 SET、共用計時器、往回跳｜PLC 互動課程">
+<meta property="og:description" content="步進大多很直覺，但有三條規則不知道就會寫出「偶爾怪怪的」程式（三菱程式手冊 JY997D16601 第 35 章）。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/6-6.html">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "6-6 步進的陷阱：OUT 和 SET、共用計時器、往回跳", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
+</head>
+<body class="static">
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html" class="here">課程</a><a href="../practice.html">練習題</a><a href="../sim.html">模擬器</a><a href="../exam.html">技能檢定</a><a href="../check.html">程式健檢</a><a href="../ref/index.html">指令手冊</a></nav>
+</header>
+<main class="wide static-main">
+<p class="crumb"><a href="index.html">PLC 互動課程</a> · 第 4 章　順序控制：步進 STL 與 SFC</p>
+<h1>4.5 步進的陷阱：OUT 和 SET、共用計時器、往回跳</h1>
+<p class="lesson-goal"><b>本課目標</b>避開步進的三個陷阱：OUT／SET 的差別、相鄰步共用計時器、往回跳的寫法。</p>
+<div class="text">步進大多很直覺，但有三條規則不知道就會寫出「偶爾怪怪的」程式（三菱程式手冊 JY997D16601 第 35 章）。
+①離開步時，步裡 OUT 的輸出會自動 OFF，SET 的會保持，要 RST 才關。本課 S20 用 SET Y0 讓氣缸 A 伸出，離開 S20 仍然伸出，到 S22 才 RST；運轉燈 Y4 用 OUT，一進 S21 就熄。
+②相鄰的兩步不能用同一個計時器（手冊 35.1.7 節 p.763）：轉移那一圈計時器線圈不會斷，現在值不歸零，下一步一進來可能已經數完，條件立刻成立。不相鄰可以共用：本課 S21 和 S23 都用 T0，中間隔著 S22。注意：這個模擬器在換步時會把計時器清掉，所以看不出這個錯，實機會出錯，一定要照規則寫。
+③往回跳、跳步用 OUT S，往下一步用 SET S（手冊 35.2.4 節 p.788）。GX Works2 把 SFC 的跳躍箭頭轉成指令表就是 OUT S。本站前面幾課用 SET S0 回待機，在 FX 上動作相同，但要和 GX Works2 的 SFC 一致就用 OUT S。</div>
+<p><a class="btnlink go" href="../learn.html#6-6">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
+<div class="table-box"><table class="gtable"><thead><tr><th>規則</th><th>對</th><th>錯</th></tr></thead><tbody><tr><td>要保持的輸出</td><td>SET Y0 … 到別步 RST Y0</td><td>以為 OUT Y0 離開步還會留著</td></tr><tr><td>計時器</td><td>相鄰步用不同的 T；不相鄰可以共用</td><td>S21、S22 都寫 OUT T0</td></tr><tr><td>往回跳</td><td>OUT S0（和 SFC 一致）</td><td>—（SET S0 在 FX 上也會動，但和 SFC 不一致）</td></tr><tr><td>STL 後第一個指令</td><td>LD、SET、OUT …</td><td>MPS（手冊規定不行）</td></tr></tbody></table></div>
+<div class="notes">同一個輸出可以寫在不同的步（任一步作用時就輸出）；但在同一步寫兩次、或步進區外又寫一次，就是一般的雙線圈。
+轉移那一圈，前後兩步會同時作用一個掃描，所以不能同時 ON 的輸出，程式裡也要互鎖。
+同一步裡，寫了一條「LD 接點 → 輸出」之後，後面就不能再寫沒有接點的輸出；要嘛移到前面，要嘛前面加 LD M8000。</div>
+<h2>這一課的程式（指令表）</h2>
+<pre class="il">LD M8002
+ZRST S0 S30
+SET S0
+STL S0
+LD X000
+AND X002
+SET S20
+STL S20
+SET Y000
+OUT Y004
+LD X003
+SET S21
+STL S21
+OUT T0 K20
+LD T0
+SET S22
+STL S22
+RST Y000
+LD X002
+SET S23
+STL S23
+OUT T0 K10
+LD T0
+OUT S0
+RET</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20M8002%0AZRST%20S0%20S30%0ASET%20S0%0ASTL%20S0%0ALD%20X000%0AAND%20X002%0ASET%20S20%0ASTL%20S20%0ASET%20Y000%0AOUT%20Y004%0ALD%20X003%0ASET%20S21%0ASTL%20S21%0AOUT%20T0%20K20%0ALD%20T0%0ASET%20S22%0ASTL%20S22%0ARST%20Y000%0ALD%20X002%0ASET%20S23%0ASTL%20S23%0AOUT%20T0%20K10%0ALD%20T0%0AOUT%20S0%0ARET#FREE">只執行這段程式 ›</a></p>
+<div class="recap"><h3>重點整理</h3><ul><li>離開步 OUT 自動 OFF，SET 要自己 RST</li><li>相鄰步不能共用同一個計時器（手冊 35.1.7）</li><li>往回跳、跳步用 OUT S，往下一步用 SET S</li></ul><p class="trap"><b>常見錯誤：</b>相鄰兩步都寫 OUT T0，實機上第二步一進來就換步，好像沒停。</p></div>
+<h2>預測看看</h2><div class="qz"><p>按啟動後 2.5 秒（在 S21 前端停留中），Y4（運轉燈，S20 用 OUT）是？</p><details><summary>看答案</summary><p><b>OFF</b>　已經離開 S20，步裡 OUT 的輸出自動 OFF。</p></details></div><div class="qz"><p>同一時間，Y0（A 伸出，S20 用 SET）是？</p><details><summary>看答案</summary><p><b>ON</b>　SET 的輸出離開步也保持，到 S22 RST Y0 才關。</p></details></div>
+<p class="pager"><a class="btnlink" href="6-2.html">‹ 上一課：4.4 步進的寫法規則</a> <a class="btnlink" href="6-5.html">下一課：4.6 先畫步序再寫程式：從動作描述到 STL</a></p>
+</main>
+<footer>
+  <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>
+</footer>
+</body>
+</html>

@@ -45,6 +45,14 @@ window.COURSE = {
      "goal": "用串聯、並聯、常閉組合出「而且、或、不是」。"
     },
     {
+     "k": "L",
+     "id": "2-1",
+     "href": "learn.html#2-1",
+     "no": "1.4",
+     "label": "梯形圖怎麼寫成指令表：LD、AND、OR 和 ANB、ORB",
+     "goal": "看懂梯形圖對應的指令表，會寫 LD、AND、OR、ANB、ORB。"
+    },
+    {
      "k": "E",
      "id": "E1",
      "href": "practice.html#E1",
@@ -382,9 +390,17 @@ window.COURSE = {
     },
     {
      "k": "L",
+     "id": "6-6",
+     "href": "learn.html#6-6",
+     "no": "4.5",
+     "label": "步進的陷阱：OUT 和 SET、共用計時器、往回跳",
+     "goal": "避開步進的三個陷阱：OUT／SET 的差別、相鄰步共用計時器、往回跳的寫法。"
+    },
+    {
+     "k": "L",
      "id": "6-5",
      "href": "learn.html#6-5",
-     "no": "4.5",
+     "no": "4.6",
      "label": "先畫步序再寫程式：從動作描述到 STL",
      "goal": "把動作描述整理成步序表，再照表寫出 STL。"
     },
@@ -422,7 +438,7 @@ window.COURSE = {
      "k": "L",
      "id": "6-4",
      "href": "learn.html#6-4",
-     "no": "4.6",
+     "no": "4.7",
      "label": "一般階梯圖怎麼轉步進",
      "goal": "把一份自保持寫的流程，照五個步驟改寫成步進。"
     },
@@ -430,7 +446,7 @@ window.COURSE = {
      "k": "L",
      "id": "7",
      "href": "learn.html#7",
-     "no": "4.7",
+     "no": "4.8",
      "label": "兩條流程同時跑",
      "goal": "寫出並行分支與並行合併。"
     },
@@ -438,7 +454,7 @@ window.COURSE = {
      "k": "L",
      "id": "A7",
      "href": "learn.html#A7",
-     "no": "4.8",
+     "no": "4.9",
      "label": "步進的選擇分支：OK 和 NG",
      "goal": "寫出選擇分支：依條件只走其中一條。"
     },
@@ -482,7 +498,7 @@ window.COURSE = {
      "k": "L",
      "id": "6-3",
      "href": "learn.html#6-3",
-     "no": "4.9",
+     "no": "4.10",
      "label": "通用嗎？換廠牌怎麼辦",
      "goal": "知道 STL 是三菱專用，換廠牌時用步序暫存器寫同一件事。"
     },
