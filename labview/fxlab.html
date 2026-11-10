@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8e559639d7">
+<meta name="ll-version" content="8b316f9146">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FX 封包練習台：在瀏覽器裡跟模擬 PLC 對話 | LadderLab</title>
@@ -40,6 +40,9 @@
   .fx-mem tr.hit { background: rgba(245, 158, 11, .18); }
   .fx-tasks li { margin: 6px 0; }
   .fx-tasks li.done::marker { content: "✓ "; color: #15803d; }
+  .hbstate { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; }
+  .hbstate.good { border-color: #16a34a; color: #15803d; }
+  .hbstate.bad { border-color: #dc2626; color: #dc2626; }
   .fx-sum { font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.7; }
 </style>
 </head>
@@ -90,7 +93,9 @@
       </section>
       <section class="fx-card">
         <h2>4　模擬 PLC 的 D 暫存器</h2>
-        <p class="why">可以直接改值（十進位）。剛被讀寫過的那一列會亮起來。雙龍門專案用到的幾個先填了值。</p>
+        <p class="hbstate" id="hb"></p>
+        <p class="why">可以直接改值（十進位）。剛被讀寫過的那一列會亮起來。雙龍門專案用到的幾個先填了值。
+        這台 PLC 也會「自己動」：D106 寫進去會被清回 0，D106 = 4 會跑原點復歸（D202 = 10～13）；D240 是 HMI 心跳，3 秒沒變就算斷線。</p>
         <table class="fx-mem" id="mem"></table>
         <div class="fx-row"><label>加看 D <input type="number" id="addd" min="0" max="7999" value="200"></label><button type="button" id="addbtn">加入</button></div>
       </section>
@@ -109,13 +114,13 @@
   </section>
 </main>
 <footer><p>MELSEC 為三菱電機株式會社之商標，LabVIEW 為 NI 之商標。本站為獨立開發，與兩家公司無關。模擬 PLC 只實作本課程用到的 D 暫存器讀寫。</p></footer>
-<script src="fxlab.js?v=e7a316e78f"></script>
+<script src="fxlab.js?v=ba056d7821"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8e559639d7" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8b316f9146" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

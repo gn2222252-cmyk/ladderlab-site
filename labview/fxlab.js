@@ -103,6 +103,7 @@ checksum = sum of the ASCII codes after STX up to and including ETX, low 8 bits,
     { t: "讀 D200 起 30 個字（第 15 課分兩次讀的第一次）", ok: (r) => r.kind === "read" && r.d === 200 && r.words === 30 },
     { t: "讀 D230 起 12 個字（第二次）", ok: (r) => r.kind === "read" && r.d === 230 && r.words === 12 },
     { t: "寫 D110 = -5：負數在 16 位元裡是 FFFBh，封包資料寫成 FBFF", ok: (r) => r.kind === "write" && r.d === 110 && D[110] === 0xFFFB },
+    { t: "寫 D106 = 4（原點復歸），再連續讀 D200 起 3 個字，看 D202 走過 10～13（第 13 課）", ok: (r) => r.kind === "read" && r.d <= 202 && r.d + r.words > 202 && D[202] >= 10 && D[202] <= 13 },
   ];
   let done = new Set();
   try { done = new Set(JSON.parse(localStorage.getItem("ll_fxlab") || "[]")); } catch (e) { done = new Set(); }
@@ -145,6 +146,35 @@ checksum = sum of the ASCII codes after STX up to and including ETX, low 8 bits,
   $("tx").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); } });
   $("clearlog").onclick = () => { $("log").innerHTML = ""; };
 
+  /* ---------- a little machine behind the registers (lessons 13, 17, 19) ----------
+     D106 is a pulse command: the PLC takes it and clears it to 0. Home (D106 = 4) runs the homing steps D202 = 10..13.
+     D240 is the HMI heartbeat: the PLC calls the HMI lost when it has not changed for 3 s. */
+  let homing = 0, homeAt = 0, hbValue = D[240], hbAt = Date.now(), lastMem = "";
+  function tick() {
+    const now = Date.now();
+    if (D[106]) {
+      const cmd = D[106];
+      D[106] = 0;
+      note(`PLC 收到 D106 = ${cmd}，自己把 D106 清回 0。` + (cmd & 4 ? "原點復歸開始：D202 會從 10 走到 13。" : cmd & 1 ? "（本練習台只模擬原點復歸，Start 等命令只示範清 0。）" : ""));
+      if (cmd & 4) { homing = 10; homeAt = now; D[202] = 10; }
+    }
+    if (homing && now - homeAt > 1000) {
+      homeAt = now;
+      homing = homing < 13 ? homing + 1 : 0;
+      D[202] = homing;
+      if (!homing) note("原點復歸完成，D202 回到 0。");
+    }
+    if (D[240] !== hbValue) { hbValue = D[240]; hbAt = now; }
+    const lost = D[240] !== 0 && now - hbAt > 3000;
+    $("hb").textContent = D[240] === 0 ? "D240 = 0：HMI 離線（或還沒開始送心跳）"
+      : lost ? `D240 已經 ${((now - hbAt) / 1000).toFixed(0)} 秒沒變：PLC 判定 HMI 斷線（第 19 課）` : `D240 = ${D[240]}：心跳正常（3 秒內有變化）`;
+    $("hb").className = "hbstate " + (D[240] === 0 ? "" : lost ? "bad" : "good");
+    const mem = watch.map((d) => D[d]).join(",");
+    if (mem !== lastMem) { lastMem = mem; renderMem(); }
+  }
+  function note(t) { $("log").insertAdjacentHTML("afterbegin", `<div><span class="why">PLC：${esc(t)}</span></div>`); }
+  setInterval(tick, 200);
+
   build(); renderTasks(); renderMem();
-  window.FxLab = { plc, frame, sum, parseInput, send, D };     // for the page test
+  window.FxLab = { plc, frame, sum, parseInput, send, D, tick };     // for the page test
 })();
