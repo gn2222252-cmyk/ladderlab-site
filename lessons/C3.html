@@ -25,7 +25,7 @@
 <div class="text">多個來源可以提出動作請求，但實體 Y 輸出應有清楚的最後決策點。最後一層再檢查模式允許、限位、警報和相反方向，避免兩段程式各自直接控制同一個輸出。
 本課示範：自動前進和允許的手動前進先合併；正反方向同時請求時兩邊都禁止；警報或前限位也會封鎖前進。這是 P9 輸出區的教學縮小版。</div>
 <p><a class="btnlink go" href="../learn.html#C3">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
-<div class="table-box"><table class="gtable"><thead><tr><th>請求狀況</th><th>前進 Y0</th><th>後退 Y1</th></tr></thead><tbody><tr><td>自動前進且無封鎖</td><td>ON</td><td>OFF</td></tr><tr><td>手動前進但未允許</td><td>OFF</td><td>OFF</td></tr><tr><td>正反向同時請求</td><td>OFF</td><td>OFF</td></tr><tr><td>前限位或警報有效</td><td>OFF</td><td>依後退條件及互鎖判斷</td></tr></tbody></table></div>
+<div class="table-box"><table class="gtable"><thead><tr><th>請求狀況</th><th>前進 Y0</th><th>後退 Y1</th></tr></thead><tbody><tr><td>自動前進且無封鎖</td><td>ON</td><td>OFF</td></tr><tr><td>手動前進但未允許</td><td>OFF</td><td>OFF</td></tr><tr><td>正反向同時請求</td><td>OFF</td><td>OFF</td></tr><tr><td>前限位有效</td><td>OFF</td><td>依後退條件及互鎖判斷</td></tr><tr><td>警報有效</td><td>OFF</td><td>OFF</td></tr></tbody></table></div>
 
 <h2>這一課的程式（指令表）</h2>
 <pre class="il">LD X001

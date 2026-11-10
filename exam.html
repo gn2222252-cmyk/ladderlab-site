@@ -36,26 +36,26 @@
       <tr><td>安全</td><td>不可爆衝、相反動作不可同時</td><td>每個掃描檢查 A+／A-、B+／B-、C+／C- 不同時 ON</td></tr>
     </tbody></table></div>
 
-  <h2>練習用的 I/O 配置</h2>
-  <p>考場上由監評人員指定部分端子；練習時用固定配置（題目也要求 PLC 至少 24 入 16 出，比 FX3S-30M 的點數多，所以考場用的通常是較大的 PLC）：</p>
+  <h2>I/O 配置（照官方參考配置表）</h2>
+  <p>試題第 1～6 題（PLC 題）都附「PLC I/O 參考配置表」：<b>輸入 X0～X7、輸出 Y0～Y5 的位址是固定的</b>，考場上監評會再指定 2 處端子。<b>輸出入和指定的 I/O 編號不符就不及格</b>，所以練習時就照這張表。感測器（a0、a1…）和燈號試題沒有規定，下表 X10 以後、Y6 以後是本站的練習用配置，考場由你自己編排並畫進 I/O 表。題目要求 PLC 至少 24 入 16 出，比學校的 FX3S-30M 多，練習時模擬器可以選 FX3G-40M 或 FX3U-48M。（來源：氣壓乙級術科測試應檢參考資料 080002B15 各題的 PLC I/O 參考配置表）</p>
   <div class="table-box"><table class="gtable small">
     <thead><tr><th>輸入</th><th>用途</th><th>輸出</th><th>用途</th></tr></thead>
     <tbody>
-      <tr><td>X0</td><td>復歸／運轉選擇（ON＝運轉）</td><td>Y0、Y1</td><td>A+、A-（三口中封閥）</td></tr>
-      <tr><td>X1</td><td>復歸按鈕</td><td>Y2、Y3</td><td>B+、B-（雙線圈閥）</td></tr>
-      <tr><td>X2、X3、X4</td><td>手動步進、單一循環、連續循環</td><td>Y4、Y5</td><td>C+、C-（雙線圈閥）</td></tr>
-      <tr><td>X5、X6</td><td>啟動 ST、停止 STOP</td><td>Y6、Y7、Y10</td><td>綠燈、紅燈、黃燈</td></tr>
-      <tr><td>X7</td><td>緊急停止 EMS（常閉）</td><td>Y11</td><td>A 快速閥（變速）</td></tr>
-      <tr><td>X10～X16</td><td>a0、a1、a2、b0、b1、c0、c1</td><td></td><td></td></tr>
+      <tr><td>X0、X1</td><td>啟動 ST、停止 STOP</td><td>Y0、Y1</td><td>A+、A-（三口中封閥）</td></tr>
+      <tr><td>X2</td><td>緊急停止 EMS（常閉）</td><td>Y2、Y3</td><td>B+、B-（雙線圈閥）</td></tr>
+      <tr><td>X3</td><td>復歸／運轉選擇（ON＝運轉）</td><td>Y4、Y5</td><td>C+、C-（雙線圈閥）；第 5、6 題是 Y4＝V+（真空），沒有 C 缸</td></tr>
+      <tr><td>X4</td><td>復歸按鈕</td><td>Y6、Y7、Y10</td><td>綠燈、紅燈、黃燈（練習用）</td></tr>
+      <tr><td>X5、X6、X7</td><td>手動步進、單一循環、連續循環</td><td>Y11</td><td>A 快速閥（變速，練習用）</td></tr>
+      <tr><td>X10～X16</td><td>a0、a1、a2、b0、b1、c0、c1（練習用）</td><td></td><td></td></tr>
     </tbody></table></div>
 
   <h2>PLC 試題</h2>
   <div class="features">
     <a class="feat" href="practice.html#E18"><b>08000-1090201 變速迴路</b><span>可練習：13 項自動評分（動作順序、三種模式、停止、急停、復歸、停電、互鎖）</span></a>
-    <a class="feat" href="practice.html#E19"><b>08000-1090202 釋壓迴路</b><span>可練習：8 項自動評分。重點是停電後「接著做」：步序要放在停電保持區（S500～、M500～）</span></a>
+    <a class="feat" href="practice.html#E19"><b>08000-1090202 釋壓迴路</b><span>可練習：8 項自動評分。重點是停電後「接著做」：步序要放在停電保持區（這題用 FX3U 的範圍：S500～、M500～）</span></a>
     <a class="feat" href="practice.html#E20"><b>08000-1090203 平衡迴路</b><span>可練習：9 項自動評分。重點是急停時負載缸 C 依步驟退回或就地停止，以及用輸出仲裁避免雙線圈</span></a>
     <a class="feat" href="practice.html#E21"><b>08000-1090204 鎖固迴路</b><span>可練習：8 項自動評分。重點是急停分兩種：前段暫停後按啟動接著做、後段要復歸（B → C）</span></a>
-    <div class="feat muted"><b>08000-1090205、06 判別、移載迴路</b><span>題意確認中：X-Y 取放、料件高度判別、出料槽有料警報、真空蓄壓。題目沒有寫明 B 缸 b1、b2 兩個下降位置各用在哪種料件，確認後才會上架，避免練錯。</span></div>
+    <div class="feat muted"><b>08000-1090205、06 判別、移載迴路</b><span>題意確認中（試題的 PLC 題只有第 1～6 題；第 7～12 題是機械-氣壓和電氣-氣壓控制，不用 PLC）：X-Y 取放、料件高度判別、出料槽有料警報、真空蓄壓。題目沒有寫明 B 缸 b1、b2 兩個下降位置各用在哪種料件，確認後才會上架，避免練錯。</span></div>
   </div>
 
   <h2 id="iw">工業配線乙級（01300）第一站：PLC 控制</h2>

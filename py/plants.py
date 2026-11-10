@@ -179,7 +179,7 @@ class PneuABC(Plant):
             self.cdir = 1
         elif self.y(5) and not self.y(4):
             self.cdir = -1
-        if not (self.relief and not self.plc.x_in[7]):     # X7 (NC) OFF = emergency stop pressed
+        if not (self.relief and not self.plc.x_in[2]):     # X2 EMS (NC) OFF = emergency stop pressed (official I/O table)
             self.b = min(1.0, max(0.0, self.b + self.bdir * s))
             self.c = min(1.0, max(0.0, self.c + self.cdir * s))
         self.apply()
