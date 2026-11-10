@@ -15,11 +15,11 @@ import re
 
 from plc_csv import COMPARE_RE, PULSE_FORMS, check_program, LadderError, timer_unit
 
-M_SIZE = 8256
-D_SIZE = 8000
+M_SIZE = 8512
+D_SIZE = 8512                 # D8140/D8142: current position of the Y0/Y1 pulse outputs
 S_SIZE = 1000
 OUTPUT_OPS = ("OUT", "SET", "RST", "PLS", "PLF", "MOV", "ADD", "SUB", "INC", "CMP", "ZCP", "ZRST",
-              "DEC", "MUL", "DIV", "ALT", "MC", "SFTL", "SFTR", "ROL", "ROR") + tuple(sorted(PULSE_FORMS))
+              "DEC", "MUL", "DIV", "ALT", "MC", "SFTL", "SFTR", "ROL", "ROR", "DRVI", "DRVA") + tuple(sorted(PULSE_FORMS))
 
 
 def wrap16(v):
@@ -494,6 +494,51 @@ class PLC(object):
                     bits = fill + bits[:n1 - n2] if left else bits[n2:] + fill
                     for i, v in enumerate(bits):
                         dtab[dst[1] + i] = v
+                self.fresh = True
+            return fn
+        if op in ("DRVI", "DRVA"):
+            # FX3S positioning, simplified: DRVI pulses freq Y000|Y001 dir_output (DRVA: absolute target).
+            # While the drive contact is ON the current position (D8140 for Y0, D8142 for Y1) moves toward the target at
+            # freq pulses per second; the pulse output shows ON while it moves, the direction output is ON for forward.
+            # M8029 (execution complete) is ON in the scans after the target is reached; the contact going OFF stops
+            # the pulses and the next ON starts again (DRVI from the position reached).
+            amount, freq = self._word_get(ops[0]), self._word_get(ops[1])
+            pk, pn = self._split(ops[2])
+            dk, dn = self._split(ops[3])
+            if pk != "Y" or pn not in (0, 1) or dk != "Y":
+                raise LadderError("%s needs Y000 or Y001 as pulse output and a Y as direction" % op)
+            reg, busy = 8140 + 2 * pn, 8340 + 10 * pn
+            st = {"run": False, "target": 0, "f": 0.0}
+            relative = op == "DRVI"
+
+            def fn():
+                if not self.acc:
+                    if st["run"]:
+                        self.y[pn] = 0
+                        self.m[busy] = 0
+                    st["run"] = False
+                    self.m[8029] = 0
+                    self.fresh = True
+                    return
+                pos = self.d[reg]
+                if not st["run"]:
+                    st["run"] = True
+                    st["target"] = wrap16(pos + amount()) if relative else amount()
+                    st["f"] = float(pos)
+                target, hz = st["target"], max(10, abs(freq()))
+                if pos == target:
+                    self.y[pn] = 0
+                    self.m[busy] = 0
+                    self.m[8029] = 1
+                else:
+                    step = hz * self._dt / 1000.0
+                    forward = target > pos
+                    st["f"] = min(target, st["f"] + step) if forward else max(target, st["f"] - step)
+                    self.d[reg] = int(round(st["f"])) if abs(st["f"] - target) > 0.5 else target
+                    self.y[pn] = 1
+                    self.y[dn] = 1 if forward else 0
+                    self.m[busy] = 1
+                    self.m[8029] = 0
                 self.fresh = True
             return fn
         if op in ("ROL", "ROR"):                    # 16-bit rotate of D or K4Y/K4M by n bits

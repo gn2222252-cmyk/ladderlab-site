@@ -351,8 +351,106 @@ Q3_CYL = [
      "marks": [(0.0, 12, "c0"), (0.5, 13, "c1"), (1.0, 14, "c2")]},
 ]
 
+class Sorter(Plant):
+    """Sorting conveyor. Y0 runs the belt (0.25 of its length per second). X5 (button) puts a part on the left end;
+    parts alternate metal / plastic. X0 entry photo eye, X1 metal sensor (inductive, metal only), X2 photo eye in front
+    of the pusher. Y1 pushes (spring return, 0.4 s each way): X3 pusher back, X4 pusher out. A part in front of the
+    pusher when it is out goes to bin B; a part reaching the right end goes to bin A."""
+    kind = "sorter"
+    faults = [("eye_dirty", "推料前的光電 X2 髒污（看不到工件）")]
+    ENTRY, METAL, PUSH, LENGTH = 0.12, 0.38, 0.66, 0.07
+
+    def __init__(self, plc):
+        self.parts = []                      # [{"x": 0..1, "metal": bool, "id": n}]
+        self.push = 0.0                      # 0 back, 1 out
+        self.bin_a, self.bin_b, self.wrong = [], [], 0
+        self.n = 0
+        self._last_feed = 0
+        Plant.__init__(self, plc)
+
+    def _near(self, at, metal_only=False):
+        return any(abs(p["x"] - at) < self.LENGTH / 2 and (p["metal"] or not metal_only) for p in self.parts)
+
+    def step(self, ms):
+        feed = self.plc.x_in[5]
+        if feed and not self._last_feed and not any(p["x"] < 0.08 for p in self.parts):
+            self.parts.append({"x": 0.0, "metal": self.n % 2 == 0, "id": self.n})
+            self.n += 1
+        self._last_feed = feed
+        if self.y(0):
+            for p in self.parts:
+                p["x"] += 0.25 * ms / 1000.0
+        target = 1.0 if self.y(1) else 0.0
+        rate = ms / 400.0
+        self.push = min(target, self.push + rate) if target > self.push else max(target, self.push - rate)
+        keep = []
+        for p in self.parts:
+            if self.push > 0.6 and abs(p["x"] - self.PUSH) < self.LENGTH:
+                self.bin_b.append(p["metal"])
+                if not p["metal"]:
+                    self.wrong += 1
+            elif p["x"] >= 1.0:
+                self.bin_a.append(p["metal"])
+                if p["metal"]:
+                    self.wrong += 1
+            else:
+                keep.append(p)
+        self.parts = keep
+        self.apply()
+
+    def apply(self):
+        self.x(0, self._near(self.ENTRY))
+        self.x(1, self._near(self.METAL, metal_only=True))
+        self.x(2, self._near(self.PUSH) and "eye_dirty" not in self.broken)
+        self.x(3, self.push <= 0.02)
+        self.x(4, self.push >= 0.98)
+
+    def state(self):
+        return {"type": self.kind, "parts": [[round(p["x"], 3), int(p["metal"])] for p in self.parts], "push": self.push,
+                "run": self.y(0), "a": len(self.bin_a), "b": len(self.bin_b), "wrong": self.wrong,
+                "sens": [self.plc.x_in[i] for i in range(5)], "marks": [self.ENTRY, self.METAL, self.PUSH]}
+
+
+class Stepper(Plant):
+    """Ball-screw slide driven by a stepper motor. Y0 is the pulse output (DRVI / DRVA), Y4 the direction.
+    100 pulses = 1 mm, travel 0..200 mm. The pulse counter D8140 starts at 0 but the slide starts somewhere else,
+    so the program has to home first: X0 home sensor (slide at 0..0.5 mm), X1 forward limit (198 mm and more),
+    X2 work position sensor (98.5..101.5 mm). The slide stops at the mechanical ends; driving into an end is a crash."""
+    kind = "stepper"
+    faults = [("lost_steps", "馬達失步（實際只走了一半的脈波）")]
+
+    def __init__(self, plc, start_mm=63.0):
+        self.mm = start_mm
+        self.last = 0
+        self.crash = False
+        Plant.__init__(self, plc)
+
+    def step(self, ms):
+        now = self.plc.d[8140]
+        delta = now - self.last
+        self.last = now
+        if delta and self.y(0):              # only pulses move the motor; MOV K0 D8140 just rewrites the counter
+            move = delta / 100.0
+            if "lost_steps" in self.broken:
+                move /= 2.0
+            new = self.mm + move
+            if new < 0.0 or new > 200.0:
+                self.crash = True
+            self.mm = min(200.0, max(0.0, new))
+        self.apply()
+
+    def apply(self):
+        self.x(0, self.mm <= 0.5)
+        self.x(1, self.mm >= 198.0)
+        self.x(2, 98.5 <= self.mm <= 101.5)
+
+    def state(self):
+        return {"type": self.kind, "mm": round(self.mm, 2), "counter": self.plc.d[8140], "pulse": self.y(0), "dir": self.y(4),
+                "crash": self.crash, "sens": [self.plc.x_in[0], self.plc.x_in[1], self.plc.x_in[2]]}
+
+
 PLANTS = {"cylinder": Cylinder, "tank": Tank, "door": Door, "conveyor": Conveyor, "pneu": PneuABC, "door2": ExamDoor, "belt3": Belt3, "sump": Sump, "pumps2": Pumps2,
-          "pneu_relief": lambda plc: PneuABC(plc, relief=True), "pneu_q3": lambda plc: PneuSet(plc, Q3_CYL)}
+          "sorter": Sorter, "stepper": Stepper, "pneu_relief": lambda plc: PneuABC(plc, relief=True), "pneu_q3": lambda plc: PneuSet(plc, Q3_CYL)}
 
 
 def make(kind, plc):

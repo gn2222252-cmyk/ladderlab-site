@@ -17,7 +17,7 @@ HEADER = ('﻿"(未設定工程)"\r\n'
           '"空白欄"\t"PI陳述式"\t"便箋"\r\n')
 
 COMPARE_RE = re.compile(r"^(LD|AND|OR)(=|<>|>=|<=|>|<)$")
-SPECIAL_BITS = ("M8000", "M8002", "M8012", "M8013", "M8116", "M8117")
+SPECIAL_BITS = ("M8000", "M8002", "M8012", "M8013", "M8116", "M8117", "M8029", "M8340", "M8350")
 ALLOWED = {
     "LD", "LDI", "AND", "ANI", "OR", "ORI", "ANB", "ORB", "MPS", "MRD", "MPP",
     "OUT", "SET", "RST", "PLS", "PLF", "MOV", "ADD", "SUB", "INC", "CMP", "ZCP", "END",
@@ -25,6 +25,7 @@ ALLOWED = {
     "LDP", "LDF", "ANDP", "ANDF", "ORP", "ORF", "DEC", "MUL", "DIV", "ALT", "MC", "MCR",
     "MOVP", "ADDP", "SUBP", "INCP", "DECP", "MULP", "DIVP", "CMPP", "ZCPP", "ALTP", "ZRSTP",
     "SFTL", "SFTR", "ROL", "ROR", "SFTLP", "SFTRP", "ROLP", "RORP",
+    "DRVI", "DRVA",
 }
 PULSE_FORMS = {"MOVP", "ADDP", "SUBP", "INCP", "DECP", "MULP", "DIVP", "CMPP", "ZCPP", "ALTP", "ZRSTP",
                "SFTLP", "SFTRP", "ROLP", "RORP"}
@@ -45,7 +46,7 @@ OPERANDS = {"LD": 1, "LDI": 1, "AND": 1, "ANI": 1, "OR": 1, "ORI": 1, "ANB": 0, 
             "MOV": 2, "ADD": 3, "SUB": 3, "INC": 1, "CMP": 3, "ZCP": 4, "END": 0,
             "STL": 1, "RET": 0, "ZRST": 2,
             "LDP": 1, "LDF": 1, "ANDP": 1, "ANDF": 1, "ORP": 1, "ORF": 1, "DEC": 1, "MUL": 3, "DIV": 3, "ALT": 1, "MC": 2, "MCR": 1,
-            "SFTL": 4, "SFTR": 4, "ROL": 2, "ROR": 2}
+            "SFTL": 4, "SFTR": 4, "ROL": 2, "ROR": 2, "DRVI": 4, "DRVA": 4}
 
 
 class LadderError(Exception):
@@ -76,6 +77,8 @@ def instruction_steps(op, operands):
         return 9
     if op in ("SFTL", "SFTR"):
         return 9
+    if op in ("DRVI", "DRVA"):
+        return 17
     if op in ("ROL", "ROR"):
         return 5
     if op in ("PLS", "PLF"):
@@ -218,7 +221,7 @@ def check_program(program):
             if in_stl:
                 errors.append("step %d: END inside STL, RET is missing" % at)
         elif op in ("OUT", "SET", "RST", "PLS", "PLF", "MOV", "ADD", "SUB", "INC", "CMP", "ZCP", "ZRST",
-                    "DEC", "MUL", "DIV", "ALT", "MC", "SFTL", "SFTR", "ROL", "ROR") or op in PULSE_FORMS:
+                    "DEC", "MUL", "DIV", "ALT", "MC", "SFTL", "SFTR", "ROL", "ROR", "DRVI", "DRVA") or op in PULSE_FORMS:
             if blocks:
                 errors.append("step %d: %s with %d unmerged blocks" % (at, op, blocks))
                 blocks = 0

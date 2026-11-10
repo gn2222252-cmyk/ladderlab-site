@@ -480,3 +480,49 @@ main.wide{max-width:1180px;margin:0 auto;padding:0 16px 30px}
 .shot figcaption{font-size:14px;color:var(--mute);margin-top:5px;line-height:1.5}
 kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;border-radius:5px;background:var(--card);padding:0 6px;font:600 .88em/1.5 ui-monospace,Consolas,monospace;white-space:nowrap}
 .gtable th[colspan]{background:var(--onbg);text-align:left}
+/* ---- simulator page and graphical editors ---- */
+.sim-main{max-width:1500px;margin:0 auto;padding:12px 16px}
+.sim-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sim-tabs,.sim-modes{display:inline-flex;gap:4px}
+.sim-tabs button{border:1px solid var(--line);background:var(--card);padding:5px 14px;border-radius:6px;cursor:pointer;font:inherit}
+.sim-tabs button.here,.sim-modes .here{background:var(--on);color:#fff;border-color:var(--on)}
+.sim-desc{color:var(--mute);margin:8px 0}
+.sim-grid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:14px;align-items:start}
+.sim-state{font-size:14px;color:var(--mute);margin-bottom:6px}
+.sim-side .box{margin-bottom:10px}
+#il{width:100%;font:14px/1.5 Consolas,monospace;border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--card);color:var(--ink)}
+.sim-help{max-width:900px;margin-top:20px}
+@media (max-width:900px){.sim-grid{grid-template-columns:1fr}}
+.ledit{border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.le-bar,.sf-bar{display:flex;flex-wrap:wrap;gap:3px;padding:6px;border-bottom:1px solid var(--line);background:var(--bg)}
+.le-b{display:flex;flex-direction:column;align-items:center;min-width:46px;padding:2px 4px;border:1px solid var(--line);border-radius:5px;background:var(--card);cursor:pointer;color:var(--ink)}
+.le-b b{font:600 13px Consolas,monospace}.le-b small{font-size:10px;color:var(--mute)}
+.le-b:hover{border-color:var(--on)}
+.le-wrap{overflow:auto;max-height:560px;outline:none;position:relative}
+.le-wrap:focus{box-shadow:inset 0 0 0 2px var(--onbg)}
+.le-svg{position:relative}
+.le-svg svg{display:block;font-family:Consolas,monospace}
+.le-bg{fill:transparent}.le-rung.dirty .le-bg{fill:rgba(140,148,166,.18)}.le-rung.err .le-bg{fill:rgba(198,40,40,.12)}
+.le-cell{fill:transparent;cursor:pointer}.le-cell:hover{fill:rgba(30,111,255,.06)}
+.le-w{stroke:var(--ink);stroke-width:1.6;fill:none}.le-rail{stroke:var(--ink);stroke-width:3}
+.le-box{fill:var(--card);stroke:var(--ink);stroke-width:1.4}
+.le-t{font-size:12px;fill:var(--ink);text-anchor:middle}.le-c{font-size:10px;fill:var(--mute);text-anchor:middle}
+.le-no{font-size:11px;fill:var(--mute)}
+.le-cur{fill:none;stroke:#1e3fd8;stroke-width:2.5}
+.le-help{font-size:13px;color:var(--mute);margin:6px 10px}
+.le-dlg{position:absolute;z-index:5;background:var(--card);border:1px solid var(--rail);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:13px}
+.le-dlg-h{background:var(--bg);padding:3px 8px;border-bottom:1px solid var(--line)}
+.le-dlg-r{display:flex;gap:4px;padding:6px}.le-dlg-r input{width:150px;font:13px Consolas,monospace}
+.sfce{border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.sf-grid{display:grid;grid-template-columns:230px minmax(0,1fr);gap:10px;padding:8px}
+.sf-chart{display:flex;flex-direction:column;align-items:stretch;gap:2px}
+.sf-step{border:2px solid var(--ink);border-radius:3px;padding:6px 8px;cursor:pointer;background:var(--card)}
+.sf-step.init{box-shadow:inset 0 0 0 3px var(--card),inset 0 0 0 5px var(--ink)}
+.sf-step small,.sf-tran small{display:block;color:var(--mute);font-size:11px}
+.sf-step.sel,.sf-tran.sel{background:var(--onbg);border-color:var(--on)}
+.sf-tran{margin-left:18px;border-left:2px solid var(--ink);padding:6px 8px;cursor:pointer;font-size:13px;position:relative}
+.sf-tran .bar{position:absolute;left:-9px;top:14px;width:16px;height:3px;background:var(--ink)}
+.sf-note{font-size:11px;color:var(--warn);margin-left:18px}
+.sf-form{font-size:14px;margin-bottom:6px}.sf-ck{margin-right:8px;white-space:nowrap}
+.sf-zoom-h{font-weight:600;font-size:14px;margin:6px 0}
+@media (max-width:700px){.sf-grid{grid-template-columns:1fr}}

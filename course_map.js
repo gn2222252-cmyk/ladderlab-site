@@ -58,6 +58,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "sim.html#lamp",
+     "href": "sim.html#lamp",
+     "label": "模擬器：用梯形圖畫第一個程式"
+    },
+    {
+     "k": "G",
      "id": "review.html#ch1",
      "href": "review.html#ch1",
      "label": "第 1 章 章末小考"
@@ -447,6 +453,12 @@ window.COURSE = {
      "label": "練習 E13 鑽床：並行分支與選擇分支（SFC）"
     },
     {
+     "k": "G",
+     "id": "sim.html#cylinder",
+     "href": "sim.html#cylinder",
+     "label": "模擬器：用 SFC 畫氣缸取放"
+    },
+    {
      "k": "L",
      "id": "6-3",
      "href": "learn.html#6-3",
@@ -544,6 +556,18 @@ window.COURSE = {
      "no": "5.8",
      "label": "輸出仲裁：自動與手動最後都經過互鎖",
      "goal": "把自動和手動的請求集中到一個輸出段，再統一加互鎖。"
+    },
+    {
+     "k": "G",
+     "id": "sim.html#sorter",
+     "href": "sim.html#sorter",
+     "label": "模擬器：輸送帶分料"
+    },
+    {
+     "k": "G",
+     "id": "sim.html#stepper",
+     "href": "sim.html#stepper",
+     "label": "模擬器：步進馬達定位（DRVI／DRVA）"
     },
     {
      "k": "G",

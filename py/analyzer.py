@@ -104,6 +104,13 @@ def analyze(items, cpu="FX3S", comments=None):
             if len(ops) > 1 and DEV.match(ops[1]):
                 ref(ops[1], "read", line)
             continue
+        if op in ("DRVI", "DRVA"):
+            for o in ops[:2]:
+                if DEV.match(o):
+                    ref(o, "read", line)
+            for o in ops[2:]:
+                ref(o, "write", line, op, in_stl)
+            continue
         if op in ("SFTL", "SFTR"):
             m = DEV.match(ops[1])
             if DEV.match(ops[0]):

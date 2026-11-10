@@ -130,5 +130,38 @@ function drawPlant(ctx, p) {
     ctx.fillStyle = p.sensor ? cssVar("--on") : cssVar("--line"); ctx.beginPath(); ctx.arc(sx, y + 26, 7, 0, 7); ctx.fill(); txt("X2", sx - 6, y + 46);
     ctx.fillStyle = p.full_lamp ? "#ffcc33" : cssVar("--line"); ctx.beginPath(); ctx.arc(230, 30, 12, 0, 7); ctx.fill(); txt("滿箱 Y1", 200, 58);
     txt((p.run ? "運轉中　" : "停止　") + "已通過 " + p.passed + " 個", 10, 30, cssVar("--ink"), 13);
+  } else if (p.type === "sorter") {
+    const x0 = 14, x1 = 236, y = 96, L = x1 - x0, X = (f) => x0 + f * L;
+    ctx.fillStyle = cssVar("--belt"); ctx.fillRect(x0, y, L, 16);
+    for (let k = 0; k < 12; k++) { ctx.fillStyle = cssVar("--rail"); ctx.fillRect(x0 + k * (L / 12), y + 16, 2, 6); }
+    ctx.fillStyle = p.run ? "#2fbf5b" : cssVar("--line"); ctx.beginPath(); ctx.arc(x0 + 4, y + 30, 7, 0, 7); ctx.fill(); txt("Y0 馬達", x0 + 14, y + 34);
+    p.parts.forEach(([f, metal]) => { ctx.fillStyle = metal ? "#9aa4b4" : "#e8833a"; ctx.fillRect(X(f) - 9, y - 16, 18, 16); if (metal) { ctx.fillStyle = "#5b6576"; ctx.fillRect(X(f) - 9, y - 16, 18, 3); } });
+    [["X0", p.marks[0], p.sens[0], "入口"], ["X1", p.marks[1], p.sens[1], "金屬"], ["X2", p.marks[2], p.sens[2], "推料前"]].forEach(([n, f, on, t]) => {
+      ctx.fillStyle = on ? cssVar("--on") : cssVar("--line"); ctx.beginPath(); ctx.arc(X(f), y - 30, 6, 0, 7); ctx.fill();
+      ctx.strokeStyle = on ? cssVar("--on") : cssVar("--line"); ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(X(f), y - 24); ctx.lineTo(X(f), y); ctx.stroke(); ctx.setLineDash([]);
+      txt(n + " " + t, X(f) - 16, y - 40);
+    });
+    const px = X(p.marks[2]), reach = 10 + p.push * 34;
+    ctx.fillStyle = cssVar("--rail"); ctx.fillRect(px - 12, y + 34 + (44 - reach), 24, 8); ctx.fillRect(px - 3, y + 34 + (44 - reach) + 8, 6, reach);
+    ctx.fillStyle = p.sens[3] ? cssVar("--on") : cssVar("--line"); ctx.fillRect(px + 16, y + 70, 8, 8); txt("X3", px + 26, y + 78);
+    ctx.fillStyle = p.sens[4] ? cssVar("--on") : cssVar("--line"); ctx.fillRect(px + 16, y + 56, 8, 8); txt("X4", px + 26, y + 64);
+    txt("Y1 推料", px - 60, y + 78);
+    ctx.strokeStyle = cssVar("--ink"); ctx.strokeRect(px - 22, 4, 44, 28); txt("B 箱 " + p.b, px - 20, 22, cssVar("--ink"));
+    ctx.strokeRect(x1 - 4, y - 6, 22, 40); txt("A " + p.a, x1 - 4, y + 48, cssVar("--ink"));
+    txt("灰 = 金屬　橘 = 塑膠", 4, 14);
+    if (p.wrong) txt("分錯 " + p.wrong + " 個", 4, 30, "#c62828", 12);
+  } else if (p.type === "stepper") {
+    const x0 = 20, x1 = 240, y = 70, X = (mm) => x0 + (mm / 200) * (x1 - x0);
+    ctx.fillStyle = cssVar("--rail"); ctx.fillRect(x0 - 6, y + 20, x1 - x0 + 12, 6);
+    for (let k = 0; k <= 40; k++) { ctx.fillStyle = cssVar("--line"); ctx.fillRect(x0 + k * (x1 - x0) / 40, y + 21, 1, 4); }
+    ctx.fillStyle = cssVar("--ink"); ctx.fillRect(x0 - 18, y + 12, 14, 22); txt("M", x0 - 15, y + 27, "#fff", 10);
+    ctx.fillStyle = p.crush || p.crash ? "#c62828" : "#4d8dff"; ctx.fillRect(X(p.mm) - 14, y - 4, 28, 24);
+    [["X0 原點", 0, p.sens[0]], ["X2 100mm", 100, p.sens[2]], ["X1 極限", 198, p.sens[1]]].forEach(([t, mm, on]) => {
+      ctx.fillStyle = on ? cssVar("--on") : cssVar("--line"); ctx.beginPath(); ctx.arc(X(mm), y + 44, 6, 0, 7); ctx.fill(); txt(t, X(mm) - 18, y + 62);
+    });
+    txt("實際位置 " + p.mm.toFixed(1) + " mm", 10, 16, cssVar("--ink"), 13);
+    txt("D8140 脈波計數 " + p.counter + "（= " + (p.counter / 100).toFixed(1) + " mm）", 10, 34);
+    txt((p.pulse ? "Y0 送脈波中　" : "Y0 停　") + (p.pulse ? (p.dir ? "方向 Y4 ON 正轉" : "方向 Y4 OFF 反轉") : ""), 10, 50, p.pulse ? cssVar("--on") : cssVar("--mute"));
+    if (p.crash) txt("⚠ 撞到機構端點！", 130, 16, "#c62828", 13);
   }
 }

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLC 模擬器：畫梯形圖、SFC，接上機構跑 | LadderLab</title>
+<meta name="description" content="像 GX Works2 一樣用 F5、F6、F7 畫梯形圖，或畫 SFC，按 F4 轉換後直接在虛擬機構上跑：氣缸、輸送帶分料、步進馬達滑台（DRVI／DRVA 定位）。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="static simpage">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html" class="here">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="sim-main">
+  <div id="cbar" data-auto hidden></div>
+  <div class="sim-top">
+    <label>機構 <select id="machine"></select></label>
+    <button type="button" id="example" class="small-btn">載入範例程式</button>
+    <button type="button" id="clear" class="small-btn">清空</button>
+    <span class="sim-tabs" id="tabs"><button type="button" data-t="ladder" class="here">梯形圖</button><button type="button" data-t="sfc">SFC</button><button type="button" data-t="il">指令表</button></span>
+    <span class="sim-modes"><button type="button" id="bWrite" class="small-btn here">寫入 F2</button><button type="button" id="bConv" class="small-btn go">轉換並執行 F4</button><button type="button" id="bMon" class="small-btn">監看 F3</button></span>
+  </div>
+  <p id="desc" class="sim-desc"></p>
+  <div id="loading" class="loading"><span class="spin"></span><span>正在載入模擬引擎（第一次約 10 秒）…</span></div>
+  <div class="sim-grid">
+    <section class="sim-edit">
+      <div id="state" class="sim-state">寫入模式：在下面畫程式，按 F4 轉換並送進模擬 PLC。</div>
+      <ul id="errors" class="errors"></ul>
+      <div id="ed-ladder"></div>
+      <div id="ed-sfc" hidden></div>
+      <div id="ed-il" hidden><textarea id="il" spellcheck="false" rows="18"></textarea><p class="hint">一行一個指令，和 GX Works2 的「指令表（List）」相同。</p></div>
+      <div id="monitor" hidden><div class="ladder-wrap"><div id="mon-ladder"></div></div><div class="sfc-wrap" id="mon-sfc" hidden></div></div>
+    </section>
+    <aside class="sim-side">
+      <div class="box"><h3>機構</h3><canvas id="plant" width="260" height="190"></canvas><div id="pfaults"></div><p id="note" class="hint"></p></div>
+      <div class="box"><h3>輸入（可以按）</h3><div id="inputs" class="inputs"></div></div>
+      <div class="box"><h3>輸出</h3><ul id="outputs" class="lamps"></ul></div>
+      <div class="box"><h3>作用中的步、數值</h3><p id="steps" class="hint"></p><p id="words" class="hint"></p></div>
+    </aside>
+  </div>
+  <span id="lamp"></span><span id="cylinder"></span><span id="sorter"></span><span id="stepper"></span>
+  <section class="sim-help">
+    <h2>怎麼用</h2>
+    <ol>
+      <li><b>選機構</b>：先用「按鈕和燈」熟悉操作，再試氣缸、輸送帶分料、步進馬達滑台。每台都有「載入範例程式」。</li>
+      <li><b>寫程式</b>：三種寫法都可以，和 GX Works2 的建立工程時選的語言一樣。
+        <ul><li><b>梯形圖</b>：點格子，按 F5 常開、F6 常閉、Shift+F5 並聯、F7 線圈、F8 應用指令（SET、MOV、STL、DRVA…）、F9 橫線、Shift+F9 直線。也可以直接打 <code>LD X0</code>、<code>OUT Y0</code>。</li>
+        <li><b>SFC</b>：左邊是流程圖，點步寫動作、點移轉寫條件（條件最後按 F7 放 TRAN）。「＋移轉」可以選多個「到」做並行分支。</li>
+        <li><b>指令表</b>：直接打指令。</li></ul>
+        三個分頁會互相轉換：在梯形圖畫好，切到指令表就看得到對應的指令。</li>
+      <li><b>F4 轉換並執行</b>：灰底的梯級變白、程式送進模擬 PLC，機構開始跑。有錯會列在上面。</li>
+      <li><b>F3 監看</b>：和 GX Works2 的監看模式一樣，通電的接點、線圈會亮，SFC 會標出作用中的步。按右邊的輸入操作機構。</li>
+    </ol>
+    <p class="hint">步進馬達滑台用的 DRVI／DRVA 是 FX3S 的定位指令，這裡做了簡化：只模擬位置、方向和完成旗標 M8029，沒有加減速。</p>
+  </section>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="py/bundle.js"></script>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script src="common.js"></script>
+<script src="ladder.js"></script>
+<script src="sfc.js"></script>
+<script src="plants.js"></script>
+<script src="ledit.js"></script>
+<script src="sfcedit.js"></script>
+<script src="sim.js"></script>
+</body>
+</html>
