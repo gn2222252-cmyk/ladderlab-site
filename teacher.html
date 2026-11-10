@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="af55ab87a3">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>給老師：用 LadderLab 上可程式控制實習（8 週課表、課綱對照、電腦教室設定） | LadderLab</title>
+<meta name="description" content="給技術型高中老師：LadderLab 在可程式控制實習課的用法、8 週課表範本、課綱對照、學生進度怎麼收、電腦教室要放行的網址與已知限制。">
+<link rel="stylesheet" href="style.css?v=fcceb47bcb">
+</head>
+<body class="learn guide-page">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="tocbtn" class="ghost only-narrow" type="button">目錄</button>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="contents">
+    <h3>給老師</h3>
+    <ol>
+      <li><a href="#t-use">這個網站能做什麼</a></li>
+      <li><a href="#t-plan">8 週課表範本</a></li>
+      <li><a href="#t-curriculum">課綱對照</a></li>
+      <li><a href="#t-progress">怎麼收學生進度</a></li>
+      <li><a href="#t-lab">電腦教室要放行的網址</a></li>
+      <li><a href="#t-limits">已知限制</a></li>
+      <li><a href="#t-basis">為什麼可以用模擬軟體上課</a></li>
+    </ol>
+  </nav>
+
+  <main class="lesson guide">
+<p class="crumb">給老師</p>
+<h1>給老師：怎麼把 LadderLab 用在課堂</h1>
+
+<section id="t-use">
+<h2>這個網站能做什麼</h2>
+<p>LadderLab 是給技術型高中「可程式控制實習」用的練習網站，以學校常見的三菱 FX3S 為準。學生在瀏覽器裡就能讀課、寫階梯圖或指令表、接模擬機台，送出後自動評分。不用安裝軟體，也不用帳號。</p>
+<ul>
+  <li><b>上機前預習</b>：先在模擬器把程式跑通，到實習工場只做接線、寫入和試車，機台時間省下來。</li>
+  <li><b>作業</b>：每一章都有自動評分的練習題，評分會說出錯在哪一秒、哪一個輸出。</li>
+  <li><b>補救與自學</b>：請假或進度落後的學生可以照<a href="path.html">課程地圖</a>自己補上。</li>
+  <li><b>檢定準備</b>：氣壓乙級、工業配線乙級的 PLC 題做成模擬機台，可以一條一條驗收（<a href="exam.html">檢定專區</a>）。</li>
+</ul>
+<div class="callout">模擬器不能取代實機。實機要練的有接線、GX Works2 寫入與監看、量測和故障排除。網站負責讓學生帶著「已經會動的程式」走進工場。</div>
+</section>
+
+<section id="t-plan">
+<h2>8 週課表範本</h2>
+<p>這份範本每週 3 節，8 週共 24 節。課綱建議本科 3 學分，所以這 8 週只是學期的一部分，大約對應課綱主題 B～E 和一部分 F。請依學校節數和設備調整。課號照<a href="path.html">課程地圖</a>。</p>
+<div class="table-box"><table class="gtable small">
+<thead><tr><th>週</th><th>課前（網站）</th><th>課中（實機）</th><th>課後作業（自動評分）</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>1.1～1.4、<a href="wiring.html">FX3S 實機與接線</a></td><td>認識端子、接按鈕和燈；GX Works2 建工程、認識畫面、畫第一條階梯圖（<a href="gx2.html#g2">GX2 第 2～4 節</a>）</td><td>E1、E2</td></tr>
+<tr><td>2</td><td>2.1～2.5（掃描、慢一圈、自保持、雙線圈、互鎖）</td><td>寫入 FX3S 與監看（<a href="gx2.html#g3">GX2 第 10～11 節</a>）；馬達正反轉</td><td>E3、E4、E9</td></tr>
+<tr><td>3</td><td>3.1～3.4（軟元件、OUT／SET／PLS、計時器、計數器）</td><td>延時、閃爍、計數實作</td><td>E8、E5、E6、E7、E16</td></tr>
+<tr><td>4</td><td>3.5～3.10（特殊繼電器、數值、比較、ALT／ZRST、移位、BCD）</td><td>指撥開關與七段顯示器（有設備的學校）</td><td>E14、E27、E26、E29</td></tr>
+<tr><td>5</td><td>4.1～4.7（為什麼要步進、STL 規則、步序表、位移－時間圖）</td><td>在梯形圖工程裡寫 STL（<a href="gx2.html#g5">GX2 第 7 節</a>）；單支氣缸</td><td>E10、E17</td></tr>
+<tr><td>6</td><td>4.8～4.11（轉步進、並行分支、選擇分支、換廠牌）</td><td>SFC 工程與分支（<a href="gx2.html#g6">GX2 第 8～9 節</a>）</td><td>E12、E13</td></tr>
+<tr><td>7</td><td>5.1～5.9（急停接線、逾時、首發故障、停電、手動、復歸、循環停止、輸出仲裁、操作面板）、<a href="safety.html">安全迴路</a></td><td>急停與復歸實測；停電後實機行為觀察</td><td>E11、E30、E31、E32</td></tr>
+<tr><td>8</td><td><a href="design.html">機台設計方法</a>、6.1～6.3</td><td>期末實作：學生自己訂 I/O 表、步序，再上機</td><td>E15；檢定班加 E18a、E18b、E18</td></tr>
+</tbody></table></div>
+<p>延伸：第 7 章故障排除（雙龍門、AOI）適合放在機電整合實習；LabVIEW 上位機對應課綱「人機介面與遠端監控」。</p>
+</section>
+
+<section id="t-curriculum">
+<h2>課綱對照</h2>
+<p>依十二年國教技術型高中「電機與電子群」課程綱要的（十）可程式控制實習。節數是國家教育研究院《電機與電子群課程手冊》建議的分配。</p>
+<div class="table-box"><table class="gtable small">
+<thead><tr><th>課綱主題（建議節數）</th><th>學習內容</th><th>本站對應</th><th>本站沒有涵蓋</th></tr></thead>
+<tbody>
+<tr><td>A 工場安全衛生及可程式控制器（3）</td><td>實習工場設施、工業安全衛生、消防安全、PLC 應用</td><td>1.1、<a href="safety.html">急停與安全迴路</a></td><td>工場設施、消防（請在工場現場教）</td></tr>
+<tr><td>B 可程式控制器及階梯圖（3）</td><td>發展背景與硬體、IEC 規範、軟體介面、工業配線電路圖與階梯圖轉換、掃描</td><td>第 1 章、2.1～2.2、<a href="gx2.html">GX Works2 教學</a></td><td>IEC 61131-3 只在 4.11 簡介</td></tr>
+<tr><td>C 基本指令（6）</td><td>基本指令的分類、用法、應用</td><td>1.2～1.4、2.3～2.5、3.2～3.4</td><td>—</td></tr>
+<tr><td>D 應用指令（12）</td><td>傳送、運算、比較、邏輯、旋轉、移位、資料處理；D/A、A/D</td><td>3.6～3.10</td><td>WAND 等邏輯指令、D/A 與 A/D</td></tr>
+<tr><td>E 狀態流程圖設計（15）</td><td>步進指令；順序、跳躍、分歧、合流、並進；應用實例</td><td>第 4 章全部、GX2 第 7～9 節</td><td>—</td></tr>
+<tr><td>F 人機介面及負載控制（15）</td><td>人機介面、控制氣壓盤／電動機／步進馬達、遠端監控</td><td>氣壓：4.7、檢定 E18～E21；電動機：E3、E4；步進馬達：模擬器 DRVI／DRVA；遠端監控：第 7 章 AOI 交握、LabVIEW 上位機</td><td>觸控面板（GOT 等）畫面設計</td></tr>
+</tbody></table></div>
+<p>第 5～7 章（異常、手動、復歸、整機設計、故障排除）超出本科學習內容，可以對應學習表現「自控Ⅱ-3 保養維修及問題解決」，以及機電整合實習。</p>
+</section>
+
+<section id="t-progress">
+<h2>怎麼收學生進度</h2>
+<p>網站沒有帳號，進度只存在學生自己的瀏覽器裡。</p>
+<ol>
+  <li>下課前，學生到<a href="path.html">課程地圖</a>按「匯出進度」，會下載一個 <code>LadderLab_進度_日期.json</code>。</li>
+  <li>請學生把檔名改成「座號_姓名」，上傳到班級雲端資料夾或 Classroom 作業。</li>
+  <li>下次上課（或換電腦）時，按「匯入進度」選這個檔案就能接著做。</li>
+</ol>
+<div class="callout warn">目前的限制：
+<ul>
+  <li>匯入會<b>蓋過</b>這個瀏覽器原本的進度，請不要在同一台電腦連續匯入多位學生的檔案。</li>
+  <li>還沒有「全班合併成一張表」的工具。老師要查看時，請用無痕視窗匯入學生的檔案，再看課程地圖的完成標記。</li>
+  <li>進度檔是學生端產生的，不能當作防作弊的成績證明。正式評量請以實機驗收為主。</li>
+</ul></div>
+</section>
+
+<section id="t-lab">
+<h2>電腦教室要放行的網址</h2>
+<div class="table-box"><table class="gtable small">
+<thead><tr><th>網址</th><th>用途</th><th>沒放行會怎樣</th></tr></thead>
+<tbody>
+<tr><td><code>gn2222252-cmyk.github.io</code></td><td>網站本身（頁面和評分程式）</td><td>打不開</td></tr>
+<tr><td><code>cdn.jsdelivr.net</code>（路徑 <code>/pyodide/v0.26.4/</code>）</td><td>在瀏覽器裡執行 PLC 模擬器的 Python 環境（Pyodide），包含 <code>.wasm</code> 檔</td><td>課文可以看，但模擬器、評分、練習都不能用</td></tr>
+</tbody></table></div>
+<ul>
+  <li>內容過濾器如果擋 <code>.wasm</code> 檔或 <code>application/wasm</code> 類型，也要放行。</li>
+  <li>瀏覽器要用新版的 Chrome 或 Edge（需要 WebAssembly）。</li>
+  <li>第一次開模擬器要下載數 MB。有還原卡的電腦每次開機都會清掉快取，全班同時開時會比較慢，請學生上課一開始就先打開練習頁。</li>
+  <li>還原卡也會清掉進度，請學生每次下課都匯出進度。</li>
+  <li>網站只有在填「候補名單」時才會送出資料，練習和進度都不會上傳。</li>
+</ul>
+</section>
+
+<section id="t-limits">
+<h2>已知限制</h2>
+<p>模擬器照 FX3S 的指令和元件範圍設計，但不是完整的 PLC。不支援的指令、32 位元與高速計數器、變址、掃描時間、相鄰步共用計時器等差異，都整理在<a href="simdiff.html">模擬器和 FX3S 實機的差異</a>。程式要上實機前，請一定要用 GX Works2 轉換一次。</p>
+<p>檢定題（E18～E25）照勞動部公開試題做成模擬機台。其中 E19～E21 的停電保持照檢定題常用的 FX3U 範圍，其他課程照 FX3S。</p>
+</section>
+
+<section id="t-basis">
+<h2>為什麼可以用模擬軟體上課</h2>
+<p>課綱本科的教學注意事項寫明，教師可製作影片、投影片、成品或「電腦模擬軟體的操作」，讓學生觀察輸出的實際運作狀態。課程手冊在本科的教學備註中也寫「可利用成品展示或電腦模擬軟體的操作」。</p>
+<p>出處：</p>
+<ul>
+<li>《十二年國民基本教育技術型高級中等學校群科課程綱要—電機與電子群》（107 年 12 月），（十）可程式控制實習，教學注意事項 3.4，第 30 頁。<a href="https://stv.naer.edu.tw/data/course_outline/658278330.pdf">國家教育研究院</a></li>
+<li>國家教育研究院《電機與電子群課程手冊》（111 年 7 月更新），（十）可程式控制實習，學習內容表備註 4，第 55 頁。<a href="https://stv.naer.edu.tw/data/course_manual/B/電機與電子群課程手冊（111年7月更新）.pdf">國家教育研究院</a></li>
+</ul>
+</section>
+
+  </main>
+</div>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="common.js?v=20ae5aa5c1"></script>
+<script>
+  document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
+  document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));
+</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

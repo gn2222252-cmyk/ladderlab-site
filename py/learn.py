@@ -15,7 +15,7 @@ sys.path.insert(0, HERE)
 from lessons import LESSONS                        # noqa: E402
 from ladder_view import bit, parse_program, rung_of, set_bit, source_items, word  # noqa: E402
 from plc_csv import instruction_steps              # noqa: E402
-from plc_engine import PLC                         # noqa: E402
+from plc_engine import PLC, restore_latched                       # noqa: E402
 
 SCAN_MS = 20
 
@@ -123,9 +123,7 @@ class Runner(object):
         old = self.plc
         self.plc = PLC(self.program)
         self.plc.x_in[:] = old.x_in
-        for kind, (lo, hi) in self.lesson.get("latched", {}).items():
-            name = {"S": "s", "M": "m", "D": "d"}[kind]
-            getattr(self.plc, name)[lo:hi + 1] = getattr(old, name)[lo:hi + 1]
+        restore_latched(self.plc, old, self.lesson.get("latched", {}), self.program)
         if self.plant:
             self.plant.plc = self.plc
             self.plant.apply()

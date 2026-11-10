@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="039b8ea19c">
+<meta name="ll-version" content="af55ab87a3">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>2.2 慢一圈的用途：一個工件只算一次｜PLC 互動課程</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="為什麼要計數：機台要知道做了幾個工件。工件經過時，感測器 X0 會亮大約 0.5 秒，但 PLC 一秒跑很多圈，這段時間 X0 連續 ON 了幾十圈。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/3-2.html">
-<link rel="stylesheet" href="../style.css?v=217ddf855f">
+<link rel="stylesheet" href="../style.css?v=fcceb47bcb">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "3-2 慢一圈的用途：一個工件只算一次", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
 </head>
 <body class="static">
@@ -55,7 +55,7 @@ INC D1</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "039b8ea19c" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

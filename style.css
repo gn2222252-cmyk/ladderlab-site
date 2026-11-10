@@ -422,7 +422,7 @@ main.wide{max-width:1180px;margin:0 auto;padding:0 16px 30px}
 .home-map b{display:block}
 .home-map span{color:var(--mute);font-size:13px}
 .home-map .no{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--on);color:#fff;font-size:13px;margin-right:6px}
-.who{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 24px}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:0 0 24px}
 @media (max-width:760px){.who{grid-template-columns:1fr}}
 .who a{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;color:inherit;text-decoration:none;display:grid;gap:4px}
 .who a:hover{border-color:var(--on)}

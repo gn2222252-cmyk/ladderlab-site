@@ -26,6 +26,23 @@ def wrap16(v):
     return ((int(v) + 0x8000) & 0xFFFF) - 0x8000
 
 
+
+# power-loss retention of the school FX3S (programming manual 2.6.2): steps, M, D, counters and retentive timers
+FX3S_LATCHED = {"S": (0, 127), "M": (384, 511), "D": (128, 255), "T": (128, 137), "C": (16, 31)}
+
+
+def restore_latched(new, old, keep, program):
+    """After a power failure: copy the battery / EEPROM backed ranges from the CPU before it into the new one."""
+    names = {"S": ("s",), "M": ("m",), "D": ("d",), "T": ("t_acc", "t_on"), "C": ("c_val", "c_on")}
+    for kind, (lo, hi) in keep.items():
+        for attr in names[kind]:
+            getattr(new, attr)[lo:hi + 1] = getattr(old, attr)[lo:hi + 1]
+    lo, hi = keep.get("C", (1, 0))
+    for i, (_, op, ops) in enumerate(program):           # a latched counting coil keeps its last state: no extra count
+        m = re.match(r"^C(\d+)$", ops[0]) if op == "OUT" and ops else None
+        if m and lo <= int(m.group(1)) <= hi:
+            new._edge[i] = old._edge[i]
+
 class PLC(object):
     def __init__(self, program, scan_ms=10):
         errors, self.total_steps = check_program(program)

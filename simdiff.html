@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="af55ab87a3">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>模擬器和 FX3S 實機的差異：程式上實機前要檢查什麼 | LadderLab</title>
+<meta name="description" content="LadderLab 模擬器和三菱 FX3S 實機的差異：計時器編號與解析度、停電保持、32 位元指令、ZRST、掃描時間、相鄰步計時器，以及上實機前的檢查清單。">
+<link rel="stylesheet" href="style.css?v=fcceb47bcb">
+</head>
+<body class="learn guide-page">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="tocbtn" class="ghost only-narrow" type="button">目錄</button>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="contents">
+    <h3>模擬器和實機</h3>
+    <ol>
+      <li><a href="#d-table">差異總表</a></li>
+      <li><a href="#d-check">上實機前的檢查</a></li>
+    </ol>
+  </nav>
+
+  <main class="lesson guide">
+<p class="crumb">現場必備 · 上實機前</p>
+<h1>模擬器和 FX3S 實機的差異</h1>
+<div class="callout">本站模擬器是教學用的，照三菱 FX3S 的指令和元件範圍設計，但不是完整的 PLC。程式要寫進實機前，請先對照這張表，再用 GX Works2 轉換（編譯）一次。轉換有錯，以 GX Works2 為準。</div>
+
+<p>狀態說明：<b>已一致</b>＝和實機相同；<b>明確報錯</b>＝實機可以用，模擬器會直接告訴你不支援；<b>有差異</b>＝模擬器能跑，但結果和實機不同，要特別注意。</p>
+
+<section id="d-table">
+<h2>差異總表</h2>
+<div class="table-box"><table class="gtable small">
+<thead><tr><th>#</th><th>項目</th><th>FX3S 實機</th><th>本站模擬器</th><th>狀態</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>計時器解析度</td><td>T0～T31 100 ms；T32～T62 100 ms（M8028 ON 時改成 10 ms）；T63～T127 1 ms；T128～T131 1 ms 累計；T132～T137 100 ms 累計</td><td>T0～T137 都和實機相同。M8028 不支援，寫了會報錯。</td><td>已一致（M8028：明確報錯）</td></tr>
+<tr><td>2</td><td>計時器、計數器編號範圍</td><td>T0～T137、C0～C31、C200～C255，其他編號不存在</td><td>C200～C255 會報錯。<b>T138～T255、C32～C199 不會報錯</b>，照 FX3U 的規格執行（例如 T200 是 10 ms）。</td><td>有差異</td></tr>
+<tr><td>3</td><td>停電保持</td><td>S0～S127、M384～M511、D128～D255、C16～C31、T128～T137 的現在值與接點（EEPROM 保持）</td><td>課程和練習照 FX3S 保持 S、M、D、C16～C31、T128～T137（現在值和接點）。E19～E21 照檢定題的 FX3U 範圍。</td><td>已一致</td></tr>
+<tr><td>4</td><td>32 位元、高速計數器</td><td>C200～C234 32 位元雙向；C235～C255 高速計數</td><td>寫了會報錯，請改用 C0～C31。</td><td>明確報錯</td></tr>
+<tr><td>5</td><td>ZRST</td><td>可以清 Y、M、S、T、C、D；T、C 的現在值和接點一起清掉</td><td>相同</td><td>已一致</td></tr>
+<tr><td>6</td><td>寫入的目的地（MOV、ADD…）</td><td>D、T、C、V、Z、KnY、KnM、KnS</td><td>只能寫到 D、KnY、KnM。寫到 T、C、KnS 會顯示中文說明和行號。</td><td>明確報錯</td></tr>
+<tr><td>7</td><td>讀取 KnS（例如 MOV K4S20 D0）</td><td>可以</td><td>不支援，會顯示中文說明和行號，請改用 KnM 或 KnX、KnY</td><td>明確報錯</td></tr>
+<tr><td>8</td><td>DRVI／DRVA 定位</td><td>有加減速、最高頻率、32 位元現在值，輸出真的脈衝</td><td>簡化：固定速度，沒有加減速，只模擬位置和 M8029</td><td>有差異</td></tr>
+<tr><td>9</td><td>掃描時間</td><td>依程式長短，一般程式一圈不到 1 ms 到數 ms</td><td>固定 10 ms 一圈，方便看清楚「慢一圈」</td><td>有差異</td></tr>
+<tr><td>10</td><td>相鄰兩步共用同一個計時器</td><td>手冊禁止。實機換步時計時器不會歸零，會接著累計（程式手冊 35.1.7 節）</td><td>換步時計時器會歸零，所以這個錯誤在模擬器上看不出來。程式健檢會提醒。</td><td>有差異</td></tr>
+<tr><td>11</td><td>指令、特殊元件</td><td>FX3S 有很多應用指令和特殊元件（完整清單見程式設計手冊）</td><td>支援基本指令和 MOV、ADD、SUB、MUL、DIV、INC、DEC、CMP、ZCP、比較接點、ZRST、ALT、SFTL／SFTR、ROL／ROR、DRVI／DRVA、BCD／BIN、MC／MCR（多數有 P 版）。CJ、CALL、FOR、BMOV、SEGD、DECO、32 位元 D 指令、V／Z 變址等，會顯示「FX3S 有，但本站不支援」。特殊元件只支援 M8000、M8002、M8012、M8013、M8029、M8034、M8040、M8067、M8112～M8117、M8340、M8350。</td><td>明確報錯</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="d-check">
+<h2>上實機前的檢查</h2>
+<ol>
+  <li>計時器、計數器編號在 T0～T137、C0～C31 之內（第 2 項）。</li>
+  <li>有用到停電保持的計數器或累計計時器時，以實機為準（第 3 項）。</li>
+  <li>相鄰兩步沒有用同一個計時器（第 10 項）。</li>
+  <li>用 GX Works2 轉換（F4）沒有錯誤，再寫入 PLC。</li>
+</ol>
+<p>資料來源：三菱 FX3S 硬體手冊 JY997D48601 第 4.5 節（第 34～35 頁）；FX3S/FX3G/FX3GC/FX3U/FX3UC 程式設計手冊 JY997D16601 第 2.6 節、第 4.1 節、第 12.1 節、第 35.1.7 節。</p>
+</section>
+  </main>
+</div>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="common.js?v=20ae5aa5c1"></script>
+<script>
+  document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
+  document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));
+</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

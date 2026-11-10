@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="039b8ea19c">
+<meta name="ll-version" content="af55ab87a3">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LadderLab 梯圖實驗室｜三菱 FX PLC 互動課程</title>
 <meta name="description" content="三菱 FX3S PLC 完整線上課程：接線、階梯圖、FX 指令、步進 STL 與 SFC、GX Works2 操作、異常與復歸、整機設計、故障排除。每課都能在瀏覽器裡操作，練習自動評分。">
-<link rel="stylesheet" href="style.css?v=217ddf855f">
+<link rel="stylesheet" href="style.css?v=fcceb47bcb">
 </head>
 <body>
 <header class="top">
@@ -27,6 +27,7 @@
     <a href="exam.html"><b>我要考技能檢定</b><span>氣壓乙級、工業配線乙級的 PLC 題做成模擬機台，三種模式、急停、復歸、停電一項一項評分。</span></a>
     <a href="sim.html"><b>我要自己畫程式跑跑看</b><span>模擬器：像 GX Works2 一樣用 F5、F7 畫梯形圖或 SFC，接上氣缸、輸送帶分料、步進馬達滑台直接跑。</span></a>
     <a href="check.html"><b>我是現場工程師</b><span>貼上 GX Works2 程式：找雙線圈、SET 沒 RST，逐條翻成白話；或直接練故障排除案例。</span></a>
+    <a href="teacher.html"><b>我是老師</b><span>8 週課表範本、課綱對照、學生進度怎麼收、電腦教室要放行的網址，以及模擬器和實機的差異。</span></a>
   </div>
 
   <h2 class="sec-h">課程主線：七章</h2>
@@ -134,7 +135,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=b56eae4a64"></script>
+<script src="py/bundle.js?v=257dd45daf"></script>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="ladder.js?v=796bf6d37e"></script>
 <script src="course_map.js?v=a539c27dc9"></script>
@@ -163,7 +164,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "039b8ea19c" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

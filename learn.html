@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="039b8ea19c">
+<meta name="ll-version" content="af55ab87a3">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 互動課程 | LadderLab</title>
 <meta name="description" content="免費 PLC 互動課（三菱 FX3S）：從 PLC 接線、階梯圖、FX 指令、步進 STL／SFC 到異常與復歸。每一課都是會動的階梯圖，看示範、自己按、慢動作看掃描。">
-<link rel="stylesheet" href="style.css?v=217ddf855f">
+<link rel="stylesheet" href="style.css?v=fcceb47bcb">
 </head>
 <body class="learn">
 <header class="top">
@@ -92,7 +92,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=b56eae4a64"></script>
+<script src="py/bundle.js?v=257dd45daf"></script>
 <script src="fx3s.js?v=e994784638"></script>
 <script src="ladder.js?v=796bf6d37e"></script>
 <script src="sfc.js?v=254aa66b02"></script>
@@ -104,7 +104,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "039b8ea19c" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

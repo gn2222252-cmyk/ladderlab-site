@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="039b8ea19c">
+<meta name="ll-version" content="af55ab87a3">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E30 停電：接著做或從頭來｜PLC 練習題（自動評分）</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="吸盤氣缸一個循環：在上限按啟動 X0 → 下降到下限 X1 → 吸盤 Y1 吸 1 秒 → 吸著上升到上限 X2。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E30.html">
-<link rel="stylesheet" href="../style.css?v=217ddf855f">
+<link rel="stylesheet" href="../style.css?v=fcceb47bcb">
 
 </head>
 <body class="static">
@@ -23,7 +23,7 @@
 <p class="crumb"><a href="index.html">PLC 練習題</a></p>
 <h1>E30 停電：接著做或從頭來</h1>
 <div class="task">吸盤氣缸一個循環：在上限按啟動 X0 → 下降到下限 X1 → 吸盤 Y1 吸 1 秒 → 吸著上升到上限 X2。
-停電後復電，不管選哪一種，氣缸都不能自己動。X4 選停電處理：
+停電後復電，不管選哪一種，氣缸都不能自己動。例外是吸盤：上升中停電、復電接著做時，吸盤要馬上恢復吸附，工件才不會掉（吸住是安全的一側）。X4 選停電處理：
 ・X4 ON「接著做」：按啟動，從停電前那一步繼續。上升中停電的話，吸盤要繼續吸。
 ・X4 OFF「從頭來」：步序清掉。氣缸還沒回上限時按啟動無效；先按復歸 X5 讓氣缸上升到上限，再按啟動才從第一步開始。
 PLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255。按「停電再復電」可以自己試。</div>
@@ -40,7 +40,7 @@ PLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "039b8ea19c" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -24,7 +24,7 @@ import re
 
 from ladder_view import bit, parse_program, word
 from plc_csv import ALLOWED, COMPARE_RE, LadderError, check_program, instruction_steps
-from plc_engine import PLC
+from plc_engine import PLC, restore_latched
 
 SCAN = 10
 
@@ -1633,9 +1633,9 @@ EXERCISES = [
      'lesson': 'A13',
      'free': False,
      'title': '停電：接著做或從頭來',
-     'task': '吸盤氣缸一個循環：在上限按啟動 X0 → 下降到下限 X1 → 吸盤 Y1 吸 1 秒 → 吸著上升到上限 X2。\n停電後復電，不管選哪一種，氣缸都不能自己動。X4 選停電處理：\n・X4 ON「接著做」：按啟動，從停電前那一步繼續。上升中停電的話，吸盤要繼續吸。\n・X4 OFF「從頭來」：步序清掉。氣缸還沒回上限時按啟動無效；先按復歸 X5 讓氣缸上升到上限，再按啟動才從第一步開始。\nPLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255。按「停電再復電」可以自己試。',
+     'task': '吸盤氣缸一個循環：在上限按啟動 X0 → 下降到下限 X1 → 吸盤 Y1 吸 1 秒 → 吸著上升到上限 X2。\n停電後復電，不管選哪一種，氣缸都不能自己動。例外是吸盤：上升中停電、復電接著做時，吸盤要馬上恢復吸附，工件才不會掉（吸住是安全的一側）。X4 選停電處理：\n・X4 ON「接著做」：按啟動，從停電前那一步繼續。上升中停電的話，吸盤要繼續吸。\n・X4 OFF「從頭來」：步序清掉。氣缸還沒回上限時按啟動無效；先按復歸 X5 讓氣缸上升到上限，再按啟動才從第一步開始。\nPLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255。按「停電再復電」可以自己試。',
      'plant': 'cylinder',
-     'latched': {'S': (0, 127), 'M': (384, 511), 'D': (128, 255)},
+     'latched': {'S': (0, 127), 'M': (384, 511), 'D': (128, 255), 'T': (128, 137), 'C': (16, 31)},
      'inputs': [('X000', '啟動', 'hold'), ('X001', '下限感測器', 'sensor'), ('X002', '上限感測器', 'sensor'), ('X004', '停電處理（ON＝接著做）', 'toggle'), ('X005', '復歸', 'hold')],
      'outputs': [('Y000', '下降'), ('Y001', '吸盤'), ('Y002', '上升')],
      'rules': [('never_both', 'Y000', 'Y002', '下降和上升同時輸出')],
@@ -1664,14 +1664,14 @@ EXERCISES = [
      'lesson': 'C3',
      'free': False,
      'title': '手動和自動共用輸出（輸出仲裁）',
-     'task': '同一支吸盤氣缸有手動和自動兩種操作。X4 ON 是自動、OFF 是手動。\n・手動：按住 X5 下降、按住 X6 上升，放開就停；到了下限或上限自己停；兩顆一起按兩個都不動；按自動啟動無效。X7 按一下切換吸盤。\n・自動：在上限按啟動 X0，跑一個循環（下降 → 吸 1 秒 → 上升）；手動按鈕無效。\n・自動中切到手動：自動立刻停下（清掉步序），之後手動可以接手。\n每個 Y 在程式裡只能 OUT 一次：自動和手動的要求先寫到 M，最後在輸出區合併。',
+     'task': '同一支吸盤氣缸有手動和自動兩種操作。X4 ON 是自動、OFF 是手動。\n・手動：按住 X5 下降、按住 X6 上升，放開就停；到了下限或上限自己停；兩顆一起按兩個都不動；按自動啟動無效。X7 按一下切換吸盤。\n・自動：在上限按啟動 X0，跑一個循環（下降 → 吸 1 秒 → 上升）；手動按鈕無效。\n・自動中切到手動：自動立刻停下（清掉步序），之後手動可以接手。\n每個 Y 在程式裡只能 OUT 一次：自動和手動的要求先寫到 M，最後在輸出區合併。\n（本題的氣缸用單線圈閥：輸出 OFF 就停。若是雙線圈閥，輸出 OFF 後氣缸仍會走到底，「停下」要靠中封閥或機械設計。）',
      'plant': 'cylinder',
      'inputs': [('X000', '自動啟動', 'hold'), ('X001', '下限感測器', 'sensor'), ('X002', '上限感測器', 'sensor'), ('X004', '模式（ON＝自動）', 'toggle'), ('X005', '手動下降', 'hold'), ('X006', '手動上升', 'hold'), ('X007', '手動吸盤（切換）', 'hold')],
      'outputs': [('Y000', '下降'), ('Y001', '吸盤'), ('Y002', '上升')],
      'rules': [('never_both', 'Y000', 'Y002', '下降和上升同時輸出')],
      'starter': '; 自動要求寫到 M20～M22，手動要求寫到 M30～M32\n; 最後的輸出區：LD M20 OR M30 OUT Y000 …每個 Y 只寫一次\n',
-     'hints': ['自動：步裡不要直接 OUT Y，改 OUT M20（下降）、M21（吸盤）、M22（上升）。', '手動下降：LDI X004、AND X005、ANI X006、ANI X001、OUT M30。上升同理用 X6、X2、M32。', '吸盤切換：LDI X004、ANDP X007、ALT M31。切到自動時 RST M31。', '切到手動要停下自動：LDI X004、ZRST S20 S22，再 SET S0。', '輸出區：LD M20 OR M30 OUT Y000；LD M21 OR M31 OUT Y001；LD M22 OR M32 OUT Y002。'],
-     'solution': 'LD M8002\nSET S0\nLDI X004\nZRST S20 S22\nLDI X004\nSET S0\nSTL S0\nLD X000\nAND X004\nAND X002\nSET S20\nSTL S20\nOUT M20\nLD X001\nSET S21\nSTL S21\nOUT M21\nOUT T0 K10\nLD T0\nSET S22\nSTL S22\nOUT M21\nOUT M22\nLD X002\nSET S0\nRET\nLDI X004\nAND X005\nANI X006\nANI X001\nOUT M30\nLDI X004\nAND X006\nANI X005\nANI X002\nOUT M32\nLDI X004\nANDP X007\nALT M31\nLD X004\nRST M31\nLD M20\nOR M30\nOUT Y000\nLD M21\nOR M31\nOUT Y001\nLD M22\nOR M32\nOUT Y002',
+     'hints': ['自動：步裡不要直接 OUT Y，改 OUT M20（下降）、M21（吸盤）、M22（上升）。', '手動下降：LDI X004、AND X005、ANI X006、ANI X001、OUT M30。上升同理用 X6、X2、M32。', '吸盤切換：LDI X004、ANDP X007、ALT M31。自動啟動時 RST M31，交給步序決定（不要在切換模式的瞬間放開，吸著的工件會掉）。', '切到手動要停下自動：LDI X004、ZRST S20 S22，再 SET S0。', '輸出區是最後的決策點，相反方向在這裡再互鎖一次：LD M20 OR M30 ANI Y002 OUT Y000；LD M21 OR M31 OUT Y001；LD M22 OR M32 ANI Y000 OUT Y002。'],
+     'solution': 'LD M8002\nSET S0\nLDI X004\nZRST S20 S22\nLDI X004\nSET S0\nSTL S0\nLD X000\nAND X004\nAND X002\nSET S20\nSTL S20\nOUT M20\nLD X001\nSET S21\nSTL S21\nOUT M21\nOUT T0 K10\nLD T0\nSET S22\nSTL S22\nOUT M21\nOUT M22\nLD X002\nSET S0\nRET\nLDI X004\nAND X005\nANI X006\nANI X001\nOUT M30\nLDI X004\nAND X006\nANI X005\nANI X002\nOUT M32\nLDI X004\nANDP X007\nALT M31\nLD X004\nAND X000\nRST M31\nLD M20\nOR M30\nANI Y002\nOUT Y000\nLD M21\nOR M31\nOUT Y001\nLD M22\nOR M32\nANI Y000\nOUT Y002',
      'tests': [('手動：按住下降才降，放開就停', [('set', 'X005', 1), ('wait', 300), ('is', 'Y000', 1), ('set', 'X005', 0), ('wait', 50), ('is', 'Y000', 0)]), ('手動：降到下限自己停', [('set', 'X005', 1), ('wait', 2400), ('is', 'Y000', 0), ('is', 'X001', 1)]), ('手動：下降和上升一起按，兩個都不動', [('set', 'X001', 0), ('set', 'X005', 1), ('set', 'X006', 1), ('stays', 'Y000', 0, 300), ('is', 'Y002', 0)]), ('手動模式按自動啟動：無效', [('set', 'X000', 1), ('wait', 60), ('set', 'X000', 0), ('wait', 60), ('stays', 'Y000', 0, 500)]), ('自動：一循環順序正確', [('set', 'X004', 1), ('wait', 50), ('set', 'X000', 1), ('sequence', 6000, ['Y000', 'Y001', 'Y002'], ['Y000', 'Y001', 'Y002'])]), ('自動中按手動上升：無效', [('set', 'X004', 1), ('wait', 50), ('set', 'X000', 1), ('wait', 60), ('set', 'X000', 0), ('wait', 60), ('set', 'X006', 1), ('stays', 'Y002', 0, 500), ('is', 'Y000', 1)]), ('自動中切到手動：自動停下，手動可以接手', [('set', 'X004', 1), ('wait', 50), ('set', 'X000', 1), ('wait', 60), ('set', 'X000', 0), ('wait', 60), ('wait', 500), ('set', 'X004', 0), ('wait', 50), ('stays', 'Y000', 0, 300), ('set', 'X006', 1), ('wait', 100), ('is', 'Y002', 1)])],
     },
     {"id": "E12", "lesson": "6", "free": True, "title": "雙燈交替閃爍（SFC 單流程）",
@@ -1865,7 +1865,7 @@ EXERCISES = [
                 [("stays", "Y000", 0, 800), ("stays", "Y002", 0, 300)])]},
 
     {"id": "E19", "lesson": "C2", "free": False, "title": "氣壓乙級 PLC 題：釋壓迴路（08000-1090202）",
-     "plant": "pneu_relief", "exam": True, "latched": {"S": (500, 899), "M": (500, 1023), "D": (200, 511)},
+     "plant": "pneu_relief", "exam": True, "latched": {"S": (500, 899), "M": (500, 1023), "D": (200, 511), "T": (246, 255), "C": (100, 199)},
      "task": "依 08000-1090202「PLC-氣壓控制－釋壓迴路」的操作功能（只練 PLC 程式）。I/O 和 E18 相同，不用 Y11。\n"
              "動作順序：A+ 到 a1 → B+ → A- → C+ → B- → A+ 到 a2 → A-、C- 同時回原點。\n"
              "・燈號、手動步進、單一循環、連續循環、運轉中切換無效：同 E18。\n"
@@ -2350,6 +2350,8 @@ MESSAGES = [
     (r"(C2[0-5]\d) out of range", "%s 是 32 位元或高速計數器（C200～C255），實機 FX3S 有，但本站模擬器還不支援；請改用 C0～C31"),
     (r"(\S+) out of range", "%s 超出範圍"),
     (r"cannot write word operand (\S+)", "本站模擬器的 MOV、ADD 這類指令目前只能寫到 D、KnY、KnM，不能寫到 %s（實機 FX3S 可以）；要清計時器、計數器請用 RST 或 ZRST"),
+    (r"bad word operand (K\dS\d+)", "%s：位數指定讀 S（KnS）實機 FX3S 可以，本站模擬器還不支援；請改用 KnM 或 KnX、KnY"),
+    (r"bad word operand (\S+)", "看不懂數值元件 %s"),
     (r"bad ZRST range (\S+) (\S+)", "ZRST %s %s：起點和終點要是同一種元件，而且起點 ≤ 終點"),
     (r"special device (\S+) not allowed", "這個模擬器不支援特殊元件 %s"),
     (r"STL needs an S device", "STL 後面要接 S 元件"),
@@ -2361,8 +2363,8 @@ MESSAGES = [
 FX_UNSUPPORTED = {"CJ", "CALL", "SRET", "FEND", "FOR", "NEXT", "IRET", "EI", "DI", "WDT", "BMOV", "FMOV", "XCH", "SMOV", "CML",
                   "WAND", "WOR", "WXOR", "NEG", "SEGD", "SEGL", "DECO", "ENCO", "SUM", "BON", "MEAN", "ANS", "ANR", "SQR", "FLT",
                   "PLSY", "PWM", "PLSR", "ZRN", "PLSV", "DSZR", "ABS", "TKY", "HKY", "DSW", "ARWS", "RS", "TRD", "TWR", "HOUR",
-                  "VRRD", "VRSC", "INV", "MEP", "MEF", "SPD", "HSCS", "HSCR", "REF", "REFF", "ROR", "RCR", "RCL", "WSFR", "WSFL",
-                  "SFWR", "SFRD", "ASCI", "HEX", "CCD", "PID", "SER", "ALT", "ZCP", "FROM", "TO", "RD3A", "WR3A", "IVCK", "IVDR"}
+                  "VRRD", "VRSC", "INV", "MEP", "MEF", "SPD", "HSCS", "HSCR", "REF", "REFF", "RCR", "RCL", "WSFR", "WSFL",
+                  "SFWR", "SFRD", "ASCI", "HEX", "CCD", "PID", "SER", "FROM", "TO", "RD3A", "WR3A", "IVCK", "IVDR"}
 
 
 def _unknown_op(op):
@@ -2485,13 +2487,7 @@ class Rig(object):
         old = self.plc
         self.plc = PLC(program, scan_ms=SCAN)
         self.plc.x_in[:] = dead.x_in
-        keep = self.ex.get("latched", {})                 # battery / EEPROM backed ranges of the CPU
-        for lo, hi in [keep["S"]] if "S" in keep else []:
-            self.plc.s[lo:hi + 1] = old.s[lo:hi + 1]
-        for lo, hi in [keep["M"]] if "M" in keep else []:
-            self.plc.m[lo:hi + 1] = old.m[lo:hi + 1]
-        for lo, hi in [keep["D"]] if "D" in keep else []:
-            self.plc.d[lo:hi + 1] = old.d[lo:hi + 1]
+        restore_latched(self.plc, old, self.ex.get("latched", {}), program)   # battery / EEPROM backed ranges
         if self.plant:
             self.plant.plc = self.plc
             self.plant.apply()

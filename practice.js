@@ -292,7 +292,10 @@ async function boot() {
     cat = JSON.parse(py.runPython("from practice_bridge import catalog; catalog()"));
     const route = () => {
       const id = location.hash.slice(1).split("?")[0];
-      open(id === "FREE" || cat.some((e) => e.id === id) ? id : cat[0].id);
+      const known = id === "FREE" || cat.some((e) => e.id === id);
+      open(known ? id : cat[0].id);
+      if (id && !known)                            /* an old or mistyped link: say so instead of silently showing E1 */
+        $("task").insertAdjacentHTML("afterbegin", `<p class="callout warn">找不到「${esc2(id)}」這一題，先打開第一題。如果是剛更新的網站，請按重新整理。</p>`);
       const shared = new URLSearchParams(location.search).get("il");
       if (shared && id === "FREE" && !route.used) {
         route.used = true;
