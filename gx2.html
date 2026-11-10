@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="d9c8cffa56">
+<meta name="ll-version" content="31a87f29a6">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GX Works2 實作：FX3S 的階梯圖、STL 與 SFC | LadderLab</title>
@@ -455,7 +455,7 @@ RET</pre>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=dc519ef140"></script>
+<script src="py/bundle.js?v=6868306813"></script>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=70538253ef"></script>
 <script src="course.js?v=764fe70243"></script>
@@ -469,7 +469,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "d9c8cffa56" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "31a87f29a6" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
