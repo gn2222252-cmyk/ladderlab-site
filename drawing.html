@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>考前畫圖練習：PLC I/O 配線圖與外部接線圖 | LadderLab</title>
+<meta name="description" content="氣壓乙級第 1 階段的 PLC I/O 配線圖、工業配線乙級第一站的 A4 PLC 外部接線圖：要畫哪些東西、評審表看什麼、常被扣分的地方，附自我檢查表。">
+<link rel="stylesheet" href="style.css?v=5f8ed510af">
+</head>
+<body class="learn guide-page">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html" class="here">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="tocbtn" class="ghost only-narrow" type="button">目錄</button>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="contents">
+    <h3>考前畫圖練習</h3>
+    <ol>
+      <li><a href="#p1">1 氣壓乙級：PLC I/O 配線圖</a></li>
+      <li><a href="#p2">2 氣壓乙級：評審表看什麼</a></li>
+      <li><a href="#p3">3 氣壓乙級：自我檢查表</a></li>
+      <li><a href="#w1">4 工配乙級：A4 外部接線圖</a></li>
+      <li><a href="#w2">5 工配乙級：評審表看什麼</a></li>
+      <li><a href="#w3">6 工配乙級：自我檢查表</a></li>
+      <li><a href="#src">出處</a></li>
+    </ol>
+    <p class="toc-note">本頁整理勞動部公開的術科測試應檢參考資料。實際應檢以技能檢定中心與辦理單位公告的最新版本為準。</p>
+  </nav>
+
+  <main class="lesson guide">
+    <div id="cbar" data-auto hidden></div>
+    <p class="crumb"><a href="exam.html">技能檢定</a> · 考前畫圖練習</p>
+    <h1>第一張圖錯了，後面全部白做</h1>
+    <p class="lead-text">兩科乙級都要先畫圖。<b>氣壓乙級</b>第 1 階段的三張圖（氣壓控制迴路圖、電氣控制迴路圖、PLC I/O 配線圖），只要有一張被勾「未依題意繪製設計圖」，整個術科就<b>以 0 分計</b>。<b>工業配線乙級</b>第一站的「PLC 外部接線圖」和實際配線的位址或數量不符，就是<b>重大缺點，這一站不合格</b>。這頁用 <a href="practice.html#E18">E18</a>、<a href="practice.html#E22">E22</a> 示範要畫什麼、監評看什麼，最後各有一份自我檢查表。考前至少照題目完整畫 3 次，每次用檢查表自己對。</p>
+
+    <section id="p1">
+      <h2>1　氣壓乙級：答案卷上的 PLC I/O 配線圖（以 E18 變速迴路為例）</h2>
+      <p>PLC 題的答案卷是一張 A3 直式的「控制迴路圖」大格子加上元件表（名稱、規格、數量）。三張圖都畫在這張 A3 上。第 1 階段結束交卷、監評影印，影本是評分依據；正本在第 2、3 階段發還，照它裝配。</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>要畫的東西</th><th>重點</th></tr></thead>
+        <tbody>
+          <tr><td>PLC 本體</td><td>寫型號（你自備的那一台，例如 FX3U-32MT/ES），端子名稱照實機印的寫：S/S、X0…、COM1…、Y0…</td></tr>
+          <tr><td>電源</td><td>PLC 本體電源（AC 型接 L、N，並接地）；DC24V 電源供應器的 +24V、0V</td></tr>
+          <tr><td>輸入共點</td><td>S/S 接 +24V（漏型，配 NPN）還是 0V（源型，配 PNP），要和感測器型式一致（<a href="wiring.html">接線頁</a>）</td></tr>
+          <tr><td>輸入元件（官方 I/O 表）</td><td>X0 ST、X1 STOP（按鈕，a 接點（常開））；X2 EMS（急停，<b>b 接點（常閉）</b>）；X3 復歸／運轉（二段選擇開關）；X4 復歸鈕；X5～X7 手動步進、單一、連續（多段選擇開關）</td></tr>
+          <tr><td>感測器（自己編號）</td><td>a0、a1、a2、b0、b1、c0、c1 每一個都要畫，例如 X10～X16。二線式磁簧開關多數有極性，依感測器標示標出 ＋／－</td></tr>
+          <tr><td>輸出共點</td><td>電晶體漏型輸出 COM 接 0V；繼電器輸出依負載電源。有好幾個 COM 時<b>每一個都要接</b></td></tr>
+          <tr><td>輸出負載（官方 I/O 表）</td><td>Y0～Y5＝SOL A+、A-、B+、B-、C+、C-；加上自己編號的綠、紅、黃燈和快速閥。負載另一端接回正確的電源極性</td></tr>
+          <tr><td>和氣壓迴路圖一致</td><td>電磁閥線圈、感測器位置的數量和名稱，要和氣壓控制迴路圖<b>完全相同</b>（雙線圈閥兩個線圈、單線圈閥一個）</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <section id="p2">
+      <h2>2　氣壓乙級：評審表看什麼</h2>
+      <ul class="steps-list">
+        <li><b>重大缺點「未依題意繪製設計圖」（任一項被勾，以 0 分計）</b>：a. 氣壓控制迴路圖（氣壓缸或閥件的數量、功能、管路配置）；b. 電氣控制迴路圖；<b>c. PLC I/O 配線圖：作動線圈、位置開關或控制開關的數量或功能、線路配置</b>。</li>
+        <li><b>一般扣分（每階段累計超過 40 分，該階段不及格）</b>：
+          <ul><li><b>PLC I/O 配線圖極性連接或接線邏輯錯誤：每處 5 分，最多 30 分</b>（扣得最重）</li>
+            <li>電氣元件符號繪製不正確：每處 2 分</li>
+            <li>元件表沒有清楚寫名稱、規格、數量：每處 2 分</li>
+            <li>圖面骯髒、線條凌亂：每處 2 分</li></ul></li>
+        <li><b>第 2、3 階段</b>：迴路圖和裝配的管路或線路有 2 處以上不符、輸出入信號和指定 I/O 編號不符，都是重大缺點。圖畫錯，後面照圖裝也會錯。</li>
+      </ul>
+    </section>
+
+    <section id="p3">
+      <h2>3　氣壓乙級：自我檢查表（PLC I/O 配線圖）</h2>
+      <ul class="checklist">
+        <li><label><input type="checkbox"> PLC 型號、端子名稱照<b>自己帶的那一台</b>寫，不是照課本</label></li>
+        <li><label><input type="checkbox"> X0～X7、Y0～Y5 照官方參考配置表，監評指定的 2 處已經改</label></li>
+        <li><label><input type="checkbox"> 感測器 a0～c1 每一個都畫了，編號和程式一致</label></li>
+        <li><label><input type="checkbox"> 電磁閥線圈的數量和名稱，和氣壓迴路圖完全一樣</label></li>
+        <li><label><input type="checkbox"> 急停畫成 b 接點（常閉）</label></li>
+        <li><label><input type="checkbox"> S/S 接哪裡畫清楚，和感測器 NPN／PNP 一致</label></li>
+        <li><label><input type="checkbox"> 每一個 COM 都接了，負載另一端接回正確的電源極性</label></li>
+        <li><label><input type="checkbox"> 有極性的磁簧開關標了 ＋／－</label></li>
+        <li><label><input type="checkbox"> 用標準電氣符號，線條用尺畫、不交叉混亂</label></li>
+        <li><label><input type="checkbox"> 元件表寫了 PLC、電源供應器、按鈕、選擇開關、感測器、電磁閥的名稱、規格和數量</label></li>
+      </ul>
+    </section>
+
+    <section id="w1">
+      <h2>4　工業配線乙級：A4「PLC 外部接線圖」（以 E22 自動門為例）</h2>
+      <p>流程：在繪圖區確認監評指定的 2 個輸入、2 個電磁接觸器輸出位址 → 在有試場戳記的 A4 畫「PLC 外部接線圖」、A3 畫「控制圖說」（階梯圖或流程圖）→ 監評簽名後才能進崗位 → 通電前報備，監評在 <b>A4 上簽名並註記時間</b> → 時間到監評收走所有圖說，作為評分依據。</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>要畫的東西</th><th>重點（第五題）</th></tr></thead>
+        <tbody>
+          <tr><td>PLC 本體</td><td>型號、輸入端子、輸出端子、共點和電源端子；第五題是繼電器輸出、16 入／16 出以上</td></tr>
+          <tr><td>輸入</td><td>PB1 開門、PB2 關門、PB3 警報復歸；COS 手動／自動；<b>LS1、LS2 限制開關用 b 接點</b>（機具「各具 1b 接點」，端子台只引出 NC）；光電開關 PH（NO 或 NC 選一種並寫清楚）；<b>TH 積熱電驛用 b 接點</b>；輸入共點和 DC24V 電源</td></tr>
+          <tr><td>輸出</td><td>MC1 開門、MC2 關門線圈；<b>MC1、MC2 外部連鎖</b>（MC1 線圈串 MC2 的 b 輔助接點，反過來也一樣，見 <a href="safety.html#s4">硬體互鎖</a>）；PL1～PL4、BZ；繼電器輸出的 COM 接控制電源</td></tr>
+          <tr><td>指示燈</td><td>試題規定 PL1、PL2 作為運轉指示時<b>不能由 PLC 輸出接點直接控制</b>；一種做法是用 MC 的輔助 a 接點帶燈（試題只規定「不能直接」，沒規定怎麼接）</td></tr>
+          <tr><td>指定位址</td><td>監評指定的 2 個輸入和 2 個 MC 輸出，照指定編號畫</td></tr>
+          <tr><td>畫法</td><td>用尺規畫，元件符號、線號清楚</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <section id="w2">
+      <h2>5　工業配線乙級：評審表看什麼</h2>
+      <ul class="steps-list">
+        <li><b>重大缺點（任一項，第一站不合格）</b>：<b>PLC 外部接線圖與實際配線的位址或數量不符</b>；未經監評認可自行通電（A4 上沒有簽名和時間）；第一題 EMO 直接接 PLC 輸入、沒有經過安全電驛。</li>
+        <li><b>主要缺點（任 3 項不合格）</b>：指示燈由 PLC 輸出接點直接控制；未依規定做外部連鎖；<b>未按規定使用 b 接點連接 PLC 輸入端子</b>；<b>未以尺規繪圖（含 PLC 外部接線圖）</b>。</li>
+        <li>主要缺點和次要缺點合計 6 項以上也不合格。</li>
+        <li>監評測功能時照評審表的步驟測，不會依你畫的圖要求額外功能；圖是用來對照配線的，所以<b>圖和實際接線一定要一致</b>。</li>
+      </ul>
+    </section>
+
+    <section id="w3">
+      <h2>6　工業配線乙級：自我檢查表（A4 外部接線圖）</h2>
+      <ul class="checklist">
+        <li><label><input type="checkbox"> 監評指定的 2 個輸入、2 個 MC 輸出位址已經照寫</label></li>
+        <li><label><input type="checkbox"> 圖上每一個輸入、輸出的編號和數量，和實際要接的線完全一致</label></li>
+        <li><label><input type="checkbox"> TH、急停、限制開關這些「斷線要等同動作」的訊號都用 b 接點（常閉）接 PLC</label></li>
+        <li><label><input type="checkbox"> 第一題：EMO 經安全電驛、用 2 組 b 接點，不直接接 PLC 輸入</label></li>
+        <li><label><input type="checkbox"> MC1、MC2（正反轉）畫了外部連鎖</label></li>
+        <li><label><input type="checkbox"> 運轉指示燈不是直接由 PLC 輸出接點控制（看題目的其它規定）</label></li>
+        <li><label><input type="checkbox"> 第二題：兩個指定的 MC 輸出先串 CB1、CB2 再接線圈（輸出確認用）</label></li>
+        <li><label><input type="checkbox"> 輸入共點、輸出 COM、電源極性和電壓（DC24V、220VAC）標清楚</label></li>
+        <li><label><input type="checkbox"> 用尺規畫，元件符號、線號清楚</label></li>
+        <li><label><input type="checkbox"> 自備 PLC 的話，在 I/O 位址示意圖背面畫自己 PLC 的接線圖</label></li>
+        <li><label><input type="checkbox"> 通電前報備，監評在 A4 上簽名和註記時間</label></li>
+      </ul>
+    </section>
+
+    <section id="src">
+      <h2>出處</h2>
+      <ul class="steps-list">
+        <li>勞動部 氣壓乙級術科測試應檢參考資料 080002B15（109.1.15 審定，112.8.1 修正）：應檢人須知、自備工具表、答案卷、評審表。</li>
+        <li>勞動部 工業配線乙級術科測試應檢參考資料 013002B13（110.2.20 修訂）：應檢人須知、監評人員注意事項、第五題動作要求與機具表、評審表。</li>
+        <li>指示燈接法、磁簧開關極性屬於一般做法，試題沒有規定細節，以實際元件和考場說明為準。</li>
+      </ul>
+    </section>
+  </main>
+</div>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機、勞動部技能檢定中心無關。</p></footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="course_map.js?v=5b7428b41f"></script>
+<script src="course.js?v=196817d51d"></script>
+<script src="common.js?v=20ae5aa5c1"></script>
+<script>
+  document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
+  document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));
+</script>
+</body>
+</html>

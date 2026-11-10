@@ -2256,6 +2256,35 @@ EXERCISES = [
                ("場內沒車時出口誤動作：D0 不會變負數", _E27_OUT * 2 + [("d", "D0", 0)] + _E27_IN + [("d", "D0", 1)])]},
 ]
 
+
+def _e18_part(pid, title, upto, lead, starter):
+    """E18 in smaller steps (tester round 2): the same machine, I/O and safety rules, the first `upto` tests."""
+    base = next(x for x in EXERCISES if x["id"] == "E18")
+    part = dict(base, id=pid, title=title, tests=base["tests"][:upto], starter=starter,
+                task=lead + "\n\n" + base["task"],
+                hints=[h for h in base["hints"] if not ("急停" in h or "復歸" in h)] if upto < 13 else base["hints"])
+    part["solution_note"] = "參考解答是完整版 E18（含急停、復歸），這一段只評前 %d 項。" % upto
+    return part
+
+
+_E18_IO = ("; I/O：X0 ST、X1 STOP、X2 EMS（常閉，練習時先切 ON）、X3 復歸／運轉（ON＝運轉）、X4 復歸鈕、X5 手動步進、X6 單一、X7 連續\n"
+           "; 感測器 a0 X10、a1 X11、a2 X12、b0 X13、b1 X14、c0 X15、c1 X16；Y0～Y5＝A+ A- B+ B- C+ C-；Y6 綠、Y7 紅、Y10 黃、Y11 A 快速閥\n")
+_i18 = next(i for i, x in enumerate(EXERCISES) if x["id"] == "E18")
+EXERCISES[_i18:_i18] = [
+    _e18_part("E18a", "氣壓乙級 E18 分段 1：單一循環＋燈號", 4,
+              "【分段 1／3】這一段只做單一循環和燈號：開機在原點就當作已復歸；模式開關、急停、復歸、停電留到下兩段。評分只看前 4 項。",
+              "; E18a：單一循環＋燈號\n" + _E18_IO +
+              "; 步序（位移－時間圖 8 格）：S20 A+ 到 a1 → S21 B+ 到 b1 → S22 A- 到 a0 → S23 C+ 到 c1 → S24 B- 到 b0\n"
+              ";   → S25 A+（慢）到 a1 → S26 A+＋Y11（快）到 a2 → S27 A-、C- 到 a0 而且 c0 → 回 S0\n"
+              "; 燈號：在原點而且沒在跑＝綠燈；跑的時候＝紅燈\n"),
+    _e18_part("E18b", "氣壓乙級 E18 分段 2：加入三種模式", 7,
+              "【分段 2／3】在分段 1 的程式加上手動步進（X5）、連續循環（X7）、STOP（X1），而且運轉中切換模式無效。急停、復歸、停電留到 E18。評分看前 7 項。",
+              "; E18b：把 E18a 的程式貼過來，再加：\n" + _E18_IO +
+              "; 1. 按 ST 的那一刻把模式鎖進 M（例如 M20 手動、M21 單一、M22 連續），運轉中只看 M，不看開關\n"
+              "; 2. 手動步進：每按一次 ST 給一個執行許可，換步時清掉\n"
+              "; 3. 連續循環：S27 做完回 S20；按 STOP 記住請求，做完這一輪才回 S0\n"),
+]
+
 # ---------------------------------------------------------------- compile
 DEVICE_RE = re.compile(r"^(X|Y)([0-7]{1,3})$|^(M)(\d{1,4})$|^(S)(\d{1,3})$|^(T|C)(\d{1,3})$|^(D)(\d{1,4})$")
 WORD_RE = re.compile(r"^K-?\d{1,5}$|^H[0-9A-F]{1,4}$|^K[1-4][XYMS]\d+$|^N[0-7]$")

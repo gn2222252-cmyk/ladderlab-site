@@ -831,6 +831,24 @@ window.COURSE = {
      "label": "檢定專區：考什麼、怎麼評"
     },
     {
+     "k": "G",
+     "id": "drawing.html",
+     "href": "drawing.html",
+     "label": "考前畫圖練習：I/O 配線圖與外部接線圖"
+    },
+    {
+     "k": "E",
+     "id": "E18a",
+     "href": "practice.html#E18a",
+     "label": "練習 E18a 氣壓乙級 E18 分段 1：單一循環＋燈號"
+    },
+    {
+     "k": "E",
+     "id": "E18b",
+     "href": "practice.html#E18b",
+     "label": "練習 E18b 氣壓乙級 E18 分段 2：加入三種模式"
+    },
+    {
      "k": "E",
      "id": "E18",
      "href": "practice.html#E18",

@@ -330,12 +330,13 @@ RET</pre>
         <li><b>接線</b>：USB 線接到 PLC 面板右邊蓋子裡的 USB 埠（<a href="wiring.html#w6">看位置</a>）。</li>
         <li><b>設定連線</b>：左下導航視窗切到「連接目標」，點兩下 <span class="menu">Connection1</span>。「電腦側 I/F」點兩下 <b>Serial USB</b>，選 <b>USB</b>；「PLC 側 I/F」選 <b>PLC Module</b>。按<b>通訊測試</b>：成功會顯示 PLC 型號（FX3S）。
           <p class="err">失敗：檢查 USB 線、PLC 電源、驅動，或換一個 USB 口再試。</p></li>
-        <li><b>寫入</b>：<span class="menu">線上(O)</span> → <span class="menu">PLC 寫入 (Write to PLC)</span>。勾<b>參數 + 程式</b>，按執行。PLC 在 RUN 時軟體會問要不要先遠端 STOP，選是。</li>
+        <li><b>寫入</b>：<span class="menu">線上(O)</span> → <span class="menu">PLC 寫入 (Write to PLC)</span>。勾<b>參數 + 程式</b>，按執行。PLC 在 RUN 時軟體會問要不要先遠端 STOP，選是。要把 PLC 裡的程式讀回電腦，用 <span class="menu">線上(O)</span> → <span class="menu">PLC讀取(R)</span>。</li>
+        <li><b>版本</b>：FX3S 要 GX Works2 Ver.1.492N 以上；學校如果用 FX-30P 手持書寫器，要 Ver.1.50 以上才支援 FX3S（FX3S 硬體手冊 5.2.1 節）。版本太舊時可以選替代機型 FX3G 寫，但只能用兩種機型都有的指令和元件範圍。</li>
         <li><b>切到 RUN</b>：把 PLC 上的 RUN/STOP 開關撥到 RUN，或用 <span class="menu">線上(O)</span> → <span class="menu">遠端操作</span>。</li>
-        <li><b>監看</b>：<span class="menu">線上(O)</span> → <span class="menu">監看 (Monitor)</span> → <span class="menu">監看開始 (Start Monitoring)</span>（常用快捷鍵 F3）。
+        <li><b>監視</b>：<span class="menu">線上(O)</span> → <span class="menu">監視(M)</span> → 監視開始（英文版 Online → Monitor → Start Monitoring；常用快捷鍵 F3）。注意繁中版「線上」選單裡<b>「監視(M)」和「監看(T)」是兩個不同的項目</b>，看階梯圖通電狀態用「監視」。子選單的確切文字以你電腦上的畫面為準。
           <ul><li>階梯圖：導通的接點、通電的線圈會填滿顏色。</li>
             <li>SFC：<b>目前有效的步會反白</b>。監看時畫面是唯讀的；要修改先回到寫入模式（常用快捷鍵 F2）。</li></ul></li>
-        <li><b>看所有元件</b>：<span class="menu">線上(O)</span> → <span class="menu">監看</span> → <span class="menu">元件/緩衝記憶體批量監看</span>，輸入 X0 或 S0 看一整排的狀態。</li>
+        <li><b>看所有元件</b>：<span class="menu">線上(O)</span> → <span class="menu">監視(M)</span> → <span class="menu">元件/緩衝記憶體批量監視</span>，輸入 X0 或 S0 看一整排的狀態。</li>
       </ol>
     </section>
 
@@ -425,9 +426,9 @@ RET</pre>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=726b20f82d"></script>
+<script src="py/bundle.js?v=ed9f61e0cf"></script>
 <script src="config.js?v=eca98dd0d9"></script>
-<script src="course_map.js?v=2542ce5942"></script>
+<script src="course_map.js?v=5b7428b41f"></script>
 <script src="course.js?v=196817d51d"></script>
 <script src="common.js?v=20ae5aa5c1"></script>
 <script src="waitlist.js?v=92656de277"></script>
