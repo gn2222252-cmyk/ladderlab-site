@@ -6,6 +6,7 @@ import json
 import re
 
 from practice_bridge import Practice
+from exercises import SCAN
 from ladder_view import bit, word
 from plants import faults_of
 
@@ -94,6 +95,41 @@ class Sandbox(Practice):
         return json.dumps(meta, ensure_ascii=False)
 
     watched = ()
+    running = True
+
+    def compile(self, text):
+        """Writes a program into the soft PLC. The switches keep their positions (they are wired, not part of the program)."""
+        keep = list(self.rig.plc.x_in) if self.rig else None
+        before = (self.rig, self.rungs, self.leaves, getattr(self, "items", []))
+        out = Practice.compile(self, text)
+        if json.loads(out)["errors"]:                  # a program with errors is not written: the PLC keeps the old one
+            self.rig, self.rungs, self.leaves, self.items = before
+            return out
+        if self.rig and keep is not None:
+            self.rig.plc.x_in[:] = keep
+        if self.rig and not self.running:
+            self._stop_outputs()
+        return out
+
+    def _stop_outputs(self):
+        """STOP: the CPU stops scanning, every output turns OFF and devices that are not latched are cleared."""
+        self.rig.power_cycle(0)
+
+    def run_mode(self, on):
+        """The RUN/STOP switch. STOP -> RUN restarts the scan, so M8002 is ON again for the first scan."""
+        on = bool(on)
+        if self.rig and on != self.running:
+            self.rig.power_cycle(0)
+        self.running = on
+
+    def tick(self, ms):
+        if not self.rig:
+            return
+        if self.running:
+            self.rig.run(ms)
+        elif self.rig.plant:
+            for _ in range(int(ms) // SCAN):
+                self.rig.plant.step(SCAN)
 
     def watch(self, names):
         """Devices the page shows in the watch list (the ones the program uses)."""
@@ -114,4 +150,5 @@ class Sandbox(Practice):
                 else:
                     w[n] = [word(p, n)]
             out["watch"] = w
+            out["run"] = self.running
         return json.dumps(out)

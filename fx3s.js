@@ -137,7 +137,7 @@ const FX3S = (() => {
     const m = mount(el);
     m.svg.setAttribute("viewBox", `${BX - 30} ${BY - 8} ${BW + 60} ${BH + 16}`);
     m.setLeds({ POW: 1, RUN: 1, SW: 1 });
-    return { update(x, y) { m.setLeds(Object.assign({ POW: 1, RUN: 1, SW: 1 }, x, y)); } };
+    return { svg: m.svg, update(x, y, st) { m.setLeds(Object.assign({ POW: 1, RUN: 1, SW: 1 }, st || {}, x, y)); } };
   }
 
   /* Step by step wiring animation. scene: {devs:{id:[kind,x,y,opts]}, wires:{id:{pts,c,label}}, steps:[{say,point,wires,devs,leds,flow}]} */

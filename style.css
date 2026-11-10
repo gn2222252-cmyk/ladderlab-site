@@ -533,3 +533,52 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .inputs.free-io .inp{grid-template-columns:12px 1fr;padding:4px 6px;justify-items:start}
 .lamps.free-io{display:grid;grid-template-columns:repeat(4,1fr);gap:2px 6px}
 .watch{width:100%;font-size:13px;border-collapse:collapse}.watch td{padding:2px 4px;border-bottom:1px solid var(--line)}.watch .won{color:var(--on);font-weight:700}
+
+/* soft PLC + self-wired machine (sim.html) */
+#fxlive .fx-wrap,#fxlive.fx-wrap{margin:0 0 6px;border:0;background:transparent}
+#fxlive .fx-sw,#fxlive .fx-knob,#fxlive .fx-cover{cursor:pointer}
+.fx-led.st[data-led="ERR"].on{fill:#ff3b30;stroke:#b3170f;filter:drop-shadow(0 0 3px #ff3b30)}
+.plc-ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.plc-prog{max-height:180px;overflow:auto;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin:6px 0 0}
+.sim-pending{background:#fff6cc;color:#5a4300;border:1px solid #e8c95a;border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:14px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sim-pending{background:#3a3010;color:#f3df9a;border-color:#7a6420}}
+.inputs.free-io .inp small,.lamps.free-io li small{font-size:10px;color:var(--mute);margin-left:2px}
+.inputs.free-io .inp.hold{border-style:dashed}
+.inputs.free-io .inp.sensor{opacity:.75}
+.k-wrap{margin-top:12px}
+.k-scene{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.k-card{border:1px solid var(--line);border-radius:10px;padding:6px 8px 4px;background:var(--bg);width:120px}
+.k-card.wide{width:250px}.k-card.wider{width:330px}
+.k-card svg{display:block;width:100%;height:auto}
+.k-card p{margin:2px 0 0;font-size:13px;text-align:center}
+.k-base,.k-mbody{fill:#5d6573}.k-hub{fill:#d9dee6}
+.k-lamp{opacity:.35;transition:opacity .1s}.k-red{fill:#e53935}.k-green{fill:#2fbf5b}.k-yellow{fill:#f6c026}
+.k-shine{fill:#fff;opacity:.25}
+.k-card.on .k-lamp{opacity:1}.k-card.on .k-red{filter:drop-shadow(0 0 10px #ff3b30)}.k-card.on .k-green{filter:drop-shadow(0 0 10px #2fbf5b)}.k-card.on .k-yellow{filter:drop-shadow(0 0 10px #f6c026)}
+.k-buz{fill:#2a303a}.k-buzhole{fill:#5d6573}.k-wave{fill:none;stroke:var(--on);stroke-width:3;stroke-linecap:round;opacity:0}
+.k-card.on .k-wave{animation:kbuzz .3s steps(2) infinite}
+@keyframes kbuzz{0%{opacity:1}100%{opacity:.2}}
+.k-fan path{fill:#a9b6c8}.k-card.on .k-fan path{fill:#5b9bff}
+.k-cylbody{fill:#cfd6e0;stroke:#7f8a9c}.k-piston{fill:#5d6573}.k-rod{fill:#9aa4b4}.k-head{fill:#5d6573}
+.k-air{fill:none;stroke:#7f8a9c;stroke-width:2}.k-card.on .k-air{stroke:var(--on)}
+.k-small{font-size:10px;fill:var(--mute)}
+.k-sens rect{fill:#c9ced6;stroke:#7f8a9c}.k-sens text{font-size:10px;fill:var(--ink);text-anchor:middle}
+.k-sens.on rect{fill:#ff3b30;stroke:#b3170f;filter:drop-shadow(0 0 3px #ff3b30)}
+.k-beam{stroke:#ff3b30;stroke-width:1.5;stroke-dasharray:3 3;opacity:.25}.k-sens.on .k-beam{opacity:1}
+.k-belt{fill:#4b5565}.k-roll{fill:#9aa4b4}.k-stripe{stroke:#7f8a9c;stroke-width:2;stroke-dasharray:6 8}
+.k-card.on .k-stripe{animation:kbelt .6s linear infinite}
+@keyframes kbelt{to{stroke-dashoffset:-14}}
+.k-part{fill:#c98b3c;stroke:#7a5017}
+.k-box{width:auto;min-width:120px}
+.k-btns{display:flex;gap:10px;padding:6px 4px}
+.k-pb{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:transparent;padding:0;user-select:none;touch-action:none}
+.k-pb span{width:38px;height:38px;border-radius:50%;border:4px solid #5d6573;box-shadow:0 3px 0 #3a404b}
+.k-pb.k-nopb span{background:#2fbf5b}.k-pb.k-ncpb span{background:#e53935;width:44px;height:44px;border-color:#f6c026}
+.k-pb.down span{transform:translateY(3px);box-shadow:none}
+.k-pb small{font-size:11px;color:var(--ink)}
+.k-wire summary{cursor:pointer;font-size:14px;margin:4px 0}
+.k-table{border-collapse:collapse;font-size:13px;margin:4px 0}
+.k-table td{padding:2px 6px;border-bottom:1px solid var(--line)}
+.k-add{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.inputs.free-io .inp small{grid-column:1/-1;white-space:nowrap;margin:-2px 0 0}
+.lamps.free-io li{flex-wrap:wrap}.lamps.free-io li small{white-space:nowrap}

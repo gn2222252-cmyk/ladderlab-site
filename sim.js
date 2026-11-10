@@ -4,9 +4,11 @@
 let py = null, sb = null, M = null, tab = "ladder", mode = "write", layout = null, last = 0, chart = null;
 const $ = (id) => document.getElementById(id);
 const escS = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-let led = null, sfe = null, lstl = null;
+let led = null, sfe = null, lstl = null, fx = null, loadedIL = null, errLed = false, lastOut = {};
+const isFree = () => M && M.id === "free";
 const comment = (dev) => {
   if (!M || !dev) return "";
+  if (isFree()) return Kit.label(String(dev).toUpperCase().replace(/^([XY])0*(\d+)$/, (m, k, d) => k + d.padStart(3, "0")));
   const n = String(dev).toUpperCase().replace(/^([XY])0*(\d)/, (m, k, d) => k + d.padStart(3, "0").slice(-3));
   const f = M.inputs.concat(M.outputs).find((r) => r[0] === n || r[0] === dev);
   return f ? f[1] : "";
@@ -68,9 +70,18 @@ function setMode(m) {
   $("state").textContent = m === "write" ? "寫入模式：可以修改程式。改完按 F4 轉換。" : "監看模式（唯讀）：亮的接點、線圈是通電的。要修改按 F2。";
   showEditors();
 }
+/* the soft PLC runs what was last written: warn while the editor shows something else */
+const norm = (il) => String(il || "").split("\n").map((l) => l.trim().replace(/\s+/g, " ")).filter(Boolean).join("\n");
+function checkPending() {
+  if (loadedIL === null || !led) return;
+  let now = "";
+  try { now = currentIL().il; } catch (e) { now = ""; }
+  $("pending").hidden = norm(now) === norm(loadedIL);
+}
 function convert() {
   const cur = currentIL();
   if (cur.errors && cur.errors.length) {
+    errLed = true;
     $("errors").innerHTML = cur.errors.map((e) => `<li>${e.rung !== undefined ? `第 ${e.rung + 1} 條梯級：` : ""}${escS(e.msg)}</li>`).join("");
     if (tab === "ladder") led.showErrors(cur.errors);
     if (tab === "stl") lstl.showErrors(cur.errors);
@@ -78,10 +89,14 @@ function convert() {
   }
   const out = JSON.parse(sb.compile(cur.il));
   if (out.errors.length) {
+    errLed = true;
     $("errors").innerHTML = out.errors.map((e) => `<li>${e.line ? `指令第 ${e.line} 行：` : ""}${escS(e.msg)}</li>`).join("") + `<li class="hint">轉成的指令表可以在「指令表」分頁看。</li>`;
     return;
   }
   $("errors").innerHTML = "";
+  errLed = false; loadedIL = cur.il;
+  $("plcprog").textContent = cur.il.trim() ? cur.il.trim() + "\nEND" : "END";
+  $("pending").hidden = true;
   layout = out.rungs;
   const wl = watchList(cur.il);
   sb.watch(JSON.stringify(wl));
@@ -109,6 +124,33 @@ function watchList(il) {
   (il.match(/\b[MSTCD]\d+\b/g) || []).forEach((d) => { if (!seen.includes(d) && !/^M8\d{3}$/.test(d)) seen.push(d); });
   return seen.sort((a, b) => "MSTCD".indexOf(a[0]) - "MSTCD".indexOf(b[0]) || +a.slice(1) - +b.slice(1));
 }
+/* free mode: the X buttons and Y lamps follow what the learner wired (Kit) */
+const shortDev = (d) => d[0] + d.slice(1).replace(/^0+(?=\d)/, "");
+function freeIO() {
+  $("inputs").innerHTML = M.inputs.map(([dev]) => {
+    const k = Kit.inputKind(dev), t = Kit.tag(dev);
+    return `<button type="button" class="inp ${k}" data-dev="${dev}" data-kind="${k}" ${k === "sensor" ? "disabled" : ""} title="${escS(Kit.label(dev) || "切換開關：點一下 ON／OFF")}"><i></i><b>${shortDev(dev)}</b>${t ? `<small>${escS(t)}</small>` : ""}</button>`;
+  }).join("");
+  $("inputs").querySelectorAll(".inp").forEach((b) => {
+    const dev = b.dataset.dev, k = b.dataset.kind;
+    if (k === "switch") b.addEventListener("click", () => sb.toggle(dev));
+    if (k === "hold") {
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); Kit.press(dev, true); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } });
+      const up = () => Kit.press(dev, false);
+      b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up);
+    }
+  });
+  $("outputs").innerHTML = M.outputs.map(([dev]) => { const t = Kit.tag(dev); return `<li data-dev="${dev}" title="${escS(Kit.label(dev))}"><i></i><b>${shortDev(dev)}</b>${t ? `<small>${escS(t)}</small>` : ""}</li>`; }).join("");
+  if (layout) { ladderComment = comment; renderRungs($("mon-ladder"), layout.map((r, i) => [r, i]), {}); }
+  if (led) { led.redraw && led.redraw(); }
+}
+function kitPreset(il, note) {
+  ["ladder", "stl", "sfc", "il"].forEach((t) => loadInto(t, il));
+  tab = "ladder";
+  showTab("ladder");
+  convert();
+  $("note").textContent = "範例：" + note;
+}
 function openMachine(id) {
   M = JSON.parse(sb.machine(id));
   $("desc").textContent = M.desc;
@@ -116,9 +158,15 @@ function openMachine(id) {
   const free = M.id === "free";
   $("inputs").classList.toggle("free-io", free); $("outputs").classList.toggle("free-io", free);
   $("plant-box").hidden = !M.plant;
-  $("inputs").innerHTML = free ? M.inputs.map(([dev]) => `<button type="button" class="inp switch" data-dev="${dev}" data-kind="switch" title="點一下切換 ON／OFF"><i></i><b>X${parseInt(dev.slice(1), 10) === 0 ? "0" : dev.slice(1).replace(/^0+/, "")}</b></button>`).join("") : M.inputs.map(([dev, label, kind]) => `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}><i></i><span><b>${dev}</b> ${escS(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");
-  $("inputs").querySelectorAll(".inp").forEach(wireInput);
-  $("outputs").innerHTML = free ? M.outputs.map(([dev]) => `<li data-dev="${dev}"><i></i><b>Y${dev.slice(1).replace(/^0+(?=\d)/, "")}</b></li>`).join("") : M.outputs.map(([dev, label]) => `<li data-dev="${dev}"><i></i><b>${dev}</b> ${escS(label)}</li>`).join("");
+  $("kit-box").hidden = !free;
+  if (free) Kit.mount($("kit"), { xs: M.inputs.map((r) => r[0]), ys: M.outputs.map((r) => r[0]), onChange: freeIO, onPreset: kitPreset });
+  else Kit.unmount();
+  if (free) freeIO();
+  else {
+    $("inputs").innerHTML = M.inputs.map(([dev, label, kind]) => `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}><i></i><span><b>${dev}</b> ${escS(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");
+    $("inputs").querySelectorAll(".inp").forEach(wireInput);
+    $("outputs").innerHTML = M.outputs.map(([dev, label]) => `<li data-dev="${dev}"><i></i><b>${dev}</b> ${escS(label)}</li>`).join("");
+  }
   $("pfaults").innerHTML = (M.faults || []).map(([k, t]) => `<label class="check small"><input type="checkbox" data-f="${k}"> 製造故障：${escS(t)}</label>`).join("");
   $("pfaults").querySelectorAll("input").forEach((c) => c.addEventListener("change", () => sb.set_fault(c.dataset.f, c.checked)));
   let saved = null;
@@ -136,9 +184,19 @@ function openMachine(id) {
 function frame(t) {
   const dt = Math.min(100, last ? t - last : 16); last = t;
   if (sb) {
+    if (isFree()) { const want = Kit.step(dt, lastOut); Object.keys(want).forEach((d) => sb.set_input(d, want[d])); }
     sb.tick(Math.round(dt / 10) * 10);
     const st = JSON.parse(sb.state());
+    if (fx) {
+      const leds = {}, run = !st || st.run !== false;
+      if (st) { Object.keys(st.inputs).forEach((d) => { leds[shortDev(d)] = st.inputs[d]; }); Object.keys(st.outputs).forEach((d) => { leds[shortDev(d)] = st.outputs[d]; }); }
+      fx.update(leds, {}, { RUN: run && !!st, SW: run, ERR: errLed && (t % 1000 < 500) });
+      $("bRun").textContent = run ? "切到 STOP" : "切到 RUN";
+      $("plcinfo").textContent = st ? (run ? `RUN　執行 ${(st.time / 1000).toFixed(1)} 秒` : "STOP：輸出全部 OFF") : "沒有程式";
+    }
     if (st) {
+      lastOut = st.outputs;
+      if (isFree()) Kit.update(st);
       $("inputs").querySelectorAll(".inp").forEach((b) => b.classList.toggle("on", !!st.inputs[b.dataset.dev]));
       $("outputs").querySelectorAll("li").forEach((li) => li.classList.toggle("on", !!st.outputs[li.dataset.dev]));
       $("steps").textContent = st.steps.length ? "作用中的步：" + st.steps.join("、") : "沒有作用中的步";
@@ -172,16 +230,20 @@ $("example").onclick = () => {
   showTab(tab); convert();
 };
 $("clear").onclick = () => { led.set([]); lstl.set([]); sfe.set(SfcEdit.blank()); $("il").value = ""; setMode("write"); };
-$("il").addEventListener("input", () => save());
+$("il").addEventListener("input", () => { save(); checkPending(); });
 (async () => {
   try {
     py = await bootPython();
     sb = py.runPython("from sandbox import Sandbox; Sandbox()");
     const cat = JSON.parse(py.runPython("from sandbox import catalog; catalog()"));
     $("machine").innerHTML = cat.map((m) => `<option value="${m.id}">${escS(m.title)}</option>`).join("");
-    led = LEdit.editor($("ed-ladder"), { comment, onConvert: convert, onChange: () => {} });
-    lstl = LEdit.editor($("ed-stl"), { comment, onConvert: convert, onChange: () => {}, stl: true });
-    sfe = SfcEdit.editor($("ed-sfc"), { comment, onConvert: convert, onChange: () => {} });
+    led = LEdit.editor($("ed-ladder"), { comment, onConvert: convert, onChange: checkPending });
+    lstl = LEdit.editor($("ed-stl"), { comment, onConvert: convert, onChange: checkPending, stl: true });
+    sfe = SfcEdit.editor($("ed-sfc"), { comment, onConvert: convert, onChange: checkPending });
+    fx = FX3S.live($("fxlive"));
+    const runStop = () => { const st = JSON.parse(sb.state()); sb.run_mode(!(st && st.run !== false)); };
+    $("bRun").onclick = runStop;
+    fx.svg.addEventListener("click", (e) => { if (e.target.closest(".fx-sw,.fx-knob,.fx-cover")) runStop(); });
     const want = (location.hash || "").slice(1);
     const first = cat.some((m) => m.id === want) ? want : cat[0].id;
     $("machine").value = first;
