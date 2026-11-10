@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="8f9d216e80">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FX 封包練習台：在瀏覽器裡跟模擬 PLC 對話 | LadderLab</title>
+<meta name="description" content="三菱 FX 編程口協定（0 讀、1 寫）的練習台：組封包、算校驗、送給瀏覽器裡的模擬 PLC，看 ACK、NAK 和讀回的資料；附 8 個自動檢查的小任務。LabVIEW 上位機課第 9、12～14 課的網頁練習。">
+<link rel="stylesheet" href="../style.css?v=0cb42899ca">
+<style>
+  .fx-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 980px) { .fx-grid { grid-template-columns: 1fr; } }
+  .fx-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+  .fx-card h2 { margin-top: 0; font-size: 18px; }
+  .fx-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+  .fx-row label { display: inline-flex; gap: 6px; align-items: center; }
+  .fx-row input[type=number] { width: 90px; }
+  .fx-frame { display: flex; flex-wrap: wrap; gap: 3px; margin: 8px 0; }
+  .fx-ch { display: grid; text-align: center; min-width: 28px; border: 1px solid var(--line); border-radius: 6px; padding: 3px 4px; font-family: ui-monospace, Consolas, monospace; }
+  .fx-ch b { font-size: 15px; }
+  .fx-ch small { font-size: 10px; color: var(--mute); }
+  .fx-ch.ctl { background: rgba(245, 158, 11, .16); }
+  .fx-ch.cmd { background: rgba(37, 99, 235, .14); }
+  .fx-ch.adr { background: rgba(16, 185, 129, .14); }
+  .fx-ch.len { background: rgba(168, 85, 247, .14); }
+  .fx-ch.dat { background: rgba(236, 72, 153, .14); }
+  .fx-ch.sum { background: rgba(100, 116, 139, .2); }
+  .mono { font-family: ui-monospace, Consolas, monospace; }
+  textarea.fx-in { width: 100%; min-height: 54px; font-family: ui-monospace, Consolas, monospace; font-size: 15px; box-sizing: border-box; }
+  .fx-log { max-height: 320px; overflow: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+  .fx-log div { padding: 3px 0; border-bottom: 1px dashed var(--line); }
+  .fx-log .tx { color: var(--on); }
+  .fx-log .rx-ok { color: #15803d; }
+  .fx-log .rx-bad { color: #dc2626; }
+  .fx-log .why { font-family: inherit; color: var(--mute); }
+  .fx-mem { width: 100%; border-collapse: collapse; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  .fx-mem td, .fx-mem th { border-bottom: 1px solid var(--line); padding: 3px 6px; text-align: right; }
+  .fx-mem td:first-child, .fx-mem th:first-child { text-align: left; }
+  .fx-mem input { width: 80px; text-align: right; font: inherit; }
+  .fx-mem tr.hit { background: rgba(245, 158, 11, .18); }
+  .fx-tasks li { margin: 6px 0; }
+  .fx-tasks li.done::marker { content: "✓ "; color: #15803d; }
+  .fx-sum { font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.7; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html" class="here">LabVIEW 課程</a><a href="../practice.html">練習題</a><a href="../sim.html">模擬器</a></nav>
+</header>
+<main class="lesson guide" style="max-width:1200px;margin:0 auto;padding:16px">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 網頁練習</p>
+  <h1>FX 封包練習台：先在瀏覽器裡跟 PLC 對話</h1>
+  <p class="lead-text">第 12 課以後要用 LabVIEW 的 VISA 連軟 PLC 或實機。動手之前，先在這裡把封包組對：右邊是一台模擬的 FX PLC，你送出的每一個封包，它都照編程口協定回答 ACK、NAK 或資料。
+  LabVIEW 裡 VISA Write 要送的，就是這裡「送出」的那一串字元。</p>
+  <div class="callout">規則和課文相同（第 2、9 課）：<b>位址 = 1000h + 2 × D</b>；<b>位元組數 = 字數 × 2</b>；資料每個字寫成 4 個十六進位字元，<b>低位元組在前</b>（D100 = 1234h 會讀到 <code>3412</code>）；
+  <b>校驗</b> = STX 之後到 ETX（含 ETX）每個字元的 ASCII 碼加起來，取最低 8 位元，寫成 2 個十六進位字元。這台模擬 PLC 只做 D 暫存器的 0（讀）和 1（寫）命令，和本課程用到的一樣。</div>
+
+  <div class="fx-grid">
+    <div>
+      <section class="fx-card" id="builder">
+        <h2>1　組封包</h2>
+        <div class="fx-row">
+          <label><input type="radio" name="cmd" value="0" checked> 讀（命令 0）</label>
+          <label><input type="radio" name="cmd" value="1"> 寫（命令 1）</label>
+          <label>D <input type="number" id="bd" min="0" max="7999" value="100"></label>
+          <label id="bwl">字數 <input type="number" id="bw" min="1" max="32" value="1"></label>
+          <label id="bvl" hidden>寫入值（十進位）<input type="number" id="bv" min="-32768" max="65535" value="1"></label>
+        </div>
+        <div class="fx-frame" id="bframe"></div>
+        <div class="fx-sum" id="bsum"></div>
+        <div class="fx-row"><button type="button" id="buse">放進下面的送出框</button><span class="why">LabVIEW 字串常數要用「\ Codes Display」才能打 \02、\03。</span></div>
+      </section>
+
+      <section class="fx-card" id="term">
+        <h2>2　送出（就像 VISA Write）</h2>
+        <p class="why">控制字元可以寫成 <code>&lt;STX&gt;</code>、<code>&lt;ETX&gt;</code>、<code>&lt;ENQ&gt;</code>，或 LabVIEW 的 <code>\02</code>、<code>\03</code>。例：<code>&lt;STX&gt;010C802&lt;ETX&gt;71</code> 是讀 D100 一個字。</p>
+        <textarea class="fx-in" id="tx" spellcheck="false">&lt;STX&gt;010C802&lt;ETX&gt;71</textarea>
+        <div class="fx-row"><button type="button" id="send" class="go">送出</button><button type="button" id="clearlog">清除紀錄</button>
+          <label class="check small"><input type="checkbox" id="hexview"> 也顯示位元組（像 VISA Read 的 Hex Display）</label></div>
+        <div class="fx-log" id="log" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <div>
+      <section class="fx-card" id="tasks">
+        <h2>3　小任務（送出對的封包就會打勾）</h2>
+        <ol class="fx-tasks" id="tasklist"></ol>
+        <p class="why" id="taskhint"></p>
+      </section>
+      <section class="fx-card">
+        <h2>4　模擬 PLC 的 D 暫存器</h2>
+        <p class="why">可以直接改值（十進位）。剛被讀寫過的那一列會亮起來。雙龍門專案用到的幾個先填了值。</p>
+        <table class="fx-mem" id="mem"></table>
+        <div class="fx-row"><label>加看 D <input type="number" id="addd" min="0" max="7999" value="200"></label><button type="button" id="addbtn">加入</button></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="fx-card">
+    <h2>對照 LabVIEW</h2>
+    <ul>
+      <li><b>組封包</b>＝第 9 課的 Concatenate Strings：STX、命令、Number To Hexadecimal String（寬度 4、2）、ETX，再接校驗。</li>
+      <li><b>送出</b>＝第 12 課的 VISA Write；<b>回應</b>＝VISA Read。讀命令要讀「4 × 字數 + 4」個位元組，寫命令只讀 1 個位元組（ACK 或 NAK）。</li>
+      <li><b>沒有回應</b>（封包少了 ETX、位址打錯成不是十六進位）在 LabVIEW 會是 VISA Read 逾時，錯誤碼 -1073807339。</li>
+      <li><b>回 NAK</b> 先看校驗，再看位址和位元組數。把 TX 的字串接到前面板的 String 顯示，打開 \ Codes Display 對照這一頁。</li>
+    </ul>
+    <p><a class="btnlink" href="index.html#L09">‹ 回第 9 課：親手組出 FX 封包</a> <a class="btnlink" href="index.html#L12">第 12 課：VISA ›</a></p>
+  </section>
+</main>
+<footer><p>MELSEC 為三菱電機株式會社之商標，LabVIEW 為 NI 之商標。本站為獨立開發，與兩家公司無關。模擬 PLC 只實作本課程用到的 D 暫存器讀寫。</p></footer>
+<script src="fxlab.js?v=e7a316e78f"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "8f9d216e80" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

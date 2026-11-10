@@ -59,7 +59,7 @@ TRACKS = [
     {"id": "Y", "t": "上位機：LabVIEW", "after": "7",
      "why": "PLC 之外，用 LabVIEW 寫讀寫 PLC 的上位機：資料流、迴圈、VISA 通訊、雙迴圈與 Queue、心跳與重連；另有 CLAD 證照課與模擬考。",
      "can": ["寫出能讀寫 FX 的上位機", "準備 CLAD"],
-     "items": [["G", "labview/index.html", "LabVIEW 上位機課程"]]},
+     "items": [["G", "labview/index.html", "LabVIEW 上位機課程"], ["G", "labview/fxlab.html", "FX 封包練習台：在網頁上和模擬 PLC 對話"]]},
 ]
 
 

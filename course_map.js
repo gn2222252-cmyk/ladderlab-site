@@ -940,6 +940,12 @@ window.COURSE = {
      "id": "labview/index.html",
      "href": "labview/index.html",
      "label": "LabVIEW 上位機課程"
+    },
+    {
+     "k": "G",
+     "id": "labview/fxlab.html",
+     "href": "labview/fxlab.html",
+     "label": "FX 封包練習台：在網頁上和模擬 PLC 對話"
     }
    ]
   }
