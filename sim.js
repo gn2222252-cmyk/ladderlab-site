@@ -26,8 +26,19 @@ function loadInto(t, il) {
   else $("il").value = il;
   return warn.length ? warn : null;
 }
+/* example for a tab: step tabs (STL, SFC) get a step program even when the machine's example is a plain ladder */
+const stepTab = (t) => t === "stl" || t === "sfc";
+function exampleFor(t) { return stepTab(t) && M.example_step ? M.example_step : M.example; }
+function noteFor(t) { return "範例：" + (stepTab(t) && M.example_step ? M.example_step_note : M.example_note); }
 function showTab(t) {
-  const cur = currentIL();
+  let cur = currentIL();
+  if (t !== tab && stepTab(t) && !/\bSTL\b/i.test(cur.il)) {
+    /* a ladder without steps has nothing to show as steps: start the step tabs from the plain step example */
+    const ex = exampleFor(t);
+    ["stl", "sfc", "il"].forEach((x) => loadInto(x, ex));
+    tab = t; cur = { il: ex, errors: [] };
+  }
+  $("note").textContent = noteFor(t);
   if (t !== tab) {
     const problem = cur.il.trim() ? loadInto(t, cur.il) : null;
     if (problem && (t === "ladder" || t === "stl" || t === "sfc") && !(t === "sfc" ? sfe.model : (t === "ladder" ? led : lstl).rungs.length)) { $("errors").innerHTML = problem.map((p) => `<li>${escS(p)}</li>`).join(""); return; }
@@ -72,6 +83,9 @@ function convert() {
   }
   $("errors").innerHTML = "";
   layout = out.rungs;
+  const wl = watchList(cur.il);
+  sb.watch(JSON.stringify(wl));
+  $("watch").innerHTML = wl.length ? wl.map((d) => `<tr data-w="${d}"><td><b>${d}</b></td><td class="v"></td></tr>`).join("") : '<tr><td class="hint">程式沒有用到 M、S、T、C、D</td></tr>';
   ladderComment = comment;
   renderRungs($("mon-ladder"), layout.map((r, i) => [r, i]), {});
   try { chart = JSON.parse(sb.sfc()); if (chart && chart.blocks && chart.blocks.length) renderSfc($("mon-sfc"), chart, comment); else chart = null; } catch (e) { chart = null; }
@@ -87,16 +101,24 @@ function wireInput(b) {
     const on = (e) => { e.preventDefault(); sb.set_input(dev, 1); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } };
     const off = () => sb.set_input(dev, 0);
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off);
-  } else if (kind === "toggle") b.addEventListener("click", () => sb.toggle(dev));
+  } else if (kind === "toggle" || kind === "switch") b.addEventListener("click", () => sb.toggle(dev));
+}
+/* devices the program uses, for the watch list */
+function watchList(il) {
+  const seen = [];
+  (il.match(/\b[MSTCD]\d+\b/g) || []).forEach((d) => { if (!seen.includes(d) && !/^M8\d{3}$/.test(d)) seen.push(d); });
+  return seen.sort((a, b) => "MSTCD".indexOf(a[0]) - "MSTCD".indexOf(b[0]) || +a.slice(1) - +b.slice(1));
 }
 function openMachine(id) {
   M = JSON.parse(sb.machine(id));
   $("desc").textContent = M.desc;
   $("note").textContent = "範例：" + M.example_note;
-  $("inputs").innerHTML = M.inputs.map(([dev, label, kind]) => `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}><i></i><span><b>${dev}</b> ${escS(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");
+  const free = M.id === "free";
+  $("inputs").classList.toggle("free-io", free); $("outputs").classList.toggle("free-io", free);
+  $("plant-box").hidden = !M.plant;
+  $("inputs").innerHTML = free ? M.inputs.map(([dev]) => `<button type="button" class="inp switch" data-dev="${dev}" data-kind="switch" title="點一下切換 ON／OFF"><i></i><b>X${parseInt(dev.slice(1), 10) === 0 ? "0" : dev.slice(1).replace(/^0+/, "")}</b></button>`).join("") : M.inputs.map(([dev, label, kind]) => `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}><i></i><span><b>${dev}</b> ${escS(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");
   $("inputs").querySelectorAll(".inp").forEach(wireInput);
-  $("outputs").innerHTML = M.outputs.map(([dev, label]) => `<li data-dev="${dev}"><i></i><b>${dev}</b> ${escS(label)}</li>`).join("");
-  $("plant").hidden = !M.plant;
+  $("outputs").innerHTML = free ? M.outputs.map(([dev]) => `<li data-dev="${dev}"><i></i><b>Y${dev.slice(1).replace(/^0+(?=\d)/, "")}</b></li>`).join("") : M.outputs.map(([dev, label]) => `<li data-dev="${dev}"><i></i><b>${dev}</b> ${escS(label)}</li>`).join("");
   $("pfaults").innerHTML = (M.faults || []).map(([k, t]) => `<label class="check small"><input type="checkbox" data-f="${k}"> 製造故障：${escS(t)}</label>`).join("");
   $("pfaults").querySelectorAll("input").forEach((c) => c.addEventListener("change", () => sb.set_fault(c.dataset.f, c.checked)));
   let saved = null;
@@ -106,6 +128,7 @@ function openMachine(id) {
   tab = want;
   ["ladder", "stl", "sfc", "il"].forEach((t) => { if (t === want) loadInto(t, il); });
   if (want !== "il") loadInto("il", il);
+  $("note").textContent = noteFor(tab);
   document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("here", b.dataset.t === tab));
   setMode("write");
   convert();
@@ -120,6 +143,11 @@ function frame(t) {
       $("outputs").querySelectorAll("li").forEach((li) => li.classList.toggle("on", !!st.outputs[li.dataset.dev]));
       $("steps").textContent = st.steps.length ? "作用中的步：" + st.steps.join("、") : "沒有作用中的步";
       $("words").textContent = st.words && M.id === "stepper" ? `D8140（脈波計數）= ${st.words.D8140}　M8029（定位完成）= ${st.words.M8029 ? "ON" : "OFF"}` : "";
+      if (st.watch) $("watch").querySelectorAll("[data-w]").forEach((tr) => {
+        const d = tr.dataset.w, v = st.watch[d];
+        if (!v) return;
+        tr.querySelector(".v").innerHTML = /^[MS]/.test(d) ? (v[0] ? '<span class="won">ON</span>' : "OFF") : /^[TC]/.test(d) ? `${v[1]}　接點 ${v[0] ? '<span class="won">ON</span>' : "OFF"}` : String(v[0]);
+      });
       if (mode === "monitor" && layout) { updateRungs($("mon-ladder"), st, layout, -1); if (chart && !$("mon-sfc").hidden) updateSfc($("mon-sfc"), st); }
       if (st.plant) drawPlant($("plant").getContext("2d"), st.plant);
     }
@@ -136,7 +164,13 @@ $("bConv").onclick = () => convert();
 $("bMon").onclick = () => { if (layout) setMode("monitor"); };
 $("bWrite").onclick = () => setMode("write");
 document.querySelectorAll("#tabs button").forEach((b) => (b.onclick = () => showTab(b.dataset.t)));
-$("example").onclick = () => { ["ladder", "stl", "sfc", "il"].forEach((t) => loadInto(t, M.example)); if (!/STL/.test(M.example) && tab === "sfc") tab = "ladder"; showTab(tab); convert(); };
+$("example").onclick = () => {
+  const ex = exampleFor(tab);
+  ["ladder", "stl", "sfc", "il"].forEach((t) => loadInto(t, ex));
+  if (!/\bSTL\b/.test(ex) && tab === "sfc") tab = "ladder";
+  $("note").textContent = noteFor(tab);
+  showTab(tab); convert();
+};
 $("clear").onclick = () => { led.set([]); lstl.set([]); sfe.set(SfcEdit.blank()); $("il").value = ""; setMode("write"); };
 $("il").addEventListener("input", () => save());
 (async () => {

@@ -3,11 +3,24 @@
 The page compiles ladders and SFCs to the instruction list in JavaScript (web/ledit.js, web/sfcedit.js), so the
 engine side is the practice bridge with a machine instead of an exercise."""
 import json
+import re
 
 from practice_bridge import Practice
+from ladder_view import bit, word
 from plants import faults_of
 
+FX3S_X = ["X%03o" % n for n in range(16)]          # X000-X017 (octal), the FX3S-30M has all of them
+FX3S_Y = ["Y%03o" % n for n in range(16)]          # Y000-Y017
+
 MACHINES = [
+    {"id": "free", "title": "只模擬電路（不接機構）", "plant": None,
+     "desc": "沒有預設任何用途：X0～X17 每一點都是一個可以切換的輸入，Y0～Y17 是輸出燈。畫什麼就模擬什麼，例如常開 X1 接線圈 Y1，把 X1 切到 ON，Y1 就亮。",
+     "inputs": [(x, "", "switch") for x in FX3S_X], "outputs": [(y, "") for y in FX3S_Y],
+     "example": "LD X001\nOUT Y001",
+     "example_note": "常開 X1 接線圈 Y1：X1 ON 時 Y1 亮。",
+     "example_step": "\n".join(["LD M8002", "SET S0", "STL S0", "LD X000", "SET S20", "STL S20", "OUT Y000", "LD X001", "SET S21",
+                                "STL S21", "OUT Y001", "LD X002", "OUT S0", "RET"]),
+     "example_step_note": "沒有任何機構，只看步序：開機進 S0；X0 ON 進 S20（Y0 亮）；X1 ON 進 S21（Y1 亮、Y0 自動熄）；X2 ON 回 S0。"},
     {"id": "lamp", "title": "按鈕和燈（沒有機構）", "plant": None,
      "desc": "最基本的練習台：三個按鈕、一個開關、四顆燈。先在這裡熟悉梯形圖編輯。",
      "inputs": [("X000", "啟動按鈕", "hold"), ("X001", "停止按鈕", "hold"), ("X002", "按鈕 3", "hold"), ("X003", "切換開關", "toggle")],
@@ -75,13 +88,30 @@ class Sandbox(Practice):
         self.ex = {"id": "SB-" + mid, "title": m["title"], "task": m["desc"], "inputs": m["inputs"], "outputs": m["outputs"],
                    "plant": m["plant"], "rules": [], "tests": [], "lesson": None, "free": True}
         self.rig, self.rungs, self.leaves = None, [], []
-        meta = {k: m[k] for k in ("id", "title", "desc", "inputs", "outputs", "plant", "example", "example_note")}
+        meta = {k: m.get(k) for k in ("id", "title", "desc", "inputs", "outputs", "plant", "example", "example_note",
+                                      "example_step", "example_step_note")}
         meta["faults"] = faults_of(m["plant"])
         return json.dumps(meta, ensure_ascii=False)
+
+    watched = ()
+
+    def watch(self, names):
+        """Devices the page shows in the watch list (the ones the program uses)."""
+        self.watched = [n for n in json.loads(names) if re.match(r"^(M|S|T|C|D)\d+$", n)][:60]
 
     def state(self):
         out = json.loads(Practice.state(self))
         if out and self.rig:
             p = self.rig.plc
             out["words"] = {"D8140": p.d[8140], "M8029": p.m[8029]}
+            w = {}
+            for n in self.watched:
+                k = n[0]
+                if k in "MS":
+                    w[n] = [int(bool(bit(p, n)))]
+                elif k in "TC":
+                    w[n] = [int(bool(bit(p, n))), word(p, n)]
+                else:
+                    w[n] = [word(p, n)]
+            out["watch"] = w
         return json.dumps(out)

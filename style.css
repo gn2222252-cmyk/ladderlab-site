@@ -529,3 +529,7 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .le-stl{stroke-width:3}.le-stlt{font-size:10px;font-weight:700;fill:var(--on);text-anchor:middle}
 .le-band{fill:var(--on);opacity:.55}.le-bandt{font-size:9px;fill:var(--on)}
 .le-t.le-start,.le-c.le-start{text-anchor:start}
+.inputs.free-io{grid-template-columns:repeat(4,1fr);gap:4px}
+.inputs.free-io .inp{grid-template-columns:12px 1fr;padding:4px 6px;justify-items:start}
+.lamps.free-io{display:grid;grid-template-columns:repeat(4,1fr);gap:2px 6px}
+.watch{width:100%;font-size:13px;border-collapse:collapse}.watch td{padding:2px 4px;border-bottom:1px solid var(--line)}.watch .won{color:var(--on);font-weight:700}

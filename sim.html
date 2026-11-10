@@ -15,13 +15,14 @@
 <main class="sim-main">
   <div id="cbar" data-auto hidden></div>
   <div class="sim-top">
-    <label>機構 <select id="machine"></select></label>
+    <label>接機構（選用） <select id="machine"></select></label>
     <button type="button" id="example" class="small-btn">載入範例程式</button>
     <button type="button" id="clear" class="small-btn">清空</button>
     <span class="sim-tabs" id="tabs"><button type="button" data-t="ladder" class="here">梯形圖</button><button type="button" data-t="stl">STL 步進梯形圖</button><button type="button" data-t="sfc">SFC</button><button type="button" data-t="il">指令表</button></span>
     <span class="sim-modes"><button type="button" id="bWrite" class="small-btn here">寫入 F2</button><button type="button" id="bConv" class="small-btn go">轉換並執行 F4</button><button type="button" id="bMon" class="small-btn">監看 F3</button></span>
   </div>
   <p id="desc" class="sim-desc"></p>
+  <p id="note" class="hint"></p>
   <div id="loading" class="loading"><span class="spin"></span><span>正在載入模擬引擎（第一次約 10 秒）…</span></div>
   <div class="sim-grid">
     <section class="sim-edit">
@@ -34,17 +35,18 @@
       <div id="monitor" hidden><div class="ladder-wrap"><div id="mon-ladder"></div></div><div class="sfc-wrap" id="mon-sfc" hidden></div></div>
     </section>
     <aside class="sim-side">
-      <div class="box"><h3>機構</h3><canvas id="plant" width="260" height="190"></canvas><div id="pfaults"></div><p id="note" class="hint"></p></div>
-      <div class="box"><h3>輸入（可以按）</h3><div id="inputs" class="inputs"></div></div>
-      <div class="box"><h3>輸出</h3><ul id="outputs" class="lamps"></ul></div>
-      <div class="box"><h3>作用中的步、數值</h3><p id="steps" class="hint"></p><p id="words" class="hint"></p></div>
+      <div class="box" id="plant-box"><h3>機構</h3><canvas id="plant" width="260" height="190"></canvas><div id="pfaults"></div></div>
+      <div class="box"><h3>輸入 X（點一下切換）</h3><div id="inputs" class="inputs"></div></div>
+      <div class="box"><h3>輸出 Y</h3><ul id="outputs" class="lamps"></ul></div>
+      <div class="box"><h3>元件監看</h3><table class="watch"><tbody id="watch"></tbody></table><p id="steps" class="hint"></p><p id="words" class="hint"></p></div>
     </aside>
   </div>
   <span id="lamp"></span><span id="cylinder"></span><span id="sorter"></span><span id="stepper"></span><span id="traffic"></span><span id="elevator"></span><span id="arm"></span><span id="tank"></span>
   <section class="sim-help">
     <h2>怎麼用</h2>
     <ol>
-      <li><b>選機構</b>：先用「按鈕和燈」熟悉操作，再試氣缸、輸送帶分料、步進馬達滑台、紅綠燈、三層電梯、機械手臂、儲槽液位。每台都有「載入範例程式」和可以製造的故障。</li>
+      <li><b>先只模擬電路</b>：預設是「只模擬電路」，X0～X17 每一點都是可以切換的輸入，Y0～Y17 是輸出燈，沒有預設任何用途。例如畫常開 X1 接線圈 Y1，點 X1 讓它 ON，Y1 就亮。程式用到的 M、T、C、D、S 會自動列在「元件監看」。</li>
+      <li><b>需要時再接機構（選用）</b>：上面的選單可以接氣缸、輸送帶分料、步進馬達滑台、紅綠燈、三層電梯、機械手臂、儲槽液位。接機構時，X、Y 會照那台機構的接線，每台都有範例程式和可以製造的故障。</li>
       <li><b>寫程式</b>：三種寫法都可以，和 GX Works2 的建立工程時選的語言一樣。
         <ul><li><b>梯形圖</b>：點格子，按 F5 常開、F6 常閉、Shift+F5 並聯、F7 線圈、F8 應用指令（SET、MOV、STL、DRVA…）、F9 橫線、Shift+F9 直線。也可以直接打 <code>LD X0</code>、<code>OUT Y0</code>。</li>
         <li><b>STL 步進梯形圖</b>：和梯形圖一樣畫，但 STL 會畫成接點（GX Works2 的「以接點形式顯示 STL」），左邊的藍條標出每一條屬於哪一步。工具列的 STL 按鈕開始一步、RET 結束步進區。</li>
