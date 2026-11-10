@@ -17,7 +17,7 @@ HEADER = ('﻿"(未設定工程)"\r\n'
           '"空白欄"\t"PI陳述式"\t"便箋"\r\n')
 
 COMPARE_RE = re.compile(r"^(LD|AND|OR)(=|<>|>=|<=|>|<)$")
-SPECIAL_BITS = ("M8000", "M8002", "M8012", "M8013", "M8112", "M8113", "M8114", "M8115", "M8116", "M8117", "M8029", "M8340", "M8350")
+SPECIAL_BITS = ("M8000", "M8002", "M8012", "M8013", "M8112", "M8113", "M8114", "M8115", "M8116", "M8117", "M8067", "M8029", "M8340", "M8350")
 ALLOWED = {
     "LD", "LDI", "AND", "ANI", "OR", "ORI", "ANB", "ORB", "MPS", "MRD", "MPP",
     "OUT", "SET", "RST", "PLS", "PLF", "MOV", "ADD", "SUB", "INC", "CMP", "ZCP", "END",
@@ -25,10 +25,10 @@ ALLOWED = {
     "LDP", "LDF", "ANDP", "ANDF", "ORP", "ORF", "DEC", "MUL", "DIV", "ALT", "MC", "MCR",
     "MOVP", "ADDP", "SUBP", "INCP", "DECP", "MULP", "DIVP", "CMPP", "ZCPP", "ALTP", "ZRSTP",
     "SFTL", "SFTR", "ROL", "ROR", "SFTLP", "SFTRP", "ROLP", "RORP",
-    "DRVI", "DRVA",
+    "DRVI", "DRVA", "BCD", "BIN", "BCDP", "BINP",
 }
 PULSE_FORMS = {"MOVP", "ADDP", "SUBP", "INCP", "DECP", "MULP", "DIVP", "CMPP", "ZCPP", "ALTP", "ZRSTP",
-               "SFTLP", "SFTRP", "ROLP", "RORP"}
+               "SFTLP", "SFTRP", "ROLP", "RORP", "BCDP", "BINP"}
 
 
 def timer_unit(n):
@@ -46,7 +46,7 @@ OPERANDS = {"LD": 1, "LDI": 1, "AND": 1, "ANI": 1, "OR": 1, "ORI": 1, "ANB": 0, 
             "MOV": 2, "ADD": 3, "SUB": 3, "INC": 1, "CMP": 3, "ZCP": 4, "END": 0,
             "STL": 1, "RET": 0, "ZRST": 2,
             "LDP": 1, "LDF": 1, "ANDP": 1, "ANDF": 1, "ORP": 1, "ORF": 1, "DEC": 1, "MUL": 3, "DIV": 3, "ALT": 1, "MC": 2, "MCR": 1,
-            "SFTL": 4, "SFTR": 4, "ROL": 2, "ROR": 2, "DRVI": 4, "DRVA": 4}
+            "SFTL": 4, "SFTR": 4, "ROL": 2, "ROR": 2, "DRVI": 4, "DRVA": 4, "BCD": 2, "BIN": 2}
 
 
 class LadderError(Exception):
@@ -67,7 +67,7 @@ def instruction_steps(op, operands):
         return 3
     if op == "MCR":
         return 2
-    if op in ("MOV", "ZRST"):
+    if op in ("MOV", "ZRST", "BCD", "BIN"):
         return 5
     if op in ("ADD", "SUB", "CMP"):
         return 7
@@ -170,6 +170,8 @@ def check_program(program):
         if op == "OUT" and not ops:
             errors.append("step %d: OUT without operand" % at)
             continue
+        if op in ("BCD", "BIN", "BCDP", "BINP") and ops and re.match(r"^[KH]-?[0-9A-F]+$", ops[0]):
+            errors.append("step %d: %s source cannot be a constant" % (at, op))
         need = operand_count(op, ops)
         if len(ops) != need:
             errors.append("step %d: %s needs %d operands, has %d" % (at, op, need, len(ops)))
@@ -221,7 +223,7 @@ def check_program(program):
             if in_stl:
                 errors.append("step %d: END inside STL, RET is missing" % at)
         elif op in ("OUT", "SET", "RST", "PLS", "PLF", "MOV", "ADD", "SUB", "INC", "CMP", "ZCP", "ZRST",
-                    "DEC", "MUL", "DIV", "ALT", "MC", "SFTL", "SFTR", "ROL", "ROR", "DRVI", "DRVA") or op in PULSE_FORMS:
+                    "DEC", "MUL", "DIV", "ALT", "MC", "SFTL", "SFTR", "ROL", "ROR", "DRVI", "DRVA", "BCD", "BIN") or op in PULSE_FORMS:
             if blocks:
                 errors.append("step %d: %s with %d unmerged blocks" % (at, op, blocks))
                 blocks = 0

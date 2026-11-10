@@ -23,7 +23,11 @@
 
   <h2 class="tracks-h">支線（主線學到一定程度再走）</h2>
   <div id="tracks" class="chapters"></div>
-  <p class="why">進度只存在這個瀏覽器。</p>
+  <div class="box progress-io">
+    <h3>進度備份</h3>
+    <p class="why">進度只存在這個瀏覽器：換電腦、學校電腦重設或清除瀏覽資料就沒了。下課前按「匯出進度」存成檔案（可以放隨身碟或傳給自己），在別台電腦按「匯入進度」選這個檔案就接回來。檔案裡有完成的課、練習題、模擬器的程式與組裝台，沒有任何個人資料。</p>
+    <p><button type="button" id="progOut" class="small-btn go">匯出進度</button> <label class="small-btn filebtn">匯入進度<input id="progIn" type="file" accept=".json" hidden></label> <span id="progMsg" class="hint"></span></p>
+  </div>
   <div id="wl" class="wl-box"></div>
 </main>
 <footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
@@ -32,6 +36,32 @@
 <script src="waitlist.js"></script>
 <script src="course_map.js"></script>
 <script src="course.js"></script>
+<script>
+(() => {
+  const msg = (t) => { document.getElementById("progMsg").textContent = t; };
+  document.getElementById("progOut").onclick = () => {
+    const d = progressExport(), n = Object.keys(d.items).length;
+    if (!n) { msg("這個瀏覽器還沒有任何進度。"); return; }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], { type: "application/json" }));
+    a.download = `LadderLab_進度_${d.saved}.json`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    msg(`已存成檔案（${n} 項）。`);
+  };
+  document.getElementById("progIn").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    let d = null;
+    try { d = JSON.parse(await f.text()); } catch (err) { d = null; }
+    if (!d || d.ladderlab !== "progress" || typeof d.items !== "object") { msg("這不是 LadderLab 的進度檔。"); return; }
+    const n = Object.keys(d.items).filter((k) => k.indexOf("ll_") === 0).length;
+    if (!confirm(`要用「${f.name}」的進度蓋過這個瀏覽器的進度嗎？（${n} 項）`)) return;
+    progressImport(d);
+    msg(`已匯入 ${n} 項，重新整理後生效。`);
+    setTimeout(() => location.reload(), 800);
+  });
+})();
+</script>
 <script>
 "use strict";
 const d = Course.doneSets(), esc = Course.esc;

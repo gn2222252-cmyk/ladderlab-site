@@ -16,6 +16,18 @@ function savedLang() {
   return /^zh/i.test(navigator.language || "") ? "zh" : "en";
 }
 function storeGet(key, fallback) { try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); } catch (e) { return fallback; } }
+/* progress backup: every LadderLab key in this browser (they all start with "ll_") as one JSON file, and back */
+function progressExport() {
+  const data = { ladderlab: "progress", version: 1, saved: new Date().toISOString().slice(0, 10), items: {} };
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.indexOf("ll_") === 0 && k !== "ll_waitlisted") data.items[k] = localStorage.getItem(k); } } catch (e) { /* private mode */ }
+  return data;
+}
+function progressImport(data) {
+  if (!data || data.ladderlab !== "progress" || typeof data.items !== "object") return -1;
+  let n = 0;
+  Object.keys(data.items).forEach((k) => { if (k.indexOf("ll_") === 0 && typeof data.items[k] === "string") { try { localStorage.setItem(k, data.items[k]); n++; } catch (e) { /* full */ } } });
+  return n;
+}
 function storeSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* ignore */ } }
 function cssVar(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 function drawCylinder(ctx, p) {

@@ -19,7 +19,7 @@ M_SIZE = 8512
 D_SIZE = 8512                 # D8140/D8142: current position of the Y0/Y1 pulse outputs
 S_SIZE = 1000
 OUTPUT_OPS = ("OUT", "SET", "RST", "PLS", "PLF", "MOV", "ADD", "SUB", "INC", "CMP", "ZCP", "ZRST",
-              "DEC", "MUL", "DIV", "ALT", "MC", "SFTL", "SFTR", "ROL", "ROR", "DRVI", "DRVA") + tuple(sorted(PULSE_FORMS))
+              "DEC", "MUL", "DIV", "ALT", "MC", "SFTL", "SFTR", "ROL", "ROR", "DRVI", "DRVA", "BCD", "BIN") + tuple(sorted(PULSE_FORMS))
 
 
 def wrap16(v):
@@ -431,6 +431,29 @@ class PLC(object):
             def fn():
                 if self.acc:
                     put(get())
+                self.fresh = True
+            return fn
+        if op in ("BCD", "BIN"):
+            # FNC 18 / 19 (programming manual JY997D16601 9.9, 9.10): the source may not be a constant.
+            # BCD of a value outside 0..9999, or BIN of a word that is not BCD: operation error M8067, nothing written.
+            if re.match(r"^[KH]-?[0-9A-F]+$", ops[0]):
+                raise LadderError("%s source cannot be a constant" % op)
+            get, put = self._word_get(ops[0]), self._word_set(ops[1])
+
+            def fn():
+                if self.acc:
+                    v = get()
+                    if op == "BCD":
+                        if 0 <= v <= 9999:
+                            put(wrap16(int(str(v), 16)))
+                        else:
+                            self.m[8067] = 1
+                    else:
+                        h = "%04X" % (v & 0xFFFF)
+                        if h.isdigit():
+                            put(int(h))
+                        else:
+                            self.m[8067] = 1
                 self.fresh = True
             return fn
         if op in ("ADD", "SUB"):

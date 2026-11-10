@@ -2222,6 +2222,7 @@ MESSAGES = [
     (r"instruction (\S+) not allowed", "不認得指令 %s"),
     (r"(\S+) needs (\d+) operands, has (\d+)", "%s 需要 %s 個元件，這裡寫了 %s 個"),
     (r"(\S+) without an open block", "%s 前面沒有可以合併的 LD 區塊"),
+    (r"(\S+) source cannot be a constant", "%s 的來源不能是常數（K、H）：要放 D、C、T 或 K1X0 這類元件（三菱手冊規定）。"),
     (r"MPP without MPS", "MPP 前面沒有 MPS"),
     (r"MRD without MPS", "MRD 前面沒有 MPS"),
     (r"RET without STL", "RET 前面沒有 STL"),

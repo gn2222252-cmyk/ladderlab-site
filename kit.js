@@ -695,8 +695,8 @@ const Kit = (() => {
     { title: "金屬分料：輸送帶＋推料氣缸＋七段計數", W: { X000: "nopb", X001: "ncpb", X002: "convM:Y000", X003: "convP:Y000", X004: "pushF:Y001", Y000: "conv", Y001: "push:Y000", Y004: "seg" },
       init() { stateOf("Y000").boxes = [{ p: 0.05, m: true }]; },
       il: ["LD X000", "OR M0", "AND X001", "OUT M0", "LD X002", "SET M1", "LD X003", "AND M1", "SET Y001", "LD X004", "RST Y001", "RST M1",
-        "LD X004", "OUT C0 K10", "LD C0", "RST C0", "LD M0", "ANI Y001", "OUT Y000", "LD M8000", "MOV C0 K1Y004"],
-      note: "按 X0 啟動。金屬經過 X2 金屬感測器時記住（SET M1）；到推料位置 X3 時推料氣缸 Y1 推出（輸送帶暫停），推到底 X4 就縮回、忘掉 M1。塑膠一路送到末端。推出的金屬用 C0 計數，MOV C0 K1Y004 顯示在七段顯示器（Y4～Y7）。工件一次放一個比較準。" },
+        "LD X004", "OUT C0 K10", "LD C0", "RST C0", "LD M0", "ANI Y001", "OUT Y000", "LD M8000", "BCD C0 K1Y004"],
+      note: "按 X0 啟動。金屬經過 X2 金屬感測器時記住（SET M1）；到推料位置 X3 時推料氣缸 Y1 推出（輸送帶暫停），推到底 X4 就縮回、忘掉 M1。塑膠一路送到末端。推出的金屬用 C0 計數，BCD C0 K1Y004 轉成 BCD 碼顯示在七段顯示器（Y4～Y7）；用 MOV 只有 0～9 會對。工件一次放一個比較準。" },
     { title: "鐵捲門：上升／下降互鎖＋上下限", W: { X000: "nopb", X001: "nopb", X002: "ncpb", X003: "doorU:Y000", X004: "doorL:Y000", Y000: "door", Y001: "doorDn:Y000", Y002: "yellow" },
       init() {},
       il: ["LD X000", "OR Y000", "AND X002", "ANI X003", "ANI Y001", "OUT Y000", "LD X001", "OR Y001", "AND X002", "ANI X004", "ANI Y000", "OUT Y001",
@@ -768,10 +768,10 @@ const Kit = (() => {
         X016: "nopb", X370: "dial", Y000: "feed", Y001: "conv", Y002: "suck", Y003: "armZ:Y002", Y004: "armG:Y002", Y005: "tower", Y006: "twY:Y005", Y007: "twG:Y005", Y010: "twB:Y005", Y011: "seg" },
       extra: ["bin"], L: [["Y000", "out", "Y001", "in"], ["Y001", "out", "Y002", "pick"], ["Y002", "place", "#0", "in"]],
       init() { stateOf("X370").val = 3; },
-      il: ["LD M8000", "MOV K1M8112 D0", "LD X000", "OR M0", "AND X001", "ANI M2", "OUT M0",
+      il: ["LD M8000", "BIN K1M8112 D0", "LD X000", "OR M0", "AND X001", "ANI M2", "OUT M0",
         "LD M0", "AND X002", "ANI M1", "ANI X003", "OUT Y000", "LD X003", "SET M1", "LD M0", "ANI X004", "OUT Y001",
         "LDF X011", "AND X006", "OUT C0 K99", "LD>= C0 D0", "AND> D0 K0", "SET M2", "LD X016", "RST C0", "RST M2",
-        "LD M8000", "MOV C0 K1Y011", "LD M0", "OUT Y007", "LDI M0", "ANI M2", "OUT Y006", "LD M2", "OUT Y005",
+        "LD M8000", "BCD C0 K1Y011", "LD M0", "OUT Y007", "LDI M0", "ANI M2", "OUT Y006", "LD M2", "OUT Y005",
         "LD M2", "OUT T2 K30", "LD M2", "ANI T2", "OUT Y010",
         "LD M8002", "SET S0",
         "STL S0", "LD M0", "AND X004", "AND X005", "AND X007", "SET S20",
@@ -783,7 +783,7 @@ const Kit = (() => {
         "STL S25", "RST Y004", "LDI X011", "SET S26",
         "STL S26", "RST Y003", "LD X007", "SET S27",
         "STL S27", "RST Y002", "RST M1", "LD X005", "SET S0", "RET"],
-      note: "主機的 X0～X16 都接滿了，指撥開關要 4 點，所以加裝 FX3G-4EX-BD 輸入擴充板，指撥開關接在擴充板的 BX0～BX3。擴充板的輸入沒有 X 編號，程式要讀特殊繼電器 M8112～M8115，所以用 MOV K1M8112 D0 讀設定值（預設 3）。吸盤每放一個到料盒（真空 X11 由 ON 變 OFF、在放料位 X6），C0 加 1，七段顯示器（Y11～Y14）顯示數量。C0 到設定值：停機、塔燈紅 Y5 亮、蜂鳴器響 3 秒。X16 歸零再按 X0 重新開始。" },
+      note: "主機的 X0～X16 都接滿了，指撥開關要 4 點，所以加裝 FX3G-4EX-BD 輸入擴充板，指撥開關接在擴充板的 BX0～BX3。擴充板的輸入沒有 X 編號，程式要讀特殊繼電器 M8112～M8115，所以用 BIN K1M8112 D0 把指撥開關的 BCD 碼轉成數值讀進來（預設 3）。吸盤每放一個到料盒（真空 X11 由 ON 變 OFF、在放料位 X6），C0 加 1，七段顯示器（Y11～Y14）顯示數量。C0 到設定值：停機、塔燈紅 Y5 亮、蜂鳴器響 3 秒。X16 歸零再按 X0 重新開始。" },
   ];
   function preset(i) {
     const p = PRESETS[i] || PRESETS[0];

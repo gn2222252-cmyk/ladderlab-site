@@ -340,7 +340,7 @@ const LEdit = (() => {
       }
       const cm = /^(LD|AND|OR)(<>|>=|<=|=|>|<)\s+(\S+)\s+(\S+)$/.exec(t);
       if (cm) { setContact("cmp", `${cm[2]} ${cm[3]} ${cm[4]}`, cm[1] === "OR" && cur.r > 0); return; }
-      if (/^(OUT|SET|RST|PLS|PLF|MOV|ADD|SUB|INC|DEC|MUL|DIV|CMP|ZCP|ZRST|ALT|STL|RET|SFTL|SFTR|ROL|ROR|DRVI|DRVA|TRAN)\b/.test(t) || /P\b/.test(t.split(" ")[0])) {
+      if (/^(OUT|SET|RST|PLS|PLF|MOV|ADD|SUB|INC|DEC|MUL|DIV|CMP|ZCP|ZRST|ALT|STL|RET|SFTL|SFTR|ROL|ROR|DRVI|DRVA|BCD|BIN|TRAN)\b/.test(t) || /P\b/.test(t.split(" ")[0])) {
         const o = /^OUT /.test(t) || /^TRAN$/.test(t) ? parseCoil(t.replace(/^OUT /, "")) : { op: "FN", text: t };
         if (o && o.op === "FN" && o.text === "TRAN" && tranMode) o.op = "TRAN";
         setOut(o); return;
