@@ -310,6 +310,8 @@ def explain(rung, plc, comment):
         name = comment.get(ops[0], "") if ops else ""
         word_ = {"OUT": "讓 %s ON", "SET": "鎖定 %s ON", "RST": "清除 %s", "PLS": "讓 %s ON 一個掃描",
                  "MOV": "複製數值到 %s", "ZRST": "整批清除 %s", "INC": "%s 加 1"}.get(op, op + " %s")
+        if not ops:                               # MPS / MPP split inside the outputs: nothing to name
+            continue
         target = ops[-1] if op == "MOV" else " ".join(ops[:2]) if op == "ZRST" else ops[0]
         outs.append(word_ % ("%s（%s）" % (target, name) if name else target))
     lines = ["這條的意思：%s，就 %s。" % (describe(rung.cond, comment), "、".join(outs))]

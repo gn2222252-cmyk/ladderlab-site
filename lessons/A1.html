@@ -26,23 +26,23 @@
 所以 FX3S-20MT 的 12 點輸入是 X0～X7、X10～X13。下面按按看 X7 和 X10，它們是相鄰的兩點。
 其他軟元件的編號範圍每個型號不同，底下第二張表是 FX3S 的。寫 FX3S 程式時，計時器、計數器、斷電保持的編號要照它，不能照 FX3U 的教材抄。</div>
 <p><a class="btnlink go" href="../learn.html#A1">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
-<div class="table-box"><table class="gtable"><thead><tr><th>軟元件</th><th>是什麼</th><th>編號</th><th>這台機台用來</th></tr></thead><tbody><tr><td>X</td><td>輸入，接感測器、按鈕</td><td>八進位</td><td>X4 前輸送帶到位</td></tr><tr><td>Y</td><td>輸出，接繼電器、電磁閥、燈</td><td>八進位</td><td>Y2 輸送帶</td></tr><tr><td>M</td><td>內部線圈，程式自己用</td><td>十進位</td><td>M0 自動運轉中</td></tr><tr><td>S</td><td>狀態，步進的一步</td><td>十進位</td><td>S24 右龍門往後</td></tr><tr><td>T</td><td>計時器</td><td>十進位</td><td>T10 右龍門逾時</td></tr><tr><td>C</td><td>計數器</td><td>十進位</td><td>C0 右龍門搬運次數</td></tr><tr><td>D</td><td>資料暫存器，存數字</td><td>十進位</td><td>D220 異常碼</td></tr></tbody></table></div>
+<div class="table-box"><table class="gtable"><thead><tr><th>軟元件</th><th>是什麼</th><th>編號</th><th>例子（第 6 章的雙龍門機台）</th></tr></thead><tbody><tr><td>X</td><td>輸入，接感測器、按鈕</td><td>八進位</td><td>X4 前輸送帶到位</td></tr><tr><td>Y</td><td>輸出，接繼電器、電磁閥、燈</td><td>八進位</td><td>Y2 輸送帶</td></tr><tr><td>M</td><td>內部線圈，程式自己用</td><td>十進位</td><td>M0 自動運轉中</td></tr><tr><td>S</td><td>狀態，步進的一步</td><td>十進位</td><td>S24 右龍門往後</td></tr><tr><td>T</td><td>計時器</td><td>十進位</td><td>T10 右龍門逾時</td></tr><tr><td>C</td><td>計數器</td><td>十進位</td><td>C0 右龍門搬運次數</td></tr><tr><td>D</td><td>資料暫存器，存數字</td><td>十進位</td><td>D220 異常碼</td></tr></tbody></table></div>
 <div class="notes">FX3S 軟元件範圍（FX3S 硬體手冊 4.5 節）
-X0～X17、Y0～Y15（八進位，依機型點數）
-M0～M383 一般、M384～M511 斷電保持、M8000～ 特殊
-S0～S9 初始步、S10～S127 斷電保持、S128～S255 一般。注意：FX3S 的 S20 這種一般步預設就斷電保持，停電後再上電會停在原來那一步
+X、Y 八進位，依機型點數：FX3S-20M 是 X0～X13、Y0～Y7；FX3S-30M 是 X0～X17、Y0～Y15
+M0～M383 一般、M384～M511 斷電保持、M512～M1535 一般、M8000～ 特殊
+S0～S9 初始步（也斷電保持）、S10～S127 斷電保持、S128～S255 一般。注意：FX3S 的 S20 這種一般步預設就斷電保持，停電後再上電會停在原來那一步
 T0～T31 100 ms、T32～T62 100 ms／10 ms、T63～T127 1 ms、T128～T137 積算型
 C0～C15 一般、C16～C31 斷電保持、C235～C255 高速計數
-D0～D127 一般、D128～D255 斷電保持、D8000～ 特殊
+D0～D127 一般、D128～D255 斷電保持、D256～D2999 一般（D1000 起可以用參數設成檔案暫存器）、D8000～ 特殊
 程式容量 4000 步</div>
 <h2>這一課的程式（指令表）</h2>
 <pre class="il">LD X007
-OUT Y007
+OUT Y000
 LD X010
-OUT Y010</pre>
-<p><a class="btnlink" href="../practice.html?il=LD%20X007%0AOUT%20Y007%0ALD%20X010%0AOUT%20Y010#FREE">只執行這段程式 ›</a></p>
+OUT Y001</pre>
+<p><a class="btnlink" href="../practice.html?il=LD%20X007%0AOUT%20Y000%0ALD%20X010%0AOUT%20Y001#FREE">只執行這段程式 ›</a></p>
 <div class="recap"><h3>重點整理</h3><ul><li>X、Y 八進位，其他十進位</li><li>FX3S 範圍比 FX3U 小：計時器 T0～T137、計數器 C0～C31</li><li>FX3S 的 S10～S127、D128～D255 斷電保持</li></ul><p class="trap"><b>常見錯誤：</b>照 FX3U 教材寫 T200、C100 或 X8，FX3S 上不能用。</p></div>
-<h2>預測看看</h2><div class="qz"><p>按住 X10（X7 的下一點），Y10 是？</p><details><summary>看答案</summary><p><b>ON</b>　X、Y 是八進位：X7 的下一點是 X10，沒有 X8、X9。</p></details></div>
+<h2>預測看看</h2><div class="qz"><p>按住 X10（X7 的下一點），Y1 是？</p><details><summary>看答案</summary><p><b>ON</b>　X、Y 是八進位：X7 的下一點是 X10，沒有 X8、X9。</p></details></div>
 <p class="pager"><a class="btnlink" href="9.html">‹ 上一課：2.5 互鎖：不能同時發生的事</a> <a class="btnlink" href="A4.html">下一課：3.2 OUT、SET、RST、PLS、PLF</a></p>
 </main>
 <footer>

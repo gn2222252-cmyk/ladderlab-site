@@ -37,7 +37,7 @@ class Plant(object):
 
     def __init__(self, kind, plc):
         self.kind, self.plc = kind, plc
-        self.z = 0.0
+        self.z = 0.5 if kind == "panel" else 0.0      # the panel lesson starts with the cylinder half way out
         self.zb = 0.0
         self.apply()
 
@@ -46,6 +46,14 @@ class Plant(object):
             v = ms / 1400.0
             self.z = min(1.0, self.z + v) if self.plc.y_out[0] else max(0.0, self.z - v)
             self.zb = min(1.0, self.zb + v) if self.plc.y_out[1] else max(0.0, self.zb - v)
+            self.apply()
+            return
+        if self.kind == "panel":                    # double solenoid: Y0 extend, Y1 retract, stays put when both OFF
+            v = ms / 2000.0
+            if self.plc.y_out[0] and not self.plc.y_out[1]:
+                self.z = min(1.0, self.z + v)
+            elif self.plc.y_out[1] and not self.plc.y_out[0]:
+                self.z = max(0.0, self.z - v)
             self.apply()
             return
         if self.kind == "cylinder":
@@ -60,6 +68,10 @@ class Plant(object):
         self.apply()
 
     def apply(self):
+        if self.kind == "panel":
+            self.plc.x_in[0] = 1 if self.z >= 0.98 else 0
+            self.plc.x_in[1] = 1 if self.z <= 0.02 else 0
+            return
         if self.kind == "ab":
             x = self.plc.x_in
             x[2], x[3] = int(self.z <= 0.02), int(self.z >= 0.98)

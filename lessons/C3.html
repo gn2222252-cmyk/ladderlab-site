@@ -47,7 +47,7 @@ OUT Y001</pre>
 <p><a class="btnlink" href="../practice.html?il=LD%20X001%0AAND%20X003%0AOUT%20M70%0ALD%20X000%0AOR%20M70%0AANI%20X004%0AANI%20X005%0AANI%20X002%0AANI%20Y001%0AOUT%20Y000%0ALD%20X002%0AANI%20X005%0AANI%20X000%0AANI%20M70%0AANI%20Y000%0AOUT%20Y001#FREE">只執行這段程式 ›</a></p>
 <div class="recap"><h3>重點整理</h3><ul><li>各段程式只提出請求（寫 M）</li><li>最後一層檢查模式、限位、警報、相反方向</li><li>只有輸出段能碰 Y，不會雙線圈</li></ul><p class="trap"><b>常見錯誤：</b>自動、手動各自驅動 Y，互鎖只寫在其中一邊。</p></div>
 <h2>預測看看</h2><div class="qz"><p>手動前進請求 X1，但手動允許 X3 是 OFF，Y0 是？</p><details><summary>看答案</summary><p><b>OFF</b>　手動請求要先和手動允許合成 M70，才進到輸出仲裁。</p></details></div><div class="qz"><p>自動前進 X0，同時警報中 X5，Y0 是？</p><details><summary>看答案</summary><p><b>OFF</b>　自動和手動最後都經過同一個仲裁：警報、限位、反向請求都會擋。</p></details></div>
-<p class="pager"><a class="btnlink" href="C2.html">‹ 上一課：5.7 循環停止：收到 Stop 後在安全邊界停</a> <a class="btnlink" href="C5.html">下一課：6.1 完整程式範本：一支氣缸的取放機</a></p>
+<p class="pager"><a class="btnlink" href="C2.html">‹ 上一課：5.7 循環停止：收到 Stop 後在安全邊界停</a> <a class="btnlink" href="C6.html">下一課：5.9 操作面板：工作／復歸、單一／連續、急停</a></p>
 </main>
 <footer>
   <p><a href="../privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。模擬以 FX 系列指令相容方式執行，結果不代表實機。</p>

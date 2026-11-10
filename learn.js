@@ -293,6 +293,15 @@ function drawPlant(p) {
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   pc.clearRect(0, 0, 200, 130);
   if (p.kind === "ab") { drawAB(p, css); return; }
+  if (p.kind === "panel") {                    // one double-solenoid cylinder lying down: X1 back (home), X0 front
+    pc.fillStyle = css("--rail"); pc.fillRect(20, 50, 80, 28);
+    pc.fillStyle = css("--belt"); pc.fillRect(100, 60, 10 + p.z * 60, 8);
+    pc.fillStyle = "#d0a020"; pc.fillRect(110 + p.z * 60, 52, 10, 24);
+    pc.fillStyle = css("--mute"); pc.font = "11px system-ui";
+    pc.fillText(p.z >= 0.98 ? "X0 前限" : p.z <= 0.02 ? "X1 後限（原點）" : "移動中", 20, 40);
+    pc.fillStyle = css("--line"); pc.fillRect(10, 100, 180, 6);
+    return;
+  }
   pc.fillStyle = css("--rail"); pc.fillRect(80, 6, 40, 26);
   pc.fillStyle = css("--belt"); pc.fillRect(94, 32, 12, p.z * 60);
   pc.fillStyle = p.vac ? "#2fbf5b" : "#d0a020"; pc.fillRect(74, 32 + p.z * 60, 52, 12);

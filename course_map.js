@@ -570,6 +570,14 @@ window.COURSE = {
      "goal": "把自動和手動的請求集中到一個輸出段，再統一加互鎖。"
     },
     {
+     "k": "L",
+     "id": "C6",
+     "href": "learn.html#C6",
+     "no": "5.9",
+     "label": "操作面板：工作／復歸、單一／連續、急停",
+     "goal": "照檢定的操作面板，寫出工作／復歸、單一／連續、指定功能與急停的完整架構。"
+    },
+    {
      "k": "G",
      "id": "sim.html#sorter",
      "href": "sim.html#sorter",

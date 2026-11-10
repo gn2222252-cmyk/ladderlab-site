@@ -27,8 +27,8 @@ MOV 複製數字，ADD 加法，LD&gt;= 這種比較接點可以直接判斷數�
 <p><a class="btnlink go" href="../learn.html#A5">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
 
 <div class="notes">ADD D0 K10 D0：D0 + 10 存回 D0。
-斷電保持的 D：FX3S 是 D128～D255，FX3U 預設是 D200～D511。機台開機要先清掉的，就是雙龍門 P1 那行 ZRST。
-32 位元指令前面加 D，例如 DMOV，要兩個 D 組成一組。</div>
+斷電保持的 D：FX3S 是 D128～D255，FX3U 預設是 D200～D511。機台開機要先清掉的，就用 ZRST 一次清（第 6 章雙龍門機台的第 1 段 P1 就有這行）。
+32 位元指令前面加 D，例如 DMOV，要兩個 D 組成一組（這個模擬器還沒有 32 位元指令，打 DMOV 會被拒絕）。</div>
 <h2>這一課的程式（指令表）</h2>
 <pre class="il">LD X000
 PLS M0
