@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>急停、安全迴路與硬體互鎖：為什麼不能只靠 PLC 程式 | LadderLab</title>
+<meta name="description" content="急停按下去到底是誰讓機器停？三菱 FX3S 手冊要求的外部急停迴路、安全電驛的角色、正反轉接觸器的程式／電氣／機械三層互鎖、換向延遲與工業配線乙級的相關規定。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="learn guide-page">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+  <button id="tocbtn" class="ghost only-narrow" type="button">目錄</button>
+</header>
+
+<div class="learn-grid">
+  <nav id="toc" class="toc" aria-label="contents">
+    <h3>急停與硬體互鎖</h3>
+    <ol>
+      <li><a href="#s1">1 為什麼程式不夠</a></li>
+      <li><a href="#s2">2 急停迴路怎麼做</a></li>
+      <li><a href="#s3">3 PLC 在安全迴路裡做什麼</a></li>
+      <li><a href="#s4">4 正反轉：三層互鎖</a></li>
+      <li><a href="#s5">5 換向要等一下</a></li>
+      <li><a href="#s6">6 積熱電驛與限位</a></li>
+      <li><a href="#s7">7 檢定怎麼要求</a></li>
+      <li><a href="#s8">8 檢查清單</a></li>
+      <li><a href="#src">出處</a></li>
+    </ol>
+    <p class="toc-note">本頁是觀念教學，不是已核准的配線圖。實際的安全功能要依機台的風險評估設計，並遵守相關法規與標準。</p>
+  </nav>
+
+  <main class="lesson guide">
+    <div id="cbar" data-auto hidden></div>
+    <p class="crumb">現場必備 · 安全</p>
+    <h1>急停按下去，到底是誰讓機器停的？</h1>
+    <p class="lead-text">課程裡你已經學會在程式裡寫急停、互鎖。這頁講程式<b>之外</b>的那一層：三菱的手冊一開頭就要求，急停、保護迴路、正反轉互鎖要在 PLC <b>外部</b>再做一次。學完這頁，你會知道為什麼，以及考場和現場怎麼接。</p>
+
+    <section id="s1">
+      <h2>1　為什麼只靠 PLC 程式不夠</h2>
+      <p>程式寫得再對，PLC 本身也可能出狀況。FX3S 硬體手冊卷首的設計注意事項列了這些情況：</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>情況</th><th>會發生什麼</th></tr></thead>
+        <tbody>
+          <tr><td>CPU 自我診斷發現錯誤（例如看門狗計時器逾時）</td><td>輸出全部 OFF。這是好的情況。</td></tr>
+          <tr><td>輸入、輸出電路本身故障</td><td>CPU 不一定偵測得到，程式照跑，卻讀錯或送錯。</td></tr>
+          <tr><td>輸出元件（繼電器接點、電晶體）故障</td><td>輸出可能<b>卡在 ON</b>，程式叫它 OFF 也沒用。</td></tr>
+          <tr><td>PLC 的 24V 供電過載</td><td>輸入全部失效、輸出全部 OFF，機台狀態不明。</td></tr>
+          <tr><td>程式寫錯、改錯、正在線上修改</td><td>人為錯誤，任何時候都可能發生。</td></tr>
+        </tbody></table></div>
+      <p class="why">所以：<b>會傷人、會損壞設備的危險，不能只靠 PLC 程式擋。</b>程式互鎖是第一層，外部還要有一層不經過 PLC 的保護。</p>
+    </section>
+
+    <section id="s2">
+      <h2>2　急停迴路怎麼做</h2>
+      <div class="flow">
+        <span>急停按鈕（2 組 b 接點）</span><span>安全電驛</span><span>MC 切斷負載電源</span><span>馬達、電磁閥斷電</span>
+      </div>
+      <ul class="steps-list">
+        <li><b>急停按鈕接常閉（b 接點）</b>：按下或線斷了都是「斷開」，所以斷線也等於按下急停，機器會停在安全的一側。程式裡用常開接點讀它（平常 ON），課程 <a href="learn.html#A9">5.1</a> 有講。</li>
+        <li><b>用 2 組 b 接點</b>：一組接點熔著或卡住，另一組還能斷。這叫雙通道。</li>
+        <li><b>安全電驛（安全繼電器）</b>：專門監看急停迴路的元件。它同時看兩個通道、會偵測接點熔著，跳脫後要<b>手動復歸</b>才會再送電。它的輸出接點是強制導引型，用來切 MC。</li>
+        <li><b>切的是能量</b>：手冊的外部配線範例裡，急停讓電磁接觸器 MC 失磁，切斷 <b>PLC 輸出負載的電源</b>。這樣就算 PLC 輸出卡在 ON，負載也沒有電。</li>
+        <li><b>解除急停不能讓機器自己動</b>：安全電驛要手動復歸；PLC 這邊也要先復歸、再啟動（課程 <a href="learn.html#C6">5.9 操作面板</a>）。</li>
+      </ul>
+    </section>
+
+    <section id="s3">
+      <h2>3　PLC 在安全迴路裡做什麼</h2>
+      <p>PLC 只「看」，不負責「切」：</p>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>誰</th><th>做什麼</th></tr></thead>
+        <tbody>
+          <tr><td>急停按鈕＋安全電驛＋MC</td><td>切斷危險能量（馬達、電磁閥的電）</td></tr>
+          <tr><td>PLC</td><td>從輔助接點讀到「急停中」（一個 X），然後清步序、清原點旗標、亮燈、記錄異常、等復歸</td></tr>
+        </tbody></table></div>
+      <p class="why">考場例子：工業配線乙級第一題規定，作為切斷主負載功能的 EMO（急停）要經過安全電驛，<b>不可以直接接 PLC 輸入</b>，而且要用 2 組 b 接點。</p>
+    </section>
+
+    <section id="s4">
+      <h2>4　正反轉接觸器：三層互鎖</h2>
+      <p>正轉 MC1、反轉 MC2 同時吸合，就是相間短路。課程 <a href="learn.html#9">2.5 互鎖</a> 教了程式互鎖，但手冊要求在<b>外部</b>也要做互鎖，因為：</p>
+      <ul class="steps-list">
+        <li>輸出元件故障卡在 ON，程式擋不住。</li>
+        <li><b>接觸器主接點熔著</b>：線圈已經斷電，接點還黏著，程式完全不知道。</li>
+        <li>程式在同一圈讓 MC1 OFF、MC2 ON，但接觸器「放開」比「吸合」慢，兩邊可能短暫同時吸合。</li>
+      </ul>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>層</th><th>怎麼做</th><th>防得了</th><th>防不了</th></tr></thead>
+        <tbody>
+          <tr><td>程式互鎖</td><td>Y0 串 /Y1，Y1 串 /Y0（輸出段集中處理）</td><td>程式邏輯同時要求兩個方向</td><td>輸出卡住、接點熔著、放開比吸合慢</td></tr>
+          <tr><td>電氣互鎖</td><td>MC1 線圈串 MC2 的 b 輔助接點，MC2 線圈串 MC1 的 b 輔助接點</td><td>PLC 輸出故障、程式錯誤</td><td>主接點熔著但輔助接點沒跟著動的少數情況</td></tr>
+          <tr><td>機械互鎖</td><td>可逆接觸器的機械連鎖單元，兩個接觸器不能同時吸入</td><td>以上大多數情況</td><td>接觸器本身損壞</td></tr>
+        </tbody></table></div>
+      <p class="why">在 I/O 表的備註欄寫清楚：「Y0 與 Y1 互鎖（程式＋電氣）」，接手的人一看就知道。</p>
+    </section>
+
+    <section id="s5">
+      <h2>5　換向要等一下</h2>
+      <p>正轉停了馬上反轉，馬達還在轉、接觸器可能還沒放開。程式要<b>延遲一點時間再換向</b>，例如 0.5 秒，實際時間依馬達和負載決定。</p>
+      <p>工業配線乙級第五題（自動門）就有這個精神：關門中按開門鈕，要<b>先停 2 秒</b>才開門。</p>
+      <pre class="il">LD M10        ; 想反轉
+ANI Y000      ; 正轉沒有在輸出
+OUT T5 K5     ; 等 0.5 秒
+LD T5
+ANI Y000
+OUT Y001      ; 反轉</pre>
+    </section>
+
+    <section id="s6">
+      <h2>6　積熱電驛（TH）和限位開關</h2>
+      <ul class="steps-list">
+        <li><b>TH</b>：常見做法是 TH 的 b 接點<b>串在接觸器線圈迴路</b>，過載時直接讓 MC 失磁，不靠程式；另一組接點再接回 PLC，讓程式知道「過載了」去亮燈、記錄。</li>
+        <li><b>限位開關</b>：重要的極限（例如會撞壞機構的行程終點）可以把 b 接點串在對應方向的接觸器線圈上，當作最後一道保護。</li>
+        <li>工業配線乙級第五題的 LS1、LS2 只接到 PLC（主線路裡沒有），到位停止全靠程式；但它用 <b>b 接點</b>，線斷了等於到位，門會停（見 <a href="practice.html#E22">練習 E22</a>）。這是試題的設計，現場可以視風險再加硬體保護。</li>
+        <li>工配乙級的規定：TH、EMS 接到 PLC 的線被切斷，要<b>等同跳脫或急停</b>。所以它們都要接常閉。</li>
+      </ul>
+    </section>
+
+    <section id="s7">
+      <h2>7　檢定怎麼要求（工業配線乙級）</h2>
+      <div class="table-box"><table class="gtable small">
+        <thead><tr><th>規定</th><th>試題</th></tr></thead>
+        <tbody>
+          <tr><td>EMO 經安全電驛、2 組 b 接點，不可直接接 PLC 輸入</td><td>第一題 其它規定</td></tr>
+          <tr><td>TH、EMS 的線路斷線要等同跳脫、急停</td><td>第一、二題 其它規定</td></tr>
+          <tr><td>MC1、MC2 要做外部連鎖</td><td>第五題 其它規定</td></tr>
+          <tr><td>關門中按開門：先停 2 秒再開</td><td>第五題 動作要求</td></tr>
+          <tr><td>輸出確認：MC 和 PLC 輸出不同步就全部停止、警報</td><td>第二題 其它規定</td></tr>
+        </tbody></table></div>
+      <p>這些規定的練習在 <a href="exam.html">檢定專區</a>。實際應檢以勞動部公告的最新版本為準。</p>
+    </section>
+
+    <section id="s8">
+      <h2>8　檢查清單：交機前問自己</h2>
+      <ul class="steps-list">
+        <li>急停按下去，切斷的是能量（MC），還是只有 PLC 程式在擋？</li>
+        <li>急停、TH、安全相關的限位是常閉嗎？線斷了機器會停在安全的一側嗎？</li>
+        <li>正反轉、上升下降這類不能同時的輸出，除了程式還有電氣（或機械）互鎖嗎？</li>
+        <li>換向有延遲嗎？</li>
+        <li>解除急停後，機器會不會自己動？是不是一定要復歸、再啟動？</li>
+        <li>I/O 表有寫「斷線時 PLC 看到什麼」和互鎖關係嗎？（<a href="design.html#d4">機台設計方法：I/O 表</a>）</li>
+      </ul>
+    </section>
+
+    <section id="src">
+      <h2>出處</h2>
+      <ul class="steps-list">
+        <li>三菱電機 FX3S Series User's Manual – Hardware Edition（JY997D48601）：卷首 Safety Precautions 的設計注意事項、8.4 節外部配線範例、12.1.3／12.2.3 節輸出的外部互鎖。</li>
+        <li>勞動部 工業配線乙級技術士技能檢定術科測試應檢參考資料（013002B13）：第一、二、五題的動作要求與其它規定。</li>
+        <li>國際標準名稱供延伸閱讀：IEC 60204-1（機械的電氣設備）、ISO 13850（急停功能）、ISO 13849-1（控制系統的安全相關部分）。本頁沒有引用條文；實際設計請依標準做風險評估。</li>
+      </ul>
+    </section>
+  </main>
+</div>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="config.js"></script>
+<script src="course_map.js"></script>
+<script src="course.js"></script>
+<script src="common.js"></script>
+<script>
+  document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
+  document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));
+</script>
+</body>
+</html>

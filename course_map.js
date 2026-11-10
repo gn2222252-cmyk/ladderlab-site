@@ -516,6 +516,12 @@ window.COURSE = {
      "goal": "分清楚現場的常開／常閉和程式的接點，急停接法正確。"
     },
     {
+     "k": "G",
+     "id": "safety.html",
+     "href": "safety.html",
+     "label": "急停、安全迴路與硬體互鎖：為什麼不能只靠程式"
+    },
+    {
      "k": "L",
      "id": "A8",
      "href": "learn.html#A8",
