@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="c4bbb89968">
+<meta name="ll-version" content="7918d85c59">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BCD：二進位轉成 BCD（送七段顯示器）｜三菱 FX PLC 指令</title>
@@ -23,8 +23,8 @@
 <p class="crumb"><a href="index.html">FX 指令說明</a> · 數值</p>
 <h1>BCD：二進位轉成 BCD（送七段顯示器）</h1>
 <p class="lead-text">把 PLC 的二進位數轉成 BCD 碼，接到 BCD 七段顯示器（每位 4 條線）就能直接顯示十進位。</p>
-<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>BCD 來源 目的</td><td>來源：D、T、C、K□X、K□M（不能是 K、H 常數）；目的：K1Y0～K4Y0 這類位數指定、D</td></tr></tbody></table></div>
-<p>BCD C0 K1Y000：計數器 C0 的值用 Y0～Y3 送到一位七段顯示器。兩位數用 K2Y000（Y0～Y7）。</p><p>用 MOV 直接送：0～9 剛好對，10 以上顯示會亂（10 會變成「A」那組線）。</p><p>來源超過 9999（16 位元）或是負數時不轉換，M8067 ON。</p><p>FX3S、FX3G、FX3U 都有（FNC 18）。出處：三菱 FX3 程式手冊 9.9 節。</p>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>BCD 來源 目的</td><td>FX3S 手冊：來源 KnX／KnY／KnM／KnS、T、C、D、V、Z（不能是 K、H 常數）；目的 KnY／KnM／KnS、T、C、D、V、Z（程式手冊 9.9 節）。本站模擬器的目的支援 KnY、KnM、D</td></tr></tbody></table></div>
+<p>BCD C0 K1Y000：計數器 C0 的值用 Y0～Y3 送到一位七段顯示器。兩位數用 K2Y000（Y0～Y7）。</p><p>用 MOV 直接送：0～9 剛好對，10 以上就錯。七段用的 BCD 解碼 IC 只認 0～9，收到 10～15（1010～1111）時：CD4511 全暗（TI 資料表真值表），74LS47／74LS48 顯示奇怪的符號（10 像小寫 c、14 像小寫 t），15 全暗。都不會顯示成 A。本站的七段零件照 CD4511 處理（全暗）。</p><p>來源超過 9999（16 位元）或是負數時不轉換，M8067 ON。</p><p>FX3S、FX3G、FX3U 都有（FNC 18）。出處：三菱 FX3 程式手冊 9.9 節。</p>
 <h2>範例</h2>
 <pre class="il">LD M8000
 MOV K47 D0
@@ -44,7 +44,7 @@ BCD D0 K2Y000</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "c4bbb89968" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "7918d85c59" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

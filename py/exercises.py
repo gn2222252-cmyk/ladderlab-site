@@ -2301,11 +2301,31 @@ MESSAGES = [
     (r"END inside STL, RET is missing", "步進區最後少了 RET"),
     (r"(\S+) with (\d+) unmerged blocks", "%s 前面有 %s 個 LD 區塊沒有用 ANB 或 ORB 合併"),
     (r"use SET for a state transfer", "OUT S 只能寫在步進（STL～RET）裡面當跳躍；一般階梯圖要用 SET S"),
+    (r"(C2[0-5]\d) out of range", "%s 是 32 位元或高速計數器（C200～C255），實機 FX3S 有，但本站模擬器還不支援；請改用 C0～C31"),
     (r"(\S+) out of range", "%s 超出範圍"),
+    (r"cannot write word operand (\S+)", "本站模擬器的 MOV、ADD 這類指令目前只能寫到 D、KnY、KnM，不能寫到 %s（實機 FX3S 可以）；要清計時器、計數器請用 RST 或 ZRST"),
+    (r"bad ZRST range (\S+) (\S+)", "ZRST %s %s：起點和終點要是同一種元件，而且起點 ≤ 終點"),
     (r"special device (\S+) not allowed", "這個模擬器不支援特殊元件 %s"),
     (r"STL needs an S device", "STL 後面要接 S 元件"),
     (r"(\d+) MPS without MPP", "有 %s 個 MPS 沒有 MPP"),
 ]
+
+
+# FX3S instructions the simulator does not run yet: say so instead of "unknown instruction" (tester round 7)
+FX_UNSUPPORTED = {"CJ", "CALL", "SRET", "FEND", "FOR", "NEXT", "IRET", "EI", "DI", "WDT", "BMOV", "FMOV", "XCH", "SMOV", "CML",
+                  "WAND", "WOR", "WXOR", "NEG", "SEGD", "SEGL", "DECO", "ENCO", "SUM", "BON", "MEAN", "ANS", "ANR", "SQR", "FLT",
+                  "PLSY", "PWM", "PLSR", "ZRN", "PLSV", "DSZR", "ABS", "TKY", "HKY", "DSW", "ARWS", "RS", "TRD", "TWR", "HOUR",
+                  "VRRD", "VRSC", "INV", "MEP", "MEF", "SPD", "HSCS", "HSCR", "REF", "REFF", "ROR", "RCR", "RCL", "WSFR", "WSFL",
+                  "SFWR", "SFRD", "ASCI", "HEX", "CCD", "PID", "SER", "ALT", "ZCP", "FROM", "TO", "RD3A", "WR3A", "IVCK", "IVDR"}
+
+
+def _unknown_op(op):
+    base = op[:-1] if op.endswith("P") and len(op) > 2 else op
+    if base.startswith("D") and (base[1:] in ALLOWED or base[1:] in FX_UNSUPPORTED):
+        return "%s 是 32 位元指令（D 開頭），實機 FX3S 可以用，本站模擬器還不支援；請改用 16 位元的 %s" % (op, op[1:])
+    if base in FX_UNSUPPORTED:
+        return "%s 是 FX3S 的指令，但本站模擬器還不支援" % op
+    return "不認得指令 %s（請檢查拼字）" % op
 
 
 def normalize(dev):
@@ -2333,11 +2353,12 @@ def compile_il(text):
         if op == "END":
             continue
         if op not in ALLOWED and not COMPARE_RE.match(op):
-            errors.append((number, "不認得指令 %s" % op))
+            errors.append((number, _unknown_op(op)))
             continue
         for o in ops:
             if not DEVICE_RE.match(o) and not WORD_RE.match(o):
-                hint = "（X、Y 是八進位，沒有 8 和 9）" if re.match(r"^[XY]\d+$", o) else ""
+                hint = "（X、Y 是八進位，沒有 8 和 9）" if re.match(r"^[XY]\d+$", o) else (
+                    "：變址（V、Z）實機 FX3S 可以用，本站模擬器還不支援" if re.match(r"^\w+[VZ]\d$", o) or re.match(r"^[VZ]\d$", o) else "")
                 errors.append((number, "看不懂元件 %s%s" % (o, hint)))
         items.append(("ins", op, ops))
         lines.append(number)
@@ -2363,7 +2384,9 @@ def compile_il(text):
             PLC(program)
             parse_program(items)
         except (LadderError, IndexError, KeyError, ValueError) as e:
-            errors.append((0, "程式結構有問題：%s" % e))
+            msg = _translate(str(e))
+            where = [n for (_, op, ops), n in zip(items, lines) if any(o in str(e).split() for o in ops)]
+            errors.append((where[0] if where else 0, msg if msg != str(e) else "程式結構有問題：%s" % e))
     return items, program, errors
 
 

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="c4bbb89968">
+<meta name="ll-version" content="7918d85c59">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 互動課程 | LadderLab</title>
@@ -92,19 +92,19 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=2338d0a36d"></script>
+<script src="py/bundle.js?v=bbe81866c5"></script>
 <script src="fx3s.js?v=e994784638"></script>
 <script src="ladder.js?v=796bf6d37e"></script>
 <script src="sfc.js?v=254aa66b02"></script>
 <script src="course_map.js?v=140a0c67c9"></script>
 <script src="course.js?v=196817d51d"></script>
-<script src="learn.js?v=e909fa63f4"></script>
+<script src="learn.js?v=86398dca5a"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "c4bbb89968" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "7918d85c59" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

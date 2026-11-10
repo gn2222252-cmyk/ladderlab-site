@@ -409,15 +409,18 @@ class PLC(object):
             return fn
         if op == "ZRST":
             first, last = self._split(ops[0]), self._split(ops[1])
-            if first[0] != last[0] or first[1] > last[1] or first[0] not in "YMSD":
+            if first[0] != last[0] or first[1] > last[1] or first[0] not in "YMSDTC":
                 raise LadderError("bad ZRST range %s %s" % (ops[0], ops[1]))
             kind = first[0]
+            # T and C: current value and contact both cleared, like RST on each one (programming manual 12.1)
+            targets = {"T": ("t_acc", "t_on"), "C": ("c_val", "c_on")}.get(kind) or ({"Y": "y", "M": "m", "S": "s", "D": "d"}[kind],)
 
             def fn():
                 if self.acc:
-                    target = {"Y": self.y, "M": self.m, "S": self.s, "D": self.d}[kind]
-                    for i in range(first[1], last[1] + 1):
-                        target[i] = 0
+                    for attr in targets:
+                        target = getattr(self, attr)
+                        for i in range(first[1], last[1] + 1):
+                            target[i] = 0
                 self.fresh = True
             return fn
         if op == "OUT":

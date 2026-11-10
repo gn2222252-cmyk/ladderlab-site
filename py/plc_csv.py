@@ -35,6 +35,8 @@ def timer_unit(n):
     """FX3 timer resolution in ms and whether it keeps its value when the coil turns off.
     Both families' retentive ranges keep: FX3S T128-T131 (1 ms) and T132-T137 (100 ms), the school PLC (tester
     round 6), and FX3U T246-T249 (1 ms) and T250-T255 (100 ms)."""
+    if 63 <= n <= 127:                                 # FX3S 1 ms timers (FX3U uses 100 ms here; the school PLC wins)
+        return 1, False
     if 128 <= n <= 131:
         return 1, True
     if 132 <= n <= 137:

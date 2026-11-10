@@ -165,7 +165,8 @@ function dtdSvg(d) {
     c.labels.forEach(([t, p]) => {
       s += `<line class="dtd-grid" x1="${lw}" y1="${Y(p)}" x2="${lw + n * cw}" y2="${Y(p)}"/><text class="dtd-pos" x="${lw - 4}" y="${Y(p) + 4}">${esc(t)}</text>`;
     });
-    const pts = [`${lw},${Y(c.seg[0][0])}`].concat(c.seg.map(([a, b], i) => `${lw + (i + 1) * cw},${Y(b)}`));
+    const fast = c.fast || {};      /* a fast stroke ends early in its column: a steeper line */
+    const pts = [`${lw},${Y(c.seg[0][0])}`].concat(c.seg.flatMap(([a, b], i) => (fast[i] ? [`${lw + (i + fast[i]) * cw},${Y(b)}`] : []).concat([`${lw + (i + 1) * cw},${Y(b)}`])));
     s += `<polyline class="dtd-move" points="${pts.join(" ")}"/>`;
     Object.entries(c.note || {}).forEach(([i, t]) => {
       const [a, b] = c.seg[+i];

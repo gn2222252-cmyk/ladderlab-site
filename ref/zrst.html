@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="c4bbb89968">
+<meta name="ll-version" content="7918d85c59">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ZRST：區間整批清除｜三菱 FX PLC 指令</title>
@@ -23,7 +23,7 @@
 <p class="crumb"><a href="index.html">FX 指令說明</a> · 數值</p>
 <h1>ZRST：區間整批清除</h1>
 <p class="lead-text">把一段連續的元件全部清除，例如 ZRST S0 S59 把所有步關掉。</p>
-<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>ZRST 起點 終點</td><td>FX3S 手冊：同一種元件的 Y、M、S、T、C、D，起點 ≤ 終點（程式手冊 12.1 節）。本站模擬器目前支援 Y、M、S、D</td></tr></tbody></table></div>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>ZRST 起點 終點</td><td>FX3S 手冊：同一種元件的 Y、M、S、T、C、D，起點 ≤ 終點（程式手冊 12.1 節）。本站模擬器都支援；T、C 會清掉現在值和接點，和一個一個 RST 一樣</td></tr></tbody></table></div>
 <p>機台異常或急停時，常用 ZRST 一次清掉所有步序，再 SET 回待機。</p><p>開機時用 M8002 ZRST 清掉停電保持區的殘留資料。</p><p>ZRST Y000 Y007 一次關掉 Y0～Y7，急停或模式切換時常用。</p>
 <h2>範例</h2>
 <pre class="il">LD X000
@@ -46,7 +46,7 @@ ZRST M0 M2</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "c4bbb89968" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "7918d85c59" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
