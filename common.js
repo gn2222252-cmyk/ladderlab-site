@@ -17,15 +17,17 @@ function savedLang() {
 }
 function storeGet(key, fallback) { try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); } catch (e) { return fallback; } }
 /* progress backup: every LadderLab key in this browser (they all start with "ll_") as one JSON file, and back */
+const LV_KEYS = ["gantry-lv-course-v1", "gantry-lv-exam-best"];     /* the LabVIEW course's own keys (kept so old progress survives) */
+const progressKey = (k) => !!k && ((k.indexOf("ll_") === 0 && k !== "ll_waitlisted") || LV_KEYS.includes(k));
 function progressExport() {
   const data = { ladderlab: "progress", version: 1, saved: new Date().toISOString().slice(0, 10), items: {} };
-  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.indexOf("ll_") === 0 && k !== "ll_waitlisted") data.items[k] = localStorage.getItem(k); } } catch (e) { /* private mode */ }
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (progressKey(k)) data.items[k] = localStorage.getItem(k); } } catch (e) { /* private mode */ }
   return data;
 }
 function progressImport(data) {
   if (!data || data.ladderlab !== "progress" || typeof data.items !== "object") return -1;
   let n = 0;
-  Object.keys(data.items).forEach((k) => { if (k.indexOf("ll_") === 0 && typeof data.items[k] === "string") { try { localStorage.setItem(k, data.items[k]); n++; } catch (e) { /* full */ } } });
+  Object.keys(data.items).forEach((k) => { if (progressKey(k) && typeof data.items[k] === "string") { try { localStorage.setItem(k, data.items[k]); n++; } catch (e) { /* full */ } } });
   return n;
 }
 function storeSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* ignore */ } }
