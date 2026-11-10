@@ -172,6 +172,43 @@ checksum = sum of the ASCII codes after STX up to and including ETX, low 8 bits,
     const mem = watch.map((d) => D[d]).join(",");
     if (mem !== lastMem) { lastMem = mem; renderMem(); }
   }
+  /* ---------- decoding drill: a read reply for D200, 3 words; sometimes with a wrong checksum ---------- */
+  let dq = null, dqRight = 0, dqTotal = 0;
+  function newDq() {
+    const pick = () => { const r = Math.random(); return r < 0.35 ? Math.floor(Math.random() * 100) : r < 0.7 ? Math.floor(Math.random() * 1000) : r < 0.9 ? Math.floor(Math.random() * 65536) : 0xFFFF - Math.floor(Math.random() * 20); };
+    const vals = [pick(), pick(), pick()];
+    const body = vals.map(wordText).join("") + ETX;
+    let cs = sum(body);
+    const bad = Math.random() < 0.25;
+    if (bad) cs = hex((parseInt(cs, 16) + 1 + Math.floor(Math.random() * 30)) & 0xFF, 2);
+    dq = { vals, bad, text: STX + body + cs };
+    const f = dq.text;
+    const cells = [["STX", "02h", "ctl"]];
+    vals.forEach((v, k) => [...wordText(v)].forEach((c, i) => cells.push([c, i ? "" : "D" + (200 + k), "dat"])));
+    cells.push(["ETX", "03h", "ctl"]);
+    [...f.slice(-2)].forEach((c, i) => cells.push([c, i ? "" : "校驗", "sum"]));
+    $("dqframe").innerHTML = cells.map(([c, s2, k]) => `<span class="fx-ch ${k}"><b>${esc(c)}</b><small>${esc(s2)}</small></span>`).join("");
+    $("dqvals").innerHTML = vals.map((_, k) => `<label>D${200 + k} 十進位 <input type="number" data-k="${k}" style="width:100px"></label>`).join("") +
+      `<span class="why">負數照 I16 寫（例如 FFFFh 寫 -1），或照 U16 寫 65535 都算對。</span>`;
+    $("dqsum").value = ""; $("dqans").innerHTML = "";
+  }
+  $("dqnext").onclick = newDq;
+  $("dqcheck").onclick = () => {
+    if (!dq) return;
+    const sumOk = $("dqsum").value === (dq.bad ? "0" : "1");
+    const got = [...$("dqvals").querySelectorAll("input")].map((i) => i.value.trim());
+    const okVals = dq.vals.map((v, k) => got[k] !== "" && (+got[k] === v || +got[k] === (v > 32767 ? v - 65536 : v)));
+    const all = sumOk && (dq.bad || okVals.every(Boolean));
+    dqTotal++; if (all) dqRight++;
+    const body = dq.text.slice(1, -2);
+    $("dqans").innerHTML = (all ? "<b>全對！</b>" : "<b>再看一次：</b>") +
+      `<br>校驗：STX 之後到 ETX 的 ASCII 碼總和取低 8 位元 = ${sum(body)}，回應裡寫的是 ${dq.text.slice(-2)} → <b>${dq.bad ? "不對，這筆資料要丟掉、記通訊錯誤" : "對"}</b>${sumOk ? " ✓" : " ✗"}` +
+      dq.vals.map((v, k) => { const t = wordText(v); return `<br>D${200 + k}：${t} → 低位元組在前，換回來是 ${t.slice(2)}${t.slice(0, 2)}h = <b>${v}</b>${v > 32767 ? `（I16 是 ${v - 65536}）` : ""}${dq.bad ? "" : okVals[k] ? " ✓" : " ✗"}`; }).join("") +
+      (dq.bad ? "<br>校驗不對時，數值算出來也不能用。" : "");
+    $("dqscore").textContent = `答對 ${dqRight} / ${dqTotal}`;
+  };
+  newDq();
+
   function note(t) { $("log").insertAdjacentHTML("afterbegin", `<div><span class="why">PLC：${esc(t)}</span></div>`); }
   setInterval(tick, 200);
 

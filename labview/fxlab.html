@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="217c9481ce">
+<meta name="ll-version" content="1b67ea3014">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FX 封包練習台：在瀏覽器裡跟模擬 PLC 對話 | LadderLab</title>
@@ -102,6 +102,18 @@
     </div>
   </div>
 
+  <section class="fx-card" id="decode">
+    <h2>5　解碼練習：PLC 回來的字串是多少？（第 13～15 課）</h2>
+    <p>FX_ReadD 收到回應後要做三件事：檢查 STX、ETX 和校驗；每 4 個字元切一個字；把「低位元組在前」換回來再轉成數字。下面是 PLC 讀 D200 起 3 個字的回應，換你當 GT_Parse。</p>
+    <div class="fx-frame" id="dqframe"></div>
+    <div class="fx-row">
+      <label>校驗對嗎？<select id="dqsum"><option value="">選一個</option><option value="1">對</option><option value="0">不對（要當成通訊錯誤）</option></select></label>
+    </div>
+    <div class="fx-row" id="dqvals"></div>
+    <div class="fx-row"><button type="button" class="go" id="dqcheck">對答案</button><button type="button" id="dqnext">換一題</button><span class="why" id="dqscore"></span></div>
+    <div class="fx-sum" id="dqans"></div>
+  </section>
+
   <section class="fx-card">
     <h2>對照 LabVIEW</h2>
     <ul>
@@ -114,13 +126,13 @@
   </section>
 </main>
 <footer><p>MELSEC 為三菱電機株式會社之商標，LabVIEW 為 NI 之商標。本站為獨立開發，與兩家公司無關。模擬 PLC 只實作本課程用到的 D 暫存器讀寫。</p></footer>
-<script src="fxlab.js?v=ba056d7821"></script>
+<script src="fxlab.js?v=63c65a29f9"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "217c9481ce" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1b67ea3014" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
