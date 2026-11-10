@@ -10,7 +10,7 @@
 <meta property="og:description" content="PLC 裡的數字是二進位，人看的是十進位。指撥開關和七段顯示器是「一位數字用 4 條線」（1、2、4、8），這叫 BCD：25 的 BCD 是 0010｜0101（十位 2、個位 5），二進位卻是 0001 1001。所以讀指撥開關用 BI">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/A14.html">
-<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../style.css?v=5f8ed510af">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "A14 數字的輸入與顯示：指撥開關、BCD／BIN、七段顯示器", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
 </head>
 <body class="static">
@@ -31,7 +31,9 @@ K2X000 是「從 X0 開始的 2 位數」＝X0～X7：X0～X3 是個位、X4～X
 指撥在 00 時用 AND&gt; D0 K0 擋住不計數：計數器設定值 0 會當成 1，第一個工件就算數滿（FX3 程式手冊 4.6 節）。
 計數器到設定值後現在值停住不再加；目標調大後可以繼續數。
 指撥轉到一半可能讀到不是 BCD 的組合，BIN 會讓 M8067（運算錯誤）ON，實機可以用它判斷這一次讀值無效。
-K2Y000 只送兩位：C0 超過 99 時百位沒有地方顯示，要三位數用 K3Y000（Y0～Y13）。FX3S-30M 只到 Y15，不能用 K4Y000。</div>
+K2Y000 只送兩位：C0 超過 99 時百位沒有地方顯示，要三位數用 K3Y000（Y0～Y13）。
+學校的 FX3S-20MT/ES 只有 Y0～Y7：兩位數七段就用光全部 8 個輸出，數滿燈 Y10 沒有地方接。在 20M 上可以改成一位數顯示（BCD C0 K1Y000，Y0～Y3），數滿燈改用 Y4；或加裝 FX3G-2EYT-BD 輸出擴充板，用 M8116 驅動數滿燈。這就是選型時要先算的「I/O 預算」：兩位數指撥（8 入）＋兩位數七段（8 出）就吃掉 20M 三分之二的輸入和全部的輸出。
+起點建議用末位是 0 的編號，因為八進位會跳號：K2X004 是 X4～X13，不是 X4～X11。</div>
 <h2>這一課的程式（指令表）</h2>
 <pre class="il">LD M8000
 BIN K2X000 D0

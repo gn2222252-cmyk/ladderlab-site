@@ -118,7 +118,7 @@ class Practice(object):
                 coils.append([])
         return json.dumps({
             "inputs": {d: p.x_in[int(d[1:], 8)] for d, _, _ in e["inputs"]},
-            "outputs": {d: int(bool(bit(p, d))) for d, _ in e["outputs"]},
+            "outputs": {d: p.y_out[int(d[1:], 8)] for d, _ in e["outputs"]},     # the terminals (M8034 turns them OFF)
             "leaves": "".join("1" if conducts(p, x) else "0" for x in self.leaves),
             "power": power, "coils": coils, "steps": ["S%d" % s for s in p.active_states()],
             "plant": self.rig.plant.state() if self.rig.plant else None,

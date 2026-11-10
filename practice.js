@@ -33,7 +33,7 @@ function open(eid) {
   const rows = ex.inputs.map(([d, l, k]) => [d, l, { hold: "按鈕（按住）", toggle: "開關", sensor: "感測器（機台自己動）" }[k]])
     .concat(ex.outputs.map(([d, l]) => [d, l, "輸出"]));
   $("iotable").innerHTML = `<thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${esc2(c)}</td>`).join("")}</tr>`).join("")}</tbody>`;
-  $("rules").innerHTML = ex.rules.map((r) => `<li>安全條件：${esc2(r)}</li>`).join("") + ex.forbid.map((f) => `<li>不能使用 ${f}</li>`).join("");
+  $("rules").innerHTML = ex.rules.map((r) => `<li>安全條件（絕對不可以發生）：${esc2(r)}</li>`).join("") + ex.forbid.map((f) => `<li>不能使用 ${f}</li>`).join("");
   $("inputs").innerHTML = ex.inputs.map(([dev, label, kind]) =>
     `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}>` +
     `<i></i><span><b>${dev}</b> ${esc2(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");

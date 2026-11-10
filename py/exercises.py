@@ -2368,18 +2368,25 @@ class Rig(object):
             self.plant.plc = self.plc
             self.plant.apply()
 
+    TOGETHER_MS = 50      # turning ON within this time counts as "at the same time" (an interlock may delay one by a scan)
+
     def record_sequence(self, ms, devices):
-        """Runs ms and returns the order in which the devices turned ON; devices turning ON in the same scan are joined with +."""
+        """Runs ms and returns the order in which the devices turned ON; devices turning ON within TOGETHER_MS of the
+        first one of a group are joined with + (in the order of devices)."""
         prev = {d: int(bool(bit(self.plc, d))) for d in devices}
-        out = []
+        groups, start = [], None
         for _ in range(int(ms) // SCAN):
             self.scan()
             now = {d: int(bool(bit(self.plc, d))) for d in devices}
             rising = [d for d in devices if now[d] and not prev[d]]
             if rising:
-                out.append("+".join(rising))
+                if groups and start is not None and self.ms - start <= self.TOGETHER_MS and not set(rising) & groups[-1]:
+                    groups[-1] |= set(rising)
+                else:
+                    groups.append(set(rising))
+                    start = self.ms
             prev = now
-        return out
+        return ["+".join(d for d in devices if d in g) for g in groups]
 
 
 def _label(ex, dev):
@@ -2450,9 +2457,9 @@ def run_test(ex, program, steps):
             if not s[3] <= count <= s[4]:
                 return "%.1f 秒內 %s 變化了 %d 次，應該在 %d～%d 次之間。" % (s[2] / 1000.0, _label(ex, s[1]), count, s[3], s[4])
         if rig.broken:
-            return "安全條件違反：" + rig.broken
+            return "安全條件違反（先修這一個，其他項目常常會跟著通過）：" + rig.broken
     rig.run(0)
-    return ("安全條件違反：" + rig.broken) if rig.broken else None
+    return ("安全條件違反（先修這一個，其他項目常常會跟著通過）：" + rig.broken) if rig.broken else None
 
 
 def grade(ex, text):

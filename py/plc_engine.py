@@ -77,6 +77,14 @@ class PLC(object):
         for _ in range(int(ms // self.scan_ms)):
             self.scan(self.scan_ms)
 
+    def _write_outputs(self):
+        """END: the output image goes to the terminals. M8034 (all outputs disable, programming manual 37.2.14):
+        the program keeps running on the image, but every real output is OFF."""
+        if self.m[8034]:
+            self.y_out[:] = [0] * len(self.y)
+        else:
+            self.y_out[:] = self.y
+
     def scan_iter(self, dt_ms=None):
         """The same scan one instruction at a time, for the learning window. Yields the number of the
         instruction about to run, then 'done' after the outputs are written. scan() below is what tests and
@@ -99,7 +107,7 @@ class PLC(object):
             yield index
             if fn():
                 break
-        self.y_out[:] = self.y
+        self._write_outputs()
         self.scans += 1
         self.clock_ms += self._dt
         yield "done"
@@ -124,7 +132,7 @@ class PLC(object):
             if fn():
                 break
         # write outputs
-        self.y_out[:] = self.y
+        self._write_outputs()
         self.scans += 1
         self.clock_ms += self._dt
 
@@ -157,6 +165,8 @@ class PLC(object):
             return put
         if kind == "S":
             def put(v):
+                if v and self.stl_mode == 1 and self.m[8040]:
+                    return                       # M8040: transfer between states disabled (programming manual 37.2.17)
                 self.s[n] = v
                 if v and self.stl_mode == 1:
                     self.stl_leave = True
