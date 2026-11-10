@@ -641,7 +641,7 @@ class PLC(object):
                 if self.acc:
                     self.t_acc[n] = min(self.t_acc[n] + self._dt, 32767 * unit)
                     self.t_on[n] = 1 if self.t_acc[n] // unit >= k() else 0
-                elif not keep:                      # retentive timers (T246-T255) hold until RST
+                elif not keep:                      # retentive timers (FX3S T128-T137, FX3U T246-T255) hold until RST
                     self.t_acc[n] = 0
                     self.t_on[n] = 0
                 self.fresh = True

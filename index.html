@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="3a82df117f">
+<meta name="ll-version" content="c4bbb89968">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LadderLab 梯圖實驗室｜三菱 FX PLC 互動課程</title>
@@ -134,7 +134,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=a5bf88146c"></script>
+<script src="py/bundle.js?v=2338d0a36d"></script>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="ladder.js?v=796bf6d37e"></script>
 <script src="course_map.js?v=140a0c67c9"></script>
@@ -158,5 +158,25 @@
 })();
 </script>
 <script src="app.js?v=ec192ffd32"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "c4bbb89968" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
 </body>
 </html>

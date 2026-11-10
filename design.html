@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="3a82df117f">
+<meta name="ll-version" content="c4bbb89968">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>機台設計方法：從需求到 PLC 程式與試車 | LadderLab</title>
@@ -210,12 +210,32 @@
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="course_map.js?v=140a0c67c9"></script>
 <script src="course.js?v=196817d51d"></script>
-<script src="common.js?v=3e453b2134"></script>
+<script src="common.js?v=20ae5aa5c1"></script>
 <script src="waitlist.js?v=92656de277"></script>
 <script>
   document.getElementById("tocbtn").onclick = () => document.body.classList.toggle("toc-open");
   document.querySelectorAll("#toc a").forEach((a) => a.addEventListener("click", () => document.body.classList.remove("toc-open")));
   renderWaitlist(document.getElementById("wl"), "design", "想要更多機台的完整設計案例嗎？");
+</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "c4bbb89968" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
 </script>
 </body>
 </html>

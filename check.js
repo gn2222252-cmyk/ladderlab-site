@@ -4,7 +4,9 @@ let py = null, last = null;
 const $ = (id) => document.getElementById(id);
 const esc2 = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const KIND = { double_coil: "雙線圈", set_no_reset: "SET 沒有 RST", read_never_set: "讀了沒人寫", timer_reuse: "計時器重複",
-  no_initial: "沒有啟動初始步", capacity: "超過容量", out_s_outside: "OUT S 用錯地方" };
+  no_initial: "沒有啟動初始步", capacity: "超過容量", out_s_outside: "OUT S 用錯地方",
+  counter_k0: "計數器設 0", state_dead_end: "步沒有出口", state_never_entered: "步沒被進入",
+  adjacent_timer: "相鄰步共用計時器", io_range: "超出機型點數" };
 
 function lines(ls) { return ls.map((n) => `<a href="#" data-line="${n}">${n}</a>`).join("、"); }
 function run() {
