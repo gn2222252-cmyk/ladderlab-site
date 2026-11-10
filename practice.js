@@ -51,6 +51,9 @@ function open(eid) {
   hintAt = 0; $("hints").innerHTML = "";
   $("hint").disabled = false;
   $("results").innerHTML = ""; $("verdict").textContent = ""; $("verdict").className = "verdict"; $("wl").hidden = true;
+  const prevPart = { E18b: "E18a", E18: "E18b" }[ex.id];  /* E18 in parts: start from the previous part's program */
+  $("frompart").hidden = !prevPart;
+  if (prevPart) { $("frompart").textContent = `帶入 ${prevPart} 的程式`; $("frompart").dataset.from = prevPart; }
   const saved = storeGet("ll_code_" + ex.id, null);
   $("code").value = saved !== null ? saved : ex.starter;
   compileNow();
@@ -180,6 +183,13 @@ $("share").onclick = async () => {
 };
 
 /* ---------- ladder editor: draws the same program; the instruction list stays what is graded ---------- */
+$("frompart").onclick = () => {
+  const from = $("frompart").dataset.from, code = storeGet("ll_code_" + from, null);
+  if (!code || !code.trim() || code.trim() === (cat.find((e) => e.id === from) || {}).starter) { window.alert(`${from} 還沒有你寫的程式。先到 ${from} 寫好（通過評分最好），再回來帶入。`); return; }
+  const now = $("code").value.trim();
+  if (now && now !== ex.starter.trim() && now !== code.trim() && !window.confirm(`用 ${from} 的程式取代目前這一段的程式？`)) return;
+  setCode(code);
+};
 function setCode(text) {
   clearTimeout(ltimer); ldirty = false;           // a program from outside replaces whatever the ladder had pending
   $("code").value = text;
@@ -304,7 +314,14 @@ async function boot() {
       const shared = new URLSearchParams(location.search).get("il");
       if (shared && id === "FREE" && !route.used) {
         route.used = true;
+        const mine = $("code").value;                /* tester round 5: a shared link used to wipe the learner's own program */
+        const keep = mine.trim() && mine.trim() !== shared.trim() && mine.trim() !== ex.starter.trim();
+        if (keep) storeSet("ll_code_FREE_backup", mine);
         setCode(shared);
+        if (keep) {
+          $("task").insertAdjacentHTML("afterbegin", `<p class="callout" id="sharednote">這是別人分享的程式。你原本在自由練習寫的程式已經先備份起來。<button type="button" class="small-btn" id="restoremine">還原我原本的程式</button></p>`);
+          $("restoremine").onclick = () => { setCode(storeGet("ll_code_FREE_backup", "")); $("sharednote").remove(); };
+        }
       }
     };
     window.addEventListener("hashchange", route);
