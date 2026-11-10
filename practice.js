@@ -4,7 +4,7 @@ Python side: engine/practice_bridge.py and engine/exercises.py (tests prove each
 const PALETTE = ["LD", "LDI", "AND", "ANI", "OR", "ORI", "OUT", "SET", "RST", "PLS", "STL", "RET", "ANB", "ORB", "MOV", "INC", "ZRST"];
 const DEV = ["X000", "X001", "X002", "Y000", "Y001", "Y002", "M0", "T0 K10", "C0 K5", "S0", "S20"];
 let py = null, pr = null, cat = [], ex = null, layout = null, st = null, last = 0, hintAt = 0, timer = null;
-let led = null, etab = "il", ltimer = null;
+let led = null, etab = "il", ltimer = null, ldirty = false;   // ldirty: the ladder was edited since it was loaded
 const $ = (id) => document.getElementById(id);
 const esc2 = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -189,15 +189,19 @@ function leadComments(text) {                     // the comment lines before th
   return out.join("\n").replace(/\s+$/, "");
 }
 function syncFromLadder() {
-  if (!led) return true;
+  if (!led || !ldirty) return true;               // only looking: keep the instruction list (and its comments) as it is
   const r = led.compile();
   if (r.errors && r.errors.length) {
     led.showErrors(r.errors);
     $("errors").innerHTML = r.errors.map((e) => `<li>${e.rung !== undefined && e.rung !== null ? `第 ${e.rung + 1} 條梯級：` : ""}${esc2(e.msg)}</li>`).join("");
     return false;
   }
+  const bare = (t) => t.split("\n").map((l) => l.split(";")[0].trim().toUpperCase().replace(/\s+/g, " ")
+    .replace(/\b([XY])0*(\d+)\b/g, (m, k, d) => k + d.padStart(3, "0"))).filter(Boolean).join("\n");
+  if (bare(r.il) === bare($("code").value)) { ldirty = false; return true; }   // same program: keep the comments
   const head = leadComments($("code").value), il = (head ? head + "\n" : "") + r.il;
   if (il !== $("code").value) { $("code").value = il; $("code").dispatchEvent(new Event("input")); }
+  ldirty = false;
   return true;
 }
 function loadLadder() {
@@ -210,6 +214,7 @@ function loadLadder() {
     return false;
   }
   led.set(g.rungs);
+  ldirty = false;
   if (g.warnings && g.warnings.length) $("errors").innerHTML = g.warnings.map((w) => `<li>${esc2(w)}</li>`).join("");
   return true;
 }
@@ -277,8 +282,8 @@ async function boot() {
   try {
     py = await bootPython();
     pr = py.runPython("from practice_bridge import Practice; Practice()");
-    led = LEdit.editor($("ed-ladder"), { comment: devComment, stl: true, onConvert: () => syncFromLadder(),
-      onChange: () => { clearTimeout(ltimer); ltimer = setTimeout(syncFromLadder, 500); } });
+    led = LEdit.editor($("ed-ladder"), { comment: devComment, stl: true, onConvert: () => { ldirty = true; syncFromLadder(); },
+      onChange: () => { ldirty = true; clearTimeout(ltimer); ltimer = setTimeout(syncFromLadder, 500); } });
     cat = JSON.parse(py.runPython("from practice_bridge import catalog; catalog()"));
     const route = () => {
       const id = location.hash.slice(1).split("?")[0];

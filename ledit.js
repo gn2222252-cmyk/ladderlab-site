@@ -191,6 +191,7 @@ const LEdit = (() => {
         flush();
         const rg = newRung(1); place(rg, T, 0, 0, COLS); rg.out[0] = { op: "FN", text: line.replace(/\s+/g, " ") }; rungs.push(rg);
       } else if (op === "OUT") {
+        if (!args[0]) { warnings.push("OUT 後面少了元件（例如 OUT Y000），請在指令表補上"); return { rungs: null, warnings }; }
         outs.push({ op: "OUT", a: args[0], k: args[1] || "" });
       } else {
         outs.push({ op: "FN", text: line.replace(/\s+/g, " ") });
