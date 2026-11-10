@@ -4,7 +4,7 @@
 let py = null, sb = null, M = null, tab = "ladder", mode = "write", layout = null, last = 0, chart = null;
 const $ = (id) => document.getElementById(id);
 const escS = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-let led = null, sfe = null;
+let led = null, sfe = null, lstl = null;
 const comment = (dev) => {
   if (!M || !dev) return "";
   const n = String(dev).toUpperCase().replace(/^([XY])0*(\d)/, (m, k, d) => k + d.padStart(3, "0").slice(-3));
@@ -15,12 +15,13 @@ const comment = (dev) => {
 function save() { try { localStorage.setItem("ll_sim_" + M.id, JSON.stringify({ tab, il: currentIL().il })); } catch (e) { /* private mode */ } }
 function currentIL() {
   if (tab === "ladder") return led.compile();
+  if (tab === "stl") return lstl.compile();
   if (tab === "sfc") { const r = sfe.compile(); return { il: r.il, errors: r.errors.map((m) => ({ msg: m })) }; }
   return { il: $("il").value, errors: [] };
 }
 function loadInto(t, il) {
   const warn = [];
-  if (t === "ladder") { const g = LEdit.fromIL(il); if (!g.rungs) return g.warnings; led.set(g.rungs); warn.push(...g.warnings); }
+  if (t === "ladder" || t === "stl") { const g = LEdit.fromIL(il); if (!g.rungs) return g.warnings; (t === "ladder" ? led : lstl).set(g.rungs); warn.push(...g.warnings); }
   else if (t === "sfc") { const g = SfcEdit.fromIL(il); if (!g.model) return g.warnings; sfe.set(g.model); warn.push(...g.warnings); }
   else $("il").value = il;
   return warn.length ? warn : null;
@@ -29,7 +30,7 @@ function showTab(t) {
   const cur = currentIL();
   if (t !== tab) {
     const problem = cur.il.trim() ? loadInto(t, cur.il) : null;
-    if (problem && (t === "ladder" || t === "sfc") && !(t === "ladder" ? led.rungs.length : sfe.model)) { $("errors").innerHTML = problem.map((p) => `<li>${escS(p)}</li>`).join(""); return; }
+    if (problem && (t === "ladder" || t === "stl" || t === "sfc") && !(t === "sfc" ? sfe.model : (t === "ladder" ? led : lstl).rungs.length)) { $("errors").innerHTML = problem.map((p) => `<li>${escS(p)}</li>`).join(""); return; }
     if (problem && problem.length) $("errors").innerHTML = problem.map((p) => `<li>${escS(p)}</li>`).join("");
     else $("errors").innerHTML = "";
     if (!cur.il.trim() && t === "sfc") sfe.set(SfcEdit.blank());
@@ -43,6 +44,7 @@ function showTab(t) {
 function showEditors() {
   const mon = mode === "monitor";
   $("ed-ladder").hidden = mon || tab !== "ladder";
+  $("ed-stl").hidden = mon || tab !== "stl";
   $("ed-sfc").hidden = mon || tab !== "sfc";
   $("ed-il").hidden = mon || tab !== "il";
   $("monitor").hidden = !mon;
@@ -60,6 +62,7 @@ function convert() {
   if (cur.errors && cur.errors.length) {
     $("errors").innerHTML = cur.errors.map((e) => `<li>${e.rung !== undefined ? `第 ${e.rung + 1} 條梯級：` : ""}${escS(e.msg)}</li>`).join("");
     if (tab === "ladder") led.showErrors(cur.errors);
+    if (tab === "stl") lstl.showErrors(cur.errors);
     return;
   }
   const out = JSON.parse(sb.compile(cur.il));
@@ -73,6 +76,7 @@ function convert() {
   renderRungs($("mon-ladder"), layout.map((r, i) => [r, i]), {});
   try { chart = JSON.parse(sb.sfc()); if (chart && chart.blocks && chart.blocks.length) renderSfc($("mon-sfc"), chart, comment); else chart = null; } catch (e) { chart = null; }
   if (tab === "ladder") led.markClean();
+  if (tab === "stl") lstl.markClean();
   if (tab === "il") loadInto("il", cur.il);
   save();
   setMode("monitor");
@@ -100,7 +104,7 @@ function openMachine(id) {
   const il = saved && saved.il && saved.il.trim() ? saved.il : M.example;
   const want = saved && saved.tab ? saved.tab : (/STL/.test(il) ? "sfc" : "ladder");
   tab = want;
-  ["ladder", "sfc", "il"].forEach((t) => { if (t === want) loadInto(t, il); });
+  ["ladder", "stl", "sfc", "il"].forEach((t) => { if (t === want) loadInto(t, il); });
   if (want !== "il") loadInto("il", il);
   document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("here", b.dataset.t === tab));
   setMode("write");
@@ -132,8 +136,8 @@ $("bConv").onclick = () => convert();
 $("bMon").onclick = () => { if (layout) setMode("monitor"); };
 $("bWrite").onclick = () => setMode("write");
 document.querySelectorAll("#tabs button").forEach((b) => (b.onclick = () => showTab(b.dataset.t)));
-$("example").onclick = () => { ["ladder", "sfc", "il"].forEach((t) => loadInto(t, M.example)); if (!/STL/.test(M.example) && tab === "sfc") tab = "ladder"; showTab(tab); convert(); };
-$("clear").onclick = () => { led.set([]); sfe.set(SfcEdit.blank()); $("il").value = ""; setMode("write"); };
+$("example").onclick = () => { ["ladder", "stl", "sfc", "il"].forEach((t) => loadInto(t, M.example)); if (!/STL/.test(M.example) && tab === "sfc") tab = "ladder"; showTab(tab); convert(); };
+$("clear").onclick = () => { led.set([]); lstl.set([]); sfe.set(SfcEdit.blank()); $("il").value = ""; setMode("write"); };
 $("il").addEventListener("input", () => save());
 (async () => {
   try {
@@ -142,6 +146,7 @@ $("il").addEventListener("input", () => save());
     const cat = JSON.parse(py.runPython("from sandbox import catalog; catalog()"));
     $("machine").innerHTML = cat.map((m) => `<option value="${m.id}">${escS(m.title)}</option>`).join("");
     led = LEdit.editor($("ed-ladder"), { comment, onConvert: convert, onChange: () => {} });
+    lstl = LEdit.editor($("ed-stl"), { comment, onConvert: convert, onChange: () => {}, stl: true });
     sfe = SfcEdit.editor($("ed-sfc"), { comment, onConvert: convert, onChange: () => {} });
     const want = (location.hash || "").slice(1);
     const first = cat.some((m) => m.id === want) ? want : cat[0].id;

@@ -526,3 +526,6 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .sf-form{font-size:14px;margin-bottom:6px}.sf-ck{margin-right:8px;white-space:nowrap}
 .sf-zoom-h{font-weight:600;font-size:14px;margin:6px 0}
 @media (max-width:700px){.sf-grid{grid-template-columns:1fr}}
+.le-stl{stroke-width:3}.le-stlt{font-size:10px;font-weight:700;fill:var(--on);text-anchor:middle}
+.le-band{fill:var(--on);opacity:.55}.le-bandt{font-size:9px;fill:var(--on)}
+.le-t.le-start,.le-c.le-start{text-anchor:start}

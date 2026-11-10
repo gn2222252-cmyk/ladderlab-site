@@ -459,6 +459,18 @@ window.COURSE = {
      "label": "模擬器：用 SFC 畫氣缸取放"
     },
     {
+     "k": "G",
+     "id": "sim.html#traffic",
+     "href": "sim.html#traffic",
+     "label": "模擬器：紅綠燈（選擇分支）"
+    },
+    {
+     "k": "G",
+     "id": "sim.html#arm",
+     "href": "sim.html#arm",
+     "label": "模擬器：氣壓機械手臂（STL 步進梯形圖）"
+    },
+    {
      "k": "L",
      "id": "6-3",
      "href": "learn.html#6-3",
@@ -568,6 +580,18 @@ window.COURSE = {
      "id": "sim.html#stepper",
      "href": "sim.html#stepper",
      "label": "模擬器：步進馬達定位（DRVI／DRVA）"
+    },
+    {
+     "k": "G",
+     "id": "sim.html#tank",
+     "href": "sim.html#tank",
+     "label": "模擬器：儲槽液位（遲滯控制）"
+    },
+    {
+     "k": "G",
+     "id": "sim.html#elevator",
+     "href": "sim.html#elevator",
+     "label": "模擬器：三層電梯"
     },
     {
      "k": "G",

@@ -449,8 +449,120 @@ class Stepper(Plant):
                 "crash": self.crash, "sens": [self.plc.x_in[0], self.plc.x_in[1], self.plc.x_in[2]]}
 
 
+class Traffic(Plant):
+    """Crossroads. Y0/Y1/Y2 north-south red/yellow/green, Y3/Y4/Y5 east-west red/yellow/green, Y6 walk lamp.
+    X0 pedestrian button. Only lamps, no movement; green on both roads at the same time is a crash."""
+    kind = "traffic"
+    faults = []
+
+    def __init__(self, plc):
+        self.crash = False
+        self.waiting = False
+        Plant.__init__(self, plc)
+
+    def step(self, ms):
+        if self.y(2) and self.y(5):
+            self.crash = True
+        if self.plc.x_in[0]:
+            self.waiting = True
+        if self.y(6):
+            self.waiting = False
+        self.apply()
+
+    def state(self):
+        y = [self.y(i) for i in range(7)]
+        return {"type": self.kind, "ns": y[0:3], "ew": y[3:6], "walk": y[6], "crash": self.crash, "waiting": self.waiting}
+
+
+class Elevator(Plant):
+    """Three floor lift. Y0 up, Y1 down (0.5 floor per second). X1 X2 X3 floor sensors (car level with the floor),
+    X4 X5 X6 call buttons (pressed by the user), Y2 Y3 Y4 floor lamps. Driving past floor 1 or 3 is a crash."""
+    kind = "elevator"
+    faults = [("f2_dead", "2 樓感測器 X2 故障（一直 OFF）")]
+
+    def __init__(self, plc):
+        self.pos = 0.0
+        self.crash = False
+        Plant.__init__(self, plc)
+
+    def step(self, ms):
+        up, down = self.y(0), self.y(1)
+        v = 0.5 * ms / 1000.0
+        if up and not down:
+            self.pos += v
+        elif down and not up:
+            self.pos -= v
+        if self.pos > 2.05 or self.pos < -0.05:
+            self.crash = True
+        self.pos = min(2.05, max(-0.05, self.pos))
+        self.apply()
+
+    def apply(self):
+        for f in range(3):
+            on = abs(self.pos - f) <= 0.03 and not (f == 1 and "f2_dead" in self.broken)
+            self.x(1 + f, on)
+
+    def state(self):
+        return {"type": self.kind, "pos": round(self.pos, 3), "up": self.y(0), "down": self.y(1), "lamps": [self.y(2), self.y(3), self.y(4)],
+                "calls": [self.plc.x_in[4], self.plc.x_in[5], self.plc.x_in[6]], "crash": self.crash}
+
+
+class Arm(Plant):
+    """Pneumatic pick and place. Horizontal cylinder: Y0 to the right (place side), Y1 to the left (double solenoid,
+    1 s stroke), X0 left end, X1 right end. Vertical cylinder: Y2 down (spring up, 0.6 s), X2 up, X3 down.
+    Gripper: Y3 ON closes. X4 a part waits at the pick place. Opening the gripper anywhere but down on the right drops
+    the part."""
+    kind = "arm"
+    faults = [("weak_grip", "夾爪氣壓不足（夾不住，上升時掉落）")]
+
+    def __init__(self, plc):
+        self.h, self.v = 0.0, 0.0
+        self.held = False
+        self.waiting = True
+        self.placed = 0
+        self.dropped = 0
+        self.refill = 0.0
+        Plant.__init__(self, plc)
+
+    def step(self, ms):
+        s = ms / 1000.0
+        if self.y(0) and not self.y(1):
+            self.h = min(1.0, self.h + s)
+        elif self.y(1) and not self.y(0):
+            self.h = max(0.0, self.h - s)
+        self.v = min(1.0, self.v + s / 0.6) if self.y(2) else max(0.0, self.v - s / 0.6)
+        grip = self.y(3)
+        if grip and not self.held and self.waiting and self.v >= 0.98 and self.h <= 0.02:
+            self.held, self.waiting = True, False
+        if self.held and "weak_grip" in self.broken and self.v < 0.7:
+            self.held = False
+            self.dropped += 1
+        if self.held and not grip:
+            self.held = False
+            if self.v >= 0.98 and self.h >= 0.98:
+                self.placed += 1
+            else:
+                self.dropped += 1
+        if not self.waiting and not self.held:
+            self.refill += s
+            if self.refill >= 1.0:
+                self.waiting, self.refill = True, 0.0
+        self.apply()
+
+    def apply(self):
+        self.x(0, self.h <= 0.02)
+        self.x(1, self.h >= 0.98)
+        self.x(2, self.v <= 0.02)
+        self.x(3, self.v >= 0.98)
+        self.x(4, self.waiting)
+
+    def state(self):
+        return {"type": self.kind, "h": self.h, "v": self.v, "grip": self.y(3), "held": self.held, "waiting": self.waiting,
+                "placed": self.placed, "dropped": self.dropped}
+
+
 PLANTS = {"cylinder": Cylinder, "tank": Tank, "door": Door, "conveyor": Conveyor, "pneu": PneuABC, "door2": ExamDoor, "belt3": Belt3, "sump": Sump, "pumps2": Pumps2,
-          "sorter": Sorter, "stepper": Stepper, "pneu_relief": lambda plc: PneuABC(plc, relief=True), "pneu_q3": lambda plc: PneuSet(plc, Q3_CYL)}
+          "sorter": Sorter, "stepper": Stepper, "traffic": Traffic, "elevator": Elevator, "arm": Arm, "pneu_relief": lambda plc: PneuABC(plc, relief=True), "pneu_q3": lambda plc: PneuSet(plc, Q3_CYL)}
 
 
 def make(kind, plc):

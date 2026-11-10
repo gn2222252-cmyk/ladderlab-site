@@ -18,7 +18,7 @@
     <label>機構 <select id="machine"></select></label>
     <button type="button" id="example" class="small-btn">載入範例程式</button>
     <button type="button" id="clear" class="small-btn">清空</button>
-    <span class="sim-tabs" id="tabs"><button type="button" data-t="ladder" class="here">梯形圖</button><button type="button" data-t="sfc">SFC</button><button type="button" data-t="il">指令表</button></span>
+    <span class="sim-tabs" id="tabs"><button type="button" data-t="ladder" class="here">梯形圖</button><button type="button" data-t="stl">STL 步進梯形圖</button><button type="button" data-t="sfc">SFC</button><button type="button" data-t="il">指令表</button></span>
     <span class="sim-modes"><button type="button" id="bWrite" class="small-btn here">寫入 F2</button><button type="button" id="bConv" class="small-btn go">轉換並執行 F4</button><button type="button" id="bMon" class="small-btn">監看 F3</button></span>
   </div>
   <p id="desc" class="sim-desc"></p>
@@ -28,6 +28,7 @@
       <div id="state" class="sim-state">寫入模式：在下面畫程式，按 F4 轉換並送進模擬 PLC。</div>
       <ul id="errors" class="errors"></ul>
       <div id="ed-ladder"></div>
+      <div id="ed-stl" hidden></div>
       <div id="ed-sfc" hidden></div>
       <div id="ed-il" hidden><textarea id="il" spellcheck="false" rows="18"></textarea><p class="hint">一行一個指令，和 GX Works2 的「指令表（List）」相同。</p></div>
       <div id="monitor" hidden><div class="ladder-wrap"><div id="mon-ladder"></div></div><div class="sfc-wrap" id="mon-sfc" hidden></div></div>
@@ -39,13 +40,14 @@
       <div class="box"><h3>作用中的步、數值</h3><p id="steps" class="hint"></p><p id="words" class="hint"></p></div>
     </aside>
   </div>
-  <span id="lamp"></span><span id="cylinder"></span><span id="sorter"></span><span id="stepper"></span>
+  <span id="lamp"></span><span id="cylinder"></span><span id="sorter"></span><span id="stepper"></span><span id="traffic"></span><span id="elevator"></span><span id="arm"></span><span id="tank"></span>
   <section class="sim-help">
     <h2>怎麼用</h2>
     <ol>
-      <li><b>選機構</b>：先用「按鈕和燈」熟悉操作，再試氣缸、輸送帶分料、步進馬達滑台。每台都有「載入範例程式」。</li>
+      <li><b>選機構</b>：先用「按鈕和燈」熟悉操作，再試氣缸、輸送帶分料、步進馬達滑台、紅綠燈、三層電梯、機械手臂、儲槽液位。每台都有「載入範例程式」和可以製造的故障。</li>
       <li><b>寫程式</b>：三種寫法都可以，和 GX Works2 的建立工程時選的語言一樣。
         <ul><li><b>梯形圖</b>：點格子，按 F5 常開、F6 常閉、Shift+F5 並聯、F7 線圈、F8 應用指令（SET、MOV、STL、DRVA…）、F9 橫線、Shift+F9 直線。也可以直接打 <code>LD X0</code>、<code>OUT Y0</code>。</li>
+        <li><b>STL 步進梯形圖</b>：和梯形圖一樣畫，但 STL 會畫成接點（GX Works2 的「以接點形式顯示 STL」），左邊的藍條標出每一條屬於哪一步。工具列的 STL 按鈕開始一步、RET 結束步進區。</li>
         <li><b>SFC</b>：左邊是流程圖，點步寫動作、點移轉寫條件（條件最後按 F7 放 TRAN）。「＋移轉」可以選多個「到」做並行分支。</li>
         <li><b>指令表</b>：直接打指令。</li></ul>
         三個分頁會互相轉換：在梯形圖畫好，切到指令表就看得到對應的指令。</li>

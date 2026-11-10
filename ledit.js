@@ -37,11 +37,16 @@ const LEdit = (() => {
     for (const x of items) { if (x.k === "T") return T; if (x.k === "O") flat.push(...x.i); else flat.push(x); }
     const seen = new Set(), uniq = flat.filter((x) => { const s = JSON.stringify(x); if (seen.has(s)) return false; seen.add(s); return true; });
     if (uniq.length === 1) return uniq[0];
-    // factor a common series prefix: a·b + a·c -> a·(b + c), so parallel blocks stay blocks (LD..OR..LD..OR..ANB)
-    const lists = uniq.map((x) => (x.k === "A" ? x.i : [x]));
-    let k = 0;
-    while (lists.every((l) => l.length > k) && lists.every((l) => JSON.stringify(l[k]) === JSON.stringify(lists[0][k]))) k++;
-    if (k > 0) return AND([...lists[0].slice(0, k), OR(lists.map((l) => AND(l.slice(k))))]);
+    // factor shared first contacts: a·b + a·c + d·e -> a·(b + c) + d·e, so parallel blocks stay blocks (LD..OR..ANB)
+    const lists = uniq.map((x) => (x.k === "A" ? x.i : [x])), groups = [];
+    for (const l of lists) {
+      const key = JSON.stringify(l[0]), g = groups.find((x) => x.key === key);
+      if (g) g.rests.push(l.slice(1)); else groups.push({ key, first: l[0], rests: [l.slice(1)] });
+    }
+    if (groups.some((g) => g.rests.length > 1)) {
+      const parts = groups.map((g) => (g.rests.length > 1 ? AND([g.first, OR(g.rests.map((r) => AND(r)))]) : AND([g.first, ...g.rests[0]])));
+      return parts.length === 1 ? parts[0] : { k: "O", i: parts };
+    }
     return { k: "O", i: uniq };
   }
   const CMP = /^(<>|>=|<=|=|>|<)\s*(\S+)\s+(\S+)$/;
@@ -213,18 +218,36 @@ const LEdit = (() => {
       ["sF7", "p", "┤↑├", "上升沿"], ["sF8", "f", "┤↓├", "下降沿"], ["F7", "coil", "( )", tranMode ? "TRAN" : "線圈"], ["F8", "fn", "[ ]", "應用指令"],
       ["F9", "h", "─", "橫線"], ["sF9", "v", "│", "直線"], ["cF9", "dh", "─✕", "刪橫線"], ["cF10", "dv", "│✕", "刪直線"], ["Del", "del", "✕", "刪除"],
       ["", "row", "＋列", "插入一列"], ["", "rung", "＋梯級", "新增梯級"], ["", "drung", "－梯級", "刪除梯級"]]
+      .concat(opts.stl ? [["", "stl", "STL", "步進開始（STL S）"], ["", "ret", "RET", "步進結束"]] : [])
       .map(([k, a, g, t]) => `<button type="button" class="le-b" data-a="${a}" title="${t}${k ? "（" + k + "）" : ""}"><b>${g}</b><small>${k || t}</small></button>`).join("")}</div>
       <div class="le-wrap" tabindex="0"><div class="le-svg"></div></div>
       <p class="le-help">點格子選位置，按工具列或鍵盤 F5、F6、F7…；在格子上直接打字也可以（例如 <code>LD X0</code>、<code>X0</code>、<code>OUT Y0</code>）。Enter 或雙擊修改，Delete 刪除，方向鍵移動。</p>`;
     const wrap = root.querySelector(".le-wrap"), svgBox = root.querySelector(".le-svg");
 
     function rowTop(g) { let y = 8; for (let i = 0; i < g; i++) y += rungs[i].cells.length * RH + 14; return y; }
+    const stlOf = (rg) => { const o = rg.out[0]; return o && o.op === "FN" && /^(STL\s+S\d+|RET)$/.test(o.text) && !rg.cells.some((row) => row.some((c) => c && c.t !== "h")) && rg.out.filter(Boolean).length === 1 ? o.text : null; };
     function draw() {
       const parts = [];
-      let y = 8;
+      let y = 8, state = null;
       const width = PAD + COLS * CW + OW + 10;
       rungs.forEach((rg, g) => {
-        const R = rg.cells.length, h = R * RH;
+        const R = rg.cells.length, h = R * RH, mark = opts.stl ? stlOf(rg) : null;
+        if (mark) state = /^STL/.test(mark) ? mark.split(/\s+/)[1] : null;
+        if (opts.stl && mark) {
+          const cy = y + RH / 2, x = PAD, m = x + CW / 2;
+          parts.push(`<g class="le-rung${rg.dirty ? " dirty" : ""}" data-g="${g}"><rect class="le-bg" x="${PAD}" y="${y}" width="${COLS * CW + OW - 20}" height="${h}"/>`);
+          for (let c = 0; c <= COLS; c++) parts.push(`<rect class="le-cell" data-g="${g}" data-r="0" data-c="${c}" x="${PAD + c * CW}" y="${y}" width="${c === COLS ? OW - 20 : CW}" height="${RH}"/>`);
+          if (/^STL/.test(mark)) {
+            parts.push(`<path class="le-w le-stl" d="M${x} ${cy}H${m - 8}M${m - 8} ${cy - 12}V${cy + 12}M${m + 8} ${cy - 12}V${cy + 12}M${m + 8} ${cy}H${x + CW * 2}"/><text class="le-t" x="${m}" y="${cy - 15}">${esc(state)}</text><text class="le-stlt" x="${m}" y="${cy + 4}">STL</text>` +
+              `<text class="le-c le-start" x="${x + CW * 2 + 6}" y="${cy + 4}">步 ${esc(state)} 開始：下面的梯級只在這一步作用時執行</text>`);
+          } else {
+            parts.push(`<path class="le-w" d="M${x} ${cy}H${x + CW}"/><rect class="le-box" x="${x + CW}" y="${cy - 12}" width="54" height="24" rx="2"/><text class="le-t" x="${x + CW + 27}" y="${cy + 4}">RET</text><text class="le-c le-start" x="${x + CW + 64}" y="${cy + 4}">步進區結束，下面是一般梯形圖</text>`);
+          }
+          parts.push(`<text class="le-no" x="2" y="${y + 18}">${g + 1}</text><path class="le-rail" d="M${PAD} ${y}V${y + h}"/></g>`);
+          y += h + 14;
+          return;
+        }
+        if (opts.stl && state) parts.push(`<rect class="le-band" x="${PAD - 9}" y="${y - 7}" width="6" height="${h + 14}"><title>${esc(state)}</title></rect><text class="le-bandt" x="${PAD - 12}" y="${y + h / 2 + 4}" text-anchor="end">${esc(state)}</text>`);
         parts.push(`<g class="le-rung${rg.dirty ? " dirty" : ""}" data-g="${g}"><rect class="le-bg" x="${PAD}" y="${y}" width="${COLS * CW + OW - 20}" height="${h}"/>`);
         parts.push(`<text class="le-no" x="2" y="${y + 18}">${g + 1}</text>`);
         for (let r = 0; r < R; r++) {
@@ -254,10 +277,10 @@ const LEdit = (() => {
             if (o.op === "OUT" || o.op === "TRAN") {
               const label = o.op === "TRAN" ? "TRAN" : o.a + (o.k ? " " + o.k : "");
               parts.push(`<path class="le-w" d="M${ox} ${cy}H${ox + 18}"/><path class="le-w" d="M${ox + 24} ${cy - 11}Q${ox + 18} ${cy} ${ox + 24} ${cy + 11}M${ox + 44} ${cy - 11}Q${ox + 50} ${cy} ${ox + 44} ${cy + 11}"/><path class="le-w" d="M${ox + 50} ${cy}H${ox + 56}"/>` +
-                `<text class="le-t" x="${ox + 60}" y="${cy + 4}" text-anchor="start">${esc(label)}</text><text class="le-c" x="${ox + 60}" y="${cy + 18}" text-anchor="start">${esc(o.a ? comment(o.a).slice(0, 10) : "")}</text>`);
+                `<text class="le-t le-start" x="${ox + 60}" y="${cy + 4}">${esc(label)}</text><text class="le-c le-start" x="${ox + 60}" y="${cy + 18}">${esc(o.a ? comment(o.a).slice(0, 10) : "")}</text>`);
             } else {
               const t = o.text, w = Math.min(OW - 34, Math.max(70, t.length * 7.4 + 14));
-              parts.push(`<path class="le-w" d="M${ox} ${cy}H${ox + 8}"/><rect class="le-box" x="${ox + 8}" y="${cy - 12}" width="${w}" height="24" rx="2"/><text class="le-t" x="${ox + 14}" y="${cy + 4}" text-anchor="start">${esc(t)}</text>`);
+              parts.push(`<path class="le-w" d="M${ox} ${cy}H${ox + 8}"/><rect class="le-box" x="${ox + 8}" y="${cy - 12}" width="${w}" height="24" rx="2"/><text class="le-t le-start" x="${ox + 14}" y="${cy + 4}">${esc(t)}</text>`);
             }
           }
         }
@@ -369,6 +392,14 @@ const LEdit = (() => {
       if (a === "row") { addRow(rg, cur.r + 1); cur.r += 1; touch(); }
       if (a === "drow") { delRow(rg, cur.r); cur.r = Math.min(cur.r, rg.cells.length - 1); touch(); }
       if (a === "rung") { rungs.splice(cur.g + 1, 0, newRung(1)); cur = { g: cur.g + 1, r: 0, c: 0 }; }
+      if (a === "stl" || a === "ret") {
+        const rg2 = newRung(1);
+        for (let k = 0; k < COLS; k++) rg2.cells[0][k] = { t: "h" };
+        if (a === "ret") { rg2.out[0] = { op: "FN", text: "RET" }; rungs.splice(cur.g + 1, 0, rg2); cur = { g: cur.g + 1, r: 0, c: 0 }; draw(); return; }
+        const used = rungs.map((x) => stlOf(x)).filter((t) => t && /^STL/.test(t)).map((t) => +t.split(/\s+/)[1].slice(1));
+        rg2.out[0] = { op: "FN", text: "STL S" + (used.length ? Math.max(19, ...used) + 1 : 0) };
+        rungs.splice(cur.g + 1, 0, rg2); cur = { g: cur.g + 1, r: 0, c: COLS }; draw(); editHere(); return;
+      }
       if (a === "drung") { rungs.splice(cur.g, 1); if (!rungs.length) rungs.push(newRung(1)); cur = { g: Math.min(cur.g, rungs.length - 1), r: 0, c: 0 }; }
       draw();
     }

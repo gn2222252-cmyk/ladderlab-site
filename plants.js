@@ -131,7 +131,7 @@ function drawPlant(ctx, p) {
     ctx.fillStyle = p.full_lamp ? "#ffcc33" : cssVar("--line"); ctx.beginPath(); ctx.arc(230, 30, 12, 0, 7); ctx.fill(); txt("滿箱 Y1", 200, 58);
     txt((p.run ? "運轉中　" : "停止　") + "已通過 " + p.passed + " 個", 10, 30, cssVar("--ink"), 13);
   } else if (p.type === "sorter") {
-    const x0 = 14, x1 = 236, y = 96, L = x1 - x0, X = (f) => x0 + f * L;
+    const x0 = 14, x1 = 236, y = 78, L = x1 - x0, X = (f) => x0 + f * L;
     ctx.fillStyle = cssVar("--belt"); ctx.fillRect(x0, y, L, 16);
     for (let k = 0; k < 12; k++) { ctx.fillStyle = cssVar("--rail"); ctx.fillRect(x0 + k * (L / 12), y + 16, 2, 6); }
     ctx.fillStyle = p.run ? "#2fbf5b" : cssVar("--line"); ctx.beginPath(); ctx.arc(x0 + 4, y + 30, 7, 0, 7); ctx.fill(); txt("Y0 馬達", x0 + 14, y + 34);
@@ -141,11 +141,11 @@ function drawPlant(ctx, p) {
       ctx.strokeStyle = on ? cssVar("--on") : cssVar("--line"); ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(X(f), y - 24); ctx.lineTo(X(f), y); ctx.stroke(); ctx.setLineDash([]);
       txt(n + " " + t, X(f) - 16, y - 40);
     });
-    const px = X(p.marks[2]), reach = 10 + p.push * 34;
-    ctx.fillStyle = cssVar("--rail"); ctx.fillRect(px - 12, y + 34 + (44 - reach), 24, 8); ctx.fillRect(px - 3, y + 34 + (44 - reach) + 8, 6, reach);
-    ctx.fillStyle = p.sens[3] ? cssVar("--on") : cssVar("--line"); ctx.fillRect(px + 16, y + 70, 8, 8); txt("X3", px + 26, y + 78);
-    ctx.fillStyle = p.sens[4] ? cssVar("--on") : cssVar("--line"); ctx.fillRect(px + 16, y + 56, 8, 8); txt("X4", px + 26, y + 64);
-    txt("Y1 推料", px - 60, y + 78);
+    const px = X(p.marks[2]), body = y + 92, rod = 6 + p.push * 60;
+    ctx.fillStyle = cssVar("--rail"); ctx.fillRect(px - 12, body, 24, 14); ctx.fillRect(px - 3, body - rod, 6, rod); ctx.fillRect(px - 10, body - rod - 4, 20, 4);
+    ctx.fillStyle = p.sens[3] ? cssVar("--on") : cssVar("--line"); ctx.fillRect(px + 18, body + 2, 8, 8); txt("X3 後退端", px + 28, body + 10);
+    ctx.fillStyle = p.sens[4] ? cssVar("--on") : cssVar("--line"); ctx.fillRect(px + 18, body - 12, 8, 8); txt("X4 前進端", px + 28, body - 4);
+    txt("Y1 推料", px - 64, body + 10);
     ctx.strokeStyle = cssVar("--ink"); ctx.strokeRect(px - 22, 4, 44, 28); txt("B 箱 " + p.b, px - 20, 22, cssVar("--ink"));
     ctx.strokeRect(x1 - 4, y - 6, 22, 40); txt("A " + p.a, x1 - 4, y + 48, cssVar("--ink"));
     txt("灰 = 金屬　橘 = 塑膠", 4, 14);
@@ -163,5 +163,47 @@ function drawPlant(ctx, p) {
     txt("D8140 脈波計數 " + p.counter + "（= " + (p.counter / 100).toFixed(1) + " mm）", 10, 34);
     txt((p.pulse ? "Y0 送脈波中　" : "Y0 停　") + (p.pulse ? (p.dir ? "方向 Y4 ON 正轉" : "方向 Y4 OFF 反轉") : ""), 10, 50, p.pulse ? cssVar("--on") : cssVar("--mute"));
     if (p.crash) txt("⚠ 撞到機構端點！", 130, 16, "#c62828", 13);
+  } else if (p.type === "traffic") {
+    ctx.fillStyle = cssVar("--belt"); ctx.fillRect(100, 0, 60, 190); ctx.fillRect(0, 70, 260, 50);
+    ctx.fillStyle = cssVar("--card"); for (let k = 0; k < 6; k++) { ctx.fillRect(104 + k * 9, 124, 5, 18); ctx.fillRect(104 + k * 9, 48, 5, 18); }
+    const lamp = (x, y, on, col) => { ctx.fillStyle = on ? col : "#2a2f37"; ctx.beginPath(); ctx.arc(x, y, 7, 0, 7); ctx.fill(); };
+    const head = (x, y, ys, label, vertical) => {
+      ctx.fillStyle = "#1b1f26"; vertical ? ctx.fillRect(x - 10, y - 10, 20, 58) : ctx.fillRect(x - 10, y - 10, 58, 20);
+      ["#e03131", "#ffcc33", "#2fbf5b"].forEach((c, k) => lamp(vertical ? x : x + k * 19, vertical ? y + k * 19 : y, ys[k], c));
+      txt(label, vertical ? x - 12 : x - 10, vertical ? y + 62 : y + 24);
+    };
+    head(178, 10, p.ns, "南北", true); head(14, 140, p.ew, "東西", false);
+    ctx.fillStyle = p.walk ? "#2fbf5b" : "#2a2f37"; ctx.fillRect(200, 140, 26, 26); txt("行人", 202, 182);
+    if (p.waiting) txt("有人在等", 196, 132, "#b26a00");
+    if (p.crash) txt("⚠ 兩邊同時綠燈！", 6, 16, "#c62828", 13);
+  } else if (p.type === "elevator") {
+    const top = 14, fh = 56, X = 90, W = 70, yOf = (f) => top + (2 - f) * fh;
+    ctx.strokeStyle = cssVar("--rail"); ctx.strokeRect(X - 6, top - 6, W + 12, fh * 3 + 6);
+    [0, 1, 2].forEach((f) => {
+      const y = yOf(f) + fh - 4;
+      ctx.fillStyle = cssVar("--line"); ctx.fillRect(X - 30, y, 24, 3); ctx.fillRect(X + W + 6, y, 24, 3);
+      ctx.fillStyle = p.lamps[f] ? "#ffcc33" : cssVar("--line"); ctx.beginPath(); ctx.arc(X + W + 40, yOf(f) + 18, 7, 0, 7); ctx.fill();
+      ctx.fillStyle = p.calls[f] ? cssVar("--on") : cssVar("--line"); ctx.beginPath(); ctx.arc(X - 40, yOf(f) + 28, 7, 0, 7); ctx.fill();
+      txt((f + 1) + "F", X - 66, yOf(f) + 32);
+    });
+    const cy = yOf(p.pos) + 6;
+    ctx.fillStyle = p.crash ? "#c62828" : "#4d8dff"; ctx.fillRect(X, cy, W, fh - 12);
+    ctx.fillStyle = cssVar("--card"); ctx.fillRect(X + W / 2 - 1, cy + 4, 2, fh - 20);
+    txt(p.up ? "▲ Y0 上升" : p.down ? "▼ Y1 下降" : "停", 4, 186, p.up || p.down ? cssVar("--on") : cssVar("--mute"));
+    txt("呼叫", X - 50, 10); txt("樓層燈", X + W + 24, 10);
+    if (p.crash) txt("⚠ 撞到！", 4, 14, "#c62828", 13);
+  } else if (p.type === "arm") {
+    const x0 = 40, x1 = 210, rail = 22, hx = x0 + p.h * (x1 - x0), vy = rail + 18 + p.v * 90;
+    ctx.fillStyle = cssVar("--rail"); ctx.fillRect(x0 - 20, rail - 6, x1 - x0 + 40, 10);
+    ctx.fillStyle = cssVar("--ink"); ctx.fillRect(hx - 14, rail - 10, 28, 18);
+    ctx.fillStyle = cssVar("--belt"); ctx.fillRect(hx - 4, rail + 8, 8, vy - rail - 8);
+    ctx.fillStyle = p.grip ? "#2fbf5b" : "#d0a020"; ctx.fillRect(hx - 14, vy, 6, 16); ctx.fillRect(hx + 8, vy, 6, 16);
+    if (p.held) { ctx.fillStyle = "#e8833a"; ctx.fillRect(hx - 8, vy + 4, 16, 14); }
+    ctx.fillStyle = cssVar("--line"); ctx.fillRect(x0 - 20, 148, 50, 8); ctx.fillRect(x1 - 30, 148, 50, 8);
+    if (p.waiting) { ctx.fillStyle = "#e8833a"; ctx.fillRect(x0 - 8, 134, 16, 14); }
+    txt("取料 X4", x0 - 20, 170); txt("放料：已放 " + p.placed, x1 - 50, 170);
+    [["X0", x0, p.h <= 0.02], ["X1", x1, p.h >= 0.98]].forEach(([t, x, on]) => { ctx.fillStyle = on ? cssVar("--on") : cssVar("--line"); ctx.fillRect(x - 3, 4, 6, 6); txt(t, x + 5, 11); });
+    txt("上 X2 " + (p.v <= 0.02 ? "●" : "○") + "　下 X3 " + (p.v >= 0.98 ? "●" : "○"), 70, 186);
+    if (p.dropped) txt("掉了 " + p.dropped + " 個", 196, 186, "#c62828");
   }
 }
