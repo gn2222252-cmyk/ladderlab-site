@@ -174,6 +174,7 @@ $("share").onclick = async () => {
 
 /* ---------- ladder editor: draws the same program; the instruction list stays what is graded ---------- */
 function setCode(text) {
+  clearTimeout(ltimer); ldirty = false;           // a program from outside replaces whatever the ladder had pending
   $("code").value = text;
   $("code").dispatchEvent(new Event("input"));
   if (etab === "ladder") loadLadder();
@@ -189,7 +190,7 @@ function leadComments(text) {                     // the comment lines before th
   return out.join("\n").replace(/\s+$/, "");
 }
 function syncFromLadder() {
-  if (!led || !ldirty) return true;               // only looking: keep the instruction list (and its comments) as it is
+  if (!led || !ldirty || etab !== "ladder") return true;   // only the ladder tab writes back; just looking keeps the list (and comments)
   const r = led.compile();
   if (r.errors && r.errors.length) {
     led.showErrors(r.errors);
@@ -283,7 +284,7 @@ async function boot() {
     py = await bootPython();
     pr = py.runPython("from practice_bridge import Practice; Practice()");
     led = LEdit.editor($("ed-ladder"), { comment: devComment, stl: true, onConvert: () => { ldirty = true; syncFromLadder(); },
-      onChange: () => { ldirty = true; clearTimeout(ltimer); ltimer = setTimeout(syncFromLadder, 500); } });
+      onChange: () => { if (etab !== "ladder") return; ldirty = true; clearTimeout(ltimer); ltimer = setTimeout(syncFromLadder, 500); } });
     cat = JSON.parse(py.runPython("from practice_bridge import catalog; catalog()"));
     const route = () => {
       const id = location.hash.slice(1).split("?")[0];

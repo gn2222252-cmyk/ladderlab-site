@@ -96,7 +96,7 @@ class Lab(object):
                 power.append(1 if r[0] == "stl" and bit(p, r[1]) else 0)
                 coils.append([])
         return json.dumps({
-            "x": [p.x[i] for i in range(11)], "y": [p.y_out[i] for i in range(8)],
+            "x": [p.x[i] for i in range(16)], "y": [p.y_out[i] for i in range(8)],
             "steps": ["S%d" % s for s in p.active_states()],
             "d": {str(k): p.d[k] for k in (200, 201, 202, 210, 211, 212, 220)},
             "alarm": bool(p.m[2] or p.m[3]), "homed": bool(p.m[20]),

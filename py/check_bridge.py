@@ -30,7 +30,7 @@ def _items(text):
 
 def check_text(text, cpu="FX3S"):
     items, errors = _items(text)
-    report = analyze(items, cpu, _comments())
+    report = analyze(items, cpu, _comments(text))
     report["errors"] = errors
     return json.dumps(report, ensure_ascii=False)
 
@@ -62,7 +62,7 @@ def explain_doc(text):
     items, _ = _items(text)
     src = [("ins", op, ops) for _, op, ops in items]
     lines = [n for n, _, _ in items]
-    comments = _comments()
+    comments = _comments(text)
     try:
         rungs, _ = parse_program(src)
     except (IndexError, KeyError, ValueError) as e:
@@ -112,8 +112,16 @@ def sample(name):
     return "\n".join(" ".join([op] + list(ops)) for _, op, ops in load_csv(path) if op != "END")
 
 
-def _comments():
+def _bare(text):
+    return [" ".join(l.split(";", 1)[0].upper().split()) for l in str(text).splitlines() if l.split(";", 1)[0].strip()]
+
+
+def _comments(text=""):
+    """The gantry's device comments, only for the gantry sample itself: someone else's program would get wrong names
+    (tester round 4: X000 labelled as a gantry position)."""
     out = {}
+    if _bare(text) != _bare(sample("gantry")):
+        return out
     try:
         from devices import table_sync
         out.update({r[0]: r[1] for r in table_sync()})
