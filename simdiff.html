@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="af55ab87a3">
+<meta name="ll-version" content="c0e3306576">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>模擬器和 FX3S 實機的差異：程式上實機前要檢查什麼 | LadderLab</title>
@@ -45,7 +45,7 @@
 <tr><td>7</td><td>讀取 KnS（例如 MOV K4S20 D0）</td><td>可以</td><td>不支援，會顯示中文說明和行號，請改用 KnM 或 KnX、KnY</td><td>明確報錯</td></tr>
 <tr><td>8</td><td>DRVI／DRVA 定位</td><td>有加減速、最高頻率、32 位元現在值，輸出真的脈衝</td><td>簡化：固定速度，沒有加減速，只模擬位置和 M8029</td><td>有差異</td></tr>
 <tr><td>9</td><td>掃描時間</td><td>依程式長短，一般程式一圈不到 1 ms 到數 ms</td><td>固定 10 ms 一圈，方便看清楚「慢一圈」</td><td>有差異</td></tr>
-<tr><td>10</td><td>相鄰兩步共用同一個計時器</td><td>手冊禁止。實機換步時計時器不會歸零，會接著累計（程式手冊 35.1.7 節）</td><td>換步時計時器會歸零，所以這個錯誤在模擬器上看不出來。程式健檢會提醒。</td><td>有差異</td></tr>
+<tr><td>10</td><td>相鄰兩步共用同一個計時器</td><td>手冊禁止。實機換步時計時器不會歸零，會接著累計（程式手冊 35.1.7 節）</td><td>模擬器上也會出錯（通常是步序卡住），但症狀不一定和實機一樣：實機常見的是一進下一步就馬上換步。兩種都表示寫法錯了，程式健檢會提醒。</td><td>有差異（症狀不同）</td></tr>
 <tr><td>11</td><td>指令、特殊元件</td><td>FX3S 有很多應用指令和特殊元件（完整清單見程式設計手冊）</td><td>支援基本指令和 MOV、ADD、SUB、MUL、DIV、INC、DEC、CMP、ZCP、比較接點、ZRST、ALT、SFTL／SFTR、ROL／ROR、DRVI／DRVA、BCD／BIN、MC／MCR（多數有 P 版）。CJ、CALL、FOR、BMOV、SEGD、DECO、32 位元 D 指令、V／Z 變址等，會顯示「FX3S 有，但本站不支援」。特殊元件只支援 M8000、M8002、M8012、M8013、M8029、M8034、M8040、M8067、M8112～M8117、M8340、M8350。</td><td>明確報錯</td></tr>
 </tbody></table></div>
 </section>
@@ -74,7 +74,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "c0e3306576" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

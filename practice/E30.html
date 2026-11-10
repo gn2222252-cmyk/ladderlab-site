@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="af55ab87a3">
+<meta name="ll-version" content="c0e3306576">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E30 停電：接著做或從頭來｜PLC 練習題（自動評分）</title>
@@ -26,7 +26,7 @@
 停電後復電，不管選哪一種，氣缸都不能自己動。例外是吸盤：上升中停電、復電接著做時，吸盤要馬上恢復吸附，工件才不會掉（吸住是安全的一側）。X4 選停電處理：
 ・X4 ON「接著做」：按啟動，從停電前那一步繼續。上升中停電的話，吸盤要繼續吸。
 ・X4 OFF「從頭來」：步序清掉。氣缸還沒回上限時按啟動無效；先按復歸 X5 讓氣缸上升到上限，再按啟動才從第一步開始。
-PLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255。按「停電再復電」可以自己試。</div>
+PLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255、計數器 C16～C31、積算計時器 T128～T137。按「停電再復電」可以自己試。</div>
 <div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>啟動</td><td>按鈕</td></tr><tr><td>X001</td><td>下限感測器</td><td>感測器</td></tr><tr><td>X002</td><td>上限感測器</td><td>感測器</td></tr><tr><td>X004</td><td>停電處理（ON＝接著做）</td><td>開關</td></tr><tr><td>X005</td><td>復歸</td><td>按鈕</td></tr><tr><td>Y000</td><td>下降</td><td>輸出</td></tr><tr><td>Y001</td><td>吸盤</td><td>輸出</td></tr><tr><td>Y002</td><td>上升</td><td>輸出</td></tr></tbody></table></div>
 <ul class="rules"><li>安全條件：下降和上升同時輸出</li></ul>
 <p><a class="btnlink go" href="../practice.html#E30">開始寫程式，自動評分 ›</a></p>
@@ -40,7 +40,7 @@ PLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "c0e3306576" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -160,7 +160,8 @@ function gradeNow() {
   const ok = r.results.filter((x) => x.ok).length;
   $("verdict").textContent = r.passed ? `全部通過（${ok}/${r.results.length}）` : `通過 ${ok}/${r.results.length}`;
   $("verdict").className = "verdict " + (r.passed ? "good" : "bad");
-  $("results").innerHTML = r.results.map((x) => `<li class="${x.ok ? "good" : "bad"}"><b>${x.ok ? "✓" : "✗"} ${esc2(x.name)}</b>${x.why ? `<br><span>${esc2(x.why)}</span>` : ""}</li>`).join("");
+  $("results").innerHTML = (r.notes || []).map((n) => `<li class="bad"><b>⚠ 先看這個</b><br><span>${esc2(n)}</span></li>`).join("") +
+    r.results.map((x) => `<li class="${x.ok ? "good" : "bad"}"><b>${x.ok ? "✓" : "✗"} ${esc2(x.name)}</b>${x.why ? `<br><span>${esc2(x.why)}</span>` : ""}</li>`).join("");
   if (r.passed) {
     $("wl").hidden = false;
     renderWaitlist($("wl"), "practice-" + ex.id, "通過了！想要更多題目和機台嗎？");

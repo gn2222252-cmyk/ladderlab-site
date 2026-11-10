@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="af55ab87a3">
+<meta name="ll-version" content="c0e3306576">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 模擬器：畫梯形圖、SFC，接上機構跑 | LadderLab</title>
@@ -82,7 +82,7 @@
 </main>
 <footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=257dd45daf"></script>
+<script src="py/bundle.js?v=5b3918e62f"></script>
 <script src="course_map.js?v=a539c27dc9"></script>
 <script src="course.js?v=196817d51d"></script>
 <script src="common.js?v=20ae5aa5c1"></script>
@@ -99,7 +99,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "af55ab87a3" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "c0e3306576" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
