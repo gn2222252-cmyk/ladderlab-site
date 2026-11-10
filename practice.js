@@ -295,8 +295,10 @@ async function boot() {
       const id = location.hash.slice(1).split("?")[0];
       const known = id === "FREE" || cat.some((e) => e.id === id);
       open(known ? id : cat[0].id);
-      if (id && !known)                            /* an old or mistyped link: say so instead of silently showing E1 */
+      if (id && !known) {                          /* an old or mistyped link: say so instead of silently showing E1 */
+        document.title = `找不到 ${id} | LadderLab 練習`;
         $("task").insertAdjacentHTML("afterbegin", `<p class="callout warn">找不到「${esc2(id)}」這一題，先打開第一題。如果是剛更新的網站，請按重新整理。</p>`);
+      }
       const shared = new URLSearchParams(location.search).get("il");
       if (shared && id === "FREE" && !route.used) {
         route.used = true;

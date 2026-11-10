@@ -35,11 +35,23 @@ Progress lives in this browser only, under the keys each page already used. */
     const d = doneSets();
     return flat.find((f) => f.sec.main && !isDone(f.it, d)) || null;
   }
+  /* 繼續上次: the item opened last, or the first unfinished one after it on its line (tester round 10: a learner in
+     chapter 5 was sent back to the chapter 1 quiz). Unfinished items before it are counted, not forced. */
+  function resume() {
+    const d = doneSets(), last = get("ll_last", null);
+    const f = last && flat.find((x) => x.it.k === last.k && x.it.id === last.id && String(x.sec.id) === String(last.sec));
+    if (!f) return { at: firstOpen(), skipped: 0, first: null };
+    const l = line(f), i = l.indexOf(f);
+    const at = isDone(f.it, d) ? (l.slice(i + 1).find((x) => !isDone(x.it, d)) || null) : f;
+    const before = (f.sec.main ? l.slice(0, i) : []).filter((x) => !isDone(x.it, d));
+    return { at: at || firstOpen(), skipped: before.length, first: before[0] || null };
+  }
 
   /* The bar under the header: course map › chapter, position, previous / next. */
   function bar(el, f) {
     if (!el || !f) return;
     if (f.it.k === "G" && !f.it.id.startsWith("review.html")) markPage(f.it.id);   // a review counts only when passed
+    put("ll_last", { k: f.it.k, id: f.it.id, sec: f.sec.id });
     const d = doneSets();
     const n = f.sec.items.filter((it) => isDone(it, d)).length;
     const prev = step(f, -1), next = step(f, 1);
@@ -65,5 +77,5 @@ Progress lives in this browser only, under the keys each page already used. */
   window.addEventListener("hashchange", auto);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", auto); else auto();
 
-  window.Course = { data: C, flat, find, findPage, step, bar, isDone, doneSets, markPage, secName, label, firstOpen, esc };
+  window.Course = { data: C, flat, find, findPage, step, bar, isDone, doneSets, markPage, secName, label, firstOpen, resume, esc };
 })();
