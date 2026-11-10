@@ -77,7 +77,7 @@ class Course(object):
         comment = dict(COMMENT)
         comment.update(l.get("comment", {}))
         self.comment = comment
-        meta = {k: l.get(k) for k in ("title", "text", "inputs", "outputs", "table", "dtd", "notes", "sfc", "values", "watch",
+        meta = {k: l.get(k) for k in ("title", "text", "inputs", "outputs", "table", "dtd", "seg7", "notes", "sfc", "values", "watch",
                                       "conflict", "plant", "hold", "demo", "check", "latched", "panel")}
         meta["trace"] = [c[0] for c in l.get("trace", [])]
         meta["stages"] = sorted(l.get("stages", {}).keys())

@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="73502a3ebd">
+<meta name="ll-version" content="b83c599230">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 互動課程 | LadderLab</title>
 <meta name="description" content="免費 PLC 互動課（三菱 FX3S）：從 PLC 接線、階梯圖、FX 指令、步進 STL／SFC 到異常與復歸。每一課都是會動的階梯圖，看示範、自己按、慢動作看掃描。">
-<link rel="stylesheet" href="style.css?v=43b2e6249b">
+<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
 </head>
 <body class="learn">
 <header class="top">
@@ -67,6 +67,7 @@
         <div class="box" id="panel-box" hidden><h3>FX3S 面板（燈號同步）</h3><div id="panel" class="fx-live"></div><p class="hint"><a href="wiring.html">每條線接在哪個端子 ›</a></p></div>
         <div class="box" id="plant-box" hidden><h3 data-t="plant">機構</h3><canvas id="plant" width="200" height="130"></canvas></div>
         <div class="box" id="sfc-box" hidden><h3 data-t="sfc">步序圖</h3><ol id="sfc" class="sfc"></ol></div>
+        <div class="box" id="seg-box" hidden><h3>七段顯示器與指撥開關</h3><div id="seg7"></div></div>
         <div class="box" id="val-box" hidden><h3 data-t="values">數值</h3><ul id="vals" class="vals"></ul></div>
         <div class="box" id="trace-box" hidden><h3 data-t="trace">每一圈的值</h3><div class="trace-wrap"><table id="trace"></table></div></div>
       </aside>
@@ -92,19 +93,19 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=c1fe3a4594"></script>
+<script src="py/bundle.js?v=156c9847d3"></script>
 <script src="fx3s.js?v=e994784638"></script>
 <script src="ladder.js?v=796bf6d37e"></script>
 <script src="sfc.js?v=254aa66b02"></script>
 <script src="course_map.js?v=70538253ef"></script>
 <script src="course.js?v=764fe70243"></script>
-<script src="learn.js?v=86398dca5a"></script>
+<script src="learn.js?v=ece36d6837"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "73502a3ebd" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "b83c599230" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

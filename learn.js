@@ -134,6 +134,8 @@ function draw() {
   $("sfc").innerHTML = (l.sfc || []).map(([s, t]) => `<li data-s="${s}"><b>${s}</b> ${esc(t)}</li>`).join("");
   const vals = (l.values || []).concat(l.watch || []);
   $("val-box").hidden = !vals.length;
+  $("seg-box").hidden = !l.seg7;
+  $("seg7").innerHTML = l.seg7 ? segHtml(l.seg7) : "";
   $("vals").innerHTML = vals.map(([d, t]) => `<li><span>${esc(t)}</span><b data-v="${d}"></b></li>`).join("");
   $("trace-box").hidden = !l.trace.length;
   $("trace").innerHTML = l.trace.length ? `<thead><tr><th></th>${l.trace.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody></tbody>` : "";
@@ -175,6 +177,26 @@ function dtdSvg(d) {
   });
   (d.cond || []).forEach((t, i) => { s += `<text class="dtd-cond" x="${lw + (i + 0.5) * cw}" y="${H - 8}">等 ${esc(t)}</text>`; });
   return s + "</svg>";
+}
+/* two-digit BCD seven-segment display and thumbwheel (lesson 3.10): 1010-1111 shows blank like a CD4511 decoder */
+const SEG = { a: "M6 3h16", b: "M24 5v16", c: "M24 27v16", d: "M6 45h16", e: "M4 27v16", f: "M4 5v16", g: "M6 24h16" };
+const DIGIT = ["abcdef", "bc", "abdeg", "abcdg", "bcfg", "acdfg", "acdefg", "abc", "abcdefg", "abcdfg"];
+function segHtml(cfg) {
+  const digit = (k) => `<svg class="seg-d" data-k="${k}" viewBox="0 0 28 48" width="40" height="68">${Object.entries(SEG).map(([n, d]) => `<path class="seg-s" data-s="${n}" d="${d}"/>`).join("")}</svg>`;
+  return `<div class="seg-row"><span class="seg-lab">七段（Y）</span>${cfg.show.map((_, k) => digit(k)).join("")}<span class="seg-bits" id="segbits"></span></div>` +
+    `<div class="seg-row"><span class="seg-lab">指撥（X）</span>${cfg.dial.map((_, k) => `<span class="dial" data-k="${k}">0</span>`).join("")}<span class="seg-bits" id="dialbits"></span></div>` +
+    `<p class="seg-note">每一位 4 條線（1、2、4、8）。收到 10～15 時解碼 IC 不認得，這裡照 CD4511 顯示全暗。</p>`;
+}
+function segUpdate(st) {
+  const val = (bits, src) => bits.reduce((a, d, i) => a + (src[d] ? 1 << i : 0), 0);
+  const bin = (bits, src) => bits.slice().reverse().map((d) => (src[d] ? 1 : 0)).join("");
+  L.lesson.seg7.show.forEach((bits, k) => {
+    const v = val(bits, st.outputs), lit = v <= 9 ? DIGIT[v] : "";
+    $("seg7").querySelectorAll(`.seg-d[data-k="${k}"] .seg-s`).forEach((p) => p.classList.toggle("on", lit.includes(p.dataset.s)));
+  });
+  L.lesson.seg7.dial.forEach((bits, k) => { const el = $("seg7").querySelector(`.dial[data-k="${k}"]`); const v = val(bits, st.inputs); el.textContent = v <= 9 ? v : "?"; });
+  $("segbits").textContent = L.lesson.seg7.show.map((b) => bin(b, st.outputs)).join(" ");
+  $("dialbits").textContent = L.lesson.seg7.dial.map((b) => bin(b, st.inputs)).join(" ");
 }
 function useStage(name) {
   L = Object.assign(JSON.parse(course.stage(name)), {});
@@ -306,6 +328,7 @@ function drawState() {
   $("outputs").querySelectorAll("li").forEach((li) => li.classList.toggle("on", !!st.outputs[li.dataset.dev]));
   $("sfc").querySelectorAll("li").forEach((li) => li.classList.toggle("on", st.steps.includes(li.dataset.s)));
   $("dtd-box").querySelectorAll(".dtd-col").forEach((r) => r.classList.toggle("on", !!r.dataset.s && st.steps.includes(r.dataset.s)));
+  if (L.lesson.seg7) segUpdate(st);
   $("vals").querySelectorAll("[data-v]").forEach((b) => {
     const d = b.dataset.v, v = d in st.values ? st.values[d] : st.watch[d];
     b.textContent = /^[DTC]\d/.test(d) ? v : (v ? "ON" : "OFF");

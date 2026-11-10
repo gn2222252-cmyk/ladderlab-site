@@ -723,3 +723,12 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
   body.practice-page .toc{display:none;position:fixed;left:0;top:0;bottom:0;width:300px;max-height:none;z-index:60;background:var(--card);border-right:1px solid var(--line);box-shadow:4px 0 18px rgba(0,0,0,.18);padding:12px}
   body.practice-page.toc-open .toc{display:block}
 }
+/* lesson 3.10 seven-segment display */
+.seg-row { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+.seg-lab { font-size: 13px; color: var(--mute); width: 64px; }
+.seg-d { background: #111; border-radius: 4px; padding: 2px; }
+.seg-s { stroke: #3a1d1d; stroke-width: 4; stroke-linecap: round; fill: none; }
+.seg-s.on { stroke: #ff3b30; }
+.dial { display: inline-grid; place-items: center; width: 34px; height: 44px; border: 2px solid var(--line); border-radius: 6px; font: 700 22px ui-monospace, Consolas, monospace; }
+.seg-bits { font: 12px ui-monospace, Consolas, monospace; color: var(--mute); margin-left: 4px; }
+.seg-note { font-size: 12px; color: var(--mute); margin: 4px 0 0; }

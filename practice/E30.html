@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="73502a3ebd">
+<meta name="ll-version" content="b83c599230">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E30 停電：接著做或從頭來｜PLC 練習題（自動評分）</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="吸盤氣缸一個循環：在上限按啟動 X0 → 下降到下限 X1 → 吸盤 Y1 吸 1 秒 → 吸著上升到上限 X2。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E30.html">
-<link rel="stylesheet" href="../style.css?v=43b2e6249b">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
 
 </head>
 <body class="static">
@@ -40,7 +40,7 @@ PLC 照學校 FX3S 的停電保持範圍：S0～S127、M384～M511、D128～D255
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "73502a3ebd" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "b83c599230" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

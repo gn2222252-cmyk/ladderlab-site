@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="73502a3ebd">
+<meta name="ll-version" content="b83c599230">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>5.3 首發故障：保留第一個異常碼，原因排除後才復歸｜PLC 互動課程</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="多個感測器可能接近同時故障。故障碼若每圈都被後面的條件覆蓋，維修人員看到的就不一定是最先發生的原因。常見作法是 D220 為 0 才寫入故障碼；第一個故障寫入後，後續故障不覆蓋。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/C4.html">
-<link rel="stylesheet" href="../style.css?v=43b2e6249b">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "C4 首發故障：保留第一個異常碼，原因排除後才復歸", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
 </head>
 <body class="static">
@@ -60,7 +60,7 @@ OUT Y000</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "73502a3ebd" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "b83c599230" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
