@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1b67ea3014">
+<meta name="ll-version" content="12e79cbff7">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LadderLab 梯圖實驗室｜三菱 FX PLC 互動課程</title>
@@ -138,7 +138,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=2584c5355d"></script>
+<script src="py/bundle.js?v=dc519ef140"></script>
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="ladder.js?v=796bf6d37e"></script>
 <script src="course_map.js?v=70538253ef"></script>
@@ -167,7 +167,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1b67ea3014" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "12e79cbff7" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
