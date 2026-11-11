@@ -305,7 +305,7 @@ const fmFig={name:'Formula Node',bd:{w:460,h:150,structs:[{id:'fm',k:'formula',x
   {id:'ty',k:'tunnel',t:'dbl',s:'fm',side:'r',y:75},{id:'y',k:'ind',t:'dbl',label:'y',x:390,y:65}],
  wires:[{id:'w1',from:'x',to:'tx.o',t:'dbl'},{id:'w2',from:'a',to:'ta.o',t:'dbl'},{id:'w3',from:'ty.o',to:'y',t:'dbl'}]}};
 L.push({id:'C04',order:104,no:'C4',part:PART,title:'結構：Case 進階、Sequence、Event Structure、Formula Node',mins:70,
-goals:[['學會','Case 的所有 Selector 型別與規則、Flat/Stacked Sequence、Event Structure 的觸發規則與陷阱、Formula Node、Disable 結構。'],['考試重點','Event：程式改值不會觸發 Value Change、Latch 按鈕端子要放在自己的事件頁裡、Timeout 預設 -1、Filter 與 Notify 事件的差別。']],
+goals:[['學會','Case 的所有 Selector 型別與規則、Flat/Stacked Sequence、Event Structure 的觸發規則與陷阱、Formula Node、Disable 結構。'],['考試重點','Event：程式改值不會觸發 Value Change、Latch 按鈕端子要放在自己的事件頁裡、Timeout 預設 -1、Filter 與 Notify 事件的差別。'],['動畫練習','<a href="lab-struct.html">結構實驗室</a>：Case 選擇器猜一猜（DBL 捨入、字串大小寫）、<a href="lab-struct.html#event">Event 事件排隊與 Timeout</a>、<a href="lab-struct.html#seq">Sequence 與 Tick Count 計時</a>。']],
 check:'能說出三種「不會觸發 Value Change 事件」的改值方式和一種會觸發的方式。',
 body:[
 C.h3('懂','','Case Structure 規則總整理'),

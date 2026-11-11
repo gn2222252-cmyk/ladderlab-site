@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="c7477b5890">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>結構實驗室：Case、Event、State Machine、Sequence | LadderLab</title>
+<meta name="description" content="LabVIEW 結構的動畫實驗室：Case 選擇器走哪一頁（範圍、Default、小數捨入、字串大小寫、Enum）、Event 事件排隊與 Timeout、State Machine 逐圈換狀態、Sequence 與 Tick Count。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .cases { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin: 12px 0; }
+  .case { border: 4px solid #6b6b6b; border-radius: 6px; padding: 0 0 8px; background: var(--card); transition: transform .25s, box-shadow .25s, opacity .25s; opacity: .55; }
+  .case .sel { display: block; background: #ececec; color: #222; font: 600 13px ui-monospace, Consolas, monospace; text-align: center; padding: 3px; border-bottom: 2px solid #6b6b6b; }
+  .case .act { display: block; text-align: center; padding: 8px 6px 0; font-size: 14px; }
+  .case.run { opacity: 1; transform: translateY(-4px); box-shadow: 0 6px 16px rgba(30, 111, 255, .35); border-color: #1e6fff; }
+  .case.run .sel { background: #1e6fff; color: #fff; }
+  .selbox { display: inline-grid; place-items: center; width: 34px; height: 30px; border: 2px solid #1e5bd7; font: 700 16px ui-monospace, Consolas, monospace; }
+  .q { position: relative; height: 70px; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+  .ev { position: absolute; top: 18px; padding: 6px 10px; border-radius: 8px; background: #fde68a; border: 2px solid #f59e0b; font-size: 13px; white-space: nowrap; transition: left .5s ease, opacity .4s; }
+  .ev.to { background: #e5e7eb; border-color: #9ca3af; }
+  .handler { border: 4px solid #6b6b6b; border-radius: 6px; padding: 10px; min-height: 60px; }
+  .handler.busy { border-color: #1e6fff; }
+  .bar { height: 8px; background: #1e6fff; width: 0; transition: width linear; border-radius: 4px; }
+  .sm { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+  .st { min-width: 110px; padding: 12px; text-align: center; border: 3px solid var(--line); border-radius: 12px; font-weight: 700; transition: all .3s; }
+  .st.on { border-color: #1e6fff; background: rgba(30, 111, 255, .12); transform: scale(1.06); }
+  .arrow { color: var(--mute); }
+  .frames { display: flex; gap: 0; margin: 12px 0; }
+  .frame { flex: 1; border: 4px solid #6b6b6b; border-right-width: 2px; padding: 10px; min-height: 90px; position: relative; transition: background .3s; }
+  .frame:last-child { border-right-width: 4px; }
+  .frame.on { background: rgba(30, 111, 255, .12); }
+  .frame b { display: block; margin-bottom: 4px; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-loop.html">迴圈</a><a href="lab-struct.html" class="here">結構</a><a href="lab-array.html">陣列</a><a href="lab-bool.html">布林</a><a href="lab-numeric.html">數值</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <h1>結構實驗室</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="case" class="here">Case：走哪一頁？</button>
+    <button type="button" data-t="event">Event：事件排隊</button>
+    <button type="button" data-t="sm">State Machine</button>
+    <button type="button" data-t="seq">Sequence 與計時</button>
+  </div>
+
+  <section class="lab-stage" id="t-case">
+    <p class="why">Case 結構一次只執行一頁。選擇器（左邊的 ?）接什麼型別，頁籤就寫什麼；沒有對到任何一頁，就走 Default。改下面的值，看哪一頁亮起來。</p>
+    <div class="row">
+      <label>選擇器型別 <select id="ctype"><option value="int">整數（I32）</option><option value="dbl">接 DBL 小數</option><option value="str">字串</option><option value="enum">Enum</option><option value="bool">布林</option></select></label>
+      <span id="cinwrap"></span>
+      <span class="selbox">?</span>
+    </div>
+    <div class="cases" id="cases"></div>
+    <p class="verdict-line" id="cwhy"></p>
+    <div class="lab-challenge">
+      <h3>猜一猜</h3>
+      <p class="why" id="cq"></p>
+      <div class="row" id="cqopts"></div>
+      <span class="why" id="cqscore"></span>
+    </div>
+  </section>
+
+  <section class="lab-stage" id="t-event" hidden>
+    <p class="why">Event 結構放在 While Loop 裡，每一圈「等」一個事件發生，處理完再回去等下一個。使用者按得比程式處理快的時候，事件會<b>排隊</b>，一個也不會掉，但會晚一點才處理。Timeout 接 -1（預設）就一直等；接了毫秒數，等這麼久都沒事件就執行 Timeout 頁。</p>
+    <div class="row">
+      <button type="button" data-ev="OK 按鈕：Value Change">按 OK</button>
+      <button type="button" data-ev="數值：Value Change">改數值</button>
+      <button type="button" data-ev="面板：Mouse Down">在面板點一下</button>
+      <label>每個事件處理 <input id="evms" class="scalar" value="1500" style="width:70px"> ms</label>
+      <label>Timeout <input id="evto" class="scalar" value="3000" style="width:70px"> ms（-1 不逾時）</label>
+      <button type="button" id="evstop">按 Stop：Value Change → 結束迴圈</button>
+    </div>
+    <h3>事件佇列（左邊最先處理）</h3>
+    <div class="q" id="queue"></div>
+    <h3>Event 結構正在執行</h3>
+    <div class="handler" id="handler"><span id="hname">（在等事件…）</span><div class="bar" id="hbar"></div></div>
+    <div class="log" id="evlog"></div>
+  </section>
+
+  <section class="lab-stage" id="t-sm" hidden>
+    <p class="why">State Machine＝While Loop＋Shift Register＋Case。Shift Register 存「下一個狀態」，每一圈 Case 照它選一頁，執行完再決定下一個狀態。狀態最好用 Enum 做成 Type Def，改名或新增狀態時所有常數會一起更新。下面是一台洗衣機：</p>
+    <div class="sm" id="smd"></div>
+    <div class="row">
+      <button type="button" class="go" id="smstart">按「開始」</button>
+      <button type="button" id="smdoor">打開門（洗衣中按會進「暫停」）</button>
+      <button type="button" id="smclose">關上門</button>
+      <button type="button" id="smstop">按 Stop</button>
+    </div>
+    <div class="log" id="smlog"></div>
+    <div class="callout">簡單的狀態機一圈只看得到一個「下一個狀態」：狀態執行中使用者又按了兩個按鈕，只有最後判斷的那個有效，其他的會被蓋掉（CLAD 常考）。要不漏掉就改用 Queued Message Handler（訊息排隊），這門課第 16 課的雙迴圈＋Queue 就是這個想法。</div>
+  </section>
+
+  <section class="lab-stage" id="t-seq" hidden>
+    <p class="why">LabVIEW 照資料流執行：沒有連線的節點，誰先跑不一定。要「先做這件、再做那件」時，用 Flat Sequence 一格一格排好，或更好的做法：用錯誤線串起來。量一段程式花多久，就是前後各讀一次 Tick Count (ms) 再相減。</p>
+    <div class="frames" id="frames">
+      <div class="frame" data-f="0"><b>第 1 格</b>Tick Count → t0</div>
+      <div class="frame" data-f="1"><b>第 2 格</b>要量時間的程式<br><small>（隨機 200～900 ms）</small></div>
+      <div class="frame" data-f="2"><b>第 3 格</b>Tick Count → t1<br>t1 − t0 = <b id="dt">?</b> ms</div>
+    </div>
+    <div class="row"><button type="button" class="go" id="seqrun">▶ 執行</button><label class="check small"><input type="checkbox" id="noseq"> 拿掉 Sequence（三個節點沒有連線）</label></div>
+    <div class="log" id="seqlog"></div>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；結構行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-struct.js?v=0b442a9727"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "c7477b5890" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

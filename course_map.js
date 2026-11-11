@@ -955,6 +955,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-struct.html",
+     "href": "labview/lab-struct.html",
+     "label": "動畫實驗室：Case、Event、State Machine、Sequence"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-array.html",
      "href": "labview/lab-array.html",
      "label": "動畫實驗室：陣列函式"

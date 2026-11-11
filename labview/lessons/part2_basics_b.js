@@ -32,7 +32,7 @@ const boolCase={name:'Boolean Case 範例',view:'bd',
   wires:[{id:'w1',from:'b',to:'sel',t:'bool'},{id:'w2',from:'t',to:'tun.i',t:'str',f:'cb:True'},{id:'w3',from:'f',to:'tun.i',t:'str',f:'cb:False'},{id:'w4',from:'tun.o',to:'o',t:'str'}]}
 };
 L.push({id:'L06',order:6,no:'6',part:'LabVIEW 基礎',title:'Case Structure：異常碼變文字',mins:50,files:['GT_AlarmText.vi','GT_StepText.vi'],
-goals:[['學會','Case Structure、Selector 型別、新增／複製 Case、Default、輸出通道。'],['做出','GT_AlarmText.vi（異常碼 → 文字）和 GT_StepText.vi（步序號 → 文字）。'],['用在專案','主畫面的 Alarm Text、三個步序文字框就是這兩個 VI 產生的。']],
+goals:[['學會','Case Structure、Selector 型別、新增／複製 Case、Default、輸出通道。'],['做出','GT_AlarmText.vi（異常碼 → 文字）和 GT_StepText.vi（步序號 → 文字）。'],['用在專案','主畫面的 Alarm Text、三個步序文字框就是這兩個 VI 產生的。'],['動畫練習','<a href="lab-struct.html">結構實驗室：Case 走哪一頁？</a>改選擇器的值，看範圍「2..5」、清單「7, 9」、Default 怎麼對；也有字串大小寫和 Enum 的陷阱。']],
 check:'Alarm Code 10 顯示 RIGHT AXIS TIMEOUT；99 顯示 UNKNOWN CODE；方塊圖輸出通道是實心的。',
 body:[
 C.h3('懂','','Case Structure = 好幾頁疊在一起，一次只執行一頁'),
