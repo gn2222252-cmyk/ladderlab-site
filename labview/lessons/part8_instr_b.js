@@ -266,6 +266,16 @@ ask('為什麼不一開始就畫完整的架構？',
  `<p>因為你還不知道需要什麼。先畫好一個大架構再把儀器塞進去，出錯時你分不清是架構錯還是通訊錯。</p>
 <p>從能跑的最小版本開始，一次加一樣，每加一樣就跑一次。這樣任何時候出錯，都是「剛加的那一樣」的問題。這跟 I1 講的「一次只解一個未知數」是同一件事。</p>`),
 
+C.h3('做','b','沒有儀器，也能用真的 LabVIEW 做：軟儀器'),
+`<p>手邊沒有這台電源供應器也可以練。<b>軟儀器</b>是一支 Python 程式，在你的電腦上假裝成電源、電表、天平、溫控器四台儀器，LabVIEW 用 VISA 連上去，收發的內容跟網頁上的模擬儀器一樣。想法和第 12 課的軟 PLC 相同。</p>
+<p>下載：<a href="softinst/soft_instruments.py" download>soft_instruments.py</a>　說明：<a href="softinst/README.md">README</a>。只需要 Python 3，不用裝別的東西。在檔案所在的資料夾打 <code>python soft_instruments.py</code>，視窗會列出四台的資源名稱，並把每一次收到、送出的位元組印出來。</p>`,
+C.table(['跟課文不一樣的地方','軟儀器','為什麼'],[
+ ['資源名稱','<code>TCPIP0::127.0.0.1::5561::SOCKET</code>（電源）','它開在網路埠上，不是 COM 埠'],
+ ['開啟','VISA Open，不用 VISA Configure Serial Port','網路沒有鮑率、同位可以設'],
+ ['結尾字元','要自己打開：對 VISA 線按右鍵 Create ▸ Property Node，Message Based Settings 底下的 Termination Character Enable 寫入 True、Termination Character 寫入 10','SOCKET 連線只是一條位元組的水管，Read 不知道一筆到哪裡結束（I5 會再講）'],
+ ['其他','送 IOUT1?、讀、轉數字、關閉，全部一樣','—']
+]),
+`<p>軟儀器練的是命令、結尾字元、回覆格式、逾時和錯誤處理。鮑率和同位設錯會怎樣，它練不到，那一部分用 I2 的網頁終端機。</p>`,
 C.h3('問題 1','','主管說：我要一直看著電流'),
 ask('版本 0 做不到什麼？',
  `<p>它跑一次就結束。儀器不會自己把新的數值推到你的指示器上。你要一直看，就得<b>一直問</b>。</p>

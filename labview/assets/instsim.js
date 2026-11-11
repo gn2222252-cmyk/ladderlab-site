@@ -451,7 +451,7 @@
     if (this.closed) return { ok: false, n: 0, error: '這個連線已經關閉' };
     if (this.kind === 'daq') { this._note('err', [], 'DAQ 沒有命令可以寫：它只量電壓'); return { ok: false, n: 0, error: 'DAQ 卡沒有「命令」，不能寫字串給它' }; }
     this._run(this.now);
-    if (this.kind === 'tcp' && !this.connected) { this._note('err', b, '還沒連線就寫：送不出去'); return { ok: false, n: 0, error: '還沒連線（要先 connect）' }; }
+    if (this.kind === 'tcp' && !this.connected) { this._note('err', b, '還沒連線就寫：送不出去'); return { ok: false, n: 0, error: '還沒連線（要先按「連線」，等標示變成已連線）' }; }
     this._note('tx', b);
     if (this.kind === 'serial') {
       this.now += b.length * charMs(pc);
@@ -477,7 +477,7 @@
     }
     o = o || {};
     if (this.closed) return { bytes: [], text: '', timedOut: true, waitedMs: 0, error: '這個連線已經關閉' };
-    if (this.kind === 'tcp' && !this.connected) { this._note('err', [], '還沒連線就讀'); return { bytes: [], text: '', timedOut: true, waitedMs: 0, error: '還沒連線（要先 connect）' }; }
+    if (this.kind === 'tcp' && !this.connected) { this._note('err', [], '還沒連線就讀'); return { bytes: [], text: '', timedOut: true, waitedMs: 0, error: '還沒連線（要先按「連線」，等標示變成已連線）' }; }
     term = o.term === undefined ? this.cfg.term : o.term; count = o.count == null ? 4096 : o.count; to = o.timeoutMs == null ? this.cfg.timeoutMs : o.timeoutMs;
     this._run(this.now);
     if (this.dev.onRead) this.dev.onRead(this.rx.length > 0 || this.events.length > 0);
@@ -636,7 +636,7 @@
     '.isim-out{border:1px solid var(--line,#c9d0cf);border-radius:6px;padding:8px;margin:6px 0;min-height:46px}.isim-msg{font-weight:700;margin:0 0 4px;padding-left:8px;border-left:4px solid var(--line,#c9d0cf)}.isim-msg.bad{color:var(--lab-bad,var(--stop-text,var(--bad,#b71c1c)));border-left-color:currentColor}.isim-msg.ok{border-left-color:var(--go,var(--accent2,#17803f))}' +
     '.isim-views{display:grid;gap:4px}.isim-v{display:grid;grid-template-columns:118px minmax(0,1fr);gap:8px;align-items:start}@media(max-width:520px){.isim-v{grid-template-columns:minmax(0,1fr);gap:0}}' +
     '.isim-vl{font-size:12px;color:var(--mute,#56606b);padding-top:3px}.isim-plain,.isim-marks,.isim-hex{margin:0;font:14px/1.5 ui-monospace,Consolas,monospace;background:var(--bg,#eceeeb);border-radius:4px;padding:3px 6px;overflow-wrap:anywhere;white-space:pre-wrap;min-height:1.6em;max-height:180px;overflow:auto;border:0;max-width:100%}' +
-    '.isim-ctl{font-style:normal;font-size:11px;background:var(--on,var(--accent,#0a57a4));color:var(--card,var(--paper,#fff));border-radius:3px;padding:0 3px;margin:0 1px;white-space:nowrap}.isim-ctl.sp{background:transparent;color:var(--mute,#56606b);font-size:14px;padding:0;margin:0}.isim-ctl.hi{background:#b26a00;color:#fff}' +
+    '.isim-ctl{font-style:normal;font-size:11px;background:var(--on,var(--accent,#0a57a4));color:var(--card,var(--paper,#fff));border-radius:3px;padding:0 3px;margin:0 1px;white-space:nowrap}.isim-ctl.sp{background:transparent;color:var(--mute,#56606b);font-size:14px;padding:0;margin:0}.isim-ctl.hi{background:#8a5200;color:#fff}' +
     '.isim-log{font:12px/1.5 ui-monospace,Consolas,monospace;max-height:150px;overflow:auto;border:1px solid var(--line,#c9d0cf);border-radius:6px;padding:4px 6px;margin-top:6px;overflow-wrap:anywhere}.isim-log .tx{color:var(--on,var(--accent,#0a57a4))}.isim-log .err{color:var(--lab-bad,var(--stop-text,var(--bad,#b71c1c)))}' +
     '.isim-plot{display:block;width:100%;height:auto;background:var(--bg,#eceeeb);border-radius:4px}';
   function css() { if (!D || D.getElementById('instsim-css')) return; var s = D.createElement('style'); s.id = 'instsim-css'; s.textContent = CSS; D.head.appendChild(s); }

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="ec4bb580a1">
+<meta name="ll-version" content="f8a8883e5e">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -27,7 +27,7 @@
 <script src="assets/lvdraw.js?v=fe4083103b"></script>
 <script src="assets/course.js?v=a4d410b27b"></script>
 <script src="assets/lvfmt.js?v=174413c716"></script>
-<script src="assets/instsim.js?v=b06d1e8086"></script>
+<script src="assets/instsim.js?v=7698d5ec58"></script>
 <script src="lessons/part1_start.js?v=92e87ae171"></script>
 <script src="lessons/part2_basics_a.js?v=4debd6fd89"></script>
 <script src="lessons/part2_basics_b.js?v=862b228e40"></script>
@@ -37,11 +37,11 @@
 <script src="lessons/part4_project_b.js?v=beff366eb6"></script>
 <script src="lessons/part7_fileio.js?v=d68aa67564"></script>
 <script src="lessons/part8_instr_a.js?v=44d29cb6c5"></script>
-<script src="lessons/part8_instr_b.js?v=a43184db19"></script>
+<script src="lessons/part8_instr_b.js?v=ff0ca97aae"></script>
 <script src="lessons/part8_instr_c.js?v=a827fa4fb7"></script>
 <script src="lessons/part8_instr_d.js?v=b026978154"></script>
 <script src="lessons/part8_instr_e.js?v=d74489bb52"></script>
-<script src="lessons/part8_instr_f.js?v=a38e1e46d8"></script>
+<script src="lessons/part8_instr_f.js?v=159454e6c4"></script>
 <script src="lessons/part6_arch_a.js?v=4d7dc3ad04"></script>
 <script src="lessons/part6_arch_b.js?v=4d47316f96"></script>
 <script src="lessons/part5_clad_a.js?v=7f85b05e87"></script>
@@ -60,7 +60,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "ec4bb580a1" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "f8a8883e5e" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
