@@ -8,7 +8,7 @@
   function hex2(v) { return (v < 16 ? '0' : '') + v.toString(16).toUpperCase(); }
   function ms(x, d) { return (+x.toFixed(d == null ? 3 : d)) + ' ms'; }
   var CTL = { 0: 'NUL', 2: 'STX', 3: 'ETX', 5: 'ENQ', 6: 'ACK', 9: 'TAB', 10: 'LF', 13: 'CR', 21: 'NAK' };
-  function nm(c) { return CTL[c] || (c >= 33 && c < 127 ? String.fromCharCode(c).replace('<', '&lt;').replace('&', '&amp;') : c === 32 ? '空格' : hex2(c) + 'h'); }
+  function nm(c) { return CTL[c] || (c >= 33 && c < 127 ? String.fromCharCode(c).replace('&', '&amp;').replace('<', '&lt;') : c === 32 ? '空格' : hex2(c) + 'h'); }
   function isCtl(c) { return c < 33 || c >= 127; }
   function chip(c, sub, cls, tag) { return '<' + (tag || 'span') + ' class="chip' + (isCtl(c) ? ' ctl' : '') + (cls ? ' ' + cls : '') + '"' + (tag === 'button' ? ' type="button"' : '') + '>' + nm(c) + (sub != null ? '<small>' + sub + '</small>' : '') + '</' + (tag || 'span') + '>'; }
   function empty() { return '<span class="chip empty"></span>'; }

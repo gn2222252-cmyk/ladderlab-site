@@ -253,7 +253,7 @@
     $('ceol').disabled = o.way === 'a2s';
     $('cfmtline').innerHTML = o.way === 'fis'
       ? 'Format Into String 的 format string：<code>%s' + esc(d) + '%d' + esc(d) + esc(o.fmt) + (o.eol === 'crlf' ? '\\r\\n' : '') + '</code>' + (o.eol === 'crlf' ? '（format string 本身就認得 \\r、\\n 這類反斜線碼）' : o.eol === 'lit' ? '，再用 Concatenate Strings 接一個字串常數 <code>\\r\\n</code>：常數沒切 \'\\\' Codes Display，反斜線就是普通字元，變成 4 個字' : '') + '，input 1 = 時間字串（Format Date/Time String）、input 2 = D0、input 3 = D1 ÷ 10'
-      : 'Array To Spreadsheet String：array = [秒數, D0, D1 ÷ 10]（1D 當成一列），format string = <code>' + esc(o.fmt) + '</code>（<b>每一欄共用</b>），delimiter = <code>' + esc(d) + '</code>。每一列最後它會自己加換行，所以「行尾」選項用不到。';
+      : 'Array To Spreadsheet String：array = [秒數, D0, D1 ÷ 10]（1D 當成一列），format string = <code>' + esc(o.fmt) + '</code>（<b>每一欄共用</b>），delimiter = <code>' + esc(d) + '</code>。每一列最後它會自己加換行（Windows 上是 \\r\\n），所以「行尾」選項用不到。';
   }
   function drawCsv() {
     $('cfile').innerHTML = C.file ? shown(C.file) : '<span class="why">（空的）</span>';

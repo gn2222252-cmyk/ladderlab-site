@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="b386e3f950">
+<meta name="ll-version" content="347ce4f6c4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VISA 實驗室：位元組怎麼在序列線上走 | LadderLab</title>
@@ -104,7 +104,7 @@
   </section>
 
   <section class="lab-stage" id="t-read" hidden>
-    <p class="why">VISA Write 把命令送出去以後，VISA Read 開始等。進來的位元組先放進電腦的<b>接收緩衝區</b>，VISA Read 從緩衝區拿。它會在下面三件事<b>哪一件先發生</b>就返回：① 拿滿 <b>byte count</b> 個位元組；② 拿到<b>終止字元</b>（要先開啟 Enable Termination Char，終止字元本身也會一起回傳）；③ 等到<b>逾時</b>，這時回傳錯誤 <b>-1073807339</b>。沒被拿走的位元組留在緩衝區，下一次 Read 會先拿到它們。</p>
+    <p class="why">VISA Write 把命令送出去以後，VISA Read 開始等。進來的位元組先放進電腦的<b>接收緩衝區</b>，VISA Read 從緩衝區拿。它會在下面三件事<b>哪一件先發生</b>就返回：① 拿滿 <b>byte count</b> 個位元組；② 拿到<b>終止字元</b>（要先開啟 Enable Termination Char，終止字元本身也會一起回傳）；③ 等到<b>逾時</b>，這時回傳錯誤 <b>-1073807339</b>。沒被拿走的位元組留在緩衝區，下一次 Read 會先拿到它們。注意：VISA Configure Serial Port 的 <b>Enable Termination Char 預設是開的</b>（終止字元 \n，0x0A）。FX 的回應是二進位意義的 ASCII 封包，校驗碼或資料裡剛好出現 0A 就會提前返回，所以課程把它關掉（接 F）。</p>
     <div class="two">
       <div>
         <div class="scn" id="rscn"></div>
@@ -157,14 +157,14 @@
 </main>
 <footer><p>LabVIEW、NI-VISA 為 NI 之商標；MELSEC、FX 為三菱電機之商標。本站為獨立製作，與 NI、三菱電機無關；行為以原廠文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-visa.js?v=8ca6334704"></script>
+<script src="lab-visa.js?v=c9a5596a10"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "b386e3f950" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "347ce4f6c4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

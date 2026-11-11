@@ -72,7 +72,7 @@ ${C.table(['函式','選盤','做什麼'],[
  ['VISA Open',fn('Instrument I/O','VISA','Advanced VISA','VISA Open'),'打開資源，輸出一條紫色的 VISA 線'],
  ['VISA Configure Serial Port',fn('Instrument I/O','Serial','VISA Configure Serial Port'),'設定 COM 的鮑率、資料位元、同位、停止位元（同時也會打開）'],
  ['VISA Write',fn('Instrument I/O','Serial','VISA Write'),'送出字串'],
- ['VISA Read',fn('Instrument I/O','Serial','VISA Read'),'讀 <b>byte count</b> 個位元組；等不到會在逾時（預設 2 秒）後出錯'],
+ ['VISA Read',fn('Instrument I/O','Serial','VISA Read'),'讀 <b>byte count</b> 個位元組；等不到會在逾時後出錯（VISA Configure Serial Port 的 timeout 預設 10000 ms，可以自己改小）'],
  ['VISA Close',fn('Instrument I/O','Serial','VISA Close'),'關閉。<b>就算前面出錯也會關</b>（它是少數 error in 有錯還會執行的函式）']
 ])}`,
 `<div class="note"><b>FX3S 的序列參數</b>9600 bps、7 資料位、偶同位（Even）、1 停止位，PLC 參數「PLC 系統(2)」不要勾。這組值寫死在 FX_Open 裡。</div>`,
