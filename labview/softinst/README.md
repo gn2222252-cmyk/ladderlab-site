@@ -1,6 +1,6 @@
 # 軟儀器：沒有真儀器，也能用真的 LabVIEW 練
 
-一支 Python 程式，同時假裝四台儀器。
+一支 Python 程式，同時假裝五台儀器。
 LabVIEW 用 VISA 連上去，就像連到真的儀器一樣收發。
 
 想法和本專案的軟 PLC 一樣：把儀器的「對話方式」開在 TCP 埠上。
@@ -11,6 +11,7 @@ LabVIEW 用 VISA 連上去，就像連到真的儀器一樣收發。
 | 5562 | dmm | Keysight 34461A 數位電表 | SCPI，有錯誤佇列 |
 | 5563 | bal | A&D FX-i 電子天平 | 預設不主動送，也可以連續送 |
 | 5564 | dtb | 台達 DTB 溫度控制器 | Modbus RTU（位元組） |
+| 5565 | tbs | Tektronix TBS2000B 示波器 | SCPI；波形是 # 開頭的二進位區塊 |
 
 行為和網頁的「儀器練習台」（`web/labview/instlab.html`）裡同名的儀器一樣。
 先在網頁上試過，再到這裡用真的 LabVIEW 做一次。
@@ -30,7 +31,7 @@ TCP 沒有鮑率，也沒有同位。
 python softinst/soft_instruments.py
 ```
 
-視窗會列出四台的 VISA 資源名稱，然後一直開著。
+視窗會列出五台的 VISA 資源名稱，然後一直開著。
 之後每條連線收到、送出的位元組都會印出來，`\r` `\n` 會畫出來，方便對照：
 
 ```
@@ -51,7 +52,7 @@ python softinst/soft_instruments.py
 | 參數 | 意思 |
 |---|---|
 | `--host 127.0.0.1` | 要聽哪個位址。預設只有這台電腦連得到。 |
-| `--base-port 5561` | 第一台的埠號。四台依序是 gpd、dmm、bal、dtb。 |
+| `--base-port 5561` | 第一台的埠號。五台依序是 gpd、dmm、bal、dtb、tbs。 |
 | `--only gpd,dmm` | 只開其中幾台。埠號不會因此改變（dmm 還是 base-port＋1）。 |
 
 出現「開不了埠」：多半是已經有一份在跑，或埠號被佔用。換一個 `--base-port`。
@@ -223,13 +224,43 @@ Modbus RTU。站號 1。最後兩個位元組是 CRC，低位元組在前。
 2. 把 CRC 兩個位元組對調再送。逾時。
 3. 按鍵盤 `s` 拔掉感測器，再讀 PV：`80 03`。這不是 3277.1 度，是錯誤碼。
 
+### tbs：示波器（5565）
+
+命令結尾 `\n`。回覆結尾 `\n`。和課程 I12 一樣。
+出廠 `HEADER` 是 ON：查詢的回覆前面會帶命令名稱（`:CURVE `、`:WFMOUTPRE:`…）。
+
+| 送出 | 回覆 | 說明 |
+|---|---|---|
+| `*IDN?` | `TEKTRONIX,TBS2104B,…` | 問它是誰（`*` 開頭的命令永遠不帶標頭） |
+| `HEADER OFF` | 沒有回覆 | 回覆不要帶命令名稱 |
+| `DATA:ENCDG ASCII` | 沒有回覆 | 波形改成文字（出廠是 `RIBINARY`） |
+| `CURVE?` | ASCII：`50,50,49,…`；二進位：`#42000` 加 2000 個位元組加 `\n` | 把波形送過來 |
+| `WFMOUTPRE?` | 16 欄，用分號分開 | 換算參數；`WFMOUTPRE:YMULT?` 這樣可以一項一項問 |
+| `DATA:WIDTH 2` | 沒有回覆 | 每點 2 個位元組（資料乘 256，低位元組是 0） |
+| `HOR:RECO 20000` | 沒有回覆 | 記錄長度（這裡只有 1000、2000、20000） |
+| `DATA:STOP 20000` | 沒有回覆 | 要第幾點為止（不會跟著記錄長度改） |
+| `ACQ:STOPAFTER SEQ` 然後 `ACQ:STATE ON` | 沒有回覆 | 抓一次 |
+| `*OPC?` | `1` | 抓完了才回 |
+| `ALLEV?` | 事件 | 例如 `2244,"Waveform requested is not activated; "` |
+
+- 換算：電壓 ＝（資料 − YOFF）× YMULT ＋ YZERO；第 i 點的時間 ＝ XZERO ＋ i × XINCR。
+- CH1 是 1 kHz、振幅 2 V 的正弦波；CH2 預設沒有顯示（要 `SELECT:CH2 ON`）。訊號是課程的情境。
+
+試試看（LabVIEW）：
+
+1. 打開結尾字元（10），`HEADER OFF`，`DATA:ENCDG RIBINARY`，`CURVE?`，用 byte count 5000 讀一次。數一數收到幾個：資料裡的 0A 讓 VISA Read 停在半路。
+2. 改成照長度讀：讀 2 個（`#4`）、讀 4 個（`2000`）、把 Termination Character Enable 寫成 False、讀 2001 個、再寫回 True。
+3. 資料用 Type Cast 轉成 I8 陣列，減 YOFF、乘 YMULT，接到 Waveform Graph。最大最小應該在 ±2 V 附近。
+4. 按鍵盤 `x` 拔掉探棒，送 `ACQ:STOPAFTER SEQ`、`ACQ:STATE ON`、`*OPC?`：逾時。再按 `x`，剛才的 `*OPC?` 回 1。
+
 ## 和真儀器的差別
 
 | 這裡 | 真的 |
 |---|---|
-| 四台都走 TCP | GPD-3303S 是 USB 虛擬 COM；天平是 RS-232C；DTB 是 RS-485；34461A 是 USB 或網路線 |
+| 五台都走 TCP | GPD-3303S 是 USB 虛擬 COM；天平是 RS-232C；DTB 是 RS-485；34461A 是 USB 或網路線；TBS2000B 是 USB 或網路線 |
 | 沒有鮑率、同位 | 序列埠的都要設，設錯就是亂碼或收不到 |
 | dmm 在 5562 | 34461A 走網路時，SCPI socket 的埠是 5025 |
+| tbs 在 5565 | TBS2000B 的 socket server 預設埠是 4000，要先在面板打開 |
 | dtb 用「安靜 0.03 秒」判斷一個封包結束 | RTU 也是靠線上的安靜時間，長短跟鮑率有關 |
 | 可以同時好幾條連線 | 序列埠一次只接一個對象 |
 | 程式不關，設定就留著；重開程式等於儀器重新上電 | 一樣，但真儀器有些設定斷電也記得 |
@@ -242,6 +273,7 @@ Modbus RTU。站號 1。最後兩個位元組是 CRC，低位元組在前。
 - dmm：回覆的結尾字元、量一次要多久、讀數跳動的大小。
 - bal：連續輸出每秒幾筆、秤量上限（這裡 220 g）、多久算穩定、下錯命令時的反應。
 - dtb：寫入沒被允許時回哪一個例外碼、SV 的範圍（這裡 −20.0～500.0）、升溫的快慢。
+- tbs：`*IDN?` 的序號與版本、`HEADER OFF` 時 `WFMOUTPRE?` 各欄的寫法、沒有事件時 `ALLEV?` 的文字、下錯命令記的事件碼、記錄長度只做到 20000、沒有訊號時一直等不到觸發（當成 Normal 觸發）。
 
 這也是這一課要學的事：說明書不會什麼都寫。
 先讓資料進得來，把原始回覆看清楚，再寫後面的程式。
@@ -252,5 +284,5 @@ Modbus RTU。站號 1。最後兩個位元組是 CRC，低位元組在前。
 python -m pytest softinst/test_soft_instruments.py -q
 ```
 
-測試會把四台開在隨機的埠，用 socket 真的連上去，一項一項對上面寫的行為。
+測試會把五台開在隨機的埠，用 socket 真的連上去，一項一項對上面寫的行為。
 大約跑 40 秒：有幾項要真的等儀器（電表慢速量測、天平穩定）。

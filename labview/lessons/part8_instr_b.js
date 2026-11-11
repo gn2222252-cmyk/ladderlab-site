@@ -267,8 +267,8 @@ ask('為什麼不一開始就畫完整的架構？',
 <p>從能跑的最小版本開始，一次加一樣，每加一樣就跑一次。這樣任何時候出錯，都是「剛加的那一樣」的問題。這跟 I1 講的「一次只解一個未知數」是同一件事。</p>`),
 
 C.h3('做','b','沒有儀器，也能用真的 LabVIEW 做：軟儀器'),
-`<p>手邊沒有這台電源供應器也可以練。<b>軟儀器</b>是一支 Python 程式，在你的電腦上假裝成電源、電表、天平、溫控器四台儀器，LabVIEW 用 VISA 連上去，收發的內容跟網頁上的模擬儀器一樣。想法和第 12 課的軟 PLC 相同。</p>
-<p>下載：<a href="softinst/soft_instruments.py" download>soft_instruments.py</a>　說明：<a href="softinst/README.md">README</a>。只需要 Python 3，不用裝別的東西。在檔案所在的資料夾打 <code>python soft_instruments.py</code>，視窗會列出四台的資源名稱，並把每一次收到、送出的位元組印出來。</p>`,
+`<p>手邊沒有這台電源供應器也可以練。<b>軟儀器</b>是一支 Python 程式，在你的電腦上假裝成電源、電表、天平、溫控器、示波器五台儀器，LabVIEW 用 VISA 連上去，收發的內容跟網頁上的模擬儀器一樣。想法和第 12 課的軟 PLC 相同。</p>
+<p>下載：<a href="softinst/soft_instruments.py" download>soft_instruments.py</a>　說明：<a href="softinst/README.md">README</a>。只需要 Python 3，不用裝別的東西。在檔案所在的資料夾打 <code>python soft_instruments.py</code>，視窗會列出五台的資源名稱，並把每一次收到、送出的位元組印出來。</p>`,
 C.table(['跟課文不一樣的地方','軟儀器','為什麼'],[
  ['資源名稱','<code>TCPIP0::127.0.0.1::5561::SOCKET</code>（電源）','它開在網路埠上，不是 COM 埠'],
  ['開啟','VISA Open，不用 VISA Configure Serial Port','網路沒有鮑率、同位可以設'],

@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 """軟儀器：沒有真儀器，也能用真的 LabVIEW 練「接入新儀器」。
 
-一支程式同時開四個 TCP 埠，各模擬一台儀器。行為對照網頁練習台的
+一支程式同時開五個 TCP 埠，各模擬一台儀器。行為對照網頁練習台的
 web/labview/assets/instsim.js（同名儀器的命令、回覆格式、錯誤行為、數值都一樣）。
 
     5561  gpd  GW Instek GPD-3303S 電源供應器   文字，一問一答
     5562  dmm  Keysight 34461A 數位電表          SCPI，錯誤佇列
     5563  bal  A&D FX-i 電子天平                 預設不主動送；可以開連續輸出
     5564  dtb  台達 DTB 溫度控制器               Modbus RTU（位元組原樣走 TCP）
+    5565  tbs  Tektronix TBS2000B 示波器         SCPI；波形是 # 開頭的二進位區塊
 
 LabVIEW 的 VISA 資源名稱：TCPIP0::127.0.0.1::5561::SOCKET（埠號換成上面那一台）
 
@@ -30,7 +31,7 @@ from decimal import Decimal, ROUND_HALF_UP
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_BASE_PORT = 5561
-ORDER = ["gpd", "dmm", "bal", "dtb"]          # 埠號＝base-port＋這裡的順序，--only 不會改變埠號
+ORDER = ["gpd", "dmm", "bal", "dtb", "tbs"]   # 埠號＝base-port＋這裡的順序，--only 不會改變埠號
 
 
 # ====================================================================== 小工具
@@ -607,7 +608,335 @@ class Dtb(Instrument):
         self.open = bool(flag)
 
 
-CLASSES = {"gpd": Gpd, "dmm": Dmm, "bal": Bal, "dtb": Dtb}
+# ====================================================================== 5) Tektronix TBS2000B 示波器
+def eng(v):
+    """40.0000E-3 這種寫法：指數是 3 的倍數、小數 4 位（照程式設計手冊的範例）。"""
+    if not v:
+        return "0.0E+0"
+    e = int(math.floor(math.log10(abs(v)) / 3) * 3)
+    m = v / 10.0 ** e
+    if abs(m) >= 999.99995:
+        e += 3
+        m /= 1000
+    return "%.4fE%s%d" % (m, "-" if e < 0 else "+", abs(e))
+
+
+class Tbs(Instrument):
+    """依 TBS2000B Series Programmer Manual（077-1149-03）：出廠 HEADER 1、DATA:ENCDG RIBINARY、SOURCE CH1、
+    START 1、STOP 2500、WIDTH 1；每格 25 小格；寬度 2 時乘 256；值＝(資料−YOFF)×YMULT＋YZERO；
+    通道沒有顯示時 CURVE? 不回（事件 2244、420）；STOP 不跟著記錄長度改；水平 15 格。
+    訊號（CH1 1 kHz、2 V 正弦波；CH2 1 kHz ±0.5 V 方波）是課程的情境。"""
+    name = "tbs"
+    title = "Tektronix TBS2000B 示波器"
+    summary = "SCPI；命令結尾 \\n；出廠 HEADER ON；CURVE? 回 #<x><長度><資料>\\n（出廠是二進位）"
+    CHS = ("CH1", "CH2", "CH3", "CH4")
+    RECS = (1000, 2000, 20000)
+
+    def __init__(self, clock, seed=None):
+        super().__init__(clock, seed)
+        self.signal = True
+        self.waiters = []
+        self.reset()
+
+    def reset(self):
+        self.header, self.src, self.enc, self.width, self.start, self.stop, self.rec = 1, "CH1", "RIBINARY", 1, 1, 2500, 2000
+        self.hdiv = 100e-6
+        self.vdiv = {c: 1.0 for c in self.CHS}
+        self.pos = {c: 0.0 for c in self.CHS}
+        self.on = {"CH1": True, "CH2": False, "CH3": False, "CH4": False}
+        self.seq, self.running, self.done_at, self.wave, self.events = False, True, 0.0, None, []
+
+    def new_session(self):
+        return LineBuffer("lf", self.clock.now)
+
+    # ---- 波形
+    def _xincr(self):
+        return self.hdiv * 15 / self.rec
+
+    def _xzero(self):
+        return -self.hdiv * 15 / 2
+
+    def _volts(self, ch, t):
+        if ch == "CH1":
+            return 2 * math.sin(2 * math.pi * 1000 * t) if self.signal else 0.0
+        if ch == "CH2":
+            return 0.5 if math.sin(2 * math.pi * 1000 * t) > 0 else -0.5
+        return 0.0
+
+    def _acquire(self):
+        ch, x0, dx = self.src, self._xzero(), self._xincr()
+        per, jit, out = self.vdiv[ch] / 25, (self.rng.random() - 0.5) * 2e-6, []
+        for i in range(self.rec):
+            lv = int(math.floor(self._volts(ch, x0 + i * dx + jit) / per + self.pos[ch] * 25 + self.gauss() * 0.6 + 0.5))
+            out.append(max(-128, min(127, lv)))
+        return out
+
+    def _current(self):
+        if self.wave is None or (self.running and not self.seq):
+            self.wave = self._acquire()
+        return self.wave
+
+    def _range(self):
+        a, b = min(self.start, self.stop), max(self.start, self.stop)
+        if a > self.rec:
+            return self.rec, self.rec
+        return a, min(b, self.rec)
+
+    def _nr_pt(self):
+        a, b = self._range()
+        return b - a + 1
+
+    def _ev(self, code, text):
+        if len(self.events) < 20:
+            self.events.append('%d,"%s; "' % (code, text))
+
+    def _fmt(self):
+        return "RP" if self.enc in ("RPBINARY", "SRPBINARY") else "RI"
+
+    def _pre(self, f):
+        return f * 256 if self.width == 2 else f
+
+    def _ymult(self):
+        return self.vdiv[self.src] / 25 / (256 if self.width == 2 else 1)
+
+    def _wfid(self):
+        v = self.vdiv[self.src]
+        vs = ("%.3fV" % v) if v >= 1 else ("%.1fmV" % (v * 1000))
+        return '"Ch%s, DC coupling, %s/div, %.1fus/div, %d points, Sample mode"' % (self.src[2:], vs, self.hdiv * 1e6, self.rec)
+
+    def _preamble(self):
+        f = [("BYT_NR", self.width), ("BIT_NR", self.width * 8), ("ENCDG", "ASC" if self.enc == "ASCII" else "BIN"),
+             ("BN_FMT", self._fmt()), ("BYT_OR", "LSB" if self.enc.startswith("S") else "MSB")]
+        if self.on[self.src]:
+            f += [("WFID", self._wfid()), ("NR_PT", self._nr_pt()), ("PT_FMT", "Y"), ("XUNIT", '"s"'),
+                  ("XINCR", eng(self._xincr())), ("XZERO", eng(self._xzero())), ("PT_OFF", 0), ("YUNIT", '"V"'),
+                  ("YMULT", eng(self._ymult())), ("YOFF", eng(self._pre(self.pos[self.src] * 25))), ("YZERO", eng(0))]
+        if self.header:
+            return ":WFMOUTPRE:" + ";".join("%s %s" % kv for kv in f)
+        return ";".join(str(v) for _, v in f)
+
+    def _curve(self):
+        a, b = self._range()
+        w = self._current()[a - 1:b]
+        if self.enc == "ASCII":
+            return ((":CURVE " if self.header else "") + ",".join(str(self._pre(v)) for v in w) + "\n").encode("latin-1")
+        data = bytearray()
+        for v in w:
+            u = v + 128 if self._fmt() == "RP" else v & 0xFF
+            if self.width == 1:
+                data.append(u)
+            elif self.enc.startswith("S"):
+                data += bytes([0, u])
+            else:
+                data += bytes([u, 0])
+        n = str(len(data))
+        return ((":CURVE " if self.header else "") + "#" + str(len(n)) + n).encode("latin-1") + bytes(data) + b"\n"
+
+    def _done_in(self):
+        return 40 + self.hdiv * 15 * 1000
+
+    # ---- 命令
+    def on_bytes(self, conn, session, data):
+        self.tick()
+        for line in session.feed(data):
+            for part in line.split(";"):
+                self._exec(conn, part)
+
+    def _exec(self, conn, line):
+        s = line.strip()
+        if not s:
+            return
+        now = self.clock.now()
+        parts = s.split(None, 1)
+        hdr = parts[0].upper().lstrip(":")
+        arg = parts[1].strip().upper() if len(parts) > 1 else ""
+        q = hdr.endswith("?")
+        if q:
+            hdr = hdr[:-1]
+        H = self.header
+
+        def say(x, delay=3):
+            conn.send(x if isinstance(x, bytes) else (x + "\n").encode("latin-1"), delay)
+
+        def ans(name, val):
+            say((":" + name + " " if H else "") + str(val))
+
+        def is_(*patterns):
+            return any(scpi_is(p, hdr) for p in patterns)
+
+        if hdr == "*IDN" and q:
+            return say("TEKTRONIX,TBS2104B,C012345,CF:91.1CT FV:v1.26.17 TBS2XXXV:v1.26")
+        if hdr == "*RST" or is_("FACtory"):
+            return self.reset()
+        if hdr == "*CLS":
+            self.events = []
+            return
+        if hdr == "*OPC" and q:
+            if self.running and self.seq:
+                if self.done_at == float("inf"):
+                    self.waiters.append(conn)              # 等不到觸發：一直不回
+                    return
+                return say("1", max(3, self.done_at - now))
+            return say("1")
+        if is_("HEADer"):
+            if q:
+                return say(str(self.header))
+            self.header = 1 if arg in ("ON", "1") else 0
+            return
+        if is_("VERBose"):
+            return
+        if is_("ALLEv") and q:
+            v = ",".join(self.events) if self.events else '0,"No events to report - queue empty; "'
+            self.events = []
+            return ans("ALLEV", v)
+        if is_("DATa"):
+            if q:
+                vals = (self.enc, self.src, self.start, self.stop, self.width)
+                return say(":DATA:DESTINATION REF1;ENCDG %s;SOURCE %s;START %d;STOP %d;WIDTH %d" % vals if H
+                           else "REF1;%s;%s;%d;%d;%d" % vals)
+            if arg == "INIT":
+                rec = self.rec
+                self.enc, self.src, self.start, self.width, self.stop = "RIBINARY", "CH1", 1, 1, rec
+            return
+        if is_("DATa:SOUrce"):
+            if q:
+                return ans("DATA:SOURCE", self.src)
+            if arg in self.CHS:
+                self.src, self.wave = arg, None
+            else:
+                self._ev(113, "Undefined header")
+            return
+        if is_("DATa:ENCdg"):
+            if q:
+                return ans("DATA:ENCDG", self.enc)
+            m = {"ASCI": "ASCII", "ASCII": "ASCII", "RIB": "RIBINARY", "RIBINARY": "RIBINARY", "RPB": "RPBINARY",
+                 "RPBINARY": "RPBINARY", "SRI": "SRIBINARY", "SRIBINARY": "SRIBINARY", "SRP": "SRPBINARY",
+                 "SRPBINARY": "SRPBINARY"}.get(arg)
+            if m:
+                self.enc = m
+            else:
+                self._ev(113, "Undefined header")
+            return
+        if is_("DATa:WIDth", "WFMOutpre:BYT_Nr"):
+            if q:
+                return ans("DATA:WIDTH" if is_("DATa:WIDth") else "WFMOUTPRE:BYT_NR", self.width)
+            if arg in ("1", "2"):
+                self.width = int(arg)
+            return
+        if is_("DATa:STARt", "DATa:STOP"):
+            key = "start" if is_("DATa:STARt") else "stop"
+            if q:
+                return ans("DATA:" + key.upper(), getattr(self, key))
+            try:
+                v = int(arg)
+            except ValueError:
+                return
+            if v >= 1:
+                setattr(self, key, v)
+            return
+        if is_("WFMOutpre") and q:
+            return say(self._preamble())           # 沒有顯示的通道只回前五欄（說明書）
+        m = re.fullmatch(r"WFMO(?:UTPRE|UTPR)?:(NR_PT|XINCR|XINC|XZERO|XZE|YMULT|YMU|YOFF|YOF|YZERO|YZE|PT_OFF|PT_O|WFID|WFI|ENCDG|ENC|BN_FMT|BN_F)", hdr)
+        if m:
+            k = m.group(1)[:3]
+            if not q:
+                if k == "ENC":
+                    if arg.startswith("ASC"):
+                        self.enc = "ASCII"
+                    elif arg.startswith("BIN") and self.enc == "ASCII":
+                        self.enc = "RIBINARY"
+                if k == "BN_":
+                    self.enc = ("S" if self.enc.startswith("S") else "") + ("RPBINARY" if arg == "RP" else "RIBINARY")
+                return
+            if k == "ENC":
+                return ans("WFMOUTPRE:ENCDG", "ASCII" if self.enc == "ASCII" else "BINARY")
+            if k == "BN_":
+                return ans("WFMOUTPRE:BN_FMT", self._fmt())
+            if not self.on[self.src]:
+                return self._ev(2244, "Waveform requested is not activated")      # 說明書：會逾時
+            name = {"NR_": "NR_PT", "XIN": "XINCR", "XZE": "XZERO", "YMU": "YMULT", "YOF": "YOFF", "YZE": "YZERO", "PT_": "PT_OFF", "WFI": "WFID"}[k]
+            val = {"NR_": self._nr_pt(), "XIN": eng(self._xincr()), "XZE": eng(self._xzero()), "YMU": eng(self._ymult()),
+                   "YOF": eng(self._pre(self.pos[self.src] * 25)), "YZE": eng(0), "PT_": 0, "WFI": self._wfid()}[k]
+            return ans("WFMOUTPRE:" + name, val)
+        if is_("CURVe") and q:
+            if not self.on[self.src]:
+                self._ev(2244, "Waveform requested is not activated")
+                self._ev(420, "Query UNTERMINATED")
+                return
+            b = self._curve()
+            return say(b, 5 + len(b) / 2000)
+        if is_("HORizontal:RECOrdlength"):
+            if q:
+                return ans("HORIZONTAL:RECORDLENGTH", self.rec)
+            try:
+                v = int(arg)
+            except ValueError:
+                v = 0
+            if v in self.RECS:
+                self.rec, self.wave = v, None
+            else:
+                self._ev(222, "Data out of range")
+            return
+        if is_("HORizontal:SCAle", "HORizontal:MAIn:SCAle"):
+            if q:
+                return ans("HORIZONTAL:MAIN:SCALE", eng(self.hdiv))
+            v = parse_float(arg)
+            if v > 0:
+                self.hdiv, self.wave = v, None
+            return
+        m = re.fullmatch(r"(CH[1-4]):(SCA|SCALE|VOL|VOLTS|POS|POSITION)", hdr)
+        if m:
+            ch, key = m.group(1), ("pos" if m.group(2).startswith("POS") else "vdiv")
+            table = getattr(self, key)
+            if q:
+                return ans(ch + (":POSITION" if key == "pos" else ":SCALE"), eng(table[ch]))
+            v = parse_float(arg)
+            if v == v and (abs(v) <= 5 if key == "pos" else v > 0):
+                table[ch], self.wave = v, None
+            return
+        m = re.fullmatch(r"SEL(?:ECT)?:(CH[1-4])", hdr)
+        if m:
+            if q:
+                return ans("SELECT:" + m.group(1), 1 if self.on[m.group(1)] else 0)
+            self.on[m.group(1)] = arg in ("ON", "1")
+            return
+        if is_("ACQuire:STOPAfter"):
+            if q:
+                return ans("ACQUIRE:STOPAFTER", "SEQUENCE" if self.seq else "RUNSTOP")
+            self.seq = arg.startswith("SEQ")
+            return
+        if is_("ACQuire:STATE"):
+            if q:
+                return ans("ACQUIRE:STATE", 1 if self.running else 0)
+            try:
+                num = float(arg)
+            except ValueError:
+                num = 0.0
+            if arg in ("ON", "RUN") or num:
+                self.running, self.wave = True, None
+                if self.seq:
+                    self.done_at = now + self._done_in() if self.signal else float("inf")
+            else:
+                self.running = False
+            return
+        self._ev(113, "Undefined header")
+
+    def tick(self):
+        if self.running and self.seq and self.clock.now() >= self.done_at:
+            self.wave = self._acquire()
+            self.running = False
+
+    # ---- 示波器旁邊的人做的事
+    def probe(self, on):
+        self.signal = bool(on)
+        if on and self.running and self.seq and self.done_at == float("inf"):
+            self.done_at = self.clock.now() + self._done_in()
+            for c in self.waiters:
+                c.send(b"1\n", self._done_in())
+            self.waiters = []
+
+
+CLASSES = {"gpd": Gpd, "dmm": Dmm, "bal": Bal, "dtb": Dtb, "tbs": Tbs}
 
 
 # ====================================================================== 伺服器
@@ -670,7 +999,9 @@ class SoftInstrumentServer:
         self._log(text)
 
     def log_bytes(self, conn, what, data):
-        body = hexs(data) if conn.inst.binary else visible(data)
+        body = hexs(data[:40]) if conn.inst.binary else visible(data[:120])
+        if len(data) > (40 if conn.inst.binary else 120):
+            body += " …"                                   # 波形一次幾千個位元組：只印開頭
         self._log("[%s] %s %3d 個位元組  %s" % (conn.tag, what, len(data), body))
 
     # ---- 啟動／停止
@@ -834,7 +1165,7 @@ class SoftInstrumentServer:
                     self._log("[bal] 連續輸出中：這一秒送了 %d 筆給 %d 條連線，現在是 %s" % (n, listeners, sample))
 
     # ---- 鍵盤：儀器旁邊的人做的事
-    KEYS_HELP = "p 放上 50 g　r 拿走　o 過載（300 g）　k 按天平的 PRINT　s 拔掉／接回溫控器的感測器　h 說明　q 結束"
+    KEYS_HELP = "p 放上 50 g　r 拿走　o 過載（300 g）　k 按天平的 PRINT　s 拔掉／接回溫控器的感測器　x 拔掉／接回示波器 CH1 的探棒　h 說明　q 結束"
 
     def key(self, ch):
         """回傳要印給學生看的一句話；不認得回 None。"""
@@ -855,6 +1186,13 @@ class SoftInstrumentServer:
                     return "天平：放上 300 g，超過秤量，會送 OL。"
                 bal.press_print()
                 return "天平：按了 PRINT。穩定時送出一筆。"
+        if ch == "x":
+            tbs = self.instruments.get("tbs")
+            if not tbs:
+                return "這次沒有開示波器（tbs）。"
+            with tbs.lock:
+                tbs.probe(not tbs.signal)
+                return "示波器：CH1 的探棒%s。" % ("接回去了" if tbs.signal else "拔掉了，單次擷取會一直等不到觸發，*OPC? 不回")
         if ch == "s":
             if not dtb:
                 return "這次沒有開溫控器（dtb）。"
@@ -894,10 +1232,10 @@ def banner(server):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="軟儀器：用 TCP 模擬四台儀器，給 LabVIEW 的 VISA（SOCKET 資源）練習。")
+    ap = argparse.ArgumentParser(description="軟儀器：用 TCP 模擬五台儀器，給 LabVIEW 的 VISA（SOCKET 資源）練習。")
     ap.add_argument("--host", default=DEFAULT_HOST, help="要聽哪個位址（預設 127.0.0.1，只有這台電腦連得到）")
     ap.add_argument("--base-port", type=int, default=DEFAULT_BASE_PORT,
-                    help="第一台的埠號（預設 5561）；四台依序是 gpd、dmm、bal、dtb")
+                    help="第一台的埠號（預設 5561）；五台依序是 gpd、dmm、bal、dtb、tbs")
     ap.add_argument("--only", default="", help="只開其中幾台，用逗號分開，例如 gpd,dmm")
     args = ap.parse_args(argv)
     for stream in (sys.stdout, sys.stderr):

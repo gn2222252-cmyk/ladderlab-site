@@ -219,6 +219,10 @@ C.table(['接入單上的事','數位電表（I5）','示波器','所以程式�
 ]),
 `<p>六個步驟一樣，問的問題一樣，答案不一樣，所以程式不一樣。這一課新學的只有兩件事：<b>照長度讀</b>，和<b>拿儀器給的參數換算</b>。下次遇到頻譜分析儀、網路分析儀、任意波形產生器，你會看到同樣的 # 開頭的區塊。</p>`,
 tip('繼續練','到 <a href="instlab.html">儀器接入練習台</a> 選「TBS2000B 示波器」，有三個任務；②「把原始資料變成數字」也有示波器的題目。'),
+C.h3('做','b','用真的 LabVIEW 讀一塊波形：軟儀器'),
+`<p>I4 的軟儀器也有這台示波器：<code>TCPIP0::127.0.0.1::5565::SOCKET</code>。命令、預設值、資料格式和這一課一樣。下載：<a href="softinst/soft_instruments.py" download>soft_instruments.py</a>（說明：<a href="softinst/README.md">README</a>）。</p>
+<p>我們用 NI-VISA 實際連過：結尾字元打開、byte count 給 5000 讀 CURVE?，VISA Read 真的會停在資料裡的第一個 0A；照長度讀 2、4、2001，讀資料那一次把 Termination Character Enable 寫成 False，就收到完整的 2001 個位元組，下一個查詢也不會讀到殘留。你在 LabVIEW 裡也做一次，把兩種結果都看過。</p>
+<p>在軟儀器的視窗打 <code>x</code> 再按 Enter，可以拔掉 CH1 的探棒，練「*OPC? 等不到觸發」那一段。</p>`,
 
 C.h3('測驗','q','小測驗'),
 {quiz:[
