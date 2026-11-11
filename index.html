@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LadderLab 梯圖實驗室｜三菱 FX PLC 互動課程</title>
 <meta name="description" content="三菱 FX3S PLC 完整線上課程：接線、階梯圖、FX 指令、步進 STL 與 SFC、GX Works2 操作、異常與復歸、整機設計、故障排除。每課都能在瀏覽器裡操作，練習自動評分。">
-<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="style.css?v=140b24f618">
 </head>
 <body>
 <header class="top">
@@ -237,7 +237,10 @@
     btn.addEventListener("pointerdown", on);
     ["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { btn.addEventListener(ev, off); });
     btn.addEventListener("keydown", function (e) { if (e.key === " " || e.key === "Enter") on(e); });
-    btn.addEventListener("keyup", off);
+    btn.addEventListener("keyup", function (e) { if (e.key === " " || e.key === "Enter") off(); });
+    btn.addEventListener("blur", off);
+    /* 螢幕閱讀器、語音控制只送 click：當成按一下 */
+    btn.addEventListener("click", function (e) { if (e.detail !== 0) return; on(e); setTimeout(off, 250); });
   }
   hold(document.getElementById("rdStart"), "x0");
   hold(document.getElementById("rdStop"), "x1");
@@ -253,7 +256,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

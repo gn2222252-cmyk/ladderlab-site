@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>看圖說答案：CLAD 程式判讀 | LadderLab</title>
 <meta name="description" content="CLAD 風格的方塊圖判讀練習：For／While 迴圈與通道、Shift Register、Case、陣列與字串函式、數值轉換、布林比較、錯誤叢集、Local Variable、Sequence。看圖選答案，答完用動畫一步一步播放資料流；測驗模式 10 題計時，錯題自動記下來。">
-<link rel="stylesheet" href="../style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="../style.css?v=140b24f618">
 <link rel="stylesheet" href="lab.css?v=0d769919de">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
@@ -107,7 +107,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

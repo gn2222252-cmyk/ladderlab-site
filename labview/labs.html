@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
 <meta name="description" content="LabVIEW 動畫實驗室總覽：迴圈、結構、陣列、字串、叢集、圖表、變數、佇列、DAQ、VISA 序列通訊、檔案 I/O、布林、數值等互動實驗室，加上 FX 封包練習台。不用安裝 LabVIEW，在瀏覽器裡改輸入、看動畫、先預測再對答案。">
-<link rel="stylesheet" href="../style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="../style.css?v=140b24f618">
 <link rel="stylesheet" href="lab.css?v=0d769919de">
 <style>
   .hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin: 16px 0; }
@@ -89,7 +89,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

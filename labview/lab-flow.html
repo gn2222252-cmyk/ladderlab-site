@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>資料流實驗室：節點什麼時候執行 | LadderLab</title>
 <meta name="description" content="LabVIEW 資料流的動畫實驗室：資料像小球沿線流動，節點等所有輸入到齊才執行；沒連線的節點平行執行、誰先不一定，總時間取最長的；線分叉是複製一份；While Loop 的輸入通道只在開始前讀一次、輸出通道要迴圈結束才送出。">
-<link rel="stylesheet" href="../style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="../style.css?v=140b24f618">
 <link rel="stylesheet" href="lab.css?v=0d769919de">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
@@ -50,7 +50,7 @@
   @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
   .arrv { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 4px; border: 2px solid #e8820c; border-radius: 6px; min-height: 38px; align-items: center; }
   .arrv span { min-width: 34px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; background: var(--card); font: 700 14px ui-monospace, Consolas, monospace; padding: 0 3px; }
-  .arrv span.chg { background: #fde68a; border-color: #f59e0b; }
+  .arrv span.chg { background: #fde68a; color: #18212a; border-color: #f59e0b; }
   .arrv.in span { animation: pop .45s ease-out; }
   @keyframes pop { from { transform: translateX(-24px); opacity: 0; } }
   .brgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
@@ -171,7 +171,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

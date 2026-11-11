@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 故障排除實戰 | LadderLab</title>
 <meta name="description" content="機台壞了怎麼找原因？看報修單、讀異常碼、看 I/O 與階梯圖，找出故障、修好並親手復機。雙龍門取放機 8 個真實故障案例。">
-<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="style.css?v=140b24f618">
 </head>
 <body class="learn">
 <header class="top">
@@ -100,7 +100,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

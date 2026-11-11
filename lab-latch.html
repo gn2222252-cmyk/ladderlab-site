@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>自保持與互鎖實驗室：停止優先、常閉停止鈕、正反轉 | LadderLab</title>
 <meta name="description" content="FX3S 自保持與互鎖的動畫實驗室：啟動放開仍保持；停止優先與啟動優先兩種寫法同時按兩顆鈕的差別，SET／RST 的先後；停止鈕現場接常閉時程式要用 AND；馬達正反轉的輸出互鎖、按鈕互鎖，沒有互鎖時兩個輸出同時 ON 的危險。">
-<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="style.css?v=140b24f618">
 <link rel="stylesheet" href="labview/lab.css?v=0d769919de">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
@@ -120,7 +120,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

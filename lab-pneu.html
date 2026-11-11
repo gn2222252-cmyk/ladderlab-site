@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>氣壓缸實驗室：電磁閥與位移－時間圖 | LadderLab</title>
 <meta name="description" content="氣壓缸與電磁閥的動畫實驗室：單線圈、5/2 雙線圈、5/3 中位封閉／加壓／排氣型在同一個操作與急停下怎麼動；輸入動作順序自動畫位移－時間圖並跑 STL 步序；感測器一直 OFF 時卡在哪一步。">
-<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="style.css?v=140b24f618">
 <link rel="stylesheet" href="labview/lab.css?v=0d769919de">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
@@ -171,7 +171,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

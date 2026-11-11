@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>6.1 完整程式範本：一支氣缸的取放機｜PLC 互動課程</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="前五章學的東西，真實機台會全部放在同一份程式裡。這一課是一台最小的取放機：氣缸下降 → 吸附 1 秒 → 上升，可以手動、自動、循環停止，下降或上升超過 3 秒沒到位就報警。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/C5.html">
-<link rel="stylesheet" href="../style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="../style.css?v=140b24f618">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "C5 完整程式範本：一支氣缸的取放機", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
 </head>
 <body class="static">
@@ -118,7 +118,7 @@ OUT Y003</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

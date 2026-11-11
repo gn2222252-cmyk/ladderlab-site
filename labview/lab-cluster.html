@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>叢集實驗室：Bundle、Type Def、錯誤叢集 | LadderLab</title>
 <meta name="description" content="LabVIEW Cluster 的動畫實驗室：看元素飛進、飛出叢集，叢集順序改了 Unbundle 為什麼會接錯；Type Def 改一處全部更新；錯誤叢集沿著錯誤線傳遞、Close 照樣執行、警告與 Merge Errors、Clear Errors。">
-<link rel="stylesheet" href="../style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="../style.css?v=140b24f618">
 <link rel="stylesheet" href="lab.css?v=0d769919de">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
@@ -263,7 +263,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

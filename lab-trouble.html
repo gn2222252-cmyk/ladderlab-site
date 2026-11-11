@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>故障排除解謎：看燈、看監看，找出哪裡壞 | LadderLab</title>
 <meta name="description" content="PLC 故障排除的解謎練習：輸送帶、氣缸、自動門出狀況，用 RUN／STOP、IN 燈、OUT 燈、程式監看、感測器燈、量電壓一步一步查，每查一次花一點時間，最後判斷是感測器、線路、COM、程式還是負載的問題，並和最快的檢查順序比較。">
-<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="style.css?v=140b24f618">
 <link rel="stylesheet" href="labview/lab.css?v=0d769919de">
 <style>
   .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
@@ -38,7 +38,7 @@
   .rung .ct, .rung .cl { padding: 1px 5px; border: 1.5px solid #6b7280; border-radius: 3px; white-space: nowrap; }
   .rung .cl { border-radius: 10px; }
   .rung .on { background: #bbf7d0; border-color: #16a34a; }
-  .rung .cl.on { background: #fde047; border-color: #a16207; }
+  .rung .cl.on { background: #fde047; color: #18212a; border-color: #a16207; }
   .volt { font: 700 16px ui-monospace, Consolas, monospace; }
   .diag2 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .diag2 select { max-width: 100%; }
@@ -86,7 +86,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

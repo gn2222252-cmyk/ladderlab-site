@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="11449f64a4">
+<meta name="ll-version" content="507e7cffe4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FX 封包練習台：在瀏覽器裡跟模擬 PLC 對話 | LadderLab</title>
 <meta name="description" content="三菱 FX 編程口協定（0 讀、1 寫）的練習台：組封包、算校驗、送給瀏覽器裡的模擬 PLC，看 ACK、NAK 和讀回的資料；附 8 個自動檢查的小任務。LabVIEW 上位機課第 9、12～14 課的網頁練習。">
-<link rel="stylesheet" href="../style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="../style.css?v=140b24f618">
 <style>
   .fx-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
   @media (max-width: 980px) { .fx-grid { grid-template-columns: 1fr; } }
@@ -132,7 +132,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
