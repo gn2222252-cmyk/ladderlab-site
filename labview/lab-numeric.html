@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>數值實驗室：溢位、捨入、商與餘數 | LadderLab</title>
 <meta name="description" content="LabVIEW 數值的動畫實驗室：整數型態的溢位轉盤（U8、I8、U16、I16）、浮點數轉整數的飽和、四種捨入函式的數線動畫、Quotient & Remainder 分組動畫與毫秒換算。">
-<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=c9f186c025">
+<link rel="stylesheet" href="../style.css?v=fe0ae63584">
+<link rel="stylesheet" href="lab.css?v=89a89d8063">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -123,7 +123,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

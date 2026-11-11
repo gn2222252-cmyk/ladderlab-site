@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>異常處理實驗室：鎖住、閃爍、蜂鳴器、首發異常 | LadderLab</title>
 <meta name="description" content="FX3S 異常處理的動畫實驗室：一瞬間的異常要用 SET 或自保持鎖住，復歸才清；M8013 與兩個計時器做 0.5 秒閃爍的時間軸比較；蜂鳴器靜音後燈繼續閃、排除後才熄；D220 只記第一個異常碼。">
-<link rel="stylesheet" href="style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="labview/lab.css?v=c9f186c025">
+<link rel="stylesheet" href="style.css?v=fe0ae63584">
+<link rel="stylesheet" href="labview/lab.css?v=89a89d8063">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -127,7 +127,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

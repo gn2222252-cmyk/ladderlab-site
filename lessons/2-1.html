@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>1.4 梯形圖怎麼寫成指令表：LD、AND、OR 和 ANB、ORB｜PLC 互動課程</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="GX Works2 可以畫梯形圖，也可以切到「指令表」看同一個程式；練習題、程式健檢、匯出的 CSV 用的都是指令表。規則只有一句：從左上往右下讀，遇到一條新的線路就 LD，串聯就 AND，並聯就 OR；常閉接點在後面加 I（LDI、ANI">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/lessons/2-1.html">
-<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="../style.css?v=fe0ae63584">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "LearningResource", "name": "2-1 梯形圖怎麼寫成指令表：LD、AND、OR 和 ANB、ORB", "inLanguage": "zh-Hant", "learningResourceType": "interactive lesson", "isAccessibleForFree": true}</script>
 </head>
 <body class="static">
@@ -64,7 +64,7 @@ OUT Y003</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

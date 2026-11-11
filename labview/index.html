@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
 <meta name="description" content="22 堂互動 LabVIEW 課，從資料流、While Loop、Case 到 VISA 通訊，自己寫出讀寫三菱 FX PLC 的上位機；另有架構拆解 9 課與 CLAD 證照 13 課、201 題原創題庫模擬考。">
-<link rel="stylesheet" href="assets/course.css?v=7e51c4ac58">
-<link rel="stylesheet" href="assets/lv.css?v=91713bc023">
+<link rel="stylesheet" href="assets/course.css?v=8a34607102">
+<link rel="stylesheet" href="assets/lv.css?v=7849351da1">
 <style>@media (max-width:900px){.ll-banner{padding-top:56px!important}}</style>
 </head>
 <body>
@@ -52,7 +52,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

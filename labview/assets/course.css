@@ -246,3 +246,10 @@ h3 .tag{background:#0a57a4} h3 .tag.b{background:#17803f} h3 .tag.q{background:#
   :root[data-theme="dark"] .frame span small{color:#56606b}
   :root[data-theme="dark"] .pal{background:#2e2a14;border-color:#6b5d20;color:#f3e7b0}
   :root[data-theme="dark"] .pal span+span:before{color:#c8b46a}
+
+/* 第21輪 */
+#content p, #content li { max-width: 38em; }
+#content .fig p, #content .quiz p, #content table p, #content .goal p, #content .todo li, #content .stepper p { max-width: none; }
+.lhead h2 { font-size: clamp(26px, 3vw, 36px); font-weight: 900; letter-spacing: -.01em; }
+h3 { font-weight: 800; border-left: 4px solid var(--accent); padding: 2px 0 2px 12px; margin-top: 44px; }
+@media (max-width: 900px) { .lhead h2 { font-size: 24px; } }

@@ -132,7 +132,7 @@
           return { q: '一個 FGV（While Loop 只跑一圈、Shift Register 沒接初始值）有 Reset 和 Add 兩個動作。主程式依序呼叫：Reset、Add ' + a + '、Add ' + b + '、Add ' + a + '。最後讀出的值？', ans: String(2 * a + b), wrong: [String(a), String(a + b), String(2 * a + 2 * b), '0'],
             ex: 'FGV 靠沒初始化的 Shift Register 記住上一次呼叫的值：Reset 歸 0，之後一路加 = ' + (2 * a + b) + '。', chk: function () { var m = 0; m = 0; m += a; m += b; m += a; return String(m); } }; }] },
     { id: 'case', name: 'Case 選擇器走哪一頁', topic: 'fun', pts: ['f4'],
-      how: '小數接到 Case：先捨入成整數，而且是四捨六入五成雙（2.5 → 2、3.5 → 4）。範圍「a..b」兩端都包含；「..0」是 0 以下。字串要完全一樣，預設分大小寫、空白也算。都對不到就走 Default；沒有 Default 又沒列完所有值，箭頭會斷。',
+      how: '小數接到 Case：選擇器上會出現強制轉換點，先捨入成整數，而且是四捨六入五成雙（2.5 → 2、3.5 → 4，NI KB 的捨入規則）。NI 建議選擇器用整數、布林或 Enum，不要直接接 DBL。範圍「a..b」兩端都包含；「..0」是 0 以下。字串要完全一樣，預設分大小寫、空白也算。都對不到就走 Default；沒有 Default 又沒列完所有值，箭頭會斷。',
       rec: [lab('lab-struct.html', 'case', 'Case 走哪一頁'), lab('lab-numeric.html', 'round', '捨入函式'), les('C04')],
       gens: [
         function () { var v = p1([0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 2.4, 3.6, 1.2]);
@@ -162,7 +162,7 @@
           return { q: '要做：按 <b>Enable</b> 之後指示燈每 ' + ms + ' ms 閃一次，按 <b>Disable</b> 之後不再閃。閃爍寫在 Timeout 頁，Timeout 端子接 Shift Register。Enable、Disable 兩個事件頁分別把 Shift Register 改成？', ans: 'Enable 頁 ' + ms + '、Disable 頁 -1', wrong: ['Enable 頁 ' + ms / 1000 + '、Disable 頁 -1', 'Enable 頁 ' + ms + '、Disable 頁 0', 'Enable 頁 -1、Disable 頁 ' + ms, '兩頁都 ' + ms],
             ex: 'Timeout 的單位是毫秒。-1 是永遠等（不再執行 Timeout 頁）；0 是完全不等，Timeout 頁會一直狂跑。' }; }] },
     { id: 'err', name: '錯誤叢集：傳遞、停止、重試', topic: 'env', pts: ['e11'],
-      how: '錯誤線上有錯（status = True）時，大部分有 error in 的函式和 SubVI 不做事、把錯誤往下傳；Close、Release 這類收尾函式照樣執行。迴圈的條件端子接錯誤線（Stop if True 看 status），出錯的那一圈做完就停。Merge Errors 回傳第一個錯誤，沒有錯誤才回傳第一個警告。重試：清掉錯誤、再試，最多幾次就停。',
+      how: '錯誤線上有錯（status = True）時，NI 內建的函式大多不做事、把錯誤往下傳；自己寫的 SubVI 不會自動跳過，要在裡面用 Case 結構接 error in 自己做；Close、Release 這類收尾函式照樣執行。迴圈的條件端子接錯誤線（Stop if True 看 status），出錯的那一圈做完就停。Merge Errors 回傳第一個錯誤，沒有錯誤才回傳第一個警告。重試：清掉錯誤、再試，最多幾次就停。',
       rec: [lab('lab-cluster.html', 'err', '錯誤叢集的流動'), lab('lab-cluster.html', 'mrg', 'Merge Errors'), les('C10'), les('L11')],
       gens: [
         function () { var n = ri(5, 9), k = ri(2, n - 1), askI = Math.random() < 0.5;
@@ -176,7 +176,7 @@
           var f = function () { var e = c.filter(function (x) { return x.indexOf('錯誤 ') === 0; })[0]; if (e) return e; var w = c.filter(function (x) { return x.indexOf('警告') === 0; })[0]; return w || '無錯誤'; };
           return { q: 'Merge Errors 的三個輸入依序是：<b>' + c.join('、') + '</b>。輸出是？', ans: f(), wrong: c.concat(['無錯誤', '錯誤 1', '三個合在一起的錯誤', '最後一個輸入原樣輸出']), ex: 'Merge Errors 從上往下找第一個錯誤；都沒有錯誤才找第一個警告；都沒有就是無錯誤。', chk: f }; }] },
     { id: 'file', name: '檔案 I/O 會怎樣', topic: 'fun', pts: ['f9', 'f10'],
-      how: '先看路徑有沒有接：沒接會跳檔案對話框，按取消是錯誤 43。再看開檔方式：單獨 open 或 replace，檔案不存在是錯誤 7；單獨 create，檔案已經在是錯誤 10；有 replace 的會把舊內容清空；with confirmation 會先問。標準寫法是迴圈外開、迴圈內寫、迴圈外關。',
+      how: '先看路徑有沒有接：沒接會跳檔案對話框，按取消是錯誤 43。再看開檔方式：單獨 open 或 replace，檔案不存在會出錯（找不到檔案是錯誤 7；所以才有 replace or create 這個選項）；單獨 create，檔案已經在是錯誤 10；有 replace 的會把舊內容清空；with confirmation 會先問。標準寫法是迴圈外開、迴圈內寫、迴圈外關。',
       rec: [lab('lab-file.html', 'open', '開檔方式'), lab('lab-file.html', 'mark', '檔案指標'), les('F04'), les('C17')],
       gens: [
         function () { var op = p1(['open', 'replace', 'create', 'open or create', 'replace or create']), ex = Math.random() < 0.5;
@@ -231,7 +231,7 @@
           return { q: '一個 8 通道熱電偶模組，通道 ai0～ai7 全部加進同一個任務，讀成 2D 陣列（一列一個通道）。要第 ' + n + ' 個熱電偶，Index Array 的 row index 接多少？它是哪個實體通道？', ans: 'row ' + (n - 1) + '，ai' + (n - 1), wrong: ['row ' + n + '，ai' + n, 'row ' + (n - 1) + '，ai' + n, 'row ' + n + '，ai' + (n - 1), 'column ' + (n - 1) + '，ai' + (n - 1)],
             ex: '索引和通道編號都從 0 開始：第 ' + n + ' 個是 ai' + (n - 1) + '、row ' + (n - 1) + '。', chk: function () { var ch = []; for (var i = 0; i < 8; i++) ch.push('ai' + i); return 'row ' + (n - 1) + '，' + ch[n - 1]; } }; }] },
     { id: 'arr', name: '陣列函式的輸出', topic: 'fun', pts: ['f6'],
-      how: '每個陣列函式記三件事：索引從 0 算、超出範圍會怎樣、輸出是什麼型別。Search 1D Array 找不到回傳 -1；Array Subset 長度超過就截到尾；Max & Min 有多個最大值時回傳第一個的索引；Delete From Array 回傳刪掉後的陣列和被刪的部分。',
+      how: '每個陣列函式記三件事：索引從 0 算、超出範圍會怎樣、輸出是什麼型別。Search 1D Array 找不到回傳 -1；Array Subset 長度超過就截到尾；Max & Min 有多個最大值時回傳第一個的索引；Delete From Array 回傳刪掉後的陣列和被刪的部分；Index Array 索引小於 0 或超出範圍（包括空陣列）回傳該型別的預設值，不會出錯。',
       rec: [lab('lab-array.html', '', '陣列實驗室'), les('C05'), les('L07')],
       gens: [
         function () { var a = []; for (var i = 0; i < 6; i++) a.push(ri(1, 9)); var v = Math.random() < 0.7 ? p1(a) : 0;
@@ -270,7 +270,7 @@
           return { q: '按鈕的機械動作是 <b>' + act[0] + '</b>。使用者按住它 3 秒都沒放。這 3 秒內程式讀到的值是？', ans: act[0] === 'Switch When Released' ? '一直是 False' : act[0] === 'Switch When Pressed' ? '一直是 True' : '讀到一次 True，之後都是 False',
             wrong: ['一直是 False', '一直是 True', '讀到一次 True，之後都是 False', 'True 和 False 交替'], ex: act[0] + '：' + act[1] + '。' }; }] },
     { id: 'subvi', name: '最佳實踐：SubVI、Cluster、Type Def', topic: 'bp', pts: ['b1', 'b2', 'b3', 'b4', 'b5'],
-      how: 'Create SubVI 會自動：把選取範圍換成 SubVI、為跨過邊界的線建立控制項和指示器、配好接線端並連好。不會自動：把輸入設成 Required、畫有意義的圖示、取好檔名。接線端照 4-2-2-4：輸入左、輸出右、參照在上面兩角、error in 左下、error out 右下；Required 沒接箭頭會斷。Cluster 線分叉就是兩份資料，Bundle By Name 只改自己那一份。Type Def 改 .ctl 並存檔，所有用到的地方一起更新。Waveform Graph 接 2D 陣列時，預設每一列是一條線。',
+      how: 'Create SubVI 會自動：把選取範圍換成 SubVI、為跨過邊界的線建立控制項和指示器、配好接線端並連好。不會自動：把輸入設成 Required、畫有意義的圖示、取好檔名。接線端照 4-2-2-4：輸入左、輸出右、error in 左下、error out 右下（NI 說明原文）；參照放上面兩角是 NI 風格慣例；Required 沒接箭頭會斷。Cluster 線分叉就是兩份資料，Bundle By Name 只改自己那一份。Type Def 改 .ctl 並存檔，所有用到的地方一起更新。Waveform Graph 接 2D 陣列時，預設每一列是一條線；Waveform Chart 剛好相反，預設每一行是一條線。',
       rec: [lab('lab-subvi.html', 'conn', '接線端怎麼配'), lab('lab-subvi.html', 'req', 'Required／Recommended'), les('C07'), lab('lab-cluster.html', 'bun', 'Bundle／Unbundle'), lab('lab-cluster.html', 'td', 'Type Def'), les('C18')],
       gens: [
         function () { return { q: '選取一段程式碼按 Edit ▸ Create SubVI 之後，哪一件事<b>還要自己做</b>？', ans: '把必要的輸入設成 Required', wrong: ['為跨過選取框的線建立控制項和指示器', '把控制項、指示器接到接線端', '在原本的位置放上 SubVI 並接好線', '配一個有足夠端子的接線端'],
@@ -288,7 +288,7 @@
             ex: 'Type Def 的意義就是「一處改、處處跟著改」。沒做成 Type Def 的 Cluster 常數就要一個一個改。' }; },
         function () { var r = ri(2, 5), c = ri(50, 500);
           return { q: '一個 ' + r + ' 列 × ' + c + ' 行的 2D DBL 陣列直接接到 Waveform Graph（沒有轉置）。畫出幾條線、每條幾個點？', ans: r + ' 條線、每條 ' + c + ' 點', wrong: [c + ' 條線、每條 ' + r + ' 點', '1 條線、' + r * c + ' 點', r + ' 條線、每條 ' + r + ' 點', '不能接，型別不符'],
-            ex: 'Waveform Graph 接 2D 陣列時，預設一列是一條線（右鍵 Transpose Array 可改成一行一條）。', chk: function () { return r + ' 條線、每條 ' + c + ' 點'; } }; }] },
+            ex: 'Waveform Graph 接 2D 陣列時，預設一列是一條線（右鍵 Transpose Array 可改成一行一條）。小心：Waveform Chart 預設反過來，一行是一條線。', chk: function () { return r + ' 條線、每條 ' + c + ' 點'; } }; }] },
     { id: 'env', name: '環境、除錯與專案', topic: 'env', pts: ['e1', 'e10', 'e12'],
       how: '箭頭斷掉先開 Error List，從第一個錯誤點過去。找錯的值用 Probe 和 Breakpoint，看資料怎麼流用 Highlight Execution。專案檔只記路徑，在專案外搬檔案會找不到；同名 VI 從不同資料夾載入會交叉連結。看不懂端子先開 Context Help（Ctrl+H），粗體字是必要輸入。',
       rec: [lab('lab-debug.html', 'err', '斷掉的箭頭'), lab('lab-debug.html', 'probe', 'Probe 與單步'), lab('lab-project.html', 'pj', '專案是清單'), les('C01')],

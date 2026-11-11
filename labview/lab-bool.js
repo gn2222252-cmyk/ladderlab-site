@@ -2,6 +2,15 @@
 /* Boolean lab: the six mechanical actions drawn live, logic gates with a truth table and bit masks, Select and
    In Range and Coerce on a number line. */
 (function () {
+  /* 依容器實際寬高重設 canvas 解析度（乘 devicePixelRatio），座標用 CSS 像素，手機上不會被壓扁 */
+  function fitCanvas(cv) {
+    const dpr = window.devicePixelRatio || 1;
+    if (!cv.clientWidth) { const g0 = cv.getContext("2d"), lw = +cv.dataset.lw || cv.width, lh = +cv.dataset.lh || cv.height; g0.setTransform(cv.width / lw, 0, 0, cv.height / lh, 0, 0); return { g: g0, W: lw, H: lh }; }   // 分頁藏起來時不重設，免得越算越大
+    const w = Math.max(1, Math.round(cv.clientWidth)), h = Math.max(1, Math.round(cv.clientHeight || cv.height));
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    cv.dataset.lw = w; cv.dataset.lh = h;
+    const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); return { g, W: w, H: h };
+  }
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -79,7 +88,7 @@
     requestAnimationFrame(step);
   }
   function draw(now) {
-    const c = $("tl"), g = c.getContext("2d"), W = c.width, H = c.height;
+    const c = $("tl"), fit = fitCanvas(c), g = fit.g, W = fit.W, H = fit.H;
     const css = getComputedStyle(document.body), fg = css.color || "#222";
     g.clearRect(0, 0, W, H);
     const x = (t) => 120 + (t - (now - 8000)) / 8000 * (W - 130);

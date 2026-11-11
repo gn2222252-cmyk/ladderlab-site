@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
 <meta name="description" content="LabVIEW 動畫實驗室總覽：迴圈、結構、陣列、字串、叢集、圖表、變數、佇列、DAQ、VISA 序列通訊、檔案 I/O、布林、數值等互動實驗室，加上 FX 封包練習台。不用安裝 LabVIEW，在瀏覽器裡改輸入、看動畫、先預測再對答案。">
-<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=c9f186c025">
+<link rel="stylesheet" href="../style.css?v=fe0ae63584">
+<link rel="stylesheet" href="lab.css?v=89a89d8063">
 <style>
   .hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin: 16px 0; }
   .hub a.card { display: block; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--card); color: inherit; text-decoration: none; transition: transform .15s, box-shadow .15s; position: relative; }
@@ -91,7 +91,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

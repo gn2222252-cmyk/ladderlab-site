@@ -942,4 +942,23 @@ footer { border-top: 1px solid var(--line); background: var(--card); }
   .topnav a { padding: 6px 5px; font-size: 13.5px; flex: none; }
   .top { padding-bottom: 12px; }
 }
-@media (min-width: 400px) and (max-width: 560px) { .topnav { -webkit-mask-image: none; mask-image: none; } }
+@media (min-width: 360px) and (max-width: 560px) { .topnav { -webkit-mask-image: none; mask-image: none; } }
+@media (max-width: 560px) { .topnav { scroll-padding-inline: 24px; } .topnav a:focus-visible { scroll-margin-inline: 24px; } }
+
+/* 第21輪 */
+/* 圓角只剩兩種：6px 給卡片、輸入框；3px 給銘牌 */
+.callout, .lesson, .il, .sfc-grid-mock, .ladder-wrap, .ledit, .view-tabs, .k-preset, .fault, .rung-demo, summary,
+input, select, textarea, .path-items a { border-radius: 6px; }
+
+/* 首頁首屏：副標用正文色降一階，和灰色的第二行標題分開層級 */
+.panel-hero p.sub { font-size: 18px; line-height: 1.7; color: var(--ink); opacity: .8; }
+
+/* 課程地圖：課名連結放大、章卡多一點留白 */
+.static-main h1 { font-size: clamp(25px, 3.4vw, 38px); }
+.path-items { gap: 8px 10px; }
+.path-items a { font-size: 14.5px; line-height: 1.45; padding: 5px 10px; }
+.chapter { padding: 18px 20px; }
+
+/* 課文：本課目標當導讀，不是另一張卡 */
+.lesson-goal { font-size: 17px; line-height: 1.7; background: transparent; border-left: 4px solid var(--on); border-radius: 0; padding: 4px 0 4px 14px; }
+.ladder-card p, .box p { font-size: 13.5px; line-height: 1.6; }

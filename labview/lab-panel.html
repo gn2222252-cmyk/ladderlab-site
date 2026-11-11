@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>人機介面設計工作室：讓前面板好看又好用 | LadderLab</title>
 <meta name="description" content="LabVIEW 前面板設計的互動工作室：用龍門機台的操作面板練排版、上色工具與吸管、Label 與 Caption；設計檢查給對齊、大小、顏色意義、對比、擁擠的建議；Control Editor 換 True／False 外觀存成自訂元件；Tab Control 分頁排版。">
-<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=c9f186c025">
+<link rel="stylesheet" href="../style.css?v=fe0ae63584">
+<link rel="stylesheet" href="lab.css?v=89a89d8063">
 <style>
   .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; }
@@ -35,7 +35,7 @@
   .pv-wrap { position: relative; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: #c9ced6; touch-action: none; }
   .pv { position: absolute; left: 0; top: 0; width: 800px; height: 480px; transform-origin: 0 0; background-image: linear-gradient(rgba(0,0,0,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px); background-size: 12px 12px; font-family: system-ui, "Microsoft JhengHei", sans-serif; color: #1d2430; }
   .pv .el { position: absolute; box-sizing: border-box; }
-  .pv .el.sel { outline: 2px dashed #1e6fff; outline-offset: 3px; }
+  .pv .el.sel { outline: 2px dashed var(--on); outline-offset: 3px; }
   .pv .el.bad { outline: 3px solid #c62828; outline-offset: 3px; }
   .pv .face { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; border-radius: 4px; font-weight: 700; font-size: 15px; }
   .pv .btn .face { border: 2px solid rgba(0,0,0,.35); box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
@@ -50,7 +50,7 @@
   .pv .tabc .pages { position: absolute; left: -2px; bottom: 100%; display: flex; gap: 2px; }
   .pv .tabc .pages span { border: 2px solid #8a94a6; border-bottom: 0; border-radius: 4px 4px 0 0; padding: 2px 12px; font-size: 13px; background: #d9dee6; cursor: pointer; }
   .pv .tabc .pages span.on { background: inherit; font-weight: 700; }
-  .pv .rh { position: absolute; right: -7px; bottom: -7px; width: 12px; height: 12px; background: #1e6fff; border: 2px solid #fff; border-radius: 2px; cursor: nwse-resize; }
+  .pv .rh { position: absolute; right: -7px; bottom: -7px; width: 12px; height: 12px; background: var(--on); border: 2px solid #fff; border-radius: 2px; cursor: nwse-resize; }
 
   .issues { list-style: none; padding: 0; margin: 8px 0; }
   .issues li { border-left: 4px solid var(--line); padding: 4px 8px; margin: 4px 0; background: var(--card); cursor: pointer; }
@@ -174,7 +174,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

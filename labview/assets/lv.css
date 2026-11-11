@@ -53,7 +53,7 @@
 .fp .errc{border:2px solid #9c8400;border-radius:4px;background:#f7efc4;padding:4px 6px;width:150px}
 .fp .errc .row{display:flex;gap:6px;align-items:center;margin:2px 0}
 .fp .errc .st{width:20px;height:20px;border:1px solid #666;display:grid;place-items:center;font-weight:700;background:#fff}
-.fp .errc .st.ok{color:#0a0}
+.fp .errc .st.ok{color:#0a7a0a}
 .fp .errc .st.bad{color:#d00;background:#ffe5e5}
 .fp .errc .src{background:#fff;border:1px solid #888;height:34px;font-size:11px;padding:2px;overflow:hidden;width:100%}
 .fp .clu{border:3px solid #a57c52;border-radius:4px;background:rgba(231,214,190,.45)}

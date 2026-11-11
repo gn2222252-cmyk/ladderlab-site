@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>迴圈實驗室：While、For、通道、Shift Register | LadderLab</title>
 <meta name="description" content="LabVIEW 迴圈的動畫實驗室：自己組一個 While Loop 或 For Loop，逐圈看資料怎麼流；四種輸出通道、自動索引、Shift Register 初始化與堆疊、Wait 和 Wait Until Next ms Multiple 的時間圖。">
-<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=c9f186c025">
+<link rel="stylesheet" href="../style.css?v=fe0ae63584">
+<link rel="stylesheet" href="lab.css?v=89a89d8063">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -116,14 +116,14 @@
   </section>
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；迴圈行為以 LabVIEW 說明文件為準。</p></footer>
-<script src="lab-loop.js?v=c9ecf0dd28"></script>
+<script src="lab-loop.js?v=6f19569cc1"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

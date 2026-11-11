@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CLAD 考試地圖與題型特訓 | LadderLab</title>
 <meta name="description" content="LabVIEW CLAD 考試地圖：四大主題的考點連到本站課程與動畫實驗室，自己勾選已掌握；15 種常見題型的解題心法與原創練習題；依錯題推薦該去哪個實驗室。">
-<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=c9f186c025">
+<link rel="stylesheet" href="../style.css?v=fe0ae63584">
+<link rel="stylesheet" href="lab.css?v=89a89d8063">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -101,13 +101,13 @@
   </section>
 </main>
 <footer><p>LabVIEW、CLAD 為 NI 之商標。本站為獨立製作，與 NI 無關；題目為本站原創，不是考古題。考試規則以 NI 官網最新公告為準。</p></footer>
-<script src="clad-map.js?v=e8576a8a77"></script>
+<script src="clad-map.js?v=5885b36c6f"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>檔案 I/O 實驗室：開檔方式、檔案指標、CSV 紀錄 | LadderLab</title>
 <meta name="description" content="LabVIEW 檔案 I/O 的動畫實驗室：Open/Create/Replace File 的六種 operation 遇到檔案存在或不存在會怎樣（錯誤 7、10、43）；檔案指標怎麼移動、為什麼要 Set File Position 到 end 才是往後加；每圈寫一筆 PLC 讀值成 CSV，換行、分隔符號、小數位數的常見錯誤。">
-<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=c9f186c025">
+<link rel="stylesheet" href="../style.css?v=fe0ae63584">
+<link rel="stylesheet" href="lab.css?v=89a89d8063">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -63,7 +63,7 @@
   .plc span { border: 2px solid var(--line); border-radius: 6px; padding: 3px 8px; }
   .line { font: 13px ui-monospace, Consolas, monospace; border: 2px solid #d63fa0; border-radius: 6px; padding: 4px 8px; display: inline-block; min-height: 28px; overflow-wrap: anywhere; max-width: 100%; }
   .ftxt { font: 13px/1.5 ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-height: 120px; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); }
-  .ws { color: #d97706; font-weight: 700; }
+  .ws { color: var(--lab-rust); font-weight: 700; }
   .xl { border-collapse: collapse; font: 12px ui-monospace, Consolas, monospace; }
   .xl th { background: #e7eef8; color: #333; font-weight: 600; padding: 2px 6px; border: 1px solid #c6cfdb; }
   .xl td { border: 1px solid #d6dbe3; padding: 2px 6px; white-space: nowrap; min-width: 46px; background: #fff; color: #111; }
@@ -170,7 +170,7 @@ Replace File</div>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

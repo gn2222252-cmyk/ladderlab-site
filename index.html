@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="8845cfdd03">
+<meta name="ll-version" content="6b6ed87c24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LadderLab 梯圖實驗室｜三菱 FX PLC 互動課程</title>
 <meta name="description" content="三菱 FX3S PLC 完整線上課程：接線、階梯圖、FX 指令、步進 STL 與 SFC、GX Works2 操作、異常與復歸、整機設計、故障排除。每課都能在瀏覽器裡操作，練習自動評分。">
-<link rel="stylesheet" href="style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="style.css?v=fe0ae63584">
 </head>
 <body>
 <header class="top">
@@ -61,14 +61,14 @@
     <a href="teacher.html"><b>我是老師</b><span>8 週課表範本、課綱對照、學生進度怎麼收、電腦教室要放行的網址，以及模擬器和實機的差異。</span></a>
   </div>
 
-  <h2 class="sec-h">課程主線：七章</h2>
-  <ol class="home-map" id="homemap"></ol>
-
   <h2 class="sec-h">動畫實驗室：把看不見的東西放慢給你看</h2>
   <div class="lab-entry">
     <a class="plc" href="plclabs.html"><span class="big" id="nPlc">9</span><b>PLC 動畫實驗室</b><span>掃描週期、接線電流、計時器、步進、氣壓缸、故障排除…一個掃描一個掃描看。</span></a>
     <a href="labview/labs.html"><span class="big" id="nLv">29</span><b>LabVIEW 動畫實驗室</b><span>資料流、迴圈、事件、佇列、VISA、檔案 I/O，CLAD 常考的觀念都能自己動手試。</span></a>
   </div>
+
+  <h2 class="sec-h">課程主線：七章</h2>
+  <ol class="home-map" id="homemap"></ol>
 
   <h2 class="sec-h">先看一台真實設計的機台在跑</h2>
   <p class="hint" data-t="lab_intro">這是課程最後幾章的主角：雙龍門取放機。程式用 FX 指令寫成，現在就在你的瀏覽器裡執行。按「原點復歸」再按「啟動」，也可以製造故障看它怎麼報警。</p>
@@ -256,7 +256,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

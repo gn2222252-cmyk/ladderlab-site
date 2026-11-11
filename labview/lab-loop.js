@@ -2,6 +2,15 @@
 /* Loop lab: build a While or For loop from a few choices and watch it run iteration by iteration; shift registers
    (initialized, uninitialized, stacked); Wait (ms) versus Wait Until Next ms Multiple on a timeline. */
 (function () {
+  /* 依容器實際寬高重設 canvas 解析度（乘 devicePixelRatio），座標用 CSS 像素，手機上不會被壓扁 */
+  function fitCanvas(cv) {
+    const dpr = window.devicePixelRatio || 1;
+    if (!cv.clientWidth) { const g0 = cv.getContext("2d"), lw = +cv.dataset.lw || cv.width, lh = +cv.dataset.lh || cv.height; g0.setTransform(cv.width / lw, 0, 0, cv.height / lh, 0, 0); return { g: g0, W: lw, H: lh }; }   // 分頁藏起來時不重設，免得越算越大
+    const w = Math.max(1, Math.round(cv.clientWidth)), h = Math.max(1, Math.round(cv.clientHeight || cv.height));
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    cv.dataset.lw = w; cv.dataset.lh = h;
+    const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); return { g, W: w, H: h };
+  }
   const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const show = (v) => Array.isArray(v) ? (Array.isArray(v[0]) ? "[" + v.map((r) => "[" + r.join(", ") + "]").join(", ") + "]" : "[" + v.join(", ") + "]") : String(v);
@@ -193,13 +202,14 @@
     codes.forEach((c) => { a.push([t, c, Math.max(w, c)]); t += Math.max(w, c); });
     t = 37;                                    // the loop starts at some moment between ticks
     codes.forEach((c) => { const end = Math.ceil((t + c) / w) * w; b.push([t, c, end - t]); t = end; });
-    const cv = $("wt"), g = cv.getContext("2d"), Wd = cv.width;
-    g.clearRect(0, 0, Wd, cv.height);
+    const cv = $("wt"), fit = fitCanvas(cv), g = fit.g, Wd = fit.W;
+    g.clearRect(0, 0, Wd, fit.H);
     const span = Math.max(a[a.length - 1][0] + a[a.length - 1][2], b[b.length - 1][0] + b[b.length - 1][2]) + 20, x = (ms) => 150 + ms / span * (Wd - 170);
     const fg = getComputedStyle(document.body).color;
     g.font = "13px sans-serif"; g.fillStyle = fg;
     g.fillText("Wait (ms)", 8, 70); g.fillText("Wait Until Next", 8, 160); g.fillText("ms Multiple", 8, 176);
-    for (let m = 0; m <= span; m += w) { g.strokeStyle = "rgba(128,128,128,.3)"; g.beginPath(); g.moveTo(x(m), 20); g.lineTo(x(m), 200); g.stroke(); g.fillStyle = "rgba(128,128,128,.8)"; g.fillText(m + "", x(m) - 8, 212); }
+    const every = Math.max(1, Math.ceil(30 / Math.max(1, x(w) - x(0))));          // 窄螢幕時刻度數字隔幾格才寫一個，不要疊在一起
+    for (let m = 0, k = 0; m <= span; m += w, k++) { g.strokeStyle = "rgba(128,128,128,.3)"; g.beginPath(); g.moveTo(x(m), 20); g.lineTo(x(m), 200); g.stroke(); if (k % every === 0) { g.fillStyle = "rgba(128,128,128,.8)"; g.fillText(m + "", x(m) - 8, 212); } }
     [[a, 50], [b, 140]].forEach(([rows, y]) => rows.forEach(([s, c, p], k) => {
       g.fillStyle = "rgba(128,128,128,.25)"; g.fillRect(x(s), y, x(s + p) - x(s), 30);
       g.fillStyle = "#1e5bd7"; g.fillRect(x(s), y, x(s + c) - x(s), 30);
