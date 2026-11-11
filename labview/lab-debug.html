@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1d5b8c0020">
+<meta name="ll-version" content="3ab534794c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>除錯實驗室：找出程式哪裡錯 | LadderLab</title>
@@ -116,7 +116,7 @@
     <div class="probes" id="pprobes"></div>
     <p class="verdict-line" id="psay"></p>
     <div class="log" id="plog"></div>
-    <div class="callout">找錯的原則：從輸入往輸出，一條一條線看，找出<b>第一條</b>值不對的線，錯就在它前面那個節點裡。Step Over 把整個 SubVI 當一步跑完，不進去；Step Into 會打開 SubVI 在裡面一步一步走；Step Out 把目前這一層跑完，回到上一層再停。Probe 平常要在執行前放好；VI 跑完才想看某條線的值，要先開 Retain Wire Values 再執行一次，之後放的 Probe 才看得到最後的值。<br>情境 ② 的教訓：error out 沒接下去，後面的節點不知道前面已經出錯，照樣拿 0 去算、去寫紀錄檔。錯誤線一路串起來，出錯之後的節點才會跳過不做，最後由錯誤處理把問題報出來。</div>
+    <div class="callout">找錯的原則：從輸入往輸出，一條一條線看，找出<b>第一條</b>值不對的線，錯就在它前面那個節點裡。Step Over 把整個 SubVI 當一步跑完，不進去；Step Into 會打開 SubVI 在裡面一步一步走；Step Out 把目前這一層跑完，回到上一層再停。Probe 平常要在執行前放好；VI 跑完才想看某條線的值，要先開 Retain Wire Values 再執行一次，之後放的 Probe 才看得到最後的值。<br>情境 ② 的教訓：error out 沒接下去，後面的節點不知道前面已經出錯，照樣拿 0 去算、去寫紀錄檔。錯誤線一路串起來，出錯之後的節點才會跳過不做，最後由錯誤處理把問題報出來。Probe 什麼時候有值：暫停在中斷點或單步時，剛執行過的線放 Probe 馬上看得到；VI 整個跑完後才放的 Probe，要開 Retain Wire Values（而且先成功執行過一次）才看得到上一次的值。</div>
   </section>
 
   <section class="lab-stage" id="t-loop" hidden>
@@ -145,14 +145,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-debug.js?v=d42d221fde"></script>
+<script src="lab-debug.js?v=9207cfe7c5"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1d5b8c0020" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "3ab534794c" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

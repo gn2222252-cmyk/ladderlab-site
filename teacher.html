@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1d5b8c0020">
+<meta name="ll-version" content="3ab534794c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>給老師：用 LadderLab 上可程式控制實習（8 週課表、課綱對照、電腦教室設定） | LadderLab</title>
@@ -143,7 +143,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1d5b8c0020" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "3ab534794c" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

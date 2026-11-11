@@ -171,7 +171,7 @@
     if (!WIRES[w]) return;
     if (P.probes[w]) delete P.probes[w];
     else {
-      var has = $('pret').checked && P.wv.hasOwnProperty(w);
+      var has = P.wv.hasOwnProperty(w) && ($('pret').checked || (P.started && !P.done && P.paused));
       P.probes[w] = { val: has ? P.wv[w] : undefined, has: has };
     }
     pDraw();
@@ -199,7 +199,7 @@
     var keys = Object.keys(P.probes);
     $('pprobes').innerHTML = keys.length ? keys.map(function (w, idx) {
       var p = P.probes[w], bad = p.has && p.val && typeof p.val === 'object' && p.val.err;
-      return '<div class="probe' + (bad ? ' bad' : '') + '"><b>Probe ' + (idx + 1) + '</b>' + (p.has ? '<span>' + fmtV(p.val) + '</span>' : '<span class="none">' + (P.done ? '沒有值（VI 跑完才放的 Probe；開 Retain Wire Values 再執行一次）' : P.wv.hasOwnProperty(w) ? '放 Probe 之前資料已經流過了，這次看不到' : '還沒有資料流過') + '</span>') + '<small>' + WIRES[w].name + '</small></div>';
+      return '<div class="probe' + (bad ? ' bad' : '') + '"><b>Probe ' + (idx + 1) + '</b>' + (p.has ? '<span>' + fmtV(p.val) + '</span>' : '<span class="none">' + (P.done ? '沒有值（VI 跑完才放的 Probe；開 Retain Wire Values 再執行一次）' : P.wv.hasOwnProperty(w) ? '資料已經流過，但 VI 已不在暫停狀態；開 Retain Wire Values 才留得住' : '還沒有資料流過') + '</span>') + '<small>' + WIRES[w].name + '</small></div>';
     }).join('') : '<p class="why">還沒有 Probe。點方塊圖上的線放一個。</p>';
     var started = P.started && !P.done;
     $('prun').disabled = !!P.timer; $('prun').textContent = P.paused ? '▶ 繼續執行' : '▶ 執行';
