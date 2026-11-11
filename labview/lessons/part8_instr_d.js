@@ -44,7 +44,7 @@ function makeDTB(){
     }
     if(f===6){
       if(addr!==0x1001)return exc(2);
-      if(!S.wen)return exc(1);
+      if(!S.wen)return exc(2);
       S.sv=n&0xFFFF;return req.slice();
     }
     if(f===5){
@@ -61,7 +61,7 @@ function explain(req,rep){
   if(!rep)return '<p><b>等到逾時，沒有收到任何位元組。</b></p>';
   const p=[];p.push([hx(rep[0]),'站號','adr']);
   if(rep[1]&0x80){p.push([hx(rep[1]),'功能碼＋80H','ctl']);p.push([hx(rep[2]),'例外碼','ctl']);p.push([hx(rep[3])+' '+hx(rep[4]),'CRC','sum']);
-    const why={1:'不允許的功能（這台是：還沒打開通訊寫入許可，或不支援這個功能碼）',2:'沒有這個位址',3:'數量或數值不合法'}[rep[2]]||'其他錯誤';
+    const wr=(req[1]===6);const why={1:'不支援這個功能碼',2:wr?'這個位址現在不能寫。這台是因為通訊寫入許可還沒打開（實機會回哪一個例外碼，說明書沒寫，這裡是模擬的）':'沒有這個位址',3:'數量或數值不合法'}[rep[2]]||'其他錯誤';
     return bytesHTML(p)+`<p><b>這是例外回覆</b>：功能碼的最高位元是 1（${hx(rep[1])}＝${hx(req[1])}＋80）。例外碼 ${hx(rep[2])}：${why}。它只有 5 個位元組。</p>`;}
   if(rep[1]===3){p.push([hx(rep[1]),'功能碼','ctl']);p.push([hx(rep[2]),'後面有幾個位元組','len']);const vals=[];
     for(let i=0;i<rep[2];i+=2){const v=(rep[3+i]<<8)|rep[4+i];vals.push(v);p.push([hx(rep[3+i])+' '+hx(rep[4+i]),'資料','dat']);}
@@ -88,11 +88,12 @@ function modbusLab(el){
    <p><label>選一個要送的封包（不含 CRC）：<select>${PRE.map((x,i)=>`<option value="${i}">${x[0]}</option>`).join('')}</select></label></p>
    <p><label>要送出的位元組（十六進位，可以自己改）：<input type="text" spellcheck="false" style="width:100%;max-width:26em;font:16px var(--mono);padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)"></label></p>
    <p><button type="button" class="btn" data-a="crc">算出 CRC 加在後面</button> <button type="button" class="btn pri" data-a="send">送出</button></p>
-   <div class="out"></div>`;
+   <div class="out" aria-live="polite"></div>`;
   const sel=el.querySelector('select'),inp=el.querySelector('input'),out=el.querySelector('.out');
   const show=()=>{el.querySelector('[data-k=pv]').textContent=dev.S.sensor?(dev.S.pv/10).toFixed(1):'—';el.querySelector('[data-k=sv]').textContent=(dev.S.sv/10).toFixed(1);el.querySelector('[data-k=wen]').textContent=dev.S.wen?'開':'關';};
   const fill=()=>{inp.value=PRE[+sel.value][1].map(b=>hx(b)).join(' ');out.innerHTML='';};
   sel.onchange=fill;fill();show();
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.querySelector('[data-a=send]').click();}});
   timer=setInterval(()=>{if(!document.body.contains(el)){clearInterval(timer);return;}dev.tick();show();},400);
   el.querySelector('[data-a=sensor]').onclick=e=>{dev.S.sensor=!dev.S.sensor;e.target.textContent=dev.S.sensor?'拔掉感測器':'接回感測器';show();};
   el.querySelector('[data-a=crc]').onclick=()=>{const b=parseHex(inp.value);if(!b||!b.length){out.innerHTML='<p><b>這不是成對的十六進位數字。</b></p>';return;}inp.value=withCrc(b).map(x=>hx(x)).join(' ');};
@@ -114,14 +115,16 @@ C.h3('情境','x','第四台：台達 DTB 溫控器'),
 C.h3('第 1 步','','看背板'),
 `<p>沒有 USB，也沒有 9 針接頭。端子台上有兩個端子，標著 <b>D+</b> 和 <b>D−</b>。這是 <b>RS-485</b>。</p>`,
 ask('電腦沒有 RS-485，怎麼接？它跟 RS-232 差在哪？',
- `<p>買一個「USB 轉 RS-485」的轉接器，D+ 接 D+、D− 接 D−。插上電腦，一樣多出一個 COM 埠。所以還是序列埠，還是 VISA。</p>
+ `<p>買一個「USB 轉 RS-485」的轉接器，D+ 接 D+、D− 接 D−。有的轉接器標的是 A、B 或 DATA+、DATA−，各家的正負定義不完全一樣；參數都對卻沒有回應時，把兩條線對調再試一次。插上電腦，一樣多出一個 COM 埠。所以還是序列埠，還是 VISA。</p>
 <p>差別有一個會影響程式：RS-232 一條線只接一台設備。RS-485 同一對線上可以並聯很多台，像一條走廊上有很多個房間。</p>
 <p>很多台共用一條線，你說話的時候就要先講「我在叫誰」。所以每一台有一個號碼，叫<b>站號</b>。這是前三台沒有的東西，接入單要多一格。</p>`),
 C.h3('第 2 步','','翻說明書：這次沒有命令表'),
 `<p>說明書的 RS-485 Communication 一節裡，找不到 <code>VOUT1?</code> 那種文字命令。它給的是三樣東西：</p>
 <ul><li>支援的鮑率（2400 到 38400）和通訊協定：<b>Modbus</b>，分 ASCII 和 RTU 兩種模式。</li>
 <li>幾個<b>功能碼</b>：03H 是「讀暫存器」，06H 是「寫一個暫存器」。</li>
-<li>一張<b>位址表</b>：</li></ul>`,
+<li>一張<b>位址表</b>：</li></ul>
+<p>三個新名詞：<b>暫存器</b>是設備裡一格一格放資料的位置，每一格放一個 16 位元的數，每一格有自己的<b>位址</b>。<b>功能碼</b>是「要它做哪一種事」的代號。數字後面的 H 表示十六進位。</p>
+<p>ASCII 和 RTU 是同一種內容的兩種寫法：RTU 直接送位元組，比較短，最常用；ASCII 把每個位元組寫成兩個文字字元，用冒號開頭、CR LF 結尾。電腦和溫控器面板一定要選同一種，這一課用 RTU。</p>`,
 C.table(['位址','內容','備註'],[
  ['1000H','現在溫度（PV）','單位 0.1 度，每 0.4 秒更新一次'],
  ['1001H','設定溫度（SV）','單位 0.1 度'],
@@ -136,8 +139,12 @@ ask('Modbus 跟前面的命令有什麼根本的不同？',
 <p>Modbus 不是一句話，是一張<b>填好的表格</b>。格子的順序和大小是固定的：</p>
 <p>「幾號站，請你做哪一種事，從哪個位址開始，要幾個。」再加兩個位元組的檢查碼。</p>
 <p>設備那邊也不是用「名字」找資料，而是用<b>位址</b>。你不能問「現在幾度」，只能說「給我 1000H 那一格的內容」。1000H 是什麼意思，要回去查位址表。</p>`),
-`<p>讀現在溫度和設定溫度（從 1000H 開始讀 2 個）的封包，說明書直接給了範例：</p>`,
-bytesHTML([['01','站號','adr'],['03','功能碼：讀','ctl'],['10 00','起始位址 1000H','adr'],['00 02','要 2 個','len'],['C0 CB','CRC 檢查碼','sum']]),
+ask('要讀現在溫度和設定溫度。照「幾號站、做哪種事、從哪個位址開始、要幾個」，四格各填什麼？',
+ `<p>查位址表和功能碼：</p>
+<ul><li>幾號站：面板上抄到的 1。</li><li>做哪種事：讀暫存器，功能碼 03。</li><li>從哪個位址開始：現在溫度在 1000H。</li><li>要幾個：現在溫度和設定溫度剛好是連著的兩格（1000H、1001H），一次要 2 個。</li></ul>
+<p>每一格在封包裡占幾個位元組是協定規定的：站號 1 個、功能碼 1 個、位址 2 個、數量 2 個。所以是 01、03、10 00、00 02。</p>`),
+`<p>對照說明書給的範例，前六個位元組一樣。最後多出來的兩個是檢查碼（CRC），後面會講它是什麼，現在先知道它一定要有：</p>`,
+bytesHTML([['01','站號','adr'],['03','功能碼：讀','ctl'],['10 00','起始位址 1000H','adr'],['00 02','要 2 個','len'],['C0 CB','檢查碼','sum']]),
 ask('這 8 個位元組，可以像 *IDN? 那樣用鍵盤打出來嗎？',
  `<p>不行，這是最容易搞錯的地方。</p>
 <p>第一個位元組是<b>數值 1</b>，不是字元「0」和字元「1」。字元「1」的值是 31H。你在字串常數裡打 <code>0103</code>，送出去的是 30 31 30 33 四個位元組，溫控器完全看不懂。</p>
@@ -193,6 +200,21 @@ ask('拔掉感測器之後讀到 8003H。這是幾度？',
 <p>跟電表的 9.9E37、天平的 OL 一樣：<b>同一個位置，有時候放的是數值，有時候放的是「我有狀況」</b>。轉成溫度以前，先用 Case 把這幾個值挑出來。</p>
 <p>你會發現每一台儀器都有這種設計，只是長相不同。翻說明書的時候，專門找一下「錯誤時會回什麼」。</p>`),
 
+C.h3('做','b','在 LabVIEW 裡做一次：讀一筆溫度'),
+`<p>剛才在網頁上手動做的事，一格一格搬進 LabVIEW。先只做「讀一次」，不要迴圈：</p>`,
+C.table(['要做的事','函式','從哪裡拿','注意'],[
+ ['設定序列埠','VISA Configure Serial Port',fn('Instrument I/O','Serial'),'照面板抄到的參數；<b>Enable Termination Char 接 False</b>；timeout 接 1000'],
+ ['準備封包','字串常數（Hex Display）',fn('String'),'先直接打說明書的範例 <code>0103 1000 0002 C0CB</code>。能通以後再改成自己組'],
+ ['送出','VISA Write',fn('Instrument I/O','Serial'),'—'],
+ ['讀頭','VISA Read',fn('Instrument I/O','Serial'),'byte count 接 3'],
+ ['讀身體','VISA Read',fn('Instrument I/O','Serial'),'byte count 接「第 3 個位元組的值 ＋ 2」'],
+ ['字串變位元組','String To Byte Array',fn('String','Path/Array/String Conversion'),'之後用 Index Array 取出要的那兩個'],
+ ['兩個位元組合成一個數','Join Numbers',fn('Numeric','Data Manipulation'),'高位元組接上面的輸入'],
+ ['當成有號的數','To Word Integer（I16）',fn('Numeric','Conversion'),'溫度可能是負的'],
+ ['變成度','Divide',fn('Numeric'),'除以 10'],
+ ['關閉','VISA Close',fn('Instrument I/O','Serial'),'—']
+]),
+`<p>兩次 VISA Read 讀到的字串，都另外接到開了 Hex Display 的字串指示器。先確認看到的位元組跟網頁上一樣，再往下接轉換。</p>`,
 C.h3('懂','','CRC：不用背算法，但要知道三件事'),
 `<ul><li><b>它是什麼</b>：把前面所有位元組照固定的算法算出兩個位元組，附在最後。接收的那一邊照同樣的算法再算一次，結果不一樣就表示封包在路上壞了。</li>
 <li><b>送的時候</b>：你要算對，不然設備不理你（剛才試過）。</li>

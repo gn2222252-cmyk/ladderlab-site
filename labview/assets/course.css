@@ -324,3 +324,8 @@ details.think[open]>summary{margin-bottom:4px}
 .daqlab input[type=range]{width:min(260px,60%);vertical-align:middle}
 .daqlab .num{font-family:var(--tech);font-size:20px}
 .daqlab .verdict{border-left:4px solid var(--warn);padding-left:12px;font-weight:700}
+
+/* 焦點框 */
+:focus-visible{outline-color:var(--accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :focus-visible{outline-color:#e8a200}}
+:root[data-theme="dark"] :focus-visible{outline-color:#e8a200}

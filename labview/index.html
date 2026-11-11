@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="bc8989d430">
+<meta name="ll-version" content="ec4bb580a1">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
 <meta name="description" content="22 堂互動 LabVIEW 課，從資料流、While Loop、Case 到 VISA 通訊，自己寫出讀寫三菱 FX PLC 的上位機；另有架構拆解 9 課與 CLAD 證照 13 課、201 題原創題庫模擬考。">
-<link rel="stylesheet" href="assets/course.css?v=fd0fd52f79">
+<link rel="stylesheet" href="assets/course.css?v=ddc663c7f9">
 <link rel="stylesheet" href="assets/lv.css?v=7849351da1">
 <style>@media (max-width:900px){.ll-banner{padding-top:56px!important}}</style>
 </head>
@@ -27,7 +27,7 @@
 <script src="assets/lvdraw.js?v=fe4083103b"></script>
 <script src="assets/course.js?v=a4d410b27b"></script>
 <script src="assets/lvfmt.js?v=174413c716"></script>
-<script src="assets/instsim.js?v=cb6a1e5da1"></script>
+<script src="assets/instsim.js?v=b06d1e8086"></script>
 <script src="lessons/part1_start.js?v=92e87ae171"></script>
 <script src="lessons/part2_basics_a.js?v=4debd6fd89"></script>
 <script src="lessons/part2_basics_b.js?v=862b228e40"></script>
@@ -37,10 +37,10 @@
 <script src="lessons/part4_project_b.js?v=beff366eb6"></script>
 <script src="lessons/part7_fileio.js?v=d68aa67564"></script>
 <script src="lessons/part8_instr_a.js?v=44d29cb6c5"></script>
-<script src="lessons/part8_instr_b.js?v=c774cc405e"></script>
-<script src="lessons/part8_instr_c.js?v=61fe0dc8e3"></script>
-<script src="lessons/part8_instr_d.js?v=d2112e0d19"></script>
-<script src="lessons/part8_instr_e.js?v=97602a684b"></script>
+<script src="lessons/part8_instr_b.js?v=a43184db19"></script>
+<script src="lessons/part8_instr_c.js?v=a827fa4fb7"></script>
+<script src="lessons/part8_instr_d.js?v=b026978154"></script>
+<script src="lessons/part8_instr_e.js?v=d74489bb52"></script>
 <script src="lessons/part8_instr_f.js?v=a38e1e46d8"></script>
 <script src="lessons/part6_arch_a.js?v=4d7dc3ad04"></script>
 <script src="lessons/part6_arch_b.js?v=4d47316f96"></script>
@@ -60,7 +60,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "bc8989d430" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "ec4bb580a1" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
