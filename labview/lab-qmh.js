@@ -429,7 +429,7 @@
     function insLoop() {
       var n = S.ins; if (!n.alive) return;
       if (n.busy > 0) { n.busy--; if (n.busy === 0) finishInspect(); return; }
-      if (!S.ntAlive) { stopLoop('ins', 'Wait on Notification 等待中 Notifier 被 Release → 錯誤 1122 → 迴圈停止'); return; }
+      if (!S.ntAlive) { stopLoop('ins', S.scn === 'right' ? 'Wait on Notification 等待中 Notifier 被 Release → 錯誤 1122 → 迴圈停止' : 'Notifier 已經被 Release，參照無效 → Wait on Notification 出錯 → 迴圈停止（正在等待時被 Release 才是 1122）'); return; }
       if (S.ntSeq > n.seen) {
         n.seen = S.ntSeq; n.waitT = 0; n.n++;
         var w = S.nt.w, b0 = w.b0;
@@ -451,7 +451,7 @@
         }
         return;
       }
-      if (!S.mqAlive) { stopLoop('mes', 'Dequeue 等待中 MES 佇列被 Release → 錯誤 1122 → 迴圈停止（前面板 Exit Error 會看到 1122，這是預期的）'); return; }
+      if (!S.mqAlive) { stopLoop('mes', S.scn === 'right' ? 'Dequeue 等待中 MES 佇列被 Release → 錯誤 1122 → 迴圈停止（前面板 Exit Error 會看到 1122，這是預期的）' : 'MES 佇列已經被 Release，參照無效 → Dequeue 出錯 → 迴圈停止（正在等待時被 Release 才是 1122）'); return; }
       if (S.mq.length) { var x = S.mq.shift(); m.pending.push(x); fl('mq', 'mes', mCard(x)); }
       else { m.waitT++; if (m.waitT < 2) return; }
       m.waitT = 0; m.n++;
