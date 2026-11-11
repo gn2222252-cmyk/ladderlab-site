@@ -979,6 +979,18 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-var.html",
+     "href": "labview/lab-var.html",
+     "label": "動畫實驗室：競爭條件、Stop 接法、FGV"
+    },
+    {
+     "k": "G",
+     "id": "labview/lab-daq.html",
+     "href": "labview/lab-daq.html",
+     "label": "動畫實驗室：DAQ 取樣率、解析度、緩衝區"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-bool.html",
      "href": "labview/lab-bool.html",
      "label": "動畫實驗室：按鈕機械動作、邏輯閘、比較"

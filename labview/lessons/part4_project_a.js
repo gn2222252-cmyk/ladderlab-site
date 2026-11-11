@@ -182,7 +182,7 @@ const pc={name:'GT_Main.vi（第一版：雙迴圈骨架）',view:'bd',
   {id:'w31',from:'srv.out',to:'cl',t:'visa'},{id:'w32',from:'cl.error out',to:'seh',t:'err'}]}
 };
 L.push({id:'L16',order:16,no:'16',part:'完整專案',title:'雙迴圈與 Queue：按鈕和通訊分開跑',mins:70,files:['GT_Main.vi（第一版）'],
-goals:[['學會','Producer/Consumer 架構、Obtain/Enqueue/Dequeue/Release Queue、佇列逾時、用佇列失效結束迴圈。'],['做出','GT_Main.vi 第一版：UI 迴圈按 Home 送命令、通訊迴圈寫命令並讀狀態。'],['用在專案','這就是完成品的骨架，後面幾課都是往這兩個迴圈裡加東西。']],
+goals:[['學會','Producer/Consumer 架構、Obtain/Enqueue/Dequeue/Release Queue、佇列逾時、用佇列失效結束迴圈。'],['做出','GT_Main.vi 第一版：UI 迴圈按 Home 送命令、通訊迴圈寫命令並讀狀態。'],['用在專案','這就是完成品的骨架，後面幾課都是往這兩個迴圈裡加東西。'],['動畫練習','<a href="lab-var.html#stop">變數實驗室：一顆 Stop 停兩個迴圈</a>：四種接法各會怎樣；<a href="lab-var.html">競爭條件</a>說明為什麼兩個迴圈之間要用 Queue 而不是共用變數。']],
 check:'GT_Main 第一版：按 Home 軟 PLC 會回原點、Status 會更新；按 Exit 兩個迴圈都停、程式正常結束，沒有錯誤對話框。',
 body:[
 C.h3('懂','','為什麼一個迴圈不夠'),

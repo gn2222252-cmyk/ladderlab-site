@@ -163,7 +163,7 @@ const daqFig={name:'DAQmx 連續擷取的標準寫法',bd:{w:860,h:200,structs:[
   {id:'w13',from:'rd.task out',to:'sp.task/channels in',t:'clu'},{id:'w14',from:'rd.error out',to:'sp.error in',t:'err',mx:640},
   {id:'w15',from:'sp.task out',to:'cl.task/channels in',t:'clu'},{id:'w16',from:'sp.error out',to:'cl.error in',t:'err'},{id:'w17',from:'cl.error out',to:'seh',t:'err'}]}};
 L.push({id:'C12',order:112,no:'C12',part:PART,title:'硬體：DAQmx 擷取與儀器控制',mins:60,
-goals:[['學會','MAX、DAQmx 的 Task/Channel/Timing、有限與連續擷取、取樣率與緩衝區、類比輸入接法、儀器控制（GPIB/Serial/USB/Ethernet）、VISA、儀器驅動程式。'],['考試重點','DAQmx 的呼叫順序、連續擷取每次讀多少、緩衝區溢位錯誤的原因、VISA 資源名稱、Instrument Driver 的好處。']],
+goals:[['學會','MAX、DAQmx 的 Task/Channel/Timing、有限與連續擷取、取樣率與緩衝區、類比輸入接法、儀器控制（GPIB/Serial/USB/Ethernet）、VISA、儀器驅動程式。'],['考試重點','DAQmx 的呼叫順序、連續擷取每次讀多少、緩衝區溢位錯誤的原因、VISA 資源名稱、Instrument Driver 的好處。'],['動畫練習','<a href="lab-daq.html">DAQ 實驗室</a>：取樣率不夠時的混疊、解析度與範圍怎麼算最小可分辨電壓、<a href="lab-daq.html#buf">DAQmx 流程與緩衝區溢位（錯誤 -200279）</a>。']],
 check:'能默寫 DAQmx 連續擷取的六個步驟。',
 body:[
 C.h3('懂','','NI MAX（Measurement & Automation Explorer）'),

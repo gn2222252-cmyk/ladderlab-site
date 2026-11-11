@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="be1ae61471">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>變數實驗室：競爭條件、一顆 Stop 停兩個迴圈、FGV | LadderLab</title>
+<meta name="description" content="LabVIEW 變數的動畫實驗室：兩個迴圈同時讀改寫 Local Variable 怎麼掉資料（競爭條件）、一顆 Stop 按鈕停兩個平行迴圈的四種接法、Functional Global Variable 怎麼用未初始化的 Shift Register 記住資料。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .race { display: grid; grid-template-columns: 1fr 150px 1fr; gap: 14px; align-items: center; }
+  @media (max-width: 800px) { .race { grid-template-columns: 1fr; } }
+  .loopbox { border: 4px solid #6b6b6b; border-radius: 10px; padding: 10px; }
+  .loopbox h3 { margin: 0 0 6px; }
+  .stepn { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 4px 0; border: 2px solid var(--line); border-radius: 8px; transition: all .25s; }
+  .stepn.on { border-color: #f59e0b; background: rgba(245, 158, 11, .18); }
+  .stepn.done { opacity: .5; }
+  .shared { text-align: center; border: 3px solid #1e5bd7; border-radius: 12px; padding: 12px 6px; }
+  .shared b { display: block; font: 700 38px ui-monospace, Consolas, monospace; transition: transform .2s; }
+  .shared b.bump { transform: scale(1.3); color: #e8820c; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; }
+  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .scn button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .two { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+  @media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
+  .lp { display: inline-block; min-width: 150px; border: 4px solid #6b6b6b; border-radius: 10px; padding: 10px; margin: 6px; text-align: center; transition: border-color .3s; }
+  .lp.run { border-color: #1f9d3a; } .lp.wait { border-style: dashed; opacity: .6; }
+  .lp b { display: block; font: 700 26px ui-monospace, Consolas, monospace; }
+  .stopb { padding: 8px 16px; border-radius: 8px; border: 3px solid #555; background: #ddd; color: #222; font-weight: 700; cursor: pointer; }
+  .stopb.on { background: #dc2626; color: #fff; border-color: #7f1d1d; }
+  .fgv { border: 4px solid #6b6b6b; border-radius: 10px; padding: 14px; text-align: center; max-width: 340px; }
+  .fgv .sr { display: inline-block; border: 2px solid #e8820c; border-radius: 6px; padding: 6px 14px; font: 700 26px ui-monospace, Consolas, monospace; transition: background .3s; }
+  .fgv .sr.flash { background: #fde68a; color: #222; }
+  .callers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .callers > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-loop.html">迴圈</a><a href="lab-struct.html">結構</a><a href="lab-array.html">陣列</a><a href="lab-string.html">字串</a><a href="lab-graph.html">圖表</a><a href="lab-var.html" class="here">變數</a><a href="lab-daq.html">DAQ</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <h1>變數實驗室</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="race" class="here">競爭條件：資料怎麼不見的</button>
+    <button type="button" data-t="stop">一顆 Stop 停兩個迴圈</button>
+    <button type="button" data-t="fgv">FGV：功能型全域變數</button>
+  </div>
+
+  <section class="lab-stage" id="t-race">
+    <p class="why">兩個平行迴圈各自做三次「讀 x → 加 1 → 寫回 x」，x 用 Local Variable（或 Global Variable）共用。照理說最後 x = 6。你來當排程器：決定下一步讓哪個迴圈走。試著讓 A 讀完之後，換 B 也去讀。</p>
+    <div class="row">
+      <button type="button" class="go" id="ra">迴圈 A 走一步</button>
+      <button type="button" class="go" id="rb">迴圈 B 走一步</button>
+      <button type="button" id="rauto">隨機跑完</button>
+      <button type="button" id="rdemo">示範：掉一筆</button>
+      <button type="button" id="rreset">重來</button>
+      <label class="check small"><input type="checkbox" id="rfgv"> 改用 FGV（讀改寫包在同一個 SubVI 裡）</label>
+    </div>
+    <div class="race">
+      <div class="loopbox" id="boxA"></div>
+      <div class="shared">共用的 x<b id="rx">0</b><small>Local Variable</small></div>
+      <div class="loopbox" id="boxB"></div>
+    </div>
+    <p class="verdict-line" id="rsay"></p>
+    <div class="log" id="rlog"></div>
+    <div class="callout">這就是<b>競爭條件（Race Condition）</b>：結果取決於兩邊誰先誰後，而且每次執行可能不一樣，最難除錯。只要有兩個地方會「寫」同一個變數就有風險。安全的做法：只留一個地方寫（其他只讀）、或把「讀改寫」包進 FGV、或改用 Queue 傳資料。</div>
+  </section>
+
+  <section class="lab-stage" id="t-stop" hidden>
+    <p class="why">兩個平行的 While Loop，想用一顆 Stop 按鈕同時停掉。這是 Local Variable 最常見的用途，也是最常接錯的地方。選一種接法，按 Stop 看會怎樣。</p>
+    <div class="two">
+      <div class="scn" id="scn"></div>
+      <div>
+        <div class="row" id="sbtns"></div>
+        <div><span class="lp" id="lp1">迴圈 1<b id="i1">0</b><small id="s1"></small></span><span class="lp" id="lp2">迴圈 2<b id="i2">0</b><small id="s2"></small></span></div>
+        <p class="verdict-line" id="ssay"></p>
+        <button type="button" id="srestart">▶ 重新執行 VI</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab-stage" id="t-fgv" hidden>
+    <p class="why">FGV 不是內建功能，是自己寫的 SubVI：一個<b>只跑一圈的 While Loop</b>（停止條件接 True）＋<b>沒接初始值的 Shift Register</b>＋一個 Case 選動作。Shift Register 沒初始化，就會記得上次呼叫留下的值；SubVI 預設不可重入，同一時間只讓一個呼叫者進去，所以「讀改寫」不會被插隊。</p>
+    <div class="row">
+      <div class="fgv">While Loop（跑一圈）<br>Shift Register 裡的值<br><span class="sr" id="fsr">0</span><br><small id="fact">Case：等待呼叫</small></div>
+      <div style="flex:1;min-width:280px">
+        <div class="callers">
+          <div><b>VI 1（量測迴圈）</b><div class="row"><button type="button" data-c="1" data-a="Init">Init</button><button type="button" data-c="1" data-a="Add">Add 5</button><button type="button" data-c="1" data-a="Get">Get</button></div><span class="scalar" id="f1">–</span></div>
+          <div><b>VI 2（顯示迴圈）</b><div class="row"><button type="button" data-c="2" data-a="Add">Add 1</button><button type="button" data-c="2" data-a="Get">Get</button></div><span class="scalar" id="f2">–</span></div>
+        </div>
+        <div class="row"><button type="button" id="funload">關掉所有 VI 再打開（離開記憶體）</button></div>
+      </div>
+    </div>
+    <div class="log" id="flog"></div>
+    <div class="callout">動作用 Enum（做成 Type Def）選：Init 把值設回起始值、Add 做「讀＋改＋寫」、Get 只讀。只做 Get／Set 的 FGV 和 Global Variable 一樣會有競爭條件；要把「改」的運算放在 FGV <b>裡面</b>才安全（這種寫法也叫 Action Engine）。講義裡的計時器 FGV 也是同一招：Init 時記下 Tick Count，Get 時回傳現在減掉記下的值。</div>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-var.js?v=1d54ceb43f"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "be1ae61471" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
