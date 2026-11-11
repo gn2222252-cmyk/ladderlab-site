@@ -58,7 +58,7 @@ const ping={name:'L12_Ping.vi',view:'split',ratio:1.7,
    const e={status:false,code:0,source:''};return {out:{ok:true,err:e},vals:{res:i.res,f:false,enq:'\x05',k1:1,ack:'\x06','open.VISA out':i.res,'open.error out':e,'wr.error out':e,'rd.read buffer':'\x06','eq.out':true,'rd.error out':e,'cl.error out':e,'seh.error out':e},msg:'PLC 回了 ACK'};}}
 };
 L.push({id:'L12',order:12,no:'12',part:'和 PLC 通訊',title:'VISA：第一次和軟 PLC 說話',mins:50,files:['FX_Open.vi','練習\\L12_Ping.vi'],
-goals:[['學會','VISA 資源名稱、Open/Write/Read/Close、序列埠參數、TCP 模擬。'],['做出','FX_Open.vi 和 L12_Ping.vi：送 ENQ，收到 ACK 燈就亮。'],['用在專案','所有通訊都走這條 VISA 線；在家用 TCP，到工廠改 COM，程式不用改。'],['網頁練習','還沒裝好 LabVIEW 或軟 PLC？先到 <a href="fxlab.html">FX 封包練習台</a> 送 ENQ、讀寫 D，第 12～14 課要送的字串都可以先在那裡試。']],
+goals:[['學會','VISA 資源名稱、Open/Write/Read/Close、序列埠參數、TCP 模擬。'],['做出','FX_Open.vi 和 L12_Ping.vi：送 ENQ，收到 ACK 燈就亮。'],['用在專案','所有通訊都走這條 VISA 線；在家用 TCP，到工廠改 COM，程式不用改。'],['網頁練習','還沒裝好 LabVIEW 或軟 PLC？先到 <a href="fxlab.html">FX 封包練習台</a> 送 ENQ、讀寫 D，第 12～14 課要送的字串都可以先在那裡試。'],['動畫練習','<a href="lab-visa.html">VISA 實驗室</a>：鮑率、同位、停止位元畫成波形，算出一個封包要幾 ms；設定兩邊不一致會收到什麼。']],
 check:'軟 PLC 開著時 L12_Ping.vi 的 PLC Answered 亮、沒有錯誤；關掉軟 PLC 再跑會跳出錯誤對話框。',
 body:[
 C.h3('懂','','VISA：一套函式，什麼埠都能用'),
@@ -166,7 +166,7 @@ const readVI={name:'FX_ReadD.vi',view:'bd',
    return {out:{tx,rx,words:w,err:e},vals:{d:i.d,n:i.n,'rf.Frame':tx,'mul.out':4*n,'add.out':4*n+4,'rd.read buffer':rx,'ck.Data':data,'td.i':data,'iter':0,'mi.out':0,'ss.substring':data.slice(0,4),'hx.number':parseInt(data.slice(0,4),16),'sw.swapped':w[0],'to.o':w,'ck.error out':e,'rd.error out':e},msg:`讀到 ${n} 個字`};}}
 };
 L.push({id:'L13',order:13,no:'13',part:'和 PLC 通訊',title:'FX_ReadD.vi：讀 PLC 的 D 暫存器',mins:60,files:['FX_ReadD.vi','練習\\L13_Test.vi'],
-goals:[['學會','組合自己的 SubVI 成驅動、算回應長度、For Loop 切字串、十六進位轉數字。'],['做出','FX_ReadD.vi：給 D 和字數，回傳 U16 陣列。'],['用在專案','通訊迴圈每 200 ms 用它讀 D200～D241。']],
+goals:[['學會','組合自己的 SubVI 成驅動、算回應長度、For Loop 切字串、十六進位轉數字。'],['做出','FX_ReadD.vi：給 D 和字數，回傳 U16 陣列。'],['用在專案','通訊迴圈每 200 ms 用它讀 D200～D241。'],['動畫練習','<a href="lab-visa.html">VISA 實驗室</a>：VISA Read 遇到筆數、終止字元、逾時，誰先到就在哪一刻返回。']],
 check:'L13_Test.vi 讀 D200 起 3 個字，軟 PLC 待機時是 [0, 0, 0]；在軟 PLC 按原點（或下一課用 LabVIEW 寫 D106 = 4）後，第 3 個值（D202）會出現 10～13。',
 body:[
 C.h3('懂','','讀取的完整流程'),

@@ -1009,6 +1009,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-visa.html",
+     "href": "labview/lab-visa.html",
+     "label": "動畫實驗室：VISA 序列通訊"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-bool.html",
      "href": "labview/lab-bool.html",
      "label": "動畫實驗室：按鈕機械動作、邏輯閘、比較"

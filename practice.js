@@ -288,7 +288,7 @@ $("csvout").onclick = () => {
   if (etab === "ladder" && !syncFromLadder()) { alert("梯形圖還有錯誤，先修正再下載。"); return; }
   const b64 = pr.export_csv($("code").value);
   if (!b64) { alert("程式還有錯誤，先修正再下載。"); return; }
-  if (!confirm("下載成 GX Works2 程式 CSV 格式（FX3S）。\n格式和學校 FX3S 從 GX Works2 匯出的檔案逐位元組相同。\n放回 GX Works2：打開梯形圖，用「編輯 ▸ 讀取 CSV 檔案」（英文版 Edit ▸ Read from CSV File），會取代目前的程式。\n只能用在「簡單工程、不使用標籤」；建立工程時勾了「使用標籤」，選單會是灰的。\n實機匯入還等學校確認；失敗時請改用「下載指令表」照著輸入。")) return;
+  if (!confirm("下載成 GX Works2 程式 CSV 格式（FX3S）。\n格式和學校 FX3S 從 GX Works2 匯出的檔案逐位元組相同。\n放回 GX Works2：打開梯形圖，用「編輯 ▸ 讀取 CSV 檔案」（英文版 Edit ▸ Read from CSV File），會取代目前的程式。\n只能用在「簡單工程、不使用標籤」；建立工程時勾了「使用標籤」，選單會是灰的。\n格式已和學校的檔案比對過；在學校電腦上用 GX Works2 讀回來這一步還沒實際試過，失敗時請改用「下載指令表」照著輸入。")) return;
   const bin = atob(b64), bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   download(`${ex.id}_${ex.title}.csv`, bytes, "text/csv");

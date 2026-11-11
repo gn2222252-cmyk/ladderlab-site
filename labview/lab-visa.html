@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="744ff020da">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VISA 實驗室：位元組怎麼在序列線上走 | LadderLab</title>
+<meta name="description" content="LabVIEW VISA 序列通訊的動畫實驗室：鮑率、資料位元、同位、停止位元畫成波形，算出每個字元和整個封包要幾 ms，兩邊設定不一樣會收到什麼；VISA Read 在讀滿 byte count、收到終止字元、逾時三個條件中哪一個先到就返回；Bytes at Port 讀到半個封包的陷阱。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .row input[type=range] { width: 160px; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .cfg2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 800px) { .cfg2 { grid-template-columns: minmax(0, 1fr); } }
+  .box { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .box h3 { margin: 0 0 4px; font-size: 16px; }
+  .box .row { margin: 6px 0; }
+  .lbl { font-size: 13px; color: var(--mute); margin: 10px 0 4px; }
+  .slots { display: flex; flex-wrap: wrap; gap: 4px; min-height: 46px; align-items: center; }
+  .chip { flex: none; min-width: 42px; height: 42px; padding: 0 4px; border-radius: 6px; display: grid; place-items: center; align-content: center; font: 700 13px ui-monospace, Consolas, monospace; background: #fde68a; border: 2px solid #f59e0b; color: #111; line-height: 1.15; cursor: default; }
+  .chip small { font-size: 10px; font-weight: 400; }
+  .chip.ctl { background: #ddd6fe; border-color: #7c3aed; }
+  .chip.empty { background: transparent; border: 2px dashed var(--line); }
+  .chip.bad { background: #fecaca; border-color: #dc2626; }
+  .chip.wire { background: transparent; border: 2px dashed #9ca3af; color: var(--mute); }
+  .chip.got { background: #bbf7d0; border-color: #16a34a; }
+  .chip.sel { outline: 3px solid var(--on); outline-offset: 1px; }
+  button.chip { cursor: pointer; }
+  .chip.in { animation: flyin .4s ease-out; }
+  @keyframes flyin { from { transform: translateY(-22px) scale(.7); opacity: 0; } }
+  .wave { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .wave text { font: 16px ui-monospace, Consolas, monospace; fill: var(--ink); }
+  .wave .mu { fill: var(--mute); }
+  .nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 10px 0; }
+  .nums div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--mute); }
+  .nums b { display: block; font: 700 20px ui-monospace, Consolas, monospace; color: var(--ink); }
+  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .scn button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .two { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .cond { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; font-size: 13px; }
+  .cond span { border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+  .cond span.hit { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 700; }
+  .cond span.miss { background: #dc2626; color: #fff; border-color: #dc2626; font-weight: 700; }
+  .tbar { position: relative; height: 54px; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+  .tbar .tk { position: absolute; top: 8px; width: 3px; height: 22px; background: #f59e0b; transform: translateX(-1px); }
+  .tbar .tk.got { background: #16a34a; }
+  .tbar .cur { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--on); }
+  .tbar .ax { position: absolute; bottom: 2px; font: 11px ui-monospace, Consolas, monospace; color: var(--mute); transform: translateX(-50%); white-space: nowrap; }
+  code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-visa.html" class="here">VISA</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>VISA 實驗室：位元組怎麼在線上走</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="baud" class="here">鮑率與波形</button>
+    <button type="button" data-t="read">VISA Read 什麼時候返回</button>
+    <button type="button" data-t="bap">Bytes at Port 的陷阱</button>
+  </div>
+
+  <section class="lab-stage" id="t-baud">
+    <p class="why">序列埠一次只送一個位元。每個字元前面加一個<b>起始位元</b>（0），接著是資料位元（<b>最低位先送</b>），可能再加一個<b>同位位元</b>，最後是<b>停止位元</b>（1）。沒有資料時線路保持在 1。兩邊要先約好鮑率、資料位元、同位、停止位元，接收端才知道每個位元多長、要切幾刀。本課程的 FX3S 用 <b>9600 7E1</b>（9600 bps、7 個資料位元、偶同位、1 個停止位元）。</p>
+    <div class="cfg2">
+      <div class="box"><h3>送出端（LabVIEW）</h3><div class="row" id="cfgS"></div></div>
+      <div class="box"><h3>接收端（PLC）</h3><label class="check small"><input type="checkbox" id="asame" checked> 和送出端一樣</label><div class="row" id="cfgR"></div></div>
+    </div>
+    <div class="row">
+      <label>要送的字串 <select id="apkt"></select></label>
+      <label id="acustw" hidden>自己打 <input id="acust" value="&lt;ENQ&gt;Hi\r\n" size="16" spellcheck="false"></label>
+    </div>
+    <div class="nums">
+      <div>每個字元的位元數<b id="abits">–</b></div>
+      <div>每個字元要<b id="achar">–</b></div>
+      <div>整個封包要<b id="apkms">–</b></div>
+      <div>1 秒最多送<b id="acps">–</b></div>
+    </div>
+    <p class="why" id="aform"></p>
+    <div class="lbl">送出的字元（點一個看它的波形）</div>
+    <div class="slots" id="asent"></div>
+    <div class="row">
+      <button type="button" class="go" id="aplay">▶ 一個位元一個位元送</button>
+      <button type="button" id="astep">下一個位元</button>
+    </div>
+    <svg class="wave" id="awave" viewBox="0 0 640 170" role="img" aria-label="選取字元的位元波形"></svg>
+    <p class="why" id="awhy"></p>
+    <div class="lbl">接收端照「自己的」設定切出來的字元</div>
+    <div class="slots" id="arecv"></div>
+    <p class="verdict-line" id="asay"></p>
+    <div class="callout">每個字元的時間 ＝ 位元數 ÷ 鮑率。7E1 和 8N1 都是 1＋7＋1＋1 ＝ 1＋8＋0＋1 ＝ <b>10 個位元</b>，所以 9600 bps 一秒最多約 960 個字元，一個字元大約 1.04 ms。這裡算的是字元一個接一個、中間沒有空檔的最快情況；實際上還要加上 PLC 處理命令、轉接器的時間。<br>接收端看到起始位元的下降邊緣後，照自己的鮑率在每個位元的<b>正中間</b>取樣（波形上的圓點）。鮑率不同，取樣點就會越走越偏，切出來的是別的字元，甚至把資料位元當成起始位元；同位或資料位元數不同，就會出現同位錯誤或停止位元不是 1（框架錯誤）。這種情況兩邊都不會「自動修正」：封包收壞了，PLC 不會照你的意思回答；如果它乾脆不回，LabVIEW 這邊看到的就是 VISA Read 逾時。所以通訊不通時，第一件事是核對兩邊的四個設定。<br><small>波形畫的是邏輯準位（1 高、0 低）。RS-232 線上的實際電壓是反過來的，RS-485 則是看兩條線的電壓差，但位元的排法一樣。</small></div>
+  </section>
+
+  <section class="lab-stage" id="t-read" hidden>
+    <p class="why">VISA Write 把命令送出去以後，VISA Read 開始等。進來的位元組先放進電腦的<b>接收緩衝區</b>，VISA Read 從緩衝區拿。它會在下面三件事<b>哪一件先發生</b>就返回：① 拿滿 <b>byte count</b> 個位元組；② 拿到<b>終止字元</b>（要先開啟 Enable Termination Char，終止字元本身也會一起回傳）；③ 等到<b>逾時</b>，這時回傳錯誤 <b>-1073807339</b>。沒被拿走的位元組留在緩衝區，下一次 Read 會先拿到它們。</p>
+    <div class="two">
+      <div>
+        <div class="scn" id="rscn"></div>
+      </div>
+      <div style="min-width:0">
+        <div class="row">
+          <label>PLC 回應 <select id="rresp"></select></label>
+          <label>鮑率 <select id="rbaud"><option>9600</option><option>115200</option></select></label>
+        </div>
+        <div class="row">
+          <label>byte count <input type="number" id="rcount" min="1" max="200" value="8" style="width:70px"></label>
+          <label class="check small"><input type="checkbox" id="rten"> Enable Termination Char</label>
+          <label>終止字元 <select id="rterm"><option value="10">\n（0x0A，LF）</option><option value="13">\r（0x0D，CR）</option><option value="3">ETX（0x03）</option></select></label>
+          <label>timeout <select id="rtmo"><option value="100">100 ms</option><option value="500">500 ms</option><option value="2000" selected>2000 ms</option></select></label>
+        </div>
+        <div class="row">
+          <button type="button" class="go" id="rgo">VISA Write ＋ VISA Read</button>
+          <button type="button" id="rplay">▶ 播放</button>
+          <button type="button" id="rstep">下一個事件</button>
+          <button type="button" id="ragain">再 Read 一次</button>
+        </div>
+        <div class="kv" style="font:13px ui-monospace,Consolas,monospace">時間 t = <b id="rt">0</b> ms（t = 0：命令送完、VISA Read 開始等）</div>
+        <div class="lbl">還在線上（還沒進到電腦）</div><div class="slots" id="rwire"></div>
+        <div class="lbl">接收緩衝區（已到、還沒被 Read 拿走）</div><div class="slots" id="rbuf"></div>
+        <div id="rreads"></div>
+        <p class="verdict-line" id="rsay"></p>
+      </div>
+    </div>
+    <div class="log" id="rlog"></div>
+    <div class="callout">本課程對 FX 的寫法：<b>關掉終止字元</b>，byte count 照命令算準（讀 n 個字回 4n＋4 個字元）。原因是 FX 回應的結尾是 ETX 後面<b>還跟著 2 個校驗字元</b>；把終止字元設成 ETX，Read 會在 ETX 就返回，校驗字元被留在緩衝區，下一次 Read 先拿到的就是這 2 個舊字元，之後每一筆都錯位。反過來，很多文字型的儀器每行用 \r\n 結尾、長度不固定，就適合開終止字元、byte count 給大一點。<br>逾時不一定是程式錯：PLC 沒接、COM 設定不一樣、封包格式錯讓 PLC 不回答、byte count 比對方實際回的多，最後都會變成同一個逾時錯誤。</div>
+  </section>
+
+  <section class="lab-stage" id="t-bap" hidden>
+    <p class="why">另一種寫法：先讀 VISA 的屬性 <b>Bytes at Port</b>（緩衝區裡現在有幾個位元組），再把這個數字接到 VISA Read 的 byte count。這樣 Read 不會等、也不會逾時，但它只拿「這一刻已經到的」。下面假設 PLC 在命令送完 <b id="pdel">15</b> ms 後開始回 8 個字元（D100 = 1234 的回應），拉動 Wait 的長度看看讀到什麼。</p>
+    <div class="row">
+      <label>Write 之後先 Wait <input type="range" id="pwait" min="0" max="40" step="1" value="18"> <b id="pwaitv"></b></label>
+      <label>鮑率 <select id="pbaud"><option>9600</option><option>115200</option></select></label>
+      <button type="button" id="pplay">▶ 從 0 ms 掃到 40 ms</button>
+    </div>
+    <div class="tbar" id="pbar"></div>
+    <div class="lbl">Bytes at Port 讀到 <b id="pn">0</b>，VISA Read 拿到</div>
+    <div class="slots" id="pgot"></div>
+    <div class="lbl">這一刻之後才到（留給下一次）</div>
+    <div class="slots" id="plate"></div>
+    <p class="verdict-line" id="psay"></p>
+    <div class="callout">陷阱在於：PLC 什麼時候開始回、回多快，每次不一定一樣（掃描時間、轉接器、線長都有影響）。Wait 抓太短就拿到<b>半個封包</b>，拿去檢查 STX、ETX、校驗一定失敗，剩下的半個還會留到下一圈，跟下一筆混在一起；抓太長則每一圈都白白多等。<br>所以「Bytes at Port ＋ Read」比較適合不知道對方會送多少、要自己把收到的東西接起來再找結尾的情況（例如一直監看一條線）。這時要用 Shift Register 把每次讀到的字串接起來，等湊到完整的一包（看到 ETX 再加 2 個校驗字元）才處理。像本課程這種「問一句答一句、長度算得出來」的通訊，直接把 byte count 算準交給 VISA Read 等，最簡單也最穩。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="vquiz" style="margin-top:16px"></section>
+</main>
+<footer><p>LabVIEW、NI-VISA 為 NI 之商標；MELSEC、FX 為三菱電機之商標。本站為獨立製作，與 NI、三菱電機無關；行為以原廠文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-visa.js?v=8ca6334704"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "744ff020da" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

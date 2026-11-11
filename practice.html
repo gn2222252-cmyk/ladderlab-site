@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="62bc20fb67">
+<meta name="ll-version" content="744ff020da">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 練習題 | LadderLab</title>
@@ -85,9 +85,9 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=fe676e06ed"></script>
+<script src="py/bundle.js?v=41ad885cc7"></script>
 <script src="config.js?v=eca98dd0d9"></script>
-<script src="course_map.js?v=d80f88c029"></script>
+<script src="course_map.js?v=ec18c763e1"></script>
 <script src="course.js?v=764fe70243"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script src="waitlist.js?v=92656de277"></script>
@@ -95,13 +95,13 @@
 <script src="ledit.js?v=d905dd003e"></script>
 <script src="sfc.js?v=254aa66b02"></script>
 <script src="plants.js?v=e003305f64"></script>
-<script src="practice.js?v=b57da1d237"></script>
+<script src="practice.js?v=cf7df76a80"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "62bc20fb67" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "744ff020da" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
