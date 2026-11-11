@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="0e02e5a240">
+<meta name="ll-version" content="abee741a07">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -15,7 +15,7 @@
   <a class="home" href="../index.html">← LadderLab 梯圖實驗室</a>
   <a href="../path.html" style="margin-left:10px">學習路徑</a>
   <a href="fxlab.html" style="margin-left:10px;font-weight:700">FX 封包練習台（網頁版模擬 PLC）</a>
-  <a href="instlab.html" style="margin-left:10px;font-weight:700">儀器接入練習台（七台模擬儀器）</a>
+  <a href="instlab.html" style="margin-left:10px;font-weight:700">儀器接入練習台（八台模擬儀器）</a>
   <a href="labs.html" style="margin-left:10px;font-weight:700">動畫實驗室（29 個）</a>
   <span class="fine">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
 </div>
@@ -37,7 +37,7 @@
 <script src="lessons/part4_project_b.js?v=beff366eb6"></script>
 <script src="lessons/part7_fileio.js?v=d68aa67564"></script>
 <script src="lessons/part8_instr_a.js?v=430dbf5327"></script>
-<script src="lessons/part8_instr_b.js?v=ccc48f1ab0"></script>
+<script src="lessons/part8_instr_b.js?v=aa38d2e052"></script>
 <script src="lessons/part8_instr_c.js?v=25c6acba7b"></script>
 <script src="lessons/part8_instr_d.js?v=856bf2a800"></script>
 <script src="lessons/part8_instr_e.js?v=d74489bb52"></script>
@@ -63,7 +63,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "0e02e5a240" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "abee741a07" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

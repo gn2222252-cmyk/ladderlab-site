@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="0e02e5a240">
+<meta name="ll-version" content="abee741a07">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>儀器練習台：新儀器先講到話，再寫程式 | LadderLab</title>
-<meta name="description" content="拿到一台沒用過的儀器怎麼接進 LabVIEW：先用終端機和模擬儀器講到話，把原始資料原封不動看一遍，再想怎麼切成數字。七台模擬儀器：電源供應器、數位電表、電子天平、溫控器（Modbus）、ADAM 模組、DAQ 卡。">
+<meta name="description" content="拿到一台沒用過的儀器怎麼接進 LabVIEW：先用終端機和模擬儀器講到話，把原始資料原封不動看一遍，再想怎麼切成數字。八台模擬儀器：電源供應器、數位電表、電子天平、溫控器（Modbus）、ADAM 模組、DAQ 卡、示波器。">
 <link rel="stylesheet" href="../style.css?v=fe0ae63584">
 <link rel="stylesheet" href="lab.css?v=89a89d8063">
 <style>
@@ -64,7 +64,7 @@
 <main class="lab-main">
   <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
   <h1>儀器練習台：先講到話，再寫程式</h1>
-  <p class="why">拿到一台沒用過的儀器，第一件事不是開 LabVIEW 拉迴圈，而是<b>先讓資料進得來</b>：用最笨的方法送一個命令，把收到的東西原封不動看一遍。這裡有七台模擬儀器和一個終端機（像 NI MAX 的 VISA Test Panel），設錯會真的收不到、收到亂碼。</p>
+  <p class="why">拿到一台沒用過的儀器，第一件事不是開 LabVIEW 拉迴圈，而是<b>先讓資料進得來</b>：用最笨的方法送一個命令，把收到的東西原封不動看一遍。這裡有八台模擬儀器和一個終端機（像 NI MAX 的 VISA Test Panel），設錯會真的收不到、收到亂碼。</p>
   <div class="tabs" id="tabs">
     <button type="button" data-t="talk" class="here">① 先講到話</button>
     <button type="button" data-t="parse">② 把原始資料變成數字</button>
@@ -129,7 +129,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "0e02e5a240" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "abee741a07" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
