@@ -7,44 +7,48 @@
   function say(id, s, cls) { $(id).innerHTML = s || ''; $(id).className = 'verdict-line' + (cls ? ' ' + cls : ''); }
 
   /* ================= 機台 ================= */
+  /* FX3S-20MT/ES 的輸出 COM（硬體手冊 4.7.4）：Y0～Y3 各自 COM0～COM3，Y4～Y7 共用 COM4。
+     要用到「同一組 COM」的機台，負載都接在 Y4～Y7。 */
+  function comOf(y) { var n = parseInt(y.slice(1), 8); return n <= 3 ? 'COM' + n : 'COM4'; }
   var M = {
-    conv: { name: '輸送帶', ins: [['X0', '啟動按鈕（常開）', 'btn'], ['X1', '停止按鈕（常開）', 'btn'], ['X2', '急停（現場常閉）', 'nc']], outs: [['Y0', '輸送帶接觸器'], ['Y1', '運轉指示燈']],
-      il: 'LD X0\nOR Y0\nANI X1\nAND X2\nOUT Y0\nLD Y0\nOUT Y1', act: '測試：按一下啟動 X0。' },
-    cyl: { name: '氣缸推料', ins: [['X0', '啟動按鈕（常開）', 'btn'], ['X2', '前限感測器（NPN 近接）', 'sensor']], outs: [['Y0', '伸出電磁閥'], ['Y1', '伸出中指示燈'], ['Y2', '到位燈']],
-      il: 'LD X0\nOUT Y0\nLD Y0\nOUT Y1\nLD X2\nOUT Y2', act: '測試：按住啟動 X0（氣缸正常的話會伸到底，前限感測器看到）。', detect: { X2: 'Y0' } },
-    door: { name: '自動門', ins: [['X0', '開門按鈕（常開）', 'btn'], ['X3', '急停（現場常閉）', 'nc']], outs: [['Y0', '開門馬達接觸器'], ['Y1', '開門中指示燈']],
-      il: 'LD X0\nAND X3\nOUT Y0\nLD Y0\nOUT Y1', act: '測試：按住開門 X0。' }
+    conv: { name: '輸送帶', ins: [['X0', '啟動按鈕（常開）', 'btn'], ['X1', '停止按鈕（常開）', 'btn'], ['X2', '急停（現場常閉）', 'nc']], outs: [['Y4', '輸送帶接觸器'], ['Y5', '運轉指示燈']],
+      il: 'LD X0\nOR Y4\nANI X1\nAND X2\nOUT Y4\nLD Y4\nOUT Y5', act: '測試：按一下啟動 X0。' },
+    cyl: { name: '氣缸推料', ins: [['X0', '啟動按鈕（常開）', 'btn'], ['X2', '前限感測器（NPN 近接）', 'sensor']], outs: [['Y4', '伸出電磁閥'], ['Y5', '伸出中指示燈'], ['Y6', '到位燈']],
+      il: 'LD X0\nOUT Y4\nLD Y4\nOUT Y5\nLD X2\nOUT Y6', act: '測試：按住啟動 X0（氣缸正常的話會伸到底，前限感測器看到）。', detect: { X2: 'Y4' } },
+    door: { name: '自動門', ins: [['X0', '開門按鈕（常開）', 'btn'], ['X3', '急停（現場常閉）', 'nc']], outs: [['Y4', '開門馬達接觸器'], ['Y5', '開門中指示燈']],
+      il: 'LD X0\nAND X3\nOUT Y4\nLD Y4\nOUT Y5', act: '測試：按住開門 X0。' }
   };
-  /* 每一題：機台、要看的輸出、按了哪些按鈕、真相（類型＋對象）、程式（logic 題才和機台的正確程式不同） */
+  /* 每一題：機台、要看的輸出、按了哪些按鈕、真相（類型＋對象）、程式（logic 題才和機台的正確程式不同）。
+     報修單只寫主要負載；on／off 是報修單裡描述到的「機台其他部分」（氣缸有沒有伸到底）。rel：先學過接線比較好做。 */
   var S = [
-    { id: 'c-stop', m: 'conv', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['stop'], off: ['Y1'], sym: '早上開機，按啟動輸送帶不轉，運轉燈也不亮。昨天下班前有人用電腦改過程式。' },
-    { id: 'c-wire', m: 'conv', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['wire_in', 'X0'], sym: '按啟動輸送帶不轉。操作員說按鈕按起來手感正常。' },
-    { id: 'c-load', m: 'conv', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['load_bad', 'Y0'], on: ['Y1'], sym: '按啟動，運轉燈有亮，但輸送帶不轉。' },
-    { id: 'c-com', m: 'conv', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['com'], off: ['Y1'], sym: '換過端子台之後，按啟動輸送帶不轉，運轉燈也不亮。' },
-    { id: 'c-burn', m: 'conv', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['out_burn', 'Y0'], on: ['Y1'], sym: '上週接觸器燒過一次，換新後按啟動輸送帶還是不轉；運轉燈有亮。' },
-    { id: 'c-psu', m: 'conv', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['load_psu'], off: ['Y1'], sym: '按啟動輸送帶不轉，運轉燈也不亮。配電箱裡有一顆 24V 電源供應器的燈不亮。' },
-    { id: 'c-logic', m: 'conv', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['logic'], il: 'LD X0\nOR Y0\nAND X1\nAND X2\nOUT Y0\nLD Y0\nOUT Y1', sym: '新來的工程師改寫了停止的部分，之後按啟動輸送帶就不會動了。' },
-    { id: 'c-ems', m: 'conv', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['wire_in', 'X2'], sym: '清潔人員擦過操作箱之後，按啟動輸送帶不轉。急停按鈕看起來沒有被按下。' },
-    { id: 'b-sbad', m: 'cyl', main: 'Y2', grp: 'Y1', press: ['X0'], truth: ['sensor_bad', 'X2'], on: ['Y0'], sym: '按住啟動，氣缸伸到底了，但到位燈 Y2 不亮。' },
-    { id: 'b-swire', m: 'cyl', main: 'Y2', grp: 'Y1', press: ['X0'], truth: ['wire_in', 'X2'], on: ['Y0'], sym: '按住啟動，氣缸伸到底了，到位燈不亮。有人說感測器上的小燈是亮的。' },
-    { id: 'b-spwr', m: 'cyl', main: 'Y2', grp: 'Y1', press: ['X0'], truth: ['sensor_pwr', 'X2'], on: ['Y0'], sym: '移過感測器的位置之後，氣缸伸到底，到位燈不亮。' },
-    { id: 'b-valve', m: 'cyl', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['load_bad', 'Y0'], on: ['Y1'], sym: '按住啟動，伸出中指示燈有亮，氣缸卻完全不動。氣壓表正常。' },
-    { id: 'd-ems', m: 'door', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['wire_in', 'X3'], sym: '施工後自動門按開門沒反應。急停按鈕沒有被按下。' },
-    { id: 'd-logic', m: 'door', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['logic'], il: 'LD X0\nANI X3\nOUT Y0\nLD Y0\nOUT Y1', sym: '工程師說「急停要用常閉接點」，把程式改了，之後按開門就沒反應。' },
-    { id: 'd-ss', m: 'door', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['ss'], sym: '整理過 PLC 下方的配線後，按開門沒反應。' },
-    { id: 'd-motor', m: 'door', main: 'Y0', grp: 'Y1', press: ['X0'], truth: ['load_bad', 'Y0'], on: ['Y1'], sym: '按開門，開門中指示燈亮，門卻不動。' }
+    { id: 'c-stop', m: 'conv', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['stop'], sym: '早上開機，按啟動輸送帶不轉。昨天下班前有人用電腦改過程式。' },
+    { id: 'c-wire', m: 'conv', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['wire_in', 'X0'], sym: '按啟動輸送帶不轉。操作員說按鈕按起來手感正常。' },
+    { id: 'c-load', m: 'conv', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['load_bad', 'Y4'], sym: '按啟動，輸送帶不轉。接觸器很舊了。' },
+    { id: 'c-com', m: 'conv', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['com'], rel: 1, sym: '換過端子台之後，按啟動輸送帶不轉。' },
+    { id: 'c-burn', m: 'conv', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['out_burn', 'Y4'], sym: '上週接觸器燒過一次，換了新的接觸器，按啟動輸送帶還是不轉。' },
+    { id: 'c-psu', m: 'conv', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['load_psu'], sym: '昨晚跳過一次電，今天按啟動輸送帶不轉。' },
+    { id: 'c-logic', m: 'conv', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['logic'], il: 'LD X0\nOR Y4\nAND X1\nAND X2\nOUT Y4\nLD Y4\nOUT Y5', sym: '新來的工程師改寫了停止的部分，之後按啟動輸送帶就不會動了。' },
+    { id: 'c-ems', m: 'conv', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['wire_in', 'X2'], sym: '清潔人員擦過操作箱之後，按啟動輸送帶不轉。急停按鈕看起來沒有被按下。' },
+    { id: 'b-sbad', m: 'cyl', main: 'Y6', grp: 'Y5', press: ['X0'], truth: ['sensor_bad', 'X2'], on: ['Y4'], sym: '按住啟動，氣缸伸到底了，但到位燈不亮。' },
+    { id: 'b-swire', m: 'cyl', main: 'Y6', grp: 'Y5', press: ['X0'], truth: ['wire_in', 'X2'], on: ['Y4'], sym: '按住啟動，氣缸伸到底了，到位燈不亮。有人說感測器上的小燈是亮的。' },
+    { id: 'b-spwr', m: 'cyl', main: 'Y6', grp: 'Y5', press: ['X0'], truth: ['sensor_pwr', 'X2'], on: ['Y4'], rel: 1, sym: '移過感測器的位置之後，氣缸伸到底，到位燈不亮。' },
+    { id: 'b-valve', m: 'cyl', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['load_bad', 'Y4'], sym: '按住啟動，氣缸完全不動。氣壓表正常。' },
+    { id: 'd-ems', m: 'door', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['wire_in', 'X3'], sym: '施工後自動門按開門沒反應。急停按鈕沒有被按下。' },
+    { id: 'd-logic', m: 'door', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['logic'], il: 'LD X0\nANI X3\nOUT Y4\nLD Y4\nOUT Y5', sym: '工程師說「急停要用常閉接點」，把程式改了，之後按開門就沒反應。' },
+    { id: 'd-ss', m: 'door', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['ss'], rel: 1, sym: '整理過 PLC 下方的配線後，按開門沒反應。' },
+    { id: 'd-motor', m: 'door', main: 'Y4', grp: 'Y5', press: ['X0'], truth: ['load_bad', 'Y4'], sym: '按開門，門不動。馬達摸起來是冷的。' }
   ];
   var TYPES = {
     stop: function () { return 'PLC 在 STOP'; },
     ss: function () { return '輸入共點 S/S 沒接'; },
     logic: function () { return '程式邏輯寫錯'; },
-    com: function () { return '輸出的 COM 沒接'; },
+    com: function (t, sc) { return comOf(sc.main) + ' 沒接（' + (comOf(sc.main) === 'COM4' ? 'Y4～Y7 共用' : sc.main + ' 專用') + '）'; },
     load_psu: function () { return '負載用的 24V 電源沒電'; },
-    wire_in: function (t, sc) { return t + '（' + label(sc, t) + '）這一路斷了：按鈕接點或線'; },
-    sensor_bad: function (t, sc) { return t + '（' + label(sc, t) + '）感測器本身壞了'; },
-    sensor_pwr: function (t, sc) { return t + '（' + label(sc, t) + '）感測器的電源線沒接'; },
-    out_burn: function (t, sc) { return t + ' 這一點輸出損壞'; },
-    load_bad: function (t, sc) { return t + '（' + label(sc, t) + '）負載本身壞了'; }
+    wire_in: function (t, sc) { return t + ' ' + label(sc, t) + '這一路斷了'; },
+    sensor_bad: function (t, sc) { return t + ' ' + label(sc, t) + '本身壞了'; },
+    sensor_pwr: function (t, sc) { return t + ' ' + label(sc, t) + '的電源線沒接'; },
+    out_burn: function (t) { return t + ' 這一點輸出損壞'; },
+    load_bad: function (t, sc) { return t + ' ' + label(sc, t) + '本身壞了'; }
   };
   function label(sc, d) { var m = M[sc.m], all = m.ins.concat(m.outs); for (var i = 0; i < all.length; i++) if (all[i][0] === d) return all[i][1]; return d; }
   function hypName(h, sc) { return TYPES[h[0]](h[1], sc); }
@@ -85,7 +89,8 @@
       if (f === 'stop') { prog = { Y: {}, rungs: [] }; m.outs.forEach(function (o) { prog.Y[o[0]] = 0; }); }
       else prog = runIL(il, X, force);
       m.outs.forEach(function (o) {
-        var y = o[0], on = prog.Y[y] ? 1 : 0, cond = on && !(f === 'out_burn' && t === y) && f !== 'com';
+        // COM 沒接：和報修的負載同一個 COM 的輸出都不導通
+        var y = o[0], on = prog.Y[y] ? 1 : 0, cond = on && !(f === 'out_burn' && t === y) && !(f === 'com' && comOf(y) === comOf(sc.main));
         out[y] = on;
         var v = cond && f !== 'load_psu' ? 24 : 0;
         moves[y] = v === 24 && !(f === 'load_bad' && t === y) ? 1 : 0;
@@ -126,12 +131,16 @@
   }
   function bestCost(sc) {                    // 最少要花幾分鐘才能唯一確定（窮舉檢查的組合）
     var cs = checksOf(sc), truth = sim(sc, sc.truth), others = explains(sc).filter(function (h) { return key(h) !== key(sc.truth); }).map(function (h) { return sim(sc, h); });
-    var best = null;
+    var best = null, all = [];
     for (var mask = 1; mask < (1 << cs.length); mask++) {
       var set = cs.filter(function (c, i) { return mask & (1 << i); }), cost = set.reduce(function (a, c) { return a + c.cost; }, 0);
-      if (best && cost >= best.cost) continue;
-      if (others.every(function (o) { return set.some(function (c) { return c.fp(o) !== c.fp(truth); }); })) best = { cost: cost, set: set.map(function (c) { return c.k; }) };
+      if (best && cost > best.cost) continue;
+      if (!others.every(function (o) { return set.some(function (c) { return c.fp(o) !== c.fp(truth); }); })) continue;
+      var ks = set.map(function (c) { return c.k; });
+      if (!best || cost < best.cost) { best = { cost: cost, set: ks }; all = [ks]; }
+      else all.push(ks);   // 同樣快的另一種組合（每項至少 1 分鐘，所以不會是「多查一項」的組合）
     }
+    if (best) best.all = all;
     return best;
   }
   function orderPath(sc) {                   // 照建議順序查，跳過「查了也分不出來」的項目
@@ -169,21 +178,27 @@
       if (sc.truth[0] === 'logic' && sc.il === m.il) p('logic 題的程式和正確程式一樣');
       if (sc.truth[0] !== 'logic' && sc.il) p('不是 logic 題卻改了程式');
       if (!bestCost(sc)) p('找不到能確定答案的檢查組合');
+      if (sc.grp && comOf(sc.grp) !== comOf(sc.main)) p('「同一組 COM 的另一個輸出」' + sc.grp + ' 和 ' + sc.main + ' 不在同一個 COM');
     });
-    return { ok: !probs.length, problems: probs, count: S.length };
+    // 每一種檢查至少要在一題的最佳路徑（成本最低的組合，同樣快的都算）裡用到，否則這項檢查沒有存在的意義
+    var used = {}; S.forEach(function (sc) { var b = bestCost(sc); if (b) b.all.forEach(function (set) { set.forEach(function (k) { used[k] = 1; }); }); });
+    CHECKS.forEach(function (c) { if (!used[c.k]) probs.push('檢查「' + c.name + '」在所有題目的最佳路徑裡都用不到'); });
+    return { ok: !probs.length, problems: probs, count: S.length, used: Object.keys(used) };
   }
 
   /* ================= 成績 ================= */
   var SKEY = 'll_trouble_stats';
   function getStats() { try { var s = JSON.parse(localStorage.getItem(SKEY) || '{}'); return s && typeof s === 'object' ? s : {}; } catch (e) { return {}; } }
   function putStats(s) { try { localStorage.setItem(SKEY, JSON.stringify(s)); } catch (e) { } }
-  function record(id, ok, cost, best) {
+  /* guess：一項都沒查就答對 → 不算解出、不算答對，題目留在待重做 */
+  function record(id, ok, cost, best, guess) {
     var s = getStats(); s.done = s.done || {}; s.wrong = s.wrong || [];
-    var d = s.done[id] || { tries: 0, solved: 0, bestCost: null };
-    d.tries++; if (ok) { d.solved = 1; d.bestCost = d.bestCost == null ? cost : Math.min(d.bestCost, cost); }
+    var d = s.done[id] || { tries: 0, solved: 0, bestCost: null, guesses: 0 }, real = ok && !guess;
+    d.tries++; if (guess) d.guesses = (d.guesses || 0) + 1;
+    if (real) { d.solved = 1; d.bestCost = d.bestCost == null ? cost : Math.min(d.bestCost, cost); }
     s.done[id] = d;
-    s.wrong = s.wrong.filter(function (x) { return x !== id; }); if (!ok) s.wrong.push(id);
-    s.total = (s.total || 0) + 1; s.correct = (s.correct || 0) + (ok ? 1 : 0);
+    s.wrong = s.wrong.filter(function (x) { return x !== id; }); if (!real) s.wrong.push(id);
+    s.total = (s.total || 0) + 1; s.correct = (s.correct || 0) + (real ? 1 : 0);
     putStats(s); return s;
   }
   function statLine() { var s = getStats(), solved = Object.keys(s.done || {}).filter(function (k) { return s.done[k].solved; }).length; $('tstat').textContent = '已解 ' + solved + ' / ' + S.length + ' 題' + (s.total ? '　答對率 ' + Math.round(100 * s.correct / s.total) + '%' : '') + ((s.wrong || []).length ? '　待重做 ' + s.wrong.length + ' 題' : ''); }
@@ -195,9 +210,11 @@
     G = { i: i, done: [], cost: 0, over: false, gen: G.gen + 1 };
     var sc = S[i], m = M[sc.m];
     $('tpick').value = i;
-    $('ttitle').textContent = '第 ' + (i + 1) + ' 題　' + m.name;
+    $('ttitle').innerHTML = '第 ' + (i + 1) + ' 題　' + m.name + (sc.rel ? '　<small style="font-size:14px;font-weight:400">相關：<a href="lab-sink.html">輸入輸出接線實驗室</a></small>' : '');
     $('tsym').textContent = sc.sym; $('tact').textContent = m.act;
-    $('tio').innerHTML = m.ins.map(function (x) { return '<b>' + x[0] + '</b><span>' + x[1] + '</span>'; }).join('') + m.outs.map(function (y) { return '<b>' + y[0] + '</b><span>' + y[1] + (y[0] === sc.main ? '　← 報修的東西' : '') + '</span>'; }).join('');
+    var groups = {}; m.outs.forEach(function (y) { (groups[comOf(y[0])] = groups[comOf(y[0])] || []).push(y[0]); });
+    $('tio').innerHTML = m.ins.map(function (x) { return '<b>' + x[0] + '</b><span>' + x[1] + '</span>'; }).join('') + m.outs.map(function (y) { return '<b>' + y[0] + '</b><span>' + y[1] + '（' + comOf(y[0]) + '）' + (y[0] === sc.main ? '　← 報修的東西' : '') + '</span>'; }).join('') +
+      '<b>COM</b><span>' + Object.keys(groups).map(function (g) { return groups[g].join('、') + (groups[g].length > 1 ? ' 共用 ' : ' 用 ') + g; }).join('；') + '（FX3S-20MT/ES：Y0～Y3 各有自己的 COM0～COM3，Y4～Y7 共用 COM4）</span>';
     $('til').textContent = (sc.il || m.il);
     var box = $('tchecks'); box.innerHTML = '';
     checksOf(sc).forEach(function (c) { var b = el('button', '', c.name + '<small>約 ' + c.cost + ' 分鐘</small>'); b.type = 'button'; b.dataset.k = c.k; b.onclick = function () { look(c.k); }; box.appendChild(b); });
@@ -219,8 +236,8 @@
     }
     if (k === 'sled') return ledHTML(o.sled, lb) + '<small class="why">感測器上的動作指示燈：亮＝它自己有偵測到東西。</small>';
     if (k === 'vsens') return Object.keys(o.vsens).map(function (d) { return d + ' 感測器 棕（+）對 藍（0V）：<span class="volt">' + o.vsens[d] + ' V</span>'; }).join('<br>');
-    if (k === 'grp') return sc.grp + '（' + lb(sc.grp) + '）：OUT 燈' + (o.grpOut ? '亮' : '不亮') + '，實際' + (o.grp ? '<b>有動作</b>' : '<b>沒有動作</b>') + '。';
-    if (k === 'vload') return sc.main + '（' + lb(sc.main) + '）兩端：<span class="volt">' + o.vload + ' V</span>';
+    if (k === 'grp') return sc.grp + ' ' + lb(sc.grp) + '（和 ' + sc.main + ' 同在 ' + comOf(sc.main) + '）：OUT 燈' + (o.grpOut ? '亮' : '不亮') + '，實際' + (o.grp ? '<b>有動作</b>' : '<b>沒有動作</b>') + '。';
+    if (k === 'vload') return sc.main + ' ' + lb(sc.main) + '兩端：<span class="volt">' + o.vload + ' V</span>';
     if (k === 'vpsu') return '負載用的 24V 電源 +24V 對 0V：<span class="volt">' + o.vpsu + ' V</span>';
     return '';
   }
@@ -237,28 +254,29 @@
     stop: 'RUN／STOP 開關在 STOP：程式不執行、輸出全部 OFF，IN 燈照樣會亮。這是一秒就能排除的項目，所以永遠第一個看。',
     ss: '每一個 X 燈都不亮，連平常就該亮的急停（常閉）也不亮：不是某一路線斷，而是全部輸入的共點 S/S 沒接（漏型接法 S/S 要接 24V）。',
     logic: 'X 燈都正常、PLC 在 RUN，Y 燈卻不亮：電已經進來了，是程式條件不成立。監看就看得到是哪一個接點擋住。',
-    com: 'OUT 燈亮、負載兩端 0V，而且同一組 COM 的其他輸出也一起不動、負載電源有 24V：共用的 COM 沒接（漏型輸出 COM 要接 0V）。',
-    load_psu: 'OUT 燈亮、負載兩端 0V，同組的輸出也都不動，量負載電源是 0V：電源供應器沒電，PLC 和配線都沒錯。',
-    wire_in: '該亮的 X 燈不亮，但其他輸入正常、PLC 在 RUN：訊號沒進到這一點，是這一路的按鈕接點或線，跟程式無關。',
+    com: 'OUT 燈亮、負載兩端 0V，而且同一個 COM4 的另一個輸出（Y5）也一起不動、負載電源有 24V：COM4 沒接（漏型電晶體輸出 COM 要接 0V）。FX3S-20MT/ES 的 Y0～Y3 各有自己的 COM，Y4～Y7 共用 COM4，所以 COM4 一掉，Y4～Y7 全部不動。',
+    load_psu: 'OUT 燈亮、負載兩端 0V，同一個 COM 的另一個輸出也不動，量負載電源是 0V：電源供應器沒電，PLC 和配線都沒錯。',
+    wire_in: '該亮的 X 燈不亮，但其他輸入正常、PLC 在 RUN：訊號沒進到這一點，是這一路的按鈕接點或線（用這些檢查分不出是按鈕還是線），跟程式無關。',
     sensor_bad: '感測器自己的燈也不亮，量感測器電源有 24V：感測器有電卻偵測不到，感測器壞了（或位置、感測距離不對）。',
     sensor_pwr: '感測器自己的燈不亮，量棕－藍是 0V：感測器沒有電，是電源線的問題。',
-    out_burn: 'OUT 燈亮、負載兩端 0V，但同一組 COM 的另一個輸出正常：COM 沒問題，是這一點輸出沒有導通。',
+    out_burn: 'OUT 燈亮、負載兩端 0V，但同一個 COM 的另一個輸出（Y5）正常：COM 和負載電源都沒問題，是這一點輸出沒有導通。',
     load_bad: 'OUT 燈亮、負載兩端也量得到 24V，東西卻不動：PLC 和配線都送到了，問題在負載本身（線圈、馬達、機構）。'
   };
   function submit() {
     var v = $('tdiag').value; if (!v || G.over) return null;
-    var sc = S[G.i], ok = v === key(sc.truth), best = bestCost(sc), path = orderPath(sc);
+    var sc = S[G.i], ok = v === key(sc.truth), best = bestCost(sc), path = orderPath(sc), guess = ok && !G.done.length;
     G.over = true; $('tsubmit').disabled = true;
-    record(sc.id, ok, G.cost, best.cost);
-    say('tsay', (ok ? '✔ 答對！' : '✖ 不對。真相是：' + hypName(sc.truth, sc) + '。') + '你花了 ' + G.cost + ' 分鐘（查了 ' + G.done.length + ' 項）；最少只要 ' + best.cost + ' 分鐘。', ok ? 'ok' : 'bad');
+    record(sc.id, ok, G.cost, best.cost, guess);
+    if (guess) say('tsay', '猜中了，但沒有證據：一項都沒查就下結論，現場這樣換零件很可能換錯。這題不算解出，查過再答一次。', 'bad');
+    else say('tsay', (ok ? '✔ 答對！' : '✖ 不對。真相是：' + hypName(sc.truth, sc) + '。') + '你花了 ' + G.cost + ' 分鐘（查了 ' + G.done.length + ' 項）；最少只要 ' + best.cost + ' 分鐘。', ok ? 'ok' : 'bad');
     var left = consistent(sc, sim(sc, sc.truth), G.done);
     var h = '<div class="callout"><b>為什麼：</b>' + WHY[sc.truth[0]] + '</div>';
-    h += '<p><b>最快的組合（' + best.cost + ' 分鐘）：</b>' + best.set.map(cname).join(' → ') + '</p>';
+    h += '<p><b>最快的組合（' + best.cost + ' 分鐘）：</b>' + best.all.map(function (s) { return s.map(cname).join(' ＋ '); }).join('<br>或 ') + '</p>';
     h += '<p><b>照「先看燈、再監看、最後量」的順序（' + path.cost + ' 分鐘）：</b></p><ol class="order">' + ORDER.filter(function (k) { return checksOf(sc).some(function (c) { return c.k === k; }); }).map(function (k) { return '<li class="' + (path.done.indexOf(k) >= 0 ? 'used' : '') + '">' + cname(k) + (path.done.indexOf(k) >= 0 ? '　← 需要' : '　（這題可以跳過）') + '</li>'; }).join('') + '</ol>';
     if (left.length > 1) h += '<p class="why">只看你查過的項目，還有 ' + left.length + ' 種可能說得通：' + left.map(function (x) { return hypName(x, sc); }).join('、') + '。下次多查一項再下結論。</p>';
     $('treveal').innerHTML = h;
     statLine();
-    return { ok: ok, cost: G.cost, best: best.cost };
+    return { ok: ok, guess: guess, cost: G.cost, best: best.cost };
   }
   S.forEach(function (sc, i) { var o = el('option', '', (i + 1) + '. ' + M[sc.m].name + '：' + sc.sym.slice(0, 16) + '…'); o.value = i; $('tpick').appendChild(o); });
   $('tpick').onchange = function () { show(+$('tpick').value); };
@@ -267,5 +285,5 @@
   $('tsubmit').onclick = submit;
   show(0);
 
-  window.TroubleLab = { M: M, S: S, CHECKS: CHECKS, ORDER: ORDER, sim: sim, candidates: candidates, explains: explains, consistent: consistent, bestCost: bestCost, orderPath: orderPath, verify: verify, show: show, look: look, submit: submit, G: function () { return G; }, getStats: getStats, SKEY: SKEY, hypName: hypName, key: key };
+  window.TroubleLab = { M: M, S: S, CHECKS: CHECKS, ORDER: ORDER, sim: sim, candidates: candidates, explains: explains, consistent: consistent, bestCost: bestCost, orderPath: orderPath, verify: verify, show: show, look: look, submit: submit, G: function () { return G; }, getStats: getStats, SKEY: SKEY, hypName: hypName, key: key, comOf: comOf };
 })();

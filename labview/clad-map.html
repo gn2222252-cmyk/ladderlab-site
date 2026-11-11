@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="cabc461d6f">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CLAD 考試地圖與題型特訓 | LadderLab</title>
+<meta name="description" content="LabVIEW CLAD 考試地圖：四大主題的考點連到本站課程與動畫實驗室，自己勾選已掌握；15 種常見題型的解題心法與原創練習題；依錯題推薦該去哪個實驗室。">
+<link rel="stylesheet" href="../style.css?v=140b24f618">
+<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+  .crules { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 8px 0; }
+  .crules div { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--card); }
+  .crules b { display: block; font-size: 20px; }
+  .crules small { color: var(--mute); }
+  .dist { display: flex; height: 22px; border-radius: 6px; overflow: hidden; margin: 8px 0 4px; }
+  .dist span { display: grid; place-items: center; color: #fff; font: 700 12px system-ui, sans-serif; min-width: 0; overflow: hidden; white-space: nowrap; }
+
+  .cmap { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 760px) { .cmap { grid-template-columns: minmax(0, 1fr); } }
+  .topic { border: 3px solid; border-radius: 12px; padding: 10px; background: var(--card); min-width: 0; }
+  .topic.big { grid-column: 1 / -1; }
+  .topic h3 { margin: 0 0 4px; font-size: 17px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+  .topic h3 small { font-weight: 400; color: var(--mute); font-size: 13px; }
+  .pbar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 4px 0 8px; }
+  .pbar i { display: block; height: 100%; width: 0; transition: width .3s; }
+  .pts { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+  .pt { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; min-width: 0; }
+  .pt.done { background: rgba(22, 163, 74, .1); border-color: #16a34a; }
+  .pt .hd { display: flex; gap: 6px; align-items: flex-start; }
+  .pt .hd input { margin-top: 4px; flex: none; }
+  .pt .hd button { border: 0; background: none; padding: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .pt .bd { font-size: 13px; color: var(--mute); margin: 4px 0 0 22px; }
+  .pt .bd a { display: inline-block; margin: 2px 6px 0 0; font-size: 13px; }
+  .ext { border-style: dashed; }
+
+  .types { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+  .tcard { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--card); min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .tcard h4 { margin: 0; font-size: 15px; }
+  .tcard .tag { font-size: 12px; color: var(--mute); }
+  .tcard .st { font: 12px ui-monospace, Consolas, monospace; }
+  .tcard button { align-self: flex-start; }
+  .tcard.weak { border-color: #dc2626; }
+  .drill { border: 2px solid var(--on); border-radius: 12px; padding: 10px 12px; margin: 12px 0; background: var(--card); }
+  .drill .how { font-size: 14px; background: var(--onbg); border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+  .drill .q { font-size: 16px; margin: 8px 0; overflow-wrap: anywhere; }
+  .drill .opts { display: grid; gap: 6px; }
+  .drill .opts button { text-align: left; padding: 8px 10px; overflow-wrap: anywhere; }
+  .drill .opts button.ok { border-color: #16a34a; box-shadow: 0 0 0 2px #16a34a inset; }
+  .drill .opts button.no { border-color: #dc2626; box-shadow: 0 0 0 2px #dc2626 inset; }
+  .rec { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 8px 0; background: var(--card); }
+  .rec h4 { margin: 0 0 4px; font-size: 15px; }
+  .rec a { display: inline-block; margin: 2px 8px 0 0; }
+  code { font-family: ui-monospace, Consolas, monospace; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="clad-map.html" class="here">CLAD 地圖</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>CLAD 考試地圖與題型特訓</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="map" class="here">① 考試地圖</button>
+    <button type="button" data-t="drill">② 題型特訓</button>
+    <button type="button" data-t="weak">③ 弱點建議</button>
+  </div>
+
+  <section class="lab-stage" id="t-map">
+    <h2 style="margin-top:0">考試規則</h2>
+    <div id="rules" class="crules"></div>
+    <p class="why">以上依 NI 現行的 CLAD 準備指南整理；考試規則、主題比例、報名方式會改版，<b>一律以 NI 官網最新公告為準</b>。2017 年版的備考指南寫的是 Pearson VUE 考場、可選 LabVIEW NXG 或 LabVIEW 20xx 環境，和現行說法不同，報名前要再確認。</p>
+    <h2>四大主題與考點</h2>
+    <div class="dist" id="dist"></div>
+    <p class="why">題數是用比例乘 40 估的，實際每次出題會有差。點考點名稱看說明和連結（本站課程用課號、動畫實驗室直接到分頁）；學會了就勾「已掌握」，勾選只存在這個瀏覽器。</p>
+    <div class="row"><span class="kv" id="mapsum"></span><button type="button" id="mapclear">清除全部勾選</button></div>
+    <div class="cmap" id="cmap"></div>
+  </section>
+
+  <section class="lab-stage" id="t-drill" hidden>
+    <p class="why">把 CLAD 範例題歸成 15 種題型。每一型先讀「怎麼解」，再做 3 題原創題（數字每次重新產生）。按「綜合測驗」每一型抽一題。成績存在這個瀏覽器，第 ③ 分頁會依錯題推薦要去哪裡補。</p>
+    <div class="row">
+      <button type="button" class="go" id="mixed">綜合測驗（每型 1 題，共 15 題）</button>
+      <button type="button" id="dclear">清除成績</button>
+      <span class="kv" id="dsum"></span>
+    </div>
+    <div class="drill" id="drill" hidden></div>
+    <div class="types" id="types"></div>
+  </section>
+
+  <section class="lab-stage" id="t-weak" hidden>
+    <p class="why">依「題型特訓」的作答紀錄，錯得越多的題型排越前面，附上該去的實驗室分頁和課程；也會列出你在地圖上還沒勾的官方考點，佔分比例大的主題優先。</p>
+    <div id="weak"></div>
+  </section>
+</main>
+<footer><p>LabVIEW、CLAD 為 NI 之商標。本站為獨立製作，與 NI 無關；題目為本站原創，不是考古題。考試規則以 NI 官網最新公告為準。</p></footer>
+<script src="clad-map.js?v=e8576a8a77"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="507e7cffe4">
+<meta name="ll-version" content="cabc461d6f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
 <meta name="description" content="LabVIEW 動畫實驗室總覽：迴圈、結構、陣列、字串、叢集、圖表、變數、佇列、DAQ、VISA 序列通訊、檔案 I/O、布林、數值等互動實驗室，加上 FX 封包練習台。不用安裝 LabVIEW，在瀏覽器裡改輸入、看動畫、先預測再對答案。">
 <link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=0d769919de">
+<link rel="stylesheet" href="lab.css?v=db8fcf7252">
 <style>
   .hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin: 16px 0; }
   .hub a.card { display: block; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--card); color: inherit; text-decoration: none; transition: transform .15s, box-shadow .15s; position: relative; }
@@ -46,6 +46,7 @@
     { f: 'lab-flow.html', n: '資料流', ic: '→', c: '#0369a1', d: '節點等輸入到齊才執行；沒連線就不保證先後。', t: ['小球沿線流動、節點等到齊才執行', '平行與順序：沒連線不保證誰先', '線分叉就是複製一份', '迴圈的輸入、輸出通道什麼時候讀、什麼時候送'], l: '第 2、4 課、C1、C3' },
     { f: 'lab-debug.html', n: '除錯工具', ic: '🐞', c: '#b91c1c', d: '斷掉的箭頭、Probe、中斷點、單步執行：照著線一條一條找出第一個錯的值。', t: ['Error List：點錯誤跳到出錯的節點', 'Probe＋Breakpoint＋Step Into／Over／Out', '迴圈除錯：Highlight Execution、Conditional Probe'], l: '第 2、21 課、C1' },
     { f: 'lab-coderead.html', n: '看圖說答案', ic: '?=', c: '#1e40af', d: 'CLAD 最常考的題型：看方塊圖，說出顯示元件的值。答完播放資料流動畫解說。', t: ['31 題，涵蓋迴圈、Shift Register、Case、陣列、字串、錯誤叢集等 10 個主題', '練習模式：逐題作答、動畫解說', '測驗模式：10 題計時、錯題清單'], l: 'C1、C13 起的考題解析' },
+    { f: 'clad-map.html', n: 'CLAD 考試地圖', ic: 'CLAD', c: '#0a57a4', d: '官方四大主題與比例、每個考點連到對應的實驗室；15 種題型特訓與弱點建議。', t: ['考試規則：40 題、1 小時、70% 及格', '四大主題 10／25／50／15%，勾選已掌握', '15 種題型的解題心法與原創新題'], l: 'C1 起的 CLAD 課程' },
     { f: 'lab-loop.html', n: '迴圈', ic: '⟳', c: '#6b6b6b', d: '跑幾圈、輸出什麼，一圈一圈看。', t: ['While 與 For、四種輸出通道', 'Shift Register 有沒有接初始值', 'Wait 與 Wait Until Next ms Multiple'], l: '第 4、5、7 課、C3' },
     { f: 'lab-time.html', n: '時間', ic: 'ms', c: '#0e7490', d: 'Tick Count 量間隔、時間戳記幾點幾分；逾時判定不要用長 Wait。', t: ['Tick Count 是 U32，跨過繞回點照樣能相減', '看門狗：心跳 3 秒沒變就判斷斷線', '時間戳與 Format Date/Time String 格式碼'], l: '第 5、19 課、C3、F3' },
     { f: 'lab-struct.html', n: '結構', ic: '?', c: '#1e6fff', d: 'Case 走哪一頁、事件怎麼排隊、狀態機怎麼換狀態。', t: ['Case 選擇器：範圍、Default、捨入、大小寫', 'Event 事件排隊與 Timeout', 'State Machine 洗衣機', 'Sequence 與 Tick Count 計時'], l: '第 6 課、C4、C9、A2' },
@@ -89,7 +90,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "507e7cffe4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

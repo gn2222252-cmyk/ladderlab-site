@@ -1,53 +1,96 @@
-/* LabVIEW animated labs (array, boolean, numeric) */
+/* 動畫實驗室共用樣式（LabVIEW 與 PLC 實驗室都載入）
+   跟著 style.css 的「控制盤」視覺系統：盤體灰底、白卡左側色條、圓角小、數值用窄體像儀表讀數。
+   各頁 <style> 裡的 .tabs 規則在本檔之後載入，所以分頁按鈕用 .lab-main .tabs 提高權重（不用 !important）。 */
+
+/* 只有實驗室用的兩個語意色：結果文字（深淺模式各自調到夠對比） */
+:root { --lab-ok: #157a3c; --lab-bad: #c62828; --lab-hit: #e8a200; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lab-ok: #5fd395; --lab-bad: #ff7f78; } }
+:root[data-theme="dark"] { --lab-ok: #5fd395; --lab-bad: #ff7f78; }
+
+/* ---------- 版面 ---------- */
 .lab-main { max-width: 1240px; margin: 0 auto; padding: 16px; }
+.lab-main > h1 { margin: 6px 0 8px; }
 .lab-grid { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 900px) { .lab-grid { grid-template-columns: 1fr; } }
-.lab-list { position: sticky; top: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
-.lab-list h3 { font-size: 12px; color: var(--mute); margin: 10px 6px 4px; }
-.lab-list button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; font: inherit; color: inherit; }
+
+/* 左側函式清單：像端子台的一排，目前項目左邊一條藍 */
+.lab-list { position: sticky; top: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 6px; }
+.lab-list h3 { font-size: 12px; font-weight: 700; color: var(--mute); margin: 10px 6px 4px; letter-spacing: .02em; }
+.lab-list button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 6px 8px; border-radius: 3px; cursor: pointer; font: inherit; color: inherit; }
 .lab-list button:hover { background: var(--onbg); }
-.lab-list button.here { background: var(--on); color: #fff; }
-.lab-list button.done::after { content: " ✓"; color: #16a34a; }
-.lab-list button.here.done::after { color: #fff; }
-.lab-stage { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.lab-list button.here { background: var(--onbg); color: var(--ink); font-weight: 700; box-shadow: inset 4px 0 0 var(--on); }
+.lab-list button.done::after { content: " ✓"; color: var(--lab-ok); }
+.lab-list button.here.done::after { color: var(--lab-ok); }
+
+/* 實驗台：白卡、細框、左側一條色條，不浮起 */
+.lab-stage { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--on); border-radius: 6px; padding: 16px; min-width: 0; }
+.lab-stage.lab-challenge { border-left-color: var(--rail); }
 .lab-head { display: flex; gap: 14px; align-items: center; }
 .lab-head h2 { margin: 0 0 4px; font-size: 20px; }
 .fdesc { margin: 0; color: var(--mute); }
-.node { flex: none; width: 64px; height: 64px; border: 2px solid #c58b00; border-radius: 6px; background: #fff7d6; display: grid; place-items: center; font: 700 11px ui-monospace, Consolas, monospace; color: #6b4b00; text-align: center; line-height: 1.15; box-shadow: 2px 2px 0 #e2c46a; }
 .lab-io { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 16px; align-items: center; margin: 18px 0; }
 @media (max-width: 1100px) { .lab-io { grid-template-columns: 1fr; } }
 .lab-run { display: grid; gap: 8px; justify-items: center; }
+
+/* ---------- 分頁按鈕：控制盤上的選擇頁籤 ----------
+   一排平的頁籤坐在一條底線上，目前頁有白底和下方一條龍膽藍，不是藥丸按鈕。 */
+.lab-main .tabs { display: flex; flex-wrap: wrap; gap: 2px; margin: 10px 0 16px; padding: 0; border-bottom: 2px solid var(--line); }
+.lab-main .tabs button {
+  border: 1px solid transparent; border-bottom: 0; border-radius: 4px 4px 0 0; margin-bottom: -2px;
+  background: transparent; color: var(--mute); padding: 8px 14px 9px; font: inherit; font-weight: 600; cursor: pointer;
+  box-shadow: inset 0 -3px 0 transparent; transition: color .12s, background-color .12s, box-shadow .12s;
+}
+.lab-main .tabs button:hover { color: var(--ink); background: var(--onbg); }
+.lab-main .tabs button.here { color: var(--ink); background: var(--card); border-color: var(--line); box-shadow: inset 0 -3px 0 var(--on); }
+.lab-main .tabs button:focus-visible { outline-offset: -3px; }
+@media (max-width: 560px) { .lab-main .tabs button { padding: 7px 10px 8px; font-size: 14px; } }
+
+/* ---------- LabVIEW 函式節點（黃色圖示，保留 LabVIEW 的樣子） ---------- */
+.node { flex: none; width: 64px; height: 64px; border: 2px solid #b07c00; border-radius: 4px; background: #fff3c4; display: grid; place-items: center; font: 700 12px/1.15 var(--f-tech); color: #5a3f00; text-align: center; letter-spacing: .01em; box-shadow: inset 0 -3px 0 rgba(176, 124, 0, .22); }
+
+/* ---------- 端子、線、陣列格子 ---------- */
 .term { margin: 10px 0; }
 .term > .tl { font-size: 13px; color: var(--mute); margin-bottom: 4px; display: flex; gap: 6px; align-items: center; }
 .wire { display: inline-block; width: 18px; height: 4px; border-radius: 2px; background: #e8820c; }
 .wire.i32 { background: #1e5bd7; }
 .wire.bool { background: #1f9d3a; }
-.arr { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 6px; border: 2px solid #e8820c; border-radius: 6px; background: rgba(232, 130, 12, .06); min-height: 46px; align-items: flex-start; }
+.arr { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 6px; border: 2px solid #e8820c; border-radius: 4px; background: rgba(232, 130, 12, .06); min-height: 46px; align-items: flex-start; }
 .arr.i32 { border-color: #1e5bd7; background: rgba(30, 91, 215, .05); }
 .arr.d2 { display: inline-grid; }
 .cellw { display: grid; justify-items: center; gap: 1px; }
-.cellw small { font: 10px ui-monospace, Consolas, monospace; color: var(--mute); }
-.cell { width: 46px; height: 32px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg, #fff); display: grid; place-items: center; font: 600 15px ui-monospace, Consolas, monospace; }
-input.cell { text-align: center; color: inherit; }
-.cell.hit { outline: 3px solid #f59e0b; background: rgba(245, 158, 11, .2); }
-.cell.new { outline: 3px solid #16a34a; }
+.cellw small { font: 500 11px var(--f-tech); color: var(--mute); }
+.cell { width: 46px; height: 32px; border: 1px solid var(--line); border-radius: 3px; background: var(--card); display: grid; place-items: center; font: 600 16px var(--f-tech); font-variant-numeric: tabular-nums; color: var(--ink); }
+input.cell { text-align: center; color: var(--ink); }
+.cell.hit { outline: 3px solid var(--lab-hit); background: rgba(232, 162, 0, .18); }
+.cell.new { outline: 3px solid var(--go); }
 .cell.gone { opacity: .25; text-decoration: line-through; }
 .cell.empty { opacity: .3; border-style: dashed; }
 .arrbtn { margin-left: 4px; font-size: 12px; }
-.scalar { display: inline-grid; place-items: center; min-width: 60px; height: 34px; padding: 0 10px; border: 2px solid #1e5bd7; border-radius: 6px; font: 600 15px ui-monospace, Consolas, monospace; background: var(--bg, #fff); }
+
+/* 數值顯示：儀表讀數，窄體等寬數字 */
+.scalar { display: inline-grid; place-items: center; min-width: 60px; height: 34px; padding: 0 10px; border: 2px solid #1e5bd7; border-radius: 3px; font: 600 17px var(--f-tech); font-variant-numeric: tabular-nums; letter-spacing: .02em; background: var(--card); color: var(--ink); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .1); }
 .scalar.dbl { border-color: #e8820c; }
-input.scalar { width: 70px; text-align: center; color: inherit; }
+input.scalar { width: 70px; text-align: center; color: var(--ink); }
+
+/* ---------- 動畫：飛過去的元素 ---------- */
 .anim-layer { position: fixed; inset: 0; pointer-events: none; z-index: 80; }
-.fly { position: fixed; display: grid; place-items: center; border-radius: 5px; font: 700 15px ui-monospace, Consolas, monospace; background: #fde68a; border: 2px solid #f59e0b; color: #111; box-shadow: 0 4px 14px rgba(0, 0, 0, .2); transition-property: left, top, opacity, transform; transition-timing-function: cubic-bezier(.4, .1, .2, 1); }
+.fly { position: fixed; display: grid; place-items: center; border-radius: 3px; font: 700 15px var(--f-tech); background: #fde68a; border: 2px solid #d99a00; color: #111; box-shadow: 0 3px 10px rgba(0, 0, 0, .18); transition-property: left, top, opacity, transform; transition-timing-function: cubic-bezier(.4, .1, .2, 1); }
 .fly.new { background: #bbf7d0; border-color: #16a34a; }
-.pred input { width: 220px; font: 15px ui-monospace, Consolas, monospace; }
+
+/* ---------- 預測、結果、說明 ---------- */
+.pred input { width: 220px; max-width: 100%; font: 16px var(--f-tech); }
 .verdict-line { font-weight: 700; min-height: 1.4em; }
-.verdict-line.ok { color: #15803d; }
-.verdict-line.bad { color: #dc2626; }
+.verdict-line.ok, .verdict-line.bad { padding-left: 10px; border-left: 3px solid currentColor; }
+.verdict-line.ok { color: var(--lab-ok); }
+.verdict-line.bad { color: var(--lab-bad); }
+.lab-main .callout { border-radius: 4px; }
 .lab-notes { border-top: 1px solid var(--line); padding-top: 10px; }
 .lab-notes li { margin: 4px 0; }
+
+/* 猜一猜：標題是一塊小銘牌 */
 .lab-challenge { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
-.lab-challenge h3 { margin: 0 0 4px; font-size: 16px; }
+.lab-stage.lab-challenge { border-top: 1px solid var(--line); }
+.lab-challenge h3 { display: inline-block; margin: 0 0 6px; padding: 2px 10px 3px; font-size: 15px; background: var(--plate); color: var(--plate-ink); border-radius: 3px; letter-spacing: .03em; }
 
 /* 長選項的下拉選單不要把手機版面撐寬 */
 .lab-main select { max-width: 100%; }

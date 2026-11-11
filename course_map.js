@@ -1171,6 +1171,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/clad-map.html",
+     "href": "labview/clad-map.html",
+     "label": "CLAD 考試地圖與題型特訓"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-numeric.html",
      "href": "labview/lab-numeric.html",
      "label": "動畫實驗室：溢位、捨入、商與餘數"
