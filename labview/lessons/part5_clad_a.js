@@ -227,7 +227,7 @@ const figFB={name:'Feedback Node 範例',bd:{w:480,h:170,structs:[{id:'wl',k:'wh
   {id:'inc',k:'fn',fn:'Increment',x:200,y:53},{id:'o',k:'ind',t:'i32',label:'Count',x:290,y:57},{id:'cond',k:'stop',s:'wl'},{id:'st',k:'ctl',t:'bool',label:'stop',x:280,y:116}],
  wires:[{id:'w1',from:'fb.out',to:'inc',t:'i32'},{id:'w2',from:'inc.out',to:'o',t:'i32'},{id:'w3',from:'inc.out',to:'fb.in',t:'i32',pts:[[260,67],[260,40],[100,40],[100,67]]},{id:'w4',from:'k0',to:'fb.init',t:'i32',pts:[[134,119]]},{id:'w5',from:'st',to:'cond',t:'bool'}]}};
 L.push({id:'C03',order:103,no:'C3',part:PART,title:'迴圈與時間：跑幾次、輸出什麼',mins:70,
-goals:[['學會','For/While 的次數規則、空陣列、四種輸出通道、條件終端、Shift Register 堆疊與未初始化、Feedback Node、所有 Timing 函式。'],['考試重點','CLAD 最愛考的「看圖算答案」：先找迴圈會跑幾次，再看每個通道輸出的是最後一個值還是陣列。'],['動畫練習','<a href="lab-loop.html">迴圈實驗室</a>：勾「先預測」，猜跑幾圈、輸出什麼，再看動畫對答案。']],
+goals:[['學會','For/While 的次數規則、空陣列、四種輸出通道、條件終端、Shift Register 堆疊與未初始化、Feedback Node、所有 Timing 函式。'],['考試重點','CLAD 最愛考的「看圖算答案」：先找迴圈會跑幾次，再看每個通道輸出的是最後一個值還是陣列。'],['動畫練習','<a href="lab-loop.html">迴圈實驗室</a>：勾「先預測」，猜跑幾圈、輸出什麼，再看動畫對答案。'],['動畫練習','<a href="lab-time.html">時間實驗室</a>：Tick Count 跨過繞回點時 U32 相減照樣正確，先轉 DBL 再減就錯。']],
 check:'六題看圖題自己算對五題以上。',
 body:[
 C.h3('懂','','迴圈跑幾次'),

@@ -961,6 +961,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-time.html",
+     "href": "labview/lab-time.html",
+     "label": "動畫實驗室：Tick Count、逾時判定、時間戳"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-struct.html",
      "href": "labview/lab-struct.html",
      "label": "動畫實驗室：Case、Event、State Machine、Sequence"

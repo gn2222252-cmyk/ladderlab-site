@@ -93,7 +93,7 @@ const hb={name:'通訊迴圈：心跳（每秒寫 D240）',view:'bd',
    {id:'w10',from:'tlo.o',to:'srl.R',t:'u32'},{id:'w11',from:'tbo.o',to:'srb.R',t:'u16'}]}
 };
 L.push({id:'L19',order:19,no:'19',part:'完整專案',title:'心跳、斷線重連、正確結束',mins:70,files:['GT_Main.vi（加入心跳與重連）'],
-goals:[['學會','用 Tick Count 做定時、在迴圈裡重新連線、Flush Queue、可控的結束順序。'],['做出','每秒寫 D240；通訊斷了自動重連；Exit 時寫 D240 = 0 再關埠。'],['用在專案','讓程式在工廠可以「開著不用管」。']],
+goals:[['學會','用 Tick Count 做定時、在迴圈裡重新連線、Flush Queue、可控的結束順序。'],['做出','每秒寫 D240；通訊斷了自動重連；Exit 時寫 D240 = 0 再關埠。'],['用在專案','讓程式在工廠可以「開著不用管」。'],['動畫練習','<a href="lab-time.html#tmo">時間實驗室：看門狗</a>：心跳停住後多久發現、按 STOP 多久停，迴圈裡比較經過時間和長 Wait 兩種寫法並排跑。']],
 check:'軟 PLC 上 D240 每秒加 1；關掉軟 PLC → PLC Connected 熄滅、程式不會停；重開軟 PLC → 幾秒內自動連回；按 Exit 後 D240 變 0。',
 body:[
 C.h3('懂','','HMI 心跳：PLC 怎麼知道 LabVIEW 還活著'),

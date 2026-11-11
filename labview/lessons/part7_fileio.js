@@ -411,7 +411,7 @@ C.h3('測','q','小測驗'),
    F4：紀錄檔一直往後加
    ====================================================================== */
 L.push({id:'F03',order:24,no:'F4',part:PART,title:'紀錄檔：一筆一筆往後加（Set File Position）',mins:45,files:['F3_Append_Line.vi'],
-goals:[['學會','open or create + Set File Position（end）接在檔案最後面；Format Date/Time String 做時間欄；\\r\\n 換行。'],['做出','每執行一次，log.csv 就多一行「時間,數值」。'],['用在專案','量測紀錄、異常紀錄、生產履歷，都是這個模式。'],['動畫練習','<a href="lab-file.html#mark">檔案 I/O 實驗室：檔案指標</a>：沒有 Set File Position 到 end 就從頭蓋掉；每圈開關檔和迴圈外開一次差多少次。']],
+goals:[['學會','open or create + Set File Position（end）接在檔案最後面；Format Date/Time String 做時間欄；\\r\\n 換行。'],['做出','每執行一次，log.csv 就多一行「時間,數值」。'],['用在專案','量測紀錄、異常紀錄、生產履歷，都是這個模式。'],['動畫練習','<a href="lab-file.html#mark">檔案 I/O 實驗室：檔案指標</a>：沒有 Set File Position 到 end 就從頭蓋掉；每圈開關檔和迴圈外開一次差多少次。'],['動畫練習','<a href="lab-time.html#stamp">時間實驗室：時間戳</a>：輸入格式碼即時看結果，紀錄檔的時間欄用時間戳、耗時用 Tick Count。']],
 check:'連續執行三次（數值 1.5、2.25、3），log.csv 有三行，最舊的在最上面。',
 body:[
 C.h3('懂','','為什麼要 Set File Position'),

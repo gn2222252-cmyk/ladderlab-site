@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="e5caeb26ad">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>時間實驗室：Tick Count、逾時判定、時間戳 | LadderLab</title>
+<meta name="description" content="LabVIEW 時間的動畫實驗室：Tick Count (ms) 是 U32，約 49.7 天繞回一次，跨過繞回點用 U32 相減照樣正確、先轉 DBL 就錯；在迴圈裡用 Shift Register 記開始時間做逾時判定，對照用 Wait 等滿會讓畫面卡住；Format Date/Time String 格式碼即時試。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .row input[type=range] { width: 170px; max-width: 100%; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .two { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 800px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .dial { width: 100%; max-width: 260px; height: auto; display: block; margin: 0 auto; }
+  .dial text { font: 12px ui-monospace, Consolas, monospace; fill: var(--ink); }
+  table.cmp { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: fixed; }
+  table.cmp th, table.cmp td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+  table.cmp td.num { font: 600 14px ui-monospace, Consolas, monospace; }
+  table.cmp tr.ok td.num { color: #15803d; } table.cmp tr.bad td.num { color: #dc2626; }
+  .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 800px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  .bx { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .bx h3 { margin: 0 0 6px; font-size: 15px; }
+  .bx.bad { border-color: #dc2626; } .bx.good { border-color: #16a34a; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; }
+  .kv b { font-weight: 700; }
+  .pbar { height: 14px; border-radius: 7px; background: rgba(128, 128, 128, .15); overflow: hidden; margin: 6px 0; }
+  .pbar i { display: block; height: 100%; width: 0; background: #60a5fa; transition: width .1s linear; }
+  .pbar.warn i { background: #f59e0b; } .pbar.bad i { background: #dc2626; }
+  .lmp { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+  .lmp i { width: 16px; height: 16px; border-radius: 50%; background: #4b5563; border: 1px solid #111; }
+  .lmp.on i { background: #22c55e; box-shadow: 0 0 6px #22c55e; } .lmp.off i { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  .hb { font: 700 28px ui-monospace, Consolas, monospace; }
+  .hb.pulse { animation: pulse .4s; }
+  @keyframes pulse { from { color: #16a34a; transform: scale(1.15); } }
+  .fmtout { font: 700 20px ui-monospace, Consolas, monospace; padding: 8px 10px; border: 2px solid #e8820c; border-radius: 6px; min-height: 1.6em; overflow-wrap: anywhere; background: var(--card); }
+  .fmtin { font: 15px ui-monospace, Consolas, monospace; width: 260px; max-width: 100%; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .presets button { font: 13px ui-monospace, Consolas, monospace; }
+  .lbl { font-size: 13px; color: var(--mute); margin: 10px 0 4px; }
+  .stopb { padding: 8px 16px; border-radius: 8px; border: 3px solid #555; background: #ddd; color: #222; font-weight: 700; cursor: pointer; }
+  .stopb.on { background: #dc2626; color: #fff; border-color: #7f1d1d; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-time.html" class="here">時間</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>時間實驗室：Tick Count、逾時判定、時間戳</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="wrap" class="here">Tick Count 繞回</button>
+    <button type="button" data-t="tmo">逾時判定</button>
+    <button type="button" data-t="stamp">時間戳與格式碼</button>
+  </div>
+
+  <section class="lab-stage" id="t-wrap">
+    <p class="why">Tick Count (ms) 傳回一個 <b>U32</b> 毫秒計數。它的起點沒有意義，只能拿兩個值相減算經過多久。U32 最大是 4,294,967,295，再加 1 就回到 0，所以大約每 <b>49.7 天</b>繞回一次。情境：龍門 X 軸開始移動時記下 Tick Count，之後每圈算「現在 − 開始」，超過 8000 ms 就判定動作超時。把起點拉到繞回點附近，按 ▶ 讓時間往前走。</p>
+    <div class="row">
+      <label>開始時距離繞回點 <input type="range" id="wpos" min="-6000" max="6000" step="500" value="-3000"> <b id="wposv"></b></label>
+      <label>X 軸實際花了 <input type="range" id="wact" min="1000" max="12000" step="500" value="10000"> <b id="wactv"></b></label>
+    </div>
+    <div class="row">
+      <button type="button" class="go" id="wplay">▶ 開始移動</button>
+      <button type="button" id="wreset">重來</button>
+    </div>
+    <div class="two">
+      <svg class="dial" id="wdial" viewBox="0 0 260 260" role="img" aria-label="U32 計數環"></svg>
+      <div style="min-width:0">
+        <table class="cmp" id="wtab"></table>
+        <p class="verdict-line" id="wsay"></p>
+      </div>
+    </div>
+    <div class="callout">U32 減 U32 的結果也是 U32，跨過繞回點時「借位」剛好把差值補回來：例如開始是 4,294,964,296、現在是 7,000，U32 相減得到 10,000，正好是真正經過的毫秒數。先轉成 DBL 或 I64 這類比較大的型別再減，就變成 7,000 − 4,294,964,296，得到一個很大的負數，「經過時間 &gt; 8000」永遠不成立，超時警報也就永遠不會響。所以兩個 Tick Count 直接用 U32 相減，減完再轉型。這個寫法只要經過的時間不超過 49.7 天都對。</div>
+  </section>
+
+  <section class="lab-stage" id="t-tmo" hidden>
+    <p class="why">看門狗：有一個心跳值每秒加 1，<b>3 秒沒變</b>就判斷通訊斷線（PLC 判斷 D240 用的也是同一套邏輯）。左邊照建議寫：迴圈每 100 ms 一圈，心跳有變就用 Shift Register 記下當時的 Tick Count，每圈比較「現在 − 上次變化」是否超過 3000 ms。右邊是常見的錯誤寫法：讀一次、Wait 3000 ms、再讀一次比較。兩邊同時跑，讓心跳停住，也按按看 STOP。</p>
+    <div class="row">
+      <button type="button" class="go" id="hrun">▶ 執行</button>
+      <button type="button" id="hplug">⏸ 讓心跳停住（模擬 PLC 當機）</button>
+      <button type="button" class="stopb" id="hstop">STOP（兩邊同時按）</button>
+      <button type="button" id="hreset">重來</button>
+      <span class="kv"><span>時間</span><b id="ht">0.0 s</b></span>
+    </div>
+    <div class="row"><span>心跳值</span><span class="hb" id="hhb">1</span><span id="hline" class="lmp on"><i></i>心跳正常</span></div>
+    <div class="cols">
+      <div class="bx good" id="hA"></div>
+      <div class="bx bad" id="hB"></div>
+    </div>
+    <p class="verdict-line" id="hsay"></p>
+    <div class="log" id="hlog"></div>
+    <div class="callout">用 Wait 等滿 3 秒的寫法有兩個問題：第一，這 3 秒內迴圈什麼都不能做，STOP、畫面更新、其他判斷都得等，操作員會覺得「當掉了」；第二，判斷的時間點被切成 3 秒一格，心跳停住後要等到下一個完整的 3 秒區間結束才會發現，通常比左邊慢。用 Tick Count 比較的寫法，迴圈照常每 100 ms 轉一圈，只是每圈多做一次減法和比較，反應快，判斷也準。同樣的寫法可以用在「動作超過幾秒沒完成就報警」、「每隔幾秒做一次某件事」。</div>
+  </section>
+
+  <section class="lab-stage" id="t-stamp" hidden>
+    <p class="why"><b>Get Date/Time In Seconds</b> 給的是時間戳（timestamp）：從 1904-01-01 00:00 UTC 起算的秒數，帶小數。<b>Format Date/Time String</b> 依格式碼把它變成文字，紀錄檔的時間欄、每天一個檔的檔名都用它。下面用瀏覽器的時鐘模擬，改格式碼即時看結果。</p>
+    <div class="row">
+      <label>time format string <input class="fmtin" id="sfmt" value="%Y-%m-%d %H:%M:%S" spellcheck="false"></label>
+      <button type="button" id="sfreeze">⏸ 凍結時間</button>
+      <label class="check small"><input type="checkbox" id="sutc"> UTC format?</label>
+    </div>
+    <div class="presets" id="spre"></div>
+    <div class="lbl">date/time string</div>
+    <div class="fmtout" id="sout"></div>
+    <div class="lbl">這個時間戳（Get Date/Time In Seconds）</div>
+    <div class="kv" id="sraw"></div>
+    <div class="lbl">我確定的常用格式碼</div>
+    <table class="cmp" id="scodes"></table>
+    <div class="lbl">龍門紀錄檔的一列（時間欄用時間戳、耗時欄用 Tick Count）</div>
+    <div class="row"><button type="button" id="slog">模擬完成一次 X 軸移動</button><label class="check small"><input type="checkbox" id="sjump"> 移動途中電腦自動校時，時鐘往回撥 5 秒</label></div>
+    <div class="log" id="slogbox" style="max-height:140px"></div>
+    <p class="verdict-line" id="ssay"></p>
+    <div class="callout"><b>Tick Count 量間隔，時間戳記「幾點幾分」，兩者別混用。</b>時間戳跟著電腦的時鐘走，電腦自動校時、有人手動改時間，都可能讓它往前或往後跳；拿兩個時間戳相減量動作耗時，碰到校時就可能出現負數。Tick Count 不看時鐘，只是一直往上數，適合量間隔，但它本身不代表任何時刻，不能寫進紀錄檔當時間。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="tquiz" style="margin-top:16px"></section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-time.js?v=93688eb40f"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "e5caeb26ad" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
