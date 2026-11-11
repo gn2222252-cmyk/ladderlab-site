@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="0dffa13609">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SubVI 實驗室：接線端、必要輸入、可重入 | LadderLab</title>
+<meta name="description" content="LabVIEW SubVI 的動畫實驗室：自己把控制元件指定到 Connector Pane 的格子上，看圖示長出接腳並檢查配置慣例；Required、Recommended、Optional 沒接線時會怎樣；兩個平行迴圈呼叫同一個 SubVI，不可重入要排隊、Preallocated clone 各自執行，計數器的差別。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; }
+  @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .bx { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .bx h3 { margin: 0 0 6px; font-size: 15px; }
+  .lbl { font-size: 13px; margin: 10px 0 4px; }
+  .items { display: flex; flex-wrap: wrap; gap: 6px; }
+  .items button { display: inline-flex; align-items: center; gap: 6px; text-align: left; padding: 6px 10px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; font-size: 14px; color: inherit; }
+  .items button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .items button.used { opacity: .55; }
+  .items i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex: none; }
+  .items small { color: var(--mute); }
+  .svgw { width: 100%; height: auto; display: block; }
+  .svgw text { font: 13px ui-monospace, Consolas, "Microsoft JhengHei", monospace; fill: var(--ink); }
+  #cpane { max-width: 340px; margin: 0 auto; }
+  .svgw .cell { cursor: pointer; }
+  .svgw .cell:hover rect { stroke: var(--on); stroke-width: 3; }
+  .tips { margin: 8px 0 0; padding-left: 20px; font-size: 14px; }
+  .tips li { margin: 3px 0; }
+  .tips li.ok { color: #15803d; } .tips li.bad { color: #dc2626; }
+  .ins { display: grid; gap: 8px; }
+  .inrow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  .inrow .h { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+  .inrow.miss { border-color: #dc2626; background: rgba(220, 38, 38, .06); }
+  .inrow.dflt { border-color: #f59e0b; background: rgba(245, 158, 11, .08); }
+  .ch { font-size: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: rgba(128, 128, 128, .05); }
+  .ch .req { font-weight: 800; } .ch .rec { font-weight: 400; } .ch .opt { color: var(--mute); opacity: .7; }
+  .runarrow { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+  .runarrow svg { width: 34px; height: 26px; }
+  .sfp { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; }
+  .sfp div { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 13px; color: var(--mute); transition: background .3s; }
+  .sfp b { display: block; font: 700 18px ui-monospace, Consolas, monospace; color: var(--ink); }
+  .sfp div.use { background: #fde68a; color: #333; }
+  .sfp div.use b { color: #111; }
+  .gantt { border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  .gl { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 6px; align-items: center; margin: 6px 0; font-size: 14px; }
+  .gtrack { position: relative; height: 30px; background: rgba(128, 128, 128, .08); border-radius: 4px; overflow: hidden; }
+  .gbar { position: absolute; top: 0; bottom: 0; border-radius: 4px; font: 12px ui-monospace, Consolas, monospace; color: #0b1b3a; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
+  .gbar.run { background: #60a5fa; border: 1px solid #1e40af; }
+  .gbar.run.b { background: #fbbf24; border-color: #92400e; }
+  .gbar.wait { background: repeating-linear-gradient(45deg, rgba(220, 38, 38, .25) 0 6px, transparent 6px 12px); border: 1px dashed #dc2626; color: #991b1b; }
+  .gcur { position: absolute; top: 0; bottom: 0; width: 2px; background: #dc2626; }
+  .mem { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0; }
+  .clone { border: 3px solid #c58b00; background: #fff7d6; color: #6b4b00; border-radius: 8px; padding: 8px 12px; min-width: 150px; text-align: center; transition: box-shadow .2s; }
+  .clone b.sr { display: inline-block; margin-top: 4px; border: 2px solid #1e5bd7; border-radius: 4px; padding: 2px 12px; font: 700 22px ui-monospace, Consolas, monospace; background: #fff; color: #111; }
+  .clone.busyA { box-shadow: 0 0 0 4px #60a5fa; }
+  .clone.busyB { box-shadow: 0 0 0 4px #fbbf24; }
+  .clone small { display: block; color: #6b4b00; }
+  .got { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .got div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--mute); }
+  .got b { font: 700 18px ui-monospace, Consolas, monospace; color: var(--ink); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-subvi.html" class="here">SubVI</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>SubVI 實驗室：接線端、必要輸入、可重入</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="conn" class="here">接線端怎麼配</button>
+    <button type="button" data-t="req">Required／Recommended／Optional</button>
+    <button type="button" data-t="reent">可重入</button>
+  </div>
+
+  <section class="lab-stage" id="t-conn">
+    <p class="why">要做一個「讀 PLC 的 D 暫存器」的 SubVI。前面板有 7 個元件。<b>先點左邊一個元件，再點右邊接線端（Connector Pane，4-2-2-4 樣式）的一格</b>，就把它指定到那一格；再點一次那一格可以取消。下面的「呼叫端」會看到圖示長出對應的接腳。</p>
+    <div class="two">
+      <div class="bx"><h3>SubVI 前面板</h3><div class="items" id="citems"></div>
+        <div class="row"><button type="button" id="cauto">照慣例排好</button><button type="button" id="cmess">隨便亂排</button><button type="button" id="cclear">全部清掉</button></div>
+      </div>
+      <div class="bx"><h3>接線端（點格子指定）</h3><svg class="svgw" id="cpane" viewBox="0 0 260 200" role="img" aria-label="接線端格子"></svg></div>
+    </div>
+    <div class="bx" style="margin-top:12px"><h3>呼叫端方塊圖：別人看到的 SubVI 圖示</h3><svg class="svgw" id="cicon" viewBox="0 0 560 230" role="img" aria-label="SubVI 圖示與接腳"></svg></div>
+    <ul class="tips" id="ctips"></ul>
+    <div class="callout">慣例：<b>輸入在左、輸出在右</b>；參考（VISA、Queue、檔案這類 refnum）放<b>左上進、右上出</b>；<b>error in 左下、error out 右下</b>。照這樣排，一串 SubVI 擺在一起時，參考線和錯誤線會變成兩條直線，從左穿到右，一眼就看得出順序。沒有指定到格子的前面板元件，呼叫端就接不到，等於 SubVI 內部自己用。</div>
+  </section>
+
+  <section class="lab-stage" id="t-req" hidden>
+    <p class="why">SubVI「換算.vi」：結果 ＝ 原始值 × 倍率 ＋ 偏移。三個輸入各自可以設成 Required、Recommended 或 Optional（在 SubVI 的接線端那一格按右鍵 ▸ This Connection Is）。在呼叫端決定哪些有接線，按執行。</p>
+    <div class="two">
+      <div class="bx"><h3>呼叫端</h3><div class="ins" id="rins"></div>
+        <div class="row"><button type="button" class="go" id="rrun">▶ 執行</button><span class="runarrow" id="rarrow"></span></div>
+      </div>
+      <div class="bx"><h3>SubVI 換算.vi</h3>
+        <div class="lbl why">Context Help（Ctrl+H）看到的樣子</div><div class="ch" id="rch"></div>
+        <div class="lbl why">SubVI 前面板（存檔時的預設值）</div><div class="sfp" id="rsfp"></div>
+        <div class="lbl why">結果</div><div class="sfp"><div>結果<b id="rout">–</b></div></div>
+      </div>
+    </div>
+    <p class="verdict-line" id="rsay"></p>
+    <div class="log" id="rlog"></div>
+    <div class="callout"><b>Required</b>：沒接線，呼叫端的執行箭頭就斷了，根本不能執行，用在「沒給就沒意義」的輸入（例如 VISA 資源、要讀的 D 編號）。<b>Recommended</b>：可以不接，Context Help 用一般字體列出，提醒你通常該接。<b>Optional</b>：可以不接，Context Help 用淡色。後兩種沒接時，SubVI 用的是那個控制元件<b>存檔時的預設值</b>（在 SubVI 前面板設好值，右鍵 ▸ Data Operations ▸ Make Current Value Default 再存檔），不是上一次呼叫傳進來的值。</div>
+  </section>
+
+  <section class="lab-stage" id="t-reent" hidden>
+    <p class="why">「慢讀.vi」裡面有 Wait 200 ms，還有一個<b>沒接初始值的 Shift Register</b> 當計數器：每被呼叫一次就加 1，並把新值傳出來。兩個平行迴圈 A、B 各呼叫它 3 次。切換 VI Properties ▸ Execution 的設定，按執行比較時間軸和計數器。</p>
+    <div class="row">
+      <label>Reentrancy <select id="emode"><option value="non">Non-reentrant execution（預設）</option><option value="pre">Preallocated clone reentrant execution</option></select></label>
+      <label>每次呼叫 <select id="edur"><option value="100">100 ms</option><option value="200" selected>200 ms</option><option value="500">500 ms</option></select></label>
+      <button type="button" class="go" id="erun">▶ 執行</button>
+    </div>
+    <div class="gantt" id="egantt"></div>
+    <div class="lbl why">記憶體裡的「慢讀.vi」</div>
+    <div class="mem" id="emem"></div>
+    <div class="got"><div>迴圈 A 拿到的計數<br><b id="egA">–</b></div><div>迴圈 B 拿到的計數<br><b id="egB">–</b></div></div>
+    <p class="verdict-line" id="esay"></p>
+    <div class="callout"><b>Non-reentrant（預設）</b>：記憶體裡只有一份，同一時間只讓一個呼叫者進去，另一個在門口排隊（斜線的部分）。兩個迴圈互相拖慢，但也因為只有一份，Shift Register 是<b>大家共用</b>的：A、B 的呼叫輪流把同一個計數器往上加。這正是 FGV（功能型全域變數）能在迴圈之間共用資料的原因，所以 FGV 一定要保持 Non-reentrant。<br><b>Preallocated clone</b>：方塊圖上每一個呼叫的位置都有自己的一份，可以同時執行，各自的 Shift Register 各記各的。適合「每台機器各自一個濾波器」這種需要獨立記憶的情況。<br>另外還有 <b>Shared clone</b>：也能同時執行，但呼叫時借到的是哪一份不固定，所以不要靠它的 Shift Register 記東西。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="squiz" style="margin-top:16px"></section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-subvi.js?v=4f46bab1ef"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "0dffa13609" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

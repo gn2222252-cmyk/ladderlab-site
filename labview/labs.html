@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="65fcbedcab">
+<meta name="ll-version" content="0dffa13609">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
@@ -49,6 +49,7 @@
     { f: 'lab-string.html', n: '字串', ic: 'abc', c: '#c026d3', d: '一格一個字元，位置從 0 算起。', t: ['切、接、找、換九個函式', 'Format／Scan 格式碼對照', 'Normal、\'\\\' Codes、Hex 看控制碼'], l: '第 9 課、C6、F2' },
     { f: 'lab-cluster.html', n: '叢集', ic: '{ }', c: '#9333ea', d: '把資料打包、拆開，錯誤沿著錯誤線往後傳。', t: ['Bundle／Unbundle 與 By Name', 'Type Def 一改全部跟著改', '錯誤叢集怎麼流、Close 為什麼照樣執行'], l: '第 8、11 課、C10、C18' },
     { f: 'lab-prop.html', n: '屬性節點', ic: 'P', c: '#be185d', d: '用程式改前面板：顏色、反灰、閃爍，還有會不會觸發事件。', t: ['Visible、Disabled 0/1/2、Blinking、顏色', 'Value、Value (Signaling)、Local Variable：誰會觸發事件', '控制參考傳進 SubVI，一次 Disable 一組按鈕'], l: '第 18 課、C7、C11' },
+    { f: 'lab-subvi.html', n: 'SubVI', ic: 'VI', c: '#1d4ed8', d: '接線端怎麼配、必要輸入沒接會怎樣、兩個迴圈同時呼叫誰要等。', t: ['4-2-2-4 接線端：輸入在左、輸出在右、錯誤在下角', 'Required／Recommended／Optional 沒接的差別', '可重入：排隊等待與各自一份記憶'], l: '第 10 課、C7' },
     { f: 'lab-graph.html', n: '圖表', ic: '∿', c: '#0f766e', d: 'Chart 會記住舊資料，Graph 每次整張換掉。', t: ['六種資料型別各畫出什麼', 'XY Graph 用兩個陣列畫圓'], l: 'C11、C14' },
     { f: 'lab-var.html', n: '變數', ic: 'x', c: '#7c3aed', d: '兩個迴圈共用一個變數，資料是怎麼不見的。', t: ['競爭條件：你來當排程器', '一顆 Stop 停兩個迴圈的四種接法', 'FGV 功能型全域變數'], l: '第 16 課、C8' },
     { f: 'lab-queue.html', n: '佇列', ic: 'Q', c: '#0891b2', d: '迴圈之間傳資料：一筆都不能少用 Queue，只要最新用 Notifier。', t: ['生產者、佇列、消費者三欄動畫', 'Queue、Notifier、Local Variable 比一比', 'Producer/Consumer 怎麼關才不掉資料'], l: '第 16 課、C8、A2' },
@@ -77,7 +78,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "65fcbedcab" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "0dffa13609" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -158,7 +158,7 @@ function connectorSVG(d){
   </svg></div>`;
 }
 L.push({id:'L10',order:10,no:'10',part:'LabVIEW 基礎',title:'SubVI：自己做函式',mins:55,files:['FX_Sum.vi','FX_ReadFrame.vi','FX_WriteFrame.vi','GT_AlarmText.vi（加上接線端）','GT_StepText.vi（加上接線端）'],
-goals:[['學會','Icon、Connector Pane、端子配置慣例、Required、在別的 VI 裡呼叫。'],['做出','FX 封包三個 SubVI，以及把第 6 課的兩個 VI 變成可呼叫的 SubVI。'],['用在專案','驅動、解析、文字轉換全部是 SubVI，主程式才會乾淨。']],
+goals:[['學會','Icon、Connector Pane、端子配置慣例、Required、在別的 VI 裡呼叫。'],['做出','FX 封包三個 SubVI，以及把第 6 課的兩個 VI 變成可呼叫的 SubVI。'],['用在專案','驅動、解析、文字轉換全部是 SubVI，主程式才會乾淨。'],['動畫練習','<a href="lab-subvi.html">SubVI 實驗室</a>：把前面板元件點到接線端的格子，看圖示長出接腳；不照慣例排會提醒你。']],
 check:'L10_UseFrame.vi 呼叫 FX_ReadFrame(200, 30) 得到 &lt;STX&gt;011903C&lt;ETX&gt;74，FX_WriteFrame(106, 1) 得到 &lt;STX&gt;110D4020100&lt;ETX&gt;30（和拆解器一致）。',
 body:[
 C.h3('懂','','任何 VI 都可以當成別人的函式'),

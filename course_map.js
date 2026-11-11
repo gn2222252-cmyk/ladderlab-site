@@ -991,6 +991,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-subvi.html",
+     "href": "labview/lab-subvi.html",
+     "label": "動畫實驗室：SubVI 接線端與可重入"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-graph.html",
      "href": "labview/lab-graph.html",
      "label": "動畫實驗室：Chart、Graph、XY Graph"
