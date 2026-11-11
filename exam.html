@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="a67834ecef">
+<meta name="ll-version" content="93147cd8dc">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>氣壓乙級、工業配線乙級 PLC 術科練習：線上模擬與自動評分 | LadderLab</title>
@@ -135,7 +135,7 @@
       <tr><td>3</td><td>第 3 章前半</td><td>E8、E5、E6、E7、E16</td><td>計時、計數、閃爍、M8002 開機檢查</td></tr>
       <tr><td>4</td><td>第 3 章後半（含數字的輸入與顯示）</td><td>E14、E27、E26</td><td>比較、ALT、ZRST、BCD（第 6 題的訊息碼）</td></tr>
       <tr><td>5</td><td>第 4 章前半</td><td>E10、E17</td><td>STL 流程（第 1 題的啟動、停止流程）</td></tr>
-      <tr><td>6</td><td>第 5 章、<a href="safety.html">急停與硬體互鎖</a>、<a href="design.html#d4">機台設計方法：I/O 表</a></td><td>E11、E15</td><td>TH、急停接常閉、斷線等同跳脫；安全電驛；外部互鎖；輸出仲裁</td></tr>
+      <tr><td>6</td><td>第 5 章、<a href="safety.html">急停與硬體互鎖</a>、<a href="lab-motor.html">馬達正反轉與 Y-Δ 實驗室</a>、<a href="design.html#d4">機台設計方法：I/O 表</a></td><td>E11、E15</td><td>TH、急停接常閉、斷線等同跳脫；安全電驛；外部互鎖；輸出仲裁</td></tr>
       <tr><td>7</td><td>本頁的題目說明</td><td>E22</td><td>b 接點限位、關門中按開門停 2 秒、光電、過載</td></tr>
       <tr><td>8</td><td>—</td><td>E25</td><td>交替運轉、過載換機</td></tr>
       <tr><td>9</td><td>—</td><td>E23、E24</td><td>停止流程、延續剩餘計時、水位、訊息碼</td></tr>
@@ -160,7 +160,7 @@
 </main>
 <footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機、勞動部技能檢定中心無關。</p></footer>
 <script src="config.js?v=eca98dd0d9"></script>
-<script src="course_map.js?v=0b293c46f1"></script>
+<script src="course_map.js?v=81d8126836"></script>
 <script src="course.js?v=764fe70243"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script src="waitlist.js?v=92656de277"></script>
@@ -170,7 +170,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "93147cd8dc" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

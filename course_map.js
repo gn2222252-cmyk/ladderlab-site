@@ -211,6 +211,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "lab-motor.html",
+     "href": "lab-motor.html",
+     "label": "動畫實驗室：馬達正反轉、Y-Δ 啟動與熱動電驛"
+    },
+    {
+     "k": "G",
      "id": "review.html#ch2",
      "href": "review.html#ch2",
      "label": "第 2 章 章末小考"

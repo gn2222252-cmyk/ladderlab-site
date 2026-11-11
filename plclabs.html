@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="a67834ecef">
+<meta name="ll-version" content="93147cd8dc">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 動畫實驗室總覽 | LadderLab</title>
@@ -45,6 +45,7 @@
     { f: 'lab-sink.html', n: '輸入輸出接線', ic: '24V', c: '#b45309', d: '電流從哪裡流：漏型、源型、輸出 COM、急停接常閉。', t: ['S/S 接 24V 還是 0V，配 NPN 還是 PNP', '電晶體漏型輸出：COM 接 0V、COM4 合計 0.8 A', '急停接常閉：斷線也會停'], l: '第 1 章、課程 A9' },
     { f: 'lab-scan.html', n: '掃描週期', ic: '⟳', c: 'var(--on)', tc: 'var(--card)', d: '輸入刷新 → 由上往下執行 → 輸出刷新，一圈一圈看。', t: ['執行到一半按按鈕，要下一圈才看得到', '慢一圈：先讀後寫差一個掃描', '雙線圈：只有最後一行算數', '太短的輸入、看門狗 D8000'], l: '第 2 章' },
     { f: 'lab-latch.html', n: '自保持與互鎖', ic: 'SR', c: '#15803d', d: '按一下放開還亮；停止優先、啟動優先；正反轉不能同時 ON。', t: ['自保持與 SET/RST 對照', '停止按鈕接常閉時程式怎麼寫', '正反轉互鎖'], l: '第 1、2 章' },
+    { f: 'lab-motor.html', n: '馬達正反轉與 Y-Δ', ic: 'M', c: '#b91c1c', d: 'PLC 一個掃描就換向，接觸器卻要幾十毫秒才放開：只靠程式互鎖為什麼會短路。', t: ['主電路動畫：MC1、MC2 同時閉合就是相間短路', '程式互鎖 vs 外部 b 接點互鎖、主接點熔著', 'Y-Δ 啟動：T0 計時、切換間隔、MCY 與 MCΔ 互鎖', '熱動電驛接 b 接點：斷線等同跳脫'], l: '第 2 章 2.5、技能檢定' },
     { f: 'lab-edge.html', n: '上升緣與下降緣', ic: '↑↓', c: '#4338ca', d: '按住按鈕一秒，LD 加了上百次、LDP 只加 1；脈衝只亮一個掃描。', t: ['LDP、LDF、PLS、PLF 一圈一圈看', 'ALT 與 ALTP：一按一切換要用哪個', 'PLS 寫在上面還是下面：當圈或下一圈', '一個按鈕啟動／停止的四種寫法'], l: '第 3 章 A4' },
     { f: 'lab-timer.html', n: '計時器與計數器', ic: 'T/C', c: '#0e7490', d: '100 ms、1 ms、積算計時器；計數器只在上升緣加 1；停電保持。', t: ['一般計時器放開就歸零、積算型要 RST', '計數器 C0 停電歸零、C16 保留', '接點寫在線圈上面或下面差一圈'], l: '第 3 章' },
     { f: 'lab-data.html', n: '數值指令', ic: 'D', c: '#7c3aed', d: '位元、字、數字怎麼搬：K2Y、CMP、ZCP、BCD、移位。', t: ['K1X、K2Y 的位數組合', 'CMP、ZCP 輸出三個 M', 'BIN／BCD 與七段顯示、SFTL 跑馬燈'], l: '第 3 章' },
@@ -71,7 +72,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "93147cd8dc" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
