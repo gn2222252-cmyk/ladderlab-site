@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="402ba21e24">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>屬性節點實驗室：Property Node 與控制參考 | LadderLab</title>
+<meta name="description" content="LabVIEW Property Node 的動畫實驗室：用屬性節點改前面板元件的 Value、Visible、Disabled、Blinking、顏色，讀和寫的方向；Value、Value (Signaling)、Local Variable 寫值時 Value Change 事件會不會觸發；把控制參考傳進 SubVI 一次反灰一整組按鈕，隱含與明確屬性節點的差別。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .fp { background: #d9dde3; color: #1d2430; border: 1px solid #b5bcc7; border-radius: 8px; padding: 12px; display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-start; min-width: 0; }
+  .fp .cap { width: 100%; font-size: 12px; color: #4b5563; margin: -4px 0 0; }
+  .ctl { display: grid; gap: 3px; font-size: 13px; position: relative; transition: opacity .3s, filter .3s; }
+  .ctl > label, .ctl > .lb { font-size: 12px; font-weight: 600; }
+  .ctl.hid { visibility: hidden; }
+  .ctl.hid::after { content: "（Visible = F）"; visibility: visible; position: absolute; inset: 0; border: 1px dashed #9aa4b4; border-radius: 6px; display: grid; place-items: center; font-size: 11px; color: #6b7280; }
+  .ctl.dis2 { opacity: .45; filter: grayscale(1); }
+  .ctl.blink .face { animation: blink .6s steps(1) infinite; }
+  @keyframes blink { 50% { background: #fde047; color: #111; } }
+  .nbox { display: flex; align-items: stretch; border: 2px solid #6b7280; border-radius: 4px; background: #fff; }
+  .nbox .ud { display: grid; border-right: 1px solid #9ca3af; }
+  .nbox .ud span { font-size: 8px; line-height: 12px; padding: 0 3px; color: #374151; cursor: pointer; user-select: none; }
+  .nbox .face { min-width: 64px; padding: 4px 8px; font: 600 15px ui-monospace, Consolas, monospace; text-align: right; }
+  .btnf { border: 2px solid #4b5563; border-radius: 6px; background: linear-gradient(#f3f4f6, #cbd5e1); color: #111; padding: 8px 12px; font: 600 13px system-ui, sans-serif; cursor: pointer; min-width: 84px; }
+  .btnf.on { background: linear-gradient(#bbf7d0, #4ade80); }
+  .btnf.press { transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .3); }
+  .ledf { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #4b5563; background: #14532d; }
+  .ledf.on { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+  .strf { border: 2px solid #6b7280; border-radius: 4px; background: #fff; padding: 4px 8px; min-width: 110px; min-height: 30px; font: 14px system-ui, sans-serif; }
+  .swf { width: 46px; height: 24px; border-radius: 12px; background: #9ca3af; position: relative; cursor: pointer; border: 2px solid #4b5563; }
+  .swf::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .25s; }
+  .swf.on { background: #22c55e; } .swf.on::after { left: 24px; }
+  .pn { display: inline-grid; border: 2px solid #c58b00; border-radius: 4px; background: #fff7d6; color: #3b2f00; font: 12px ui-monospace, Consolas, monospace; min-width: 170px; max-width: 100%; }
+  .pn .ph { background: #f2d67a; padding: 3px 8px; font-weight: 700; display: flex; gap: 6px; align-items: center; }
+  .pn .ph .ref { display: inline-block; width: 22px; height: 4px; background: #2f6f4f; }
+  .pn .pr { display: flex; align-items: center; gap: 6px; padding: 3px 6px; border-top: 1px solid #e2c46a; transition: background .3s; }
+  .pn .pr.on { background: #fde68a; }
+  .pn .pt { width: 12px; height: 12px; border: 1px solid #7a5c00; background: #fff; flex: none; }
+  .pn .pr .nm { flex: 1; }
+  .pn .ar { color: #7a5c00; font-weight: 700; }
+  .out { font: 600 14px ui-monospace, Consolas, monospace; border: 2px solid var(--line); border-radius: 6px; padding: 3px 10px; display: inline-block; min-width: 60px; }
+  .evs { border: 4px solid #6b6b6b; border-radius: 6px; padding: 0 0 8px; background: var(--card); transition: border-color .3s, box-shadow .3s; }
+  .evs .eh { background: #ececec; color: #222; font: 600 12px ui-monospace, Consolas, monospace; text-align: center; padding: 3px; border-bottom: 2px solid #6b6b6b; }
+  .evs .eb { padding: 8px; font-size: 13px; min-height: 40px; }
+  .evs.fire { border-color: #1e6fff; box-shadow: 0 0 0 4px rgba(30, 111, 255, .25); }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; overflow-wrap: anywhere; }
+  .meth { display: grid; gap: 6px; }
+  .meth button { text-align: left; }
+  .race { display: grid; gap: 6px; margin: 8px 0; }
+  .race div { display: grid; grid-template-columns: 9em minmax(0, 1fr); gap: 8px; align-items: center; font-size: 13px; }
+  .race i { display: block; height: 12px; width: 0; border-radius: 6px; background: #1e6fff; transition: width linear; }
+  .sub { border: 2px solid #6b7280; border-radius: 8px; padding: 8px; background: var(--card); }
+  .sub h4 { margin: 0 0 6px; font-size: 14px; }
+  .forl { border: 3px solid #6b6b6b; border-radius: 4px; padding: 14px 8px 8px; position: relative; margin-top: 6px; }
+  .forl .n { position: absolute; top: 2px; left: 6px; font: 600 11px ui-monospace, Consolas, monospace; color: var(--mute); }
+  .refs { display: flex; gap: 4px; flex-wrap: wrap; min-height: 26px; align-items: center; }
+  .rchip { font: 11px ui-monospace, Consolas, monospace; border: 2px solid #2f6f4f; border-radius: 4px; padding: 1px 5px; background: #e7f5ee; color: #14532d; }
+  .fly.ref { background: #e7f5ee; border-color: #2f6f4f; color: #14532d; font-size: 11px; }
+  .fly.ev { background: #dbeafe; border-color: #1e6fff; font-size: 12px; }
+  .fly { padding: 0 6px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-prop.html" class="here">屬性節點</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>屬性節點實驗室</h1>
+  <p class="why">第 18 課用 Disabled 把手動按鈕反灰，CLAD C8 講了 Property Node 和 Control Reference。這裡讓你自己下指令：屬性怎麼寫進前面板、寫值時事件會不會跟著觸發、怎麼在 SubVI 裡一次改主畫面的一整組按鈕。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="pn" class="here">屬性節點改外觀</button>
+    <button type="button" data-t="val">Value 與事件</button>
+    <button type="button" data-t="ref">控制參考進 SubVI</button>
+  </div>
+  <label class="check small"><input type="checkbox" id="slow"> 慢動作</label>
+
+  <section class="lab-stage" id="t-pn">
+    <p class="why">選一個前面板元件和屬性，決定要「寫」還是「讀」，按執行。寫入時，值從左邊流進屬性節點再改到前面板；讀取時，值從前面板流進節點、從右邊出來。前面板上的按鈕可以真的按，試試看 Disabled = 1 和 2 有什麼不同。</p>
+    <div class="two">
+      <div>
+        <div class="fp" id="fp1"><p class="cap">GT_Main.vi 前面板（簡化）</p></div>
+        <p class="why" id="clicks"></p>
+      </div>
+      <div>
+        <div class="row">
+          <label>元件 <select id="ptgt"></select></label>
+          <label>屬性 <select id="pprop"></select></label>
+        </div>
+        <div class="row">
+          <label class="check small"><input type="radio" name="pdir" value="w" checked> 寫（Change To Write）</label>
+          <label class="check small"><input type="radio" name="pdir" value="r"> 讀（預設）</label>
+        </div>
+        <div class="row" id="pinrow"><span class="why">要寫的值</span><span id="pin"></span></div>
+        <div class="row"><span id="pnode"></span><span class="out" id="pout" hidden>?</span></div>
+        <div class="row"><button type="button" class="go" id="prun">▶ 執行</button><button type="button" id="pmulti">示範：一個節點拉長放 3 個屬性</button><button type="button" id="preset">前面板還原</button></div>
+        <p class="verdict-line" id="psay"></p>
+      </div>
+    </div>
+    <div class="callout">屬性節點放下時預設是<b>讀</b>（端子在右邊，往外輸出）；右鍵 ▸ Change To Write 才變成<b>寫</b>（端子在左邊，往裡輸入）。同一個節點可以往下拉長放好幾個屬性，執行時<b>由上往下</b>一個一個做。Disabled 有三個值：0 Enabled、1 Disabled（看起來正常但按不動）、2 Disabled and Grayed Out（反灰也按不動）。顏色這類屬性的實際名稱和位置依元件而不同（通常在 Text、Numeric Text 這些項目底下），本頁簡化成一個「顏色」。</div>
+  </section>
+
+  <section class="lab-stage" id="t-val" hidden>
+    <p class="why">方塊圖上的 Event 結構有一頁「速度設定：Value Change」。用不同方法把速度設定改成新的值，看這一頁會不會執行。也可以直接在前面板的數值上按 ▲▼ 或改數字（等於使用者操作）。</p>
+    <div class="two">
+      <div>
+        <div class="fp" id="fp2"><p class="cap">前面板</p></div>
+        <div class="row"><label>新的值 <input id="vnew" class="scalar" value="250" style="width:80px"></label></div>
+        <div class="meth" id="meth">
+          <button type="button" data-m="local">Local Variable（寫）← 新的值</button>
+          <button type="button" data-m="value">Property Node：Value（寫）← 新的值</button>
+          <button type="button" data-m="sig">Property Node：Value (Signaling)（寫）← 新的值</button>
+        </div>
+      </div>
+      <div>
+        <div class="evs" id="evs"><div class="eh">[0]「速度設定」: Value Change</div><div class="eb" id="evb">在等事件…</div></div>
+        <div class="log" id="vlog" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <h3>誰比較快？（定性比較）</h3>
+    <p class="why">同一個值寫 1000 次。端子最直接；Local Variable 會多一份資料複本；Property Node 每次都要切到 UI 執行緒去改前面板，最慢。下面色條只表示<b>先後順序</b>，長度不是實際倍數，差多少依電腦和程式而定。</p>
+    <div class="row"><button type="button" class="go" id="race">▶ 比一比</button></div>
+    <div class="race" id="racebox">
+      <div><span>端子（Indicator）</span><i id="r0"></i></div>
+      <div><span>Local Variable</span><i id="r1"></i></div>
+      <div><span>Property Node Value</span><i id="r2"></i></div>
+    </div>
+    <div class="callout">Value Change 事件只由<b>使用者在前面板操作</b>或<b>寫 Value (Signaling) 屬性</b>產生。Local Variable、Property Node 的 Value、寫 Indicator 端子都不會產生事件。要「用程式改值、又要事件那一頁跟著跑」，才用 Value (Signaling)；平常只是更新顯示，用端子最好。</div>
+  </section>
+
+  <section class="lab-stage" id="t-ref" hidden>
+    <p class="why">手動模式關掉時，四個手動按鈕要全部反灰。把它們的<b>控制參考</b>（Control Reference，墨綠色細線）組成陣列傳進 SubVI，SubVI 用 For Loop 一個一個設定 Disabled。切換下面的「手動模式」開關看看。</p>
+    <div class="two">
+      <div>
+        <div class="fp" id="fp3"><p class="cap">GT_Main.vi 前面板</p></div>
+        <p class="why">方塊圖：每個按鈕右鍵 ▸ Create ▸ Reference → Build Array → GT_SetManual.vi</p>
+      </div>
+      <div class="sub" id="subvi">
+        <h4>GT_SetManual.vi（SubVI）</h4>
+        <div class="why" style="margin:0">輸入 Button Refs[]：</div>
+        <div class="refs" id="refin"></div>
+        <div class="forl"><span class="n">N　For Loop　i = <b id="fi">–</b></span>
+          <div id="xpn"></div>
+        </div>
+        <div class="why" id="subsay"></div>
+      </div>
+    </div>
+    <p class="verdict-line" id="rsay"></p>
+    <h3>隱含 vs 明確屬性節點</h3>
+    <div class="two">
+      <div><div id="impl"></div><p class="why">隱含（implicit）：在<b>同一個 VI</b> 的元件上右鍵 ▸ Create ▸ Property Node。沒有參考輸入，標題是元件的名字，只能改這個 VI 自己的元件。</p></div>
+      <div><div id="expl"></div><p class="why">明確（explicit）：從選盤放 Property Node，左上角接一條參考線。標題是類別名稱（例如 Boolean），參考從哪來就改哪個元件，所以能放在 SubVI 裡。</p></div>
+    </div>
+    <div class="row"><button type="button" id="tryimpl">在 SubVI 裡改用隱含屬性節點？</button></div>
+    <p class="verdict-line" id="isay"></p>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="pquiz" style="margin-top:16px"></section>
+  <div class="anim-layer" id="layer" aria-hidden="true"></div>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；屬性與事件行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-prop.js?v=fb7f3b26bc"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "402ba21e24" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

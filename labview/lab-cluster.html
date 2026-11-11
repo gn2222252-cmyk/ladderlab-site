@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="57db78b855">
+<meta name="ll-version" content="402ba21e24">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>叢集實驗室：Bundle、Type Def、錯誤叢集 | LadderLab</title>
@@ -32,6 +32,7 @@
   .tw { display: inline-block; width: 26px; height: 4px; border-radius: 2px; background: #e8820c; flex: none; }
   .tw.i32 { background: #1e5bd7; } .tw.bool { background: #1f9d3a; } .tw.str { background: #d63fa0; } .tw.clu { background: #b0418f; height: 6px; } .tw.ewire { background: #b59a00; height: 6px; }
   .tw.broken { background: repeating-linear-gradient(90deg, #dc2626 0 5px, transparent 5px 9px); position: relative; }
+  .cdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #dc2626; margin-left: -4px; flex: none; }
   .tw.broken::after { content: "✕"; position: absolute; left: 8px; top: -9px; color: #dc2626; font-size: 12px; font-weight: 700; }
   .trow { display: flex; align-items: center; gap: 6px; margin: 5px 0; flex-wrap: wrap; font-size: 14px; }
   .trow .tn { font: 12px ui-monospace, Consolas, monospace; color: var(--mute); min-width: 5.5em; }
@@ -107,7 +108,8 @@
       <button type="button" class="go" id="crun">▶ 執行</button>
       <span class="why">改叢集順序（Reorder Controls In Cluster）：</span>
       <button type="button" id="ro1">右軸位置 ↔ 左軸位置</button>
-      <button type="button" id="ro2">速度 移到第 0 個</button>
+      <button type="button" id="ro3">速度 移到第 0 個（I32↔DBL）</button>
+      <button type="button" id="ro2">異常碼 移到第 0 個</button>
       <button type="button" id="ro0">還原順序</button>
     </div>
     <p class="verdict-line" id="csay"></p>
@@ -124,7 +126,7 @@
     </div>
     <div class="tdrow" id="tdvis"></div>
     <p class="verdict-line" id="tdsay"></p>
-    <div class="callout">方塊圖上，連到 Type Def 的叢集常數和端子，左上角有一個小黑三角形（本頁標題前的 ◤）。沒有連的只是「長得一樣的複本」，.ctl 改了它不會知道。叢集只要元素數量或型別不同，就是不同的型別，接在一起就斷線，整個 VI 不能執行。</div>
+    <div class="callout">方塊圖上，連到 Type Def 的叢集常數和端子，左上角有一個小黑三角形（本頁標題前的 ◤）。沒有連的只是「長得一樣的複本」，.ctl 改了它不會知道。這裡加了一個元素，兩邊的元素數量就不同，接在一起會斷線，整個 VI 不能執行。</div>
   </section>
 
   <section class="lab-stage" id="t-err" hidden>
@@ -143,7 +145,7 @@
       <div id="dlg"></div>
     </div>
     <div class="log" id="elog"></div>
-    <div class="callout"><b>記住三件事：</b>① 收到 status = True 的節點不做事，把同一個錯誤原封不動傳下去，所以最後看到的永遠是「第一個」錯誤。② Close 類的節點（VISA Close、Close File、Close Reference）例外：不管有沒有錯誤都會執行，資源才不會一直被占著。③ 警告是 status = False、code ≠ 0，不會讓後面的節點跳過。</div>
+    <div class="callout"><b>記住三件事：</b>① 收到 status = True 的節點不做事，把同一個錯誤原封不動傳下去，所以最後看到的永遠是「第一個」錯誤。② Close 類的節點（VISA Close、Close File、Close Reference）例外：不管有沒有錯誤都會執行，資源才不會一直被占著。③ 警告是 status = False、code ≠ 0，不會讓後面的節點跳過；Simple Error Handler 遇到警告是否跳視窗，依 LabVIEW 版本和設定而定，本頁只畫出錯誤的對話框。</div>
   </section>
 
   <section class="lab-stage" id="t-mrg" hidden>
@@ -166,14 +168,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-cluster.js?v=758a8382fe"></script>
+<script src="lab-cluster.js?v=412e185e23"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "57db78b855" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "402ba21e24" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

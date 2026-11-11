@@ -58,9 +58,16 @@
     return '"' + raw.replace(/^"|"$/g, '') + '"';
   }
   /* 依位置接線：端子 k 現在送出／接收的是 order[k]，但線當初是為 WIRED[k] 接的 */
+  /* 數值（DBL、I32）彼此互通：接錯只多一個強制轉換點；數值／布林／字串之間不通才斷線 */
+  function isNum(t) { return t === 'dbl' || t === 'i32'; }
   function posMap(order) {
-    return WIRED.map(function (w, k) { var g = order[k]; return { k: k, want: w, got: g, ok: g === w, broken: EL[g].t !== EL[w].t }; });
+    return WIRED.map(function (w, k) {
+      var g = order[k], a = EL[g].t, b = EL[w].t, same = a === b, num = isNum(a) && isNum(b);
+      return { k: k, want: w, got: g, ok: g === w, broken: !same && !num, coerce: !same && num };
+    });
   }
+  function cdot(p) { return p.coerce ? '<i class="cdot" title="強制轉換點"></i>' : ''; }
+  function wrongWhy(p, fromT, toT) { return p.coerce ? '（' + TYPE[fromT] + ' 接到 ' + TYPE[toT] + '，有強制轉換點' + (toT === 'i32' ? '，捨入到最近的整數' : '') + '）' : ''; }
   function cluFrame(prefix, vals, label) {
     return '<div class="clu"><span class="cl">' + esc(label || '機台狀態') + '</span>' + B.order.map(function (id, i) {
       var e = EL[id];
@@ -69,9 +76,9 @@
   }
   var MODE = {
     bundle: { node: 'Bundle', desc: 'Bundle：把元素依「叢集順序」一個一個塞進去。左邊第 0 個端子進叢集的第 0 個元素，以此類推，看的是位置不是名字。',
-      note: 'Bundle 的端子只標型別、不標名字。叢集順序改了，型別不同的線會斷（看得到），型別相同的會默默塞進別的元素（看不到）。所以第 8 課說：本課程一律用 By Name。' },
+      note: 'Bundle 的端子只標型別、不標名字。叢集順序改了：數值和布林、字串之間接錯會斷線（看得到）；型別相同、或都是數值（DBL、I32 互接只多一個強制轉換點）的，會默默塞進別的元素（不容易發現）。所以第 8 課說：本課程一律用 By Name。' },
     unbundle: { node: 'Unbundle', desc: 'Unbundle：依「叢集順序」把每個元素拆出來，第 0 個元素從第 0 個輸出端子出來。',
-      note: '先按「執行」，再按「右軸位置 ↔ 左軸位置」重排後執行一次：兩個都是 DBL，線不會斷，但兩個顯示元件的數字對調了，LabVIEW 不會給任何提示。再試「速度 移到第 0 個」：型別對不上，線直接斷掉。' },
+      note: '先按「執行」，再按「右軸位置 ↔ 左軸位置」重排後執行一次：兩個都是 DBL，線不會斷，但兩個顯示元件的數字對調了，LabVIEW 不會給任何提示。再試「速度 移到第 0 個」：DBL 和 I32 都是數值，線不會斷，只多一個強制轉換點（小紅點），VI 照樣能跑，但值錯位了，DBL 進 I32 還會捨入成整數（剛好 .5 取偶數）。最後試「異常碼 移到第 0 個」：字串、布林接到數值的地方，線直接斷掉。' },
     bbn: { node: 'Bundle\nBy Name', desc: 'Bundle By Name：上面接一個原本的叢集，只改你點名的元素，其他元素照原本的值傳過去。',
       note: '選一個元素、打新的值，按執行：只有那一個是新的（綠框），其他都是從輸入叢集原封不動搬過去。這就是在迴圈裡「更新狀態的一個欄位」最常用的寫法。叢集順序怎麼改都不影響。' },
     ubn: { node: 'Unbundle\nBy Name', desc: 'Unbundle By Name：用名字取出元素，端子上直接寫元素名稱。可以只取需要的幾個。',
@@ -87,7 +94,7 @@
       L = cluFrame('src', B.val);
       R = map.map(function (p) {
         var tt = EL[p.got].t, it = EL[p.want].t;
-        return '<div class="trow"><span class="tn">端子 ' + p.k + '（' + TYPE[tt] + '）</span><i class="tw ' + tt + (p.broken ? ' broken' : '') + '"></i><span class="cv ' + it + '" id="out-' + p.k + '">?</span><span>' + esc(EL[p.want].name) + ' 顯示</span></div>';
+        return '<div class="trow"><span class="tn">端子 ' + p.k + '（' + TYPE[tt] + '）</span><i class="tw ' + tt + (p.broken ? ' broken' : '') + '"></i>' + cdot(p) + '<span class="cv ' + it + '" id="out-' + p.k + '">?</span><span>' + esc(EL[p.want].name) + ' 顯示</span></div>';
       }).join('');
     } else if (m === 'ubn') {
       L = cluFrame('src', B.val);
@@ -98,7 +105,7 @@
     } else if (m === 'bundle') {
       L = map.map(function (p) {
         var tt = EL[p.got].t, ct = EL[p.want].t;
-        return '<div class="trow"><span class="cv ' + ct + '" id="in-' + p.k + '">' + esc(BCONST[p.want]) + '</span><span class="why" style="margin:0">要給 ' + esc(EL[p.want].name) + '</span><i class="tw ' + ct + (p.broken ? ' broken' : '') + '"></i><span class="tn">端子 ' + p.k + '（' + TYPE[tt] + '）</span></div>';
+        return '<div class="trow"><span class="cv ' + ct + '" id="in-' + p.k + '">' + esc(BCONST[p.want]) + '</span><span class="why" style="margin:0">要給 ' + esc(EL[p.want].name) + '</span><i class="tw ' + ct + (p.broken ? ' broken' : '') + '"></i>' + cdot(p) + '<span class="tn">端子 ' + p.k + '（' + TYPE[tt] + '）</span></div>';
       }).join('');
       R = cluFrame('dst', null);
     } else {
@@ -109,9 +116,11 @@
       R = cluFrame('dst', null, '輸出叢集');
     }
     $('cleft').innerHTML = L; $('cright').innerHTML = R;
-    var anyBroken = (m === 'bundle' || m === 'unbundle') && map.some(function (p) { return p.broken; });
+    var pos = m === 'bundle' || m === 'unbundle';
+    var anyBroken = pos && map.some(function (p) { return p.broken; }), anyCo = pos && map.some(function (p) { return p.coerce; });
     $('csay').className = 'verdict-line' + (anyBroken ? ' bad' : '');
-    $('csay').textContent = anyBroken ? '有線斷了（虛線 ✕）：端子型別和接的東西對不上，執行箭頭會斷掉，整個 VI 不能跑。' : '';
+    $('csay').textContent = anyBroken ? '有線斷了（虛線 ✕）：數值和布林、字串之間接不起來，執行箭頭會斷掉，整個 VI 不能跑。' + (anyCo ? '（小紅點是強制轉換點：數值互接不會斷）' : '')
+      : anyCo ? '有強制轉換點（小紅點）：DBL、I32 都是數值，不會斷線，VI 可以跑，但值接到別的元素了。' : '';
     if (m === 'bbn') {
       $('bbnk').onchange = function () { B.bbnKey = this.value; B.bbnRaw = EL[this.value].t === 'bool' ? (B.val[this.value] === 'T' ? 'F' : 'T') : B.val[this.value].replace(/"/g, ''); renderBun(); };
       $('bbnv').oninput = function () { B.bbnRaw = this.value; };
@@ -129,13 +138,14 @@
         await Promise.all(map.map(function (p, i) {
           var src = $('src-' + p.got), dst = $('out-' + p.k);
           src.parentNode.classList.add('hit');
+          var shownV = p.coerce ? parseVal(EL[p.want].t, B.val[p.got]) : B.val[p.got];
           return sleep(i * 90).then(function () { return fly(src, dst, B.val[p.got], p.ok ? '' : 'ferr'); }).then(function () {
-            dst.textContent = B.val[p.got]; if (!p.ok) dst.classList.add('wrong');
+            dst.textContent = shownV; if (!p.ok) dst.classList.add('wrong');
           });
         }));
         var bad = map.filter(function (p) { return !p.ok; });
         say.className = 'verdict-line ' + (bad.length ? 'bad' : 'ok');
-        say.textContent = bad.length ? '沒有斷線，可是 ' + bad.map(function (p) { return EL[p.want].name + ' 顯示的其實是 ' + EL[p.got].name; }).join('、') + '。型別一樣，LabVIEW 不會提醒你。' : '每個端子照叢集順序輸出，剛好都接對。';
+        say.textContent = bad.length ? '沒有斷線，可是 ' + bad.map(function (p) { return EL[p.want].name + ' 顯示的其實是 ' + EL[p.got].name + wrongWhy(p, EL[p.got].t, EL[p.want].t); }).join('、') + '。型別一樣或都是數值，LabVIEW 不會擋你。' : '每個端子照叢集順序輸出，剛好都接對。';
       } else if (m === 'ubn') {
         await Promise.all(WIRED.map(function (id, i) {
           var src = $('src-' + id), dst = $('out-' + id);
@@ -148,15 +158,16 @@
         var nv = {};
         await Promise.all(map.map(function (p, i) {
           var src = $('in-' + p.k), dst = $('dst-' + p.got);
+          var stored = p.coerce ? parseVal(EL[p.got].t, BCONST[p.want]) : BCONST[p.want];
           return sleep(i * 90).then(function () { return fly(src, dst, BCONST[p.want], p.ok ? '' : 'ferr'); }).then(function () {
-            dst.textContent = BCONST[p.want]; nv[p.got] = BCONST[p.want];
+            dst.textContent = stored; nv[p.got] = stored;
             if (!p.ok) { dst.classList.add('wrong'); dst.parentNode.classList.add('bad'); }
           });
         }));
         B.val = nv;
         var bad2 = map.filter(function (p) { return !p.ok; });
         say.className = 'verdict-line ' + (bad2.length ? 'bad' : 'ok');
-        say.textContent = bad2.length ? '沒有斷線，可是 ' + bad2.map(function (p) { return '要給 ' + EL[p.want].name + ' 的 ' + BCONST[p.want] + ' 跑進了 ' + EL[p.got].name; }).join('、') + '。' : '五個常數照位置塞進叢集，都進到對的元素。（輸出的叢集會當成下一次 Unbundle 的輸入）';
+        say.textContent = bad2.length ? '沒有斷線，可是 ' + bad2.map(function (p) { return '要給 ' + EL[p.want].name + ' 的 ' + BCONST[p.want] + ' 跑進了 ' + EL[p.got].name + wrongWhy(p, EL[p.want].t, EL[p.got].t); }).join('、') + '。' :'五個常數照位置塞進叢集，都進到對的元素。（輸出的叢集會當成下一次 Unbundle 的輸入）';
       } else {
         var key = B.bbnKey, v = parseVal(EL[key].t, B.bbnRaw), others = B.order.filter(function (id) { return id !== key; });
         await Promise.all(others.map(function (id, i) {
@@ -179,7 +190,9 @@
     if (!$('csay').textContent) { $('csay').className = 'verdict-line'; $('csay').textContent = msg; }
   }
   $('ro1').onclick = function () { var o = B.order.slice(), a = o.indexOf('rx'), b = o.indexOf('lx'); o[a] = 'lx'; o[b] = 'rx'; reorder(o, '叢集順序改了（元素的值沒變，只是排第幾個變了）。按執行看看。'); };
-  $('ro2').onclick = function () { var o = B.order.filter(function (x) { return x !== 'sp'; }); o.unshift('sp'); reorder(o, '速度移到第 0 個。按執行看看。'); };
+  function toFront(id, msg) { var o = B.order.filter(function (x) { return x !== id; }); o.unshift(id); reorder(o, msg); }
+  $('ro3').onclick = function () { toFront('sp', '速度（I32）移到第 0 個。按執行看看。'); };
+  $('ro2').onclick = function () { toFront('ac', '異常碼（字串）移到第 0 個。'); };
   $('ro0').onclick = function () { reorder(WIRED.slice(), '順序還原了。'); };
 
   /* =====================================================================
@@ -288,7 +301,7 @@
     NODES.forEach(function (n) {
       if (n.opt && !clear) return;
       var inE = e, st;
-      if (n.end) { steps.push({ id: n.id, ran: true, out: e, why: e.status ? '有錯誤 → 跳出對話框' : (e.code ? '警告：status 是 False，不算錯誤' : '沒有錯誤，什麼都不顯示') }); return; }
+      if (n.end) { steps.push({ id: n.id, ran: true, out: e, why: e.status ? '有錯誤 → 跳出對話框' : (e.code ? '收到警告（status False）。遇到警告是否跳視窗依 LabVIEW 版本和設定而定，本頁不畫' : '沒有錯誤，什麼都不顯示') }); return; }
       if (n.opt) { e = noErr(); st = { ran: true, why: inE.status || inE.code ? '把錯誤清掉，後面看到的是「沒有錯誤」' : '本來就沒有錯誤，輸出還是沒有錯誤' }; }
       else if (inE.status && !n.always) st = { ran: false, why: '收到錯誤 → 不執行，原封不動往後傳' };
       else {
@@ -345,7 +358,7 @@
         $('dlgok').onclick = function () { $('dlg').innerHTML = ''; };
         logE('Simple Error Handler 預設會跳出對話框，按 OK 之後程式才繼續。');
       } else if (last.code) {
-        logE('最後只是警告：前面每個節點都照常執行了。');
+        logE('最後是警告：警告不會讓後面的節點跳過，前面每個節點都照常執行了。Simple Error Handler 遇到警告是否跳視窗，依 LabVIEW 版本和設定而定，本頁只畫出錯誤的對話框。');
       } else logE('一路都沒有錯誤。');
     } finally { E.busy = false; }
   }
@@ -421,7 +434,7 @@
     },
     function () { /* 警告 */
       return pickOne([
-        { q: 'VISA Read 回傳 code 1073676294、status False。後面的 <b>FX_Check.vi</b>（用 Error Case 寫的）會？', ans: '照常執行（走 No Error 頁）', wrong: ['不執行，把警告傳下去（走 Error 頁）', '不執行，並跳出錯誤對話框', '把 code 改成 0 再執行'], ex: '這是警告：status 是 False。Case 的選擇器只看 status，所以走 No Error 頁，照常做事。' },
+        { q: 'VISA Read 回傳 code 1073676294、status False。後面的 <b>FX_Check.vi</b>（用 Error Case 寫的）會？', ans: '照常執行（走 No Error 頁）', wrong: ['不執行，把警告傳下去（走 Error 頁）', '執行到一半就停下來', '把 code 改成 0 再執行'], ex: '這是警告：status 是 False。Case 的選擇器只看 status，所以走 No Error 頁，照常做事。' },
         { q: '下面哪一個錯誤叢集是「警告」？', ans: 'status False、code 1073676294', wrong: ['status True、code 5001', 'status False、code 0', 'status True、code -1073807339'], ex: '警告＝status False 但 code 不是 0。status False、code 0 才是完全沒事。' }
       ]);
     },
@@ -441,10 +454,11 @@
       var want = EL[p.want].name, other = EL[pickOne(WIRED.filter(function (x) { return x !== p.want && x !== p.got; }))].name;
       var OK = '照樣顯示「' + want + '」', BROKEN = '線斷掉（型別不符），VI 不能執行';
       function WRONG(n) { return '變成顯示「' + n + '」的值，不會有任何提醒'; }
-      var ans = byName ? OK : p.broken ? BROKEN : p.ok ? OK : WRONG(EL[p.got].name);
-      var wrong = [OK, BROKEN, WRONG(p.ok || byName ? other : EL[p.got].name), WRONG(other), '自動照名字重新接好'].filter(function (x) { return x !== ans; });
+      function WRONGC(n) { return '變成顯示「' + n + '」的值，只多一個強制轉換點，不會斷線'; }
+      var gotN = EL[p.got].name, ans = byName ? OK : p.broken ? BROKEN : p.ok ? OK : p.coerce ? WRONGC(gotN) : WRONG(gotN);
+      var wrong = [OK, BROKEN, WRONG(p.ok || byName ? other : gotN), WRONGC(p.ok || byName ? other : gotN), WRONG(other), '自動照名字重新接好'].filter(function (x) { return x !== ans; });
       return { q: '「機台狀態」原本的叢集順序是 右軸位置、左軸位置、速度、運轉中、異常碼，用 <b>' + (byName ? 'Unbundle By Name' : 'Unbundle') + '</b> 接好 5 個顯示元件。之後在 .ctl ' + r.say + '，原本接到「' + want + ' 顯示」的那條線會？', ans: ans, wrong: wrong,
-        ex: byName ? 'By Name 用名字取，叢集順序怎麼改都不受影響。' : 'Unbundle 照叢集順序輸出，線接在端子位置上。第 ' + p.k + ' 個端子現在送出的是「' + EL[p.got].name + '」' + (p.broken ? '，型別和顯示元件不同，所以斷線。' : p.ok ? '，剛好沒變。' : '，型別一樣，所以默默接錯。') };
+        ex: byName ? 'By Name 用名字取，叢集順序怎麼改都不受影響。' : 'Unbundle 照叢集順序輸出，線接在端子位置上。第 ' + p.k + ' 個端子現在送出的是「' + EL[p.got].name + '」' + (p.broken ? '，數值和布林、字串之間接不起來，所以斷線。' : p.ok ? '，剛好沒變。' : p.coerce ? '，DBL 和 I32 都是數值，只多一個強制轉換點，VI 照跑但值接錯了' + (EL[p.want].t === 'i32' ? '（還會捨入成整數）' : '') + '。' : '，型別一樣，所以默默接錯。') };
     },
     function () { /* Bundle By Name */
       return { q: '輸入叢集原本「右軸位置」= 120.5。<b>Bundle By Name</b> 只接了「速度」= 500，輸出叢集的「右軸位置」是？', ans: '120.5（照輸入叢集的值）', wrong: ['0.0（沒接的元素變預設值）', '500', '斷線，每個元素都要接', '空的'], ex: 'Bundle By Name 是「修改」：只換點名的元素，其他元素從上面那個輸入叢集原封不動帶過去。' };

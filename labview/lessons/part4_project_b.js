@@ -8,7 +8,7 @@ LV.F['Strip Path']={g:'📁−',ins:['path'],outs:['stripped path','name'],pal:[
    第 18 課：前面板設計
    ====================================================================== */
 L.push({id:'L18',order:18,no:'18',part:'完整專案',title:'前面板：分頁、機台圖、步序文字',mins:70,files:['GT_Main.vi（完成面板）'],
-goals:[['學會','Tab Control、裝飾元件、對齊與分佈工具、LED 疊在圖上當感測器、Tip Strip、視窗設定。'],['做出','完成品的五頁面板：Main、Manual、Parameters、IO Monitor、Alarm Log。'],['用在專案','操作員看到的就是這個畫面。']],
+goals:[['學會','Tab Control、裝飾元件、對齊與分佈工具、LED 疊在圖上當感測器、Tip Strip、視窗設定。'],['做出','完成品的五頁面板：Main、Manual、Parameters、IO Monitor、Alarm Log。'],['用在專案','操作員看到的就是這個畫面。'],['動畫練習','<a href="lab-prop.html">屬性節點實驗室</a>：用 Property Node 讓按鈕反灰、LED 閃爍；控制參考傳進 SubVI，一次 Disable 整組手動按鈕。']],
 check:'GT_Main 的面板和下面的完成品預覽一樣分成五頁；Main 頁的機台圖上，龍門在前側／後側時對應的燈會亮。',
 body:[
 C.h3('看','r','目標畫面'),

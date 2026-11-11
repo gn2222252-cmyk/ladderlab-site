@@ -109,7 +109,7 @@ function chartDemo(d){
   },50);
 }
 L.push({id:'C11',order:111,no:'C11',part:PART,title:'Chart、Graph 與使用者介面',mins:50,
-goals:[['學會','Waveform Chart 與 Graph 的差別、Chart 的更新模式與歷史長度、各種 Graph 接受的資料、多條曲線、常用 UI 技巧。'],['考試重點','Chart 一次加一個（或一段）點並保留歷史；Graph 每次重畫整個陣列；XY Graph 要 X、Y 兩個陣列。'],['動畫練習','<a href="lab-graph.html">圖表實驗室</a>：同一筆資料同時送給 Chart 和 Graph，看純量、1D、2D、Bundle、Waveform 各畫出什麼；<a href="lab-graph.html#xy">XY Graph 畫圓</a>。']],
+goals:[['學會','Waveform Chart 與 Graph 的差別、Chart 的更新模式與歷史長度、各種 Graph 接受的資料、多條曲線、常用 UI 技巧。'],['考試重點','Chart 一次加一個（或一段）點並保留歷史；Graph 每次重畫整個陣列；XY Graph 要 X、Y 兩個陣列。'],['動畫練習','<a href="lab-graph.html">圖表實驗室</a>：同一筆資料同時送給 Chart 和 Graph，看純量、1D、2D、Bundle、Waveform 各畫出什麼；<a href="lab-graph.html#xy">XY Graph 畫圓</a>。'],['動畫練習','<a href="lab-prop.html#val">屬性節點實驗室：Value 與事件</a>：Local Variable、Value、Value (Signaling) 哪一種會觸發 Value Change。']],
 check:'能說出 Waveform Graph、XY Graph、Waveform Chart 各接什麼資料。',
 body:[
 C.h3('懂','','Chart 和 Graph 的差別'),

@@ -132,7 +132,7 @@ C.h3('測','q','小測驗'),
    C7 模組化
    ====================================================================== */
 L.push({id:'C07',order:107,no:'C7',part:PART,title:'模組化：SubVI 進階、Reentrancy、Polymorphic、Express VI',mins:50,
-goals:[['學會','Connector 端子的 Required/Recommended/Optional、未接輸入的預設值、VI Hierarchy、Reentrant 三種設定、Polymorphic VI、Express VI 與 Dynamic Data、Malleable VI。'],['考試重點','未接 Required 端子 VI 會斷；Non-reentrant 的 SubVI 在兩個平行迴圈裡同時呼叫會互相等待。']],
+goals:[['學會','Connector 端子的 Required/Recommended/Optional、未接輸入的預設值、VI Hierarchy、Reentrant 三種設定、Polymorphic VI、Express VI 與 Dynamic Data、Malleable VI。'],['考試重點','未接 Required 端子 VI 會斷；Non-reentrant 的 SubVI 在兩個平行迴圈裡同時呼叫會互相等待。'],['動畫練習','<a href="lab-prop.html#ref">屬性節點實驗室：控制參考</a>：SubVI 裡要用明確的屬性節點，接控制參考才改得到主 VI 的元件。']],
 check:'能解釋為什麼 FGV 一定要是 Non-reentrant。',
 body:[
 C.h3('懂','','Connector Pane 的端子設定'),
