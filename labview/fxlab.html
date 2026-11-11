@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="506b506372">
+<meta name="ll-version" content="742b1a475f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FX 封包練習台：在瀏覽器裡跟模擬 PLC 對話 | LadderLab</title>
@@ -132,7 +132,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "506b506372" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "742b1a475f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

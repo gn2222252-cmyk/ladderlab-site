@@ -9,7 +9,7 @@ const tip=(t,b)=>`<div class="tip"><b>${t}</b>${b}</div>`;
 const warn=(t,b)=>`<div class="warn"><b>${t}</b>${b}</div>`;
 const note=(t,b)=>`<div class="note"><b>${t}</b>${b}</div>`;
 /* 問自己：一個問題，接著是怎麼想出答案 */
-const ask=(q,a)=>`<div class="think"><p class="q">問自己：${q}</p>${a}</div>`;
+const ask=(q,a)=>`<details class="think"><summary><span class="q">問自己：${q}</span><span class="hint">先想一下，寫下你的猜測，再點開看</span></summary>${a}</details>`;
 
 /* ---------- 判斷流程：VISA、DAQ 還是 TCP ---------- */
 const DEVICES=[
@@ -19,11 +19,11 @@ const DEVICES=[
   why:'它是標準的量測儀器，USB 和網路講的是同一套 SCPI 命令。'},
  {n:'壓力傳送器（輸出 4–20 mA）',back:'只有兩條線，沒有任何通訊孔。',man:'規格表只有一句：輸出 4–20 mA 對應 0–10 bar。沒有命令表。',talks:false,
   why:'它只會把壓力變成電流，不會聽、也不會回答。要有人幫它把電流量成數字。'},
- {n:'溫控器（台達 DTB 系列）',back:'端子台上有兩個端子標 D+、D−（RS-485）。',man:'說明書附一張 Modbus 位址表：哪個位址是現在溫度、哪個是設定溫度。',talks:true,link:'serial',
+ {n:'溫控器（台達 DTB 系列）',back:'端子台上有一對 RS-485 端子（常見的標示是 D+、D−，依型號的端子圖）。',man:'說明書附一張 Modbus 位址表：哪個位址是現在溫度、哪個是設定溫度。',talks:true,link:'serial',
   why:'它會說話，說的是 Modbus。RS-485 經轉接器接到電腦後也是一個 COM 埠。'},
  {n:'電子天平（A&D）',back:'背板有一個 9 針的 RS-232C 接頭。',man:'說明書有「資料輸出格式」一節，寫每一筆重量送出來的字元排列。',talks:true,link:'serial',
   why:'它會說話，而且常常不用問、自己一直送。接頭是 RS-232，就是序列埠。'},
- {n:'類比輸入模組（研華 ADAM-6017）',back:'一個網路孔，加上一排接感測器的端子。',man:'說明書附 Modbus/TCP 位址表，連線埠號是 502。',talks:true,link:'lan',lan:'custom',
+ {n:'類比輸入模組（研華 ADAM-6017）',back:'一個網路孔，加上一排接感測器的端子。',man:'說明書附一張 Modbus/TCP 位址表（Modbus/TCP 的標準埠號是 502）。',talks:true,link:'lan',lan:'custom',
   why:'它會說話，走網路，說的是 Modbus/TCP。這不是量測儀器那一套，要自己管連線和封包。'},
  {n:'K 型熱電偶',back:'兩條細線，沒有接頭。',man:'沒有說明書，只有型號和一張「溫度對毫伏」的表。',talks:false,
   why:'它只產生幾毫伏的電壓。要用有熱電偶輸入的擷取卡來量。'},
@@ -31,9 +31,9 @@ const DEVICES=[
   why:'它會說話。RS-422 經 USB-SC09-FX 轉接線變成 COM 埠。'}
 ];
 const RESULT={
- visa:{t:'用 VISA',c:'#0a57a4',d:'VISA Open（或 VISA Configure Serial Port）→ Write → Read → Close。序列埠、USB、GPIB、網路上的量測儀器，都是同一組函式，只差資源名稱。',next:'下一步翻說明書的通訊章節，抄下：通訊參數、命令怎麼寫、用什麼字元結尾、回覆長什麼樣。'},
- daq:{t:'用 DAQ（DAQmx）',c:'#17803f',d:'設備自己不會說話，只給一個電壓、電流或接點。要用資料擷取卡把訊號量成數字，LabVIEW 這邊用 DAQmx 的 Create Channel → Read。',next:'下一步看規格表：輸出是電壓還是電流、範圍多大、對應的物理量是多少；再看擷取卡的輸入範圍接不接得住。'},
- tcp:{t:'用 TCP 函式（或 Modbus 函式庫）',c:'#b45309',d:'設備走網路，但說的不是量測儀器的 SCPI，而是 Modbus/TCP 或廠商自訂的封包。用 TCP Open Connection → Write → Read → Close Connection，自己決定一次讀幾個位元組；有現成的 Modbus 函式庫就用函式庫。',next:'下一步翻說明書：IP 和埠號、封包每一個位元組的意思、要讀的資料在哪個位址。'}
+ visa:{t:'用 VISA',c:'var(--accent)',d:'VISA Open（或 VISA Configure Serial Port）→ Write → Read → Close。序列埠、USB、GPIB、網路上的量測儀器，都是同一組函式，只差資源名稱。',next:'下一步翻說明書的通訊章節，抄下：通訊參數、命令怎麼寫、用什麼字元結尾、回覆長什麼樣。'},
+ daq:{t:'用 DAQ（DAQmx）',c:'var(--accent2)',d:'設備自己不會說話，只給一個電壓、電流或接點。要用資料擷取卡把訊號量成數字，LabVIEW 這邊用 DAQmx：Create Virtual Channel → Start Task → Read → Clear Task。',next:'下一步看規格表：輸出是電壓還是電流、範圍多大、對應的物理量是多少；再看擷取卡的輸入範圍接不接得住。'},
+ tcp:{t:'用 TCP 函式（或 Modbus 函式庫）',c:'var(--warn)',d:'設備走網路，但說的不是量測儀器的 SCPI，而是 Modbus/TCP 或廠商自訂的封包。用 TCP Open Connection → Write → Read → Close Connection，自己決定一次讀幾個位元組；有現成的 Modbus 函式庫就用函式庫。',next:'下一步翻說明書：IP 和埠號、封包每一個位元組的意思、要讀的資料在哪個位址。'}
 };
 function dtree(el){
   el.className='dtree fig';
@@ -57,7 +57,9 @@ function dtree(el){
       h+='<p class="dt-q">第 3 問：說明書說它在網路上講什麼？</p><p class="dt-hint">量測儀器會寫 SCPI、VXI-11、HiSLIP 或 Socket。工業設備會寫 Modbus/TCP，或一張自己定義的封包格式。</p>'+
          '<p><button type="button" class="btn" data-a="scpi">SCPI（VXI-11、HiSLIP、Socket）</button> <button type="button" class="btn" data-a="custom">Modbus/TCP 或自訂封包</button></p>';
     }
-    el.innerHTML=h;
+    el.innerHTML='<div aria-live="polite">'+h+'</div>';
+    if(el.dataset.kb){const f=el.querySelector('button[data-a]');if(f)f.focus();}
+    el.dataset.kb='1';
     el.querySelector('select').onchange=e=>{dev=+e.target.value;step=0;path=[];done=null;draw();};
     el.querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a));
   }
@@ -81,6 +83,17 @@ function dtree(el){
   }
   draw();
 }
+
+/* 第一次出現的名詞 */
+const NAMES=C.table(['會看到的名詞','一句話'],[
+ ['RS-232、RS-422、RS-485','三種序列埠的接線方式。對電腦來說都是一個 COM 埠。RS-485 可以一對線接很多台'],
+ ['GPIB','量測儀器專用的並列介面，接頭又寬又厚。舊儀器很常見'],
+ ['SCPI','量測儀器通用的文字命令寫法，例如 <code>MEAS:VOLT:DC?</code>。I5 會教怎麼讀'],
+ ['VXI-11、HiSLIP、Socket','量測儀器走網路時的三種連線方式。講的都還是 SCPI'],
+ ['Modbus、Modbus/TCP','工業設備通用的通訊協定，用位址找資料。走序列埠的叫 Modbus RTU 或 ASCII，走網路的叫 Modbus/TCP。I7 會教'],
+ ['DAQ、DAQmx','資料擷取。DAQ 是把電壓、電流量成數字的硬體；DAQmx 是 LabVIEW 裡操作它的那組函式'],
+ ['資源名稱','VISA 用來指出「哪一台、怎麼連」的一串字，例如 <code>COM3</code>']
+]);
 
 /* ---------- 儀器接入單 ---------- */
 const SHEET=[
@@ -129,7 +142,11 @@ ask('為什麼程式排在最後？',
 tip('你其實做過一次了','第 12～14 課接 FX3S 的時候，走的就是這六步。只是當時第 1、2 步我們替你做完了：直接告訴你參數是 9600、7、偶同位，封包是 STX 開頭、ETX 結尾。這一部分要練的，就是自己做那兩步。'),
 
 C.h3('懂','','第 1 步的判斷：VISA、DAQ，還是 TCP'),
-`<p>LabVIEW 裡跟外面設備打交道的函式主要有三組。選哪一組，不是看設備貴不貴、新不新，而是照順序問三個問題。</p>`,
+`<p>LabVIEW 裡跟外面設備打交道的函式主要有三組：<b>VISA</b>、<b>DAQmx</b>、<b>TCP</b>。選哪一組，不是看設備貴不貴、新不新，而是照順序問三個問題。</p>
+<p>先不看答案。下面有八台設備，每一台都給你「背板上看到的」和「說明書寫的」。照三個問題自己判斷，選錯了會告訴你該回頭看哪裡。</p>`,
+NAMES,
+{fn:dtree},
+C.h3('整理','','把剛才的判斷寫成一張表'),
 C.table(['問題','怎麼判斷','答案帶你去哪'],[
  ['① 它自己會說話嗎？','說明書有沒有命令表或通訊協定','不會 → <b>DAQ</b>。會 → 問第 ② 題'],
  ['② 它用什麼接？','看背板接頭','序列埠、USB、GPIB → <b>VISA</b>。網路線 → 問第 ③ 題'],
@@ -146,8 +163,6 @@ ask('序列埠、USB、GPIB 明明是不同的線，為什麼都用 VISA？',
 ask('同樣是網路線，為什麼有的用 VISA，有的用 TCP？',
  `<p>量測儀器（電表、示波器、電源）在網路上講的還是 SCPI，VISA 認得它，資源名稱寫成 <code>TCPIP0::192.168.1.20::INSTR</code> 就能用。同一台儀器之後改接 USB，程式也不用改。</p>
 <p>工業設備（遠端 I/O 模組、PLC、控制器）在網路上講的是 Modbus/TCP 或廠商自己定的封包。這種封包沒有固定的結尾字元，一筆資料有多長要從封包開頭的長度欄位算出來。這時候用 TCP 函式自己管連線、自己決定讀幾個位元組，比較清楚。如果裝了現成的 Modbus 函式庫，就讓函式庫處理封包。</p>`),
-`<p>拿下面八台設備練習。每一台都照三個問題走一次，選錯了會告訴你該回頭看哪裡。</p>`,
-{fn:dtree},
 warn('先找有沒有現成的驅動，但不要只會用驅動','很多儀器廠商或 NI 有提供 LabVIEW 的儀器驅動（Instrument Driver），裝上去就有一組現成的 VI。能用就用。可是驅動裡面做的事，就是這一部分教的事。驅動沒有支援你要的功能、版本不合、或根本沒有驅動的時候，你要能自己來。'),
 
 C.h3('做','b','填一張「儀器接入單」'),

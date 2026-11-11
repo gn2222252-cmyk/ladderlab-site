@@ -9,7 +9,7 @@ const PART='接入新儀器';
 const tip=(t,b)=>`<div class="tip"><b>${t}</b>${b}</div>`;
 const warn=(t,b)=>`<div class="warn"><b>${t}</b>${b}</div>`;
 const note=(t,b)=>`<div class="note"><b>${t}</b>${b}</div>`;
-const ask=(q,a)=>`<div class="think"><p class="q">問自己：${q}</p>${a}</div>`;
+const ask=(q,a)=>`<details class="think"><summary><span class="q">問自己：${q}</span><span class="hint">先想一下，寫下你的猜測，再點開看</span></summary>${a}</details>`;
 const hx=(n,w)=>(n>>>0).toString(16).toUpperCase().padStart(w||2,'0');
 function crc16(bytes){let c=0xFFFF;for(const b of bytes){c^=b;for(let i=0;i<8;i++)c=(c&1)?((c>>>1)^0xA001):(c>>>1);}return c&0xFFFF;}
 const withCrc=b=>{const c=crc16(b);return b.concat([c&0xFF,c>>8]);};

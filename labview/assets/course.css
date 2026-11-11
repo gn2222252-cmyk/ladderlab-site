@@ -307,3 +307,20 @@ h3 { font-weight: 800; border-left: 4px solid var(--accent); padding: 2px 0 2px 
 .mblab select{font:inherit;padding:5px 8px;max-width:100%;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
 .mblab .num{font-family:var(--tech);font-size:20px}
 .mblab .btn{margin:3px 4px 3px 0}
+
+/* 問自己：先想，再點開 */
+details.think{border-left:4px solid var(--accent);padding:4px 0 4px 16px;margin:18px 0}
+details.think>summary{cursor:pointer;list-style:none;display:block;padding:4px 0;border-radius:4px}
+details.think>summary::-webkit-details-marker{display:none}
+details.think>summary .q{display:block;font-weight:800;font-size:17px}
+details.think>summary .hint{display:inline-block;margin-top:4px;font-size:14px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:1px 8px}
+details.think>summary .hint::before{content:"▸ "}
+details.think[open]>summary .hint{display:none}
+details.think[open]>summary{margin-bottom:4px}
+
+#content .daqlab{background:var(--paper);color:var(--ink)}
+.daqlab p{max-width:none}
+.daqlab select,.daqlab input[type=number]{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.daqlab input[type=range]{width:min(260px,60%);vertical-align:middle}
+.daqlab .num{font-family:var(--tech);font-size:20px}
+.daqlab .verdict{border-left:4px solid var(--warn);padding-left:12px;font-weight:700}
