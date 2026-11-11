@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="3c50c37c7a">
+<meta name="ll-version" content="6b7adef8f2">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>輸入輸出接線實驗室：電流從哪裡流 | LadderLab</title>
@@ -108,13 +108,13 @@
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-sink.js?v=eb21ec34ab"></script>
+<script src="lab-sink.js?v=52d833448d"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "3c50c37c7a" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b7adef8f2" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

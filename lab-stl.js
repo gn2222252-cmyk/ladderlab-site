@@ -76,7 +76,7 @@
   /* 停電：FX3S 的 S0～S127 保持，其他全部歸零，M8002 重新 ON 一圈 */
   PLC.prototype.powerCycle = function () {
     var keep = {}, me = this; Object.keys(this.s).forEach(function (k) { if (+k <= 127 && me.s[k]) keep[k] = 1; });
-    this.y = {}; this.m = {}; this.t = {}; this.ton = {}; this.ran = {}; this.s = keep; this.scans = 0; this.trace = [];
+    this.y = {}; this.m = {}; this.t = {}; this.ton = {}; this.ran = {}; this.s = keep; this.scans = 0; this.trace = []; this.x = {};
   };
 
   /* ================= 畫圖 ================= */
@@ -202,7 +202,7 @@
     onScan: function (r, b, a) {
       var p = r.p;
       if (b === a) return;
-      if (a === '22') say('fsay', '進 S22：S21 的 T0 歸零了，但推桿 Y1 還伸著。它是用 SET 打開的，離開 S21 不會自己關。');
+      if (a === '22') say('fsay', '進 S22：S21 的 T0 要到下一圈（S21 斷電執行一次）才歸零；推桿 Y1 還伸著。它是用 SET 打開的，離開 S21 不會自己關。');
       else if (a === '0' && p.y[1]) say('fsay', '回到 S0：Y0、Y2 都是 OUT，離開步就 OFF；Y1 是 SET，還亮著。在待機按 X3 才會 RST Y1。');
       else if (a === '21') say('fsay', '進 S21：SET Y1 推桿伸出，T0 開始數 1 秒。S20 的 Y0 在下一圈「斷電執行一次」時變 OFF。');
       else if (a === '20') say('fsay', '進 S20：OUT Y0 輸送帶走，等 X1。X0 只寫在 S0 裡，現在再按 X0 沒有作用。');
@@ -250,6 +250,7 @@
   }
   function sVerdict(r) {
     var p = r.p, prog = $('sprog').value, h = r.hist, act = p.active().join(',');
+    if (act !== '22' && !(prog === 'e12' && act === '20')) say('ssay', '');
     if (prog === 'ok' && act === '22') say('ssay', '✔ 正常：每一步都停滿 3 個掃描。往上看表格，換步那一圈兩步都標了 ●（同時作用），下一圈前一步斷電執行一次，它的 Y 才變 0。', 'ok');
     else if (prog === 'fwd' && act === '22') {
       var s21 = h.filter(function (o) { return o.S21; }).length;

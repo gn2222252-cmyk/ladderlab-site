@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="3c50c37c7a">
+<meta name="ll-version" content="6b7adef8f2">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>掃描週期實驗室：輸入、程式、輸出一圈一圈看 | LadderLab</title>
@@ -181,7 +181,7 @@
     <div class="callout">動畫的簡化：輸入響應只畫成「要先連續 ON 約 10 ms 才算 ON」，OFF 那一側的延遲省略；實際響應時間依機種和輸入端子而不同，要查硬體手冊。真正要抓很短的脈波，FX 有高速計數器和輸入中斷，不靠一般掃描。本站模擬器固定 10 ms 一圈，實機依程式長短，一般不到 1 ms 到數 ms（見<a href="simdiff.html">模擬器和實機的差異</a>）。</div>
 
     <h3 class="sub">看門狗：一圈跑太久會怎樣</h3>
-    <p class="why">PLC 裡有一個看門狗計時器，每一圈結束時重新計時。一圈的時間超過 <b>D8000</b> 的設定（預設 <b>200 ms</b>，程式手冊 37.2.2），CPU 就判定程式出問題，停止運轉，輸出全部 OFF。拉滑桿假裝程式這一圈卡住多久，再按「跑一圈」。</p>
+    <p class="why">PLC 裡有一個看門狗計時器，每一圈結束時重新計時。一圈的時間超過 <b>D8000</b> 的設定（預設 <b>200 ms</b>，程式手冊 37.2.2），CPU 就判定程式出問題，停止運轉，輸出全部 OFF。拉滑桿假裝程式這一圈卡住多久，再按「跑一圈」。（這裡是動畫示意；本站練習題和模擬器的 PLC 沒有模擬看門狗。）</p>
     <div class="row">
       <label>這一圈要跑 <input type="range" id="w-ms" min="1" max="400" value="40"> <b id="w-msv"></b></label>
       <button type="button" class="go" id="w-go">跑一圈</button>
@@ -203,13 +203,13 @@
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-scan.js?v=64653caa1c"></script>
+<script src="lab-scan.js?v=86f02ab967"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "3c50c37c7a" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6b7adef8f2" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

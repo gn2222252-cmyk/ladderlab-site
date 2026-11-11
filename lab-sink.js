@@ -244,7 +244,7 @@
     function () { var a = '＋24V → 負載 → Y → COM → 0V'; return { q: '漏型電晶體輸出 ON 時，電流的路徑是？', ans: a, wrong: distinct(a, ['0V → 負載 → Y → COM → ＋24V', 'Y → S/S → 0V', '＋24V → COM → Y → 負載 → 0V']), ex: 'Y ON 時，PLC 內部電晶體把 Y 接通到 COM。' }; },
     function () {
       var each = pickOne([0.15, 0.2, 0.25, 0.3]), n = pickOne([3, 4]), tot = r2(each * n), a = tot > 0.8 ? '超過 0.8 A，不行' : '沒超過 0.8 A，可以';
-      return { q: 'Y4～Y7 共用 COM4，同時有 ' + n + ' 個電磁閥 ON，每個 ' + each + ' A（假設值，實際看型錄），合計？', ans: a, wrong: distinct(a, ['超過 0.8 A，不行', '沒超過 0.8 A，可以', '每點都沒超過 0.5 A，所以一定可以', '要看 COM0 的電流']), ex: n + ' × ' + each + ' = ' + tot + ' A。COM4 四點合計只能 0.8 A，每點也不能超過 0.5 A。' };
+      return { q: 'Y4～Y7 共用 COM4，同時有 ' + n + ' 個電磁閥 ON，每個 ' + each + ' A（假設值，實際看型錄），合計？', ans: a, wrong: distinct(a, ['超過 0.8 A，不行', '沒超過 0.8 A，可以', '只要每點沒超過 0.5 A，不用算合計', '要看 COM0 的電流']), ex: n + ' × ' + each + ' = ' + tot + ' A。COM4 四點合計只能 0.8 A，每點也不能超過 0.5 A。' };
     },
     function () { var a = 'Y0～Y3 各自一個 COM，Y4～Y7 共用 COM4'; return { q: 'FX3S-20MT/ES 的輸出共點怎麼分組？', ans: a, wrong: distinct(a, ['Y0～Y7 全部共用一個 COM', '每兩點一個 COM', 'Y0～Y3 共用 COM0，Y4～Y7 各自一個 COM']), ex: 'COM0～COM3 對 Y0～Y3，COM4 對 Y4～Y7。' }; },
     function () { var a = '0.5 A'; return { q: 'FX3S 電晶體輸出，每一點最大電流？', ans: a, wrong: distinct(a, ['0.8 A', '2 A', '5 A', '0.05 A']), ex: '每點 0.5 A；Y4～Y7 共用 COM4 時四點合計 0.8 A。' }; },

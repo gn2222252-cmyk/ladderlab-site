@@ -367,6 +367,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "lab-data.html",
+     "href": "lab-data.html",
+     "label": "動畫實驗室：數值指令（K2Y、CMP、ZCP、BCD、移位）"
+    },
+    {
+     "k": "G",
      "id": "review.html#ch3",
      "href": "review.html#ch3",
      "label": "第 3 章 章末小考"

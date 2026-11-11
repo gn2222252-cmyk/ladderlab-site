@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="6b7adef8f2">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>數值指令實驗室：位元、字、數字怎麼搬 | LadderLab</title>
+<meta name="description" content="三菱 FX 數值指令的動畫實驗室：K1X000、K2Y000 位數組合（八進位跳號）、MOV、CMP 與 ZCP 的三個 M、BIN 讀指撥開關與 BCD 送七段顯示器、DIV 的商和餘數放在哪、SFTL 和 SFTLP 跑馬燈、ROL 旋轉。位元格子和數字一起看。">
+<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="labview/lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .row input[type=number] { width: 90px; }
+  .row input[type=range] { width: 170px; max-width: 100%; }
+  .bx { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; margin: 10px 0; }
+  .bx h3 { margin: 0 0 6px; font-size: 15px; }
+  .bits { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+  .nib { display: flex; gap: 2px; padding: 3px; border: 1px dashed var(--line); border-radius: 6px; }
+  .nib .nl { display: block; width: 100%; text-align: center; font-size: 11px; color: var(--mute); }
+  .nibw { display: inline-flex; flex-direction: column; align-items: center; }
+  .bit { width: 34px; height: 44px; border: 2px solid #9ca3af; border-radius: 5px; display: grid; place-items: center; align-content: center; font: 700 15px ui-monospace, Consolas, monospace; background: var(--card); color: var(--ink); cursor: pointer; padding: 0; line-height: 1.1; }
+  @media (max-width: 480px) { .bit { width: 28px; height: 40px; font-size: 13px; } .bits { gap: 5px; } }
+  .bit small { font-size: 9px; font-weight: 400; color: var(--mute); }
+  .bit.on { background: #fde047; border-color: #a16207; color: #111; }
+  .bit.on small { color: #444; }
+  .bit.ro { cursor: default; }
+  .bit.flash { animation: fl .5s; }
+  @keyframes fl { from { box-shadow: 0 0 0 4px #f59e0b; } }
+  .bit.y.on { background: #ef4444; border-color: #7f1d1d; color: #fff; }
+  .bit.y.on small { color: #fee2e2; }
+  .val { font: 700 22px ui-monospace, Consolas, monospace; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 12px; }
+  .kv b { font-weight: 700; overflow-wrap: anywhere; }
+  .mlamps { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+  .ml { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; }
+  .ml i { width: 14px; height: 14px; border-radius: 50%; background: #4b5563; border: 1px solid #111; }
+  .ml.on { border-color: #16a34a; } .ml.on i { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .ml.bad.on { border-color: #dc2626; } .ml.bad.on i { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  .nline { width: 100%; height: auto; display: block; }
+  .nline text { font: 12px ui-monospace, Consolas, monospace; fill: var(--ink); }
+  .dialw { display: inline-flex; gap: 6px; align-items: center; }
+  .wheel { display: inline-grid; grid-template-rows: auto auto auto; justify-items: center; border: 2px solid #374151; border-radius: 6px; padding: 2px 6px; background: #f3f4f6; color: #111; }
+  .wheel b { font: 700 26px ui-monospace, Consolas, monospace; }
+  .wheel button { padding: 0 10px; font-size: 12px; }
+  .seg { display: inline-flex; gap: 6px; padding: 6px 10px; background: #111; border-radius: 6px; }
+  .seg span { font: 700 34px ui-monospace, Consolas, monospace; color: #ef4444; min-width: 22px; text-align: center; text-shadow: 0 0 6px #ef4444; }
+  .seg span.dark { color: #3f1d1d; text-shadow: none; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 150px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="path.html">課程</a> · 數值指令動畫實驗室</p>
+  <h1>數值指令實驗室：位元、字、數字怎麼搬</h1>
+  <p class="why">PLC 的 D 暫存器是 16 個位元的「字」，X、Y、M 是一個一個的位元。數值指令就是在這兩種之間搬來搬去。這頁的計算照本站模擬器的規則（依三菱 FX3 程式手冊），黃色格子＝1。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="kn" class="here">位數組合 KnX／KnY</button>
+    <button type="button" data-t="cmp">比較 CMP／ZCP</button>
+    <button type="button" data-t="bcd">BIN／BCD 與四則</button>
+    <button type="button" data-t="sft">移位 SFTL／ROL</button>
+  </div>
+
+  <section class="lab-stage" id="t-kn">
+    <p class="why"><b>K1</b> 是 4 個位元（一位數），K2 是 8 個、K4 是 16 個。<code>K2X000</code> 就是從 X0 開始的 8 個位元：X0～X7。X、Y 的編號是<b>八進位</b>，沒有 8、9：<code>K2X004</code> 是 X4～X7、X10～X13。點位元格子切換 ON／OFF，看 <code>MOV K□X□ D0</code> 讀進來的值。</p>
+    <div class="row">
+      <label>位數 <select id="kd"><option value="1">K1（4 位元）</option><option value="2" selected>K2（8 位元）</option><option value="3">K3（12 位元）</option><option value="4">K4（16 位元）</option></select></label>
+      <label>起點 <select id="ks"><option value="0">X000</option><option value="4">X004</option><option value="8">X010</option></select></label>
+      <button type="button" id="kclr">全部 OFF</button>
+    </div>
+    <div class="bx"><h3 id="kname">K2X000</h3><div class="bits" id="kbits"></div>
+      <div class="kv" style="margin-top:8px"><span>包含</span><b id="klist"></b><span>MOV 到 D0</span><b class="val" id="kval">0</b><span>16 進位</span><b id="khex"></b></div>
+      <p class="why" id="kwhy"></p></div>
+    <div class="bx"><h3>反過來：MOV K□ K2Y000（數字 → 8 個輸出）</h3>
+      <div class="row"><label>MOV K <input type="number" id="ky" value="200" min="-32768" max="32767"> K2Y000</label></div>
+      <div class="bits" id="kybits"></div><p class="why" id="kywhy"></p></div>
+  </section>
+
+  <section class="lab-stage" id="t-cmp" hidden>
+    <div class="bx"><h3>CMP S1 S2 M10：一次給三個結果</h3>
+      <div class="row"><label>S1 <input type="range" id="c1" min="-20" max="120" value="50"> <b id="c1v"></b></label><label>S2 <input type="range" id="c2" min="-20" max="120" value="30"> <b id="c2v"></b></label>
+        <label class="check small"><input type="checkbox" id="con" checked> 驅動條件 ON</label></div>
+      <div class="mlamps" id="cm"></div><p class="why" id="cwhy"></p></div>
+    <div class="bx"><h3>ZCP 下限 上限 S M20：在區間的哪裡</h3>
+      <div class="row"><label>下限 <input type="number" id="zl" value="30"></label><label>上限 <input type="number" id="zh" value="70"></label><label>S <input type="range" id="zs" min="0" max="100" value="30"> <b id="zsv"></b></label></div>
+      <svg class="nline" id="zline" viewBox="0 0 420 80" role="img" aria-label="數線"></svg>
+      <div class="mlamps" id="zm"></div><p class="why" id="zwhy"></p></div>
+    <div class="callout">CMP S1 S2 M10：S1 &gt; S2 時 M10 ON、相等 M11 ON、S1 &lt; S2 時 M12 ON，三個 M 連號。比較是帶正負號的 16 位元。ZCP 的區間<b>含兩端</b>：剛好等於下限或上限，中間那個 M ON。驅動條件 OFF 之後，三個 M 保持最後一次的結果、不會自己清掉，所以常用 M8000 一直驅動，要清就用 ZRST。</div>
+  </section>
+
+  <section class="lab-stage" id="t-bcd" hidden>
+    <div class="two">
+      <div class="bx"><h3>BIN K2X000 D0：讀兩位數指撥開關</h3>
+        <div class="dialw"><span class="wheel"><button type="button" data-w="t1">▲</button><b id="wt">3</b><button type="button" data-w="t-1">▼</button></span><span class="wheel"><button type="button" data-w="o1">▲</button><b id="wo">6</b><button type="button" data-w="o-1">▼</button></span><span class="why">十位　個位</span></div>
+        <div class="bits" id="bxbits" style="margin-top:8px"></div>
+        <div class="kv" style="margin-top:8px"><span>BIN 讀到 D0</span><b class="val" id="bbin"></b><span>MOV 直接搬 D1</span><b class="val" id="bmov"></b></div>
+        <div class="mlamps"><span class="ml bad" id="b8067a"><i></i>M8067 運算錯誤</span></div>
+        <p class="why" id="bwhy"></p></div>
+      <div class="bx"><h3>BCD D0 K□Y000：送七段顯示器</h3>
+        <div class="row"><label>D0 <input type="number" id="bd" value="36"></label><label>目的 <select id="bdk"><option value="2">K2Y000（兩位）</option><option value="3">K3Y000（三位）</option><option value="4">K4Y000（四位）</option></select></label></div>
+        <div class="bits" id="bybits"></div>
+        <div class="row"><span class="seg" id="bseg"></span><span class="why">（每位 4 條線接一個 BCD 七段）</span></div>
+        <div class="mlamps"><span class="ml bad" id="b8067b"><i></i>M8067 運算錯誤</span></div>
+        <p class="why" id="bdwhy"></p></div>
+    </div>
+    <div class="bx"><h3>DIV S1 S2 D10：商和餘數放在哪</h3>
+      <div class="row"><label>S1 <input type="number" id="v1" value="17"></label><label>S2 <input type="number" id="v2" value="5"></label><label>指令 <select id="vop"><option value="DIV">DIV</option><option value="MUL">MUL</option></select></label></div>
+      <div class="kv"><span id="vl0">D10（商）</span><b class="val" id="vd10"></b><span id="vl1">D11（餘數）</span><b class="val" id="vd11"></b></div>
+      <div class="mlamps"><span class="ml bad" id="v8067"><i></i>M8067 運算錯誤</span></div>
+      <p class="why" id="vwhy"></p></div>
+  </section>
+
+  <section class="lab-stage" id="t-sft" hidden>
+    <p class="why">八燈依序點亮：<code>LD X000</code> 接著 <code>SFTL X001 Y000 K8 K1</code>（或 SFTLP）。X0 是推一格的條件，X1 是推進 Y0 的那個位元。按「按住 X0 0.5 秒」比較兩種：SFTL 在條件 ON 的<b>每個掃描</b>都推一格，SFTLP 只在條件<b>剛變 ON 的那個掃描</b>推一格。這裡一個掃描算 100 ms。</p>
+    <div class="row">
+      <label>指令 <select id="sop"><option value="SFTLP">SFTLP（脈衝型）</option><option value="SFTL">SFTL（連續型）</option></select></label>
+      <label>來源 <select id="ssrc"><option value="X001">X001（外面補進來）</option><option value="Y007">Y007（最後一顆繞回來：跑馬燈）</option></select></label>
+      <label class="check small"><input type="checkbox" id="sx1" checked> X1 ON</label>
+    </div>
+    <div class="row"><button type="button" class="go" id="shold">按住 X0 0.5 秒</button><button type="button" id="stap">X0 點一下（1 掃描）</button><button type="button" id="sclr">X2：ZRST Y000 Y007</button><span class="kv">推了 <b id="scnt">0</b> 次</span></div>
+    <div class="bits" id="sbits"></div>
+    <p class="verdict-line" id="ssay"></p>
+    <div class="bx"><h3>ROL D0 K1：16 位元自己轉一圈</h3>
+      <div class="row"><button type="button" class="go" id="rolp">ROLP D0 K1（點一下）</button><button type="button" id="rol5">ROL D0 K1 連續 5 個掃描</button><button type="button" id="rreset">D0 = 1</button><span class="kv">D0 = <b id="rval"></b></span></div>
+      <div class="bits" id="rbits"></div><p class="why" id="rwhy"></p></div>
+    <div class="log" id="slog"></div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="dquiz" style="margin-top:16px"></section>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-data.js?v=1ed8a98d36"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "6b7adef8f2" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
