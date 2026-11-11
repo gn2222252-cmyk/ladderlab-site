@@ -65,7 +65,7 @@
     if (c.out === "last") result = ys.length ? ys[ys.length - 1] : (c.op === "pair" || (c.arr && !c.idx && needX) ? [] : 0);
     else if (c.out === "index") result = ys;
     else if (c.out === "concat") {
-      if (ys.length && !Array.isArray(ys[0])) { notes.push("Concatenating 要每圈輸出陣列才有意義；每圈是一個數字時，結果和 Indexing 一樣。"); result = ys; }
+      if (ys.length && !Array.isArray(ys[0])) { notes.push("Concatenating 只給「每圈輸出陣列」的通道用；每圈是一個數字時，LabVIEW 的通道選單沒有這個選項，這裡用 Indexing 的結果代替。"); result = ys; }
       else result = [].concat(...ys);
     } else {
       if (ys.length && Array.isArray(ys[0])) { notes.push("Conditional 通道這裡只示範數字；每圈是陣列時改成全部收下。"); result = ys; }
@@ -169,7 +169,9 @@
   $("srrun").onclick = srrun;
   $("srreset").onclick = () => { mem = 0; runs = 0; srDraw(0, "", "VI 重新載入：沒初始化的 Shift Register 回到預設值 0"); $("srout").textContent = "-"; $("srlog").innerHTML = ""; };
   srDraw(0, "", "");
+  let stkbusy = false;
   $("stk").onclick = async () => {
+    if (stkbusy) return; stkbusy = true; $("stk").disabled = true;
     let p1 = 0, p2 = 0;
     $("stklog").innerHTML = "<div>i　這圈的值　左邊上格（前一圈）　左邊下格（前前一圈）　平均（三圈）</div>";
     for (let i = 0; i < 6; i++) {
@@ -179,6 +181,7 @@
       await sleep(500);
     }
     $("stklog").insertAdjacentHTML("beforeend", "<div>前兩圈的格子一開始是初始值 0，所以前兩個平均偏低；要接初始值，堆疊的每一格都要接。</div>");
+    stkbusy = false; $("stk").disabled = false;
   };
 
   /* ---------- Wait (ms) versus Wait Until Next ms Multiple ---------- */

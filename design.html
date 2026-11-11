@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="71eab9e2a6">
+<meta name="ll-version" content="4930f3dc83">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>機台設計方法：從需求到 PLC 程式與試車 | LadderLab</title>
@@ -81,6 +81,7 @@
         <li><b>S/S 接 24V → 漏型輸入</b>：電流從 PLC 流出、經感測器流到 0V，配 <b>NPN</b> 輸出的感測器。</li>
         <li><b>S/S 接 0V → 源型輸入</b>：感測器把 24V 送進 PLC，配 <b>PNP</b> 輸出的感測器。</li>
       </ul>
+      <p>同一台的輸入不能漏型、源型混用（FX3S 硬體手冊 9.1.1 節；這是 AC 電源型，DC 電源型的接法相反）。輸出端 FX3S-20MT/ES 是電晶體漏型輸出：每點最大 0.5 A；Y0～Y3 各有自己的 COM0～COM3（每個 COM 合計 0.5 A），Y4～Y7 共用 COM4（合計 0.8 A）。Y0、Y1 反應時間 5 μs 以下，可以當高速脈衝輸出，其他點約 0.2 ms（硬體手冊 4.4.2、4.7.4 節）。</p>
       <p class="why">一台機器的輸入只能選一種接法，所以感測器要統一 NPN 或 PNP。買錯型號，輸入燈永遠不會亮。實際端子與接線以 FX3S 硬體手冊為準。</p>
       <h3>致動器</h3>
       <div class="table-box"><table class="gtable small">
@@ -248,7 +249,7 @@
   <p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p>
 </footer>
 <script src="config.js?v=eca98dd0d9"></script>
-<script src="course_map.js?v=5a207eaf40"></script>
+<script src="course_map.js?v=e6bb481b7e"></script>
 <script src="course.js?v=764fe70243"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script src="waitlist.js?v=92656de277"></script>
@@ -262,7 +263,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "71eab9e2a6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "4930f3dc83" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

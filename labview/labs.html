@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="71eab9e2a6">
+<meta name="ll-version" content="4930f3dc83">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
@@ -60,6 +60,7 @@
     { f: 'lab-var.html', n: '變數', ic: 'x', c: '#7c3aed', d: '兩個迴圈共用一個變數，資料是怎麼不見的。', t: ['競爭條件：你來當排程器', '一顆 Stop 停兩個迴圈的四種接法', 'FGV 功能型全域變數'], l: '第 16 課、C8' },
     { f: 'lab-queue.html', n: '佇列', ic: 'Q', c: '#0891b2', d: '迴圈之間傳資料：一筆都不能少用 Queue，只要最新用 Notifier。', t: ['生產者、佇列、消費者三欄動畫', 'Queue、Notifier、Local Variable 比一比', 'Producer/Consumer 怎麼關才不掉資料'], l: '第 16 課、C8、A2' },
     { f: 'lab-qmh.html', n: 'QMH 多迴圈架構', ic: 'MSG', c: '#7e22ce', d: '訊息卡片在迴圈之間飛：13_PLC 的 Host_Main 怎麼分工、怎麼結束。', t: ['QMH：連按也不漏、送給自己的訊息排到尾端', 'MES、通訊、UI、檢測四個迴圈一起跑', '結束順序：先送完、再停、最後才 Release'], l: 'A2、A3、A6、A7、C9' },
+    { f: 'lab-handshake.html', n: 'PLC 交握', ic: '⇄', c: '#c2410c', d: 'PLC 和上位機怎麼「確認對方收到了」：命令脈衝、檢測交握、心跳逾時。', t: ['D106 命令：寫太快被蓋掉、PLC 在 STOP 不清 0', '檢測交握：上升緣只檢測一次，位準會重複', '心跳 D240：拔線後誰先發現、各自怎麼安全停'], l: '第 17、19 課、A4、A5' },
     { f: 'lab-daq.html', n: 'DAQ', ic: 'AI', c: '#dc2626', d: '資料擷取的三個 R：取樣率、解析度、範圍。', t: ['取樣率不夠時的混疊', '解析度與範圍：最小可分辨電壓', 'DAQmx 流程與緩衝區溢位'], l: 'C12' },
     { f: 'lab-wave.html', n: '波形與分析', ic: '∑', c: '#4d7c0f', d: 'Waveform 帶著自己的時間；平均、RMS、標準差、移動平均一看就懂。', t: ['Build／Get Waveform：t0、dt、Y', 'Mean、σ、RMS、Peak-to-Peak 畫在圖上', '移動平均：N 越大越平但越慢'], l: 'C11、C12' },
     { f: 'lab-visa.html', n: 'VISA 序列通訊', ic: 'TX', c: '#475569', d: '位元組怎麼在線上走、VISA Read 什麼時候返回。', t: ['鮑率、資料位元、同位、停止位元的波形', 'Read 的三個返回條件：筆數、終止字元、逾時', 'Bytes at Port 的陷阱'], l: '第 12～14 課' },
@@ -86,7 +87,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "71eab9e2a6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "4930f3dc83" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

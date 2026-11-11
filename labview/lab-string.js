@@ -87,10 +87,11 @@
         re.lastIndex = Math.max(0, v.o); var m = v.p ? re.exec(v.s) : null;
         if (!m) return { outs: [['before substring', v.s, 'str'], ['match substring', '', 'str'], ['after substring', '', 'str'], ['offset past match', -1, 'num']], say: '找不到符合的：match 是空字串，offset past match = -1。程式裡用「是不是 -1」判斷有沒有找到。' };
         var a = m.index, n = m[0].length;
+        var warn = /[\\{}|()]/.test(v.p) ? '　⚠ 這個樣式用到 \\、{ }、| 或 ( )：瀏覽器算得出來，但真正的 Match Pattern 不支援，真機請改寫（數字用 [0-9]），或改用 Match Regular Expression。' : '';
         return { inmark: rng(a, n), outs: [['before substring', v.s.slice(0, a), 'str'], ['match substring', m[0], 'str'], ['after substring', v.s.slice(a + n), 'str'], ['offset past match', a + n, 'num']],
-          say: '在位置 ' + a + ' 找到 "' + m[0] + '"。offset past match = ' + (a + n) + '，是符合處的「下一個」位置；把它接回 offset 再找一次，就能找到下一個。' };
+          say: '在位置 ' + a + ' 找到 "' + m[0] + '"。offset past match = ' + (a + n) + '，是符合處的「下一個」位置；把它接回 offset 再找一次，就能找到下一個。' + warn };
       },
-      notes: ['常用樣式：[0-9]+ 一串數字、[A-Za-z]+ 一串英文字母、^ 開頭、$ 結尾、. 任一字元。', '要把所有符合的都找出來：放進 While Loop，offset past match 用 Shift Register 傳回 offset，直到變成 -1。', '這個實驗室用瀏覽器的規則運算式來模擬。真正的 Match Pattern 語法比較少：不支援 \d、\w、{n} 這類寫法，數字請寫 [0-9]。需要分組、指定次數時，改用 Match Regular Expression。'] },
+      notes: ['常用樣式：[0-9]+ 一串數字、[A-Za-z]+ 一串英文字母、^ 開頭、$ 結尾、. 任一字元。', '要把所有符合的都找出來：放進 While Loop，offset past match 用 Shift Register 傳回 offset，直到變成 -1。', '這個實驗室用瀏覽器的規則運算式來模擬。真正的 Match Pattern 語法比較少：不支援 \\d、\\w、{n}、| 這類寫法，數字請寫 [0-9]。需要分組、指定次數時，改用 Match Regular Expression。'] },
     { key: 'trim', name: 'Trim Whitespace', zh: '去掉頭尾空白', desc: '去掉字串兩端的空格、Tab、換行。中間的不動。',
       ins: [['s', 'string（可用 \\r \\n \\t）', 'code', '  OK 123 \\r\\n']],
       run: function (v) { var a = v.s.length - v.s.replace(/^\s+/, '').length, r = v.s.trim(); return { inmark: function (i) { return i < a || i >= a + r.length ? 'dim' : ''; }, outs: [['trimmed string', r, 'str']], say: '頭去掉 ' + a + ' 個、尾去掉 ' + (v.s.length - a - r.length) + ' 個空白字元。' }; },

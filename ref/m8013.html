@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="71eab9e2a6">
+<meta name="ll-version" content="4930f3dc83">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>M8013：1 秒時脈｜三菱 FX PLC 指令</title>
@@ -24,7 +24,7 @@
 <h1>M8013：1 秒時脈</h1>
 <p class="lead-text">0.5 秒 ON、0.5 秒 OFF 一直重複。做閃爍燈最快。</p>
 <div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>LD M8013</td><td>唯讀（M8012 是 100 ms 時脈）</td></tr></tbody></table></div>
-<p>想每秒做一次動作（例如每秒加 1），要用 PLS 把它變成脈衝，否則 ON 的那半秒每個掃描都會執行。</p>
+<p>想每秒做一次動作（例如每秒加 1），要用 PLS 把它變成脈衝，否則 ON 的那半秒每個掃描都會執行。</p><p>時脈一共四個：M8011 10 ms、M8012 100 ms、M8013 1 秒、M8014 1 分鐘。PLC 在 STOP 時它們也一直在振盪，和 RUN 開始的時間不同步。</p>
 <h2>範例</h2>
 <pre class="il">LD X000
 AND M8013
@@ -43,7 +43,7 @@ OUT Y000</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "71eab9e2a6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "4930f3dc83" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

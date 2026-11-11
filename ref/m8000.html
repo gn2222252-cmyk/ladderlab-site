@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="71eab9e2a6">
+<meta name="ll-version" content="4930f3dc83">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>M8000：RUN 中常 ON｜三菱 FX PLC 指令</title>
@@ -24,7 +24,7 @@
 <h1>M8000：RUN 中常 ON</h1>
 <p class="lead-text">PLC 在 RUN 時一直是 ON。用在「每個掃描都要做」的指令前面。</p>
 <div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>LD M8000</td><td>唯讀</td></tr></tbody></table></div>
-<p>SFC 裡想讓某一步一進來就往下走，轉移條件可以寫 M8000。</p>
+<p>SFC 裡想讓某一步一進來就往下走，轉移條件可以寫 M8000。</p><p>相關的特殊元件（FX3 程式手冊第 37 章）：M8001 RUN 中常 OFF；M8003 第一個掃描 OFF、之後 ON；M8033 ON 時，RUN 切到 STOP 不清輸出和一般的 M、T、C、D；M8034 ON 時禁止全部輸出（程式照跑，實際輸出都 OFF）。</p><p>看門狗計時器 D8000：開機預設 200 ms，掃描超過就 ERR 燈亮、輸出全部 OFF；程式太長時可以 MOV K300 D8000 改大。D8010、D8011、D8012 是掃描時間的現在值、最小值、最大值（單位 0.1 ms）。</p>
 <h2>範例</h2>
 <pre class="il">LD M8000
 OUT Y000</pre>
@@ -42,7 +42,7 @@ OUT Y000</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "71eab9e2a6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "4930f3dc83" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

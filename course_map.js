@@ -1045,6 +1045,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-handshake.html",
+     "href": "labview/lab-handshake.html",
+     "label": "動畫實驗室：PLC 與上位機交握"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-daq.html",
      "href": "labview/lab-daq.html",
      "label": "動畫實驗室：DAQ 取樣率、解析度、緩衝區"

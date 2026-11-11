@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="71eab9e2a6">
+<meta name="ll-version" content="4930f3dc83">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>字串實驗室：切、接、找、換、格式碼、看不見的字元 | LadderLab</title>
@@ -101,7 +101,7 @@
   <section class="lab-stage" id="t-disp" hidden>
     <h2>同一個字串，四種看法</h2>
     <p class="why">字串裡可以有看不見的字元：換行（CR、LF）、Tab，還有通訊用的控制碼（ENQ、STX、ETX）。右鍵字串控制 ▸ 選顯示模式，就能看見它們。下面用 '\' Codes 寫法輸入：<code>\r</code> <code>\n</code> <code>\t</code> <code>\s</code>（空格）<code>\\</code>，或 <code>\05</code> 這種兩位十六進位。</p>
-    <div class="row"><label>'\' Codes 輸入 <input class="str" id="din" style="width:340px"></label></div>
+    <div class="row"><label>'\' Codes 輸入 <input class="str" id="din" style="width:340px;max-width:100%"></label></div>
     <div class="presets" id="dpre"></div>
     <div class="chars" id="dchars"></div>
     <div class="modes">
@@ -115,14 +115,14 @@
   </section>
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
-<script src="lab-string.js?v=d9a92966ad"></script>
+<script src="lab-string.js?v=e2add2fade"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "71eab9e2a6" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "4930f3dc83" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

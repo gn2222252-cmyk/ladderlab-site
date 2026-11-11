@@ -13,7 +13,7 @@ const img=C.p13img,arch=C.arch;
    A4：通訊迴圈與驅動層
    ====================================================================== */
 L.push({id:'A04',order:34,no:'A4',part:PART,title:'通訊迴圈與驅動層：唯一跟 PLC 講話的人',mins:80,
-goals:[['學會','分層設計（主程式 → 一圈的工作 → 讀寫 → 封包 → VISA）；斷線自動重連；Flush Queue + For Loop 一次寫完；心跳。'],['看懂','Host_CommStep.vi 的 True／False 兩頁；PLC_Open、PLC_WriteWord、PLC_Frame、PLC_Xfer。'],['用在','任何「一個設備一個擁有者」的通訊迴圈都可以照這個模板寫。']],
+goals:[['學會','分層設計（主程式 → 一圈的工作 → 讀寫 → 封包 → VISA）；斷線自動重連；Flush Queue + For Loop 一次寫完；心跳。'],['看懂','Host_CommStep.vi 的 True／False 兩頁；PLC_Open、PLC_WriteWord、PLC_Frame、PLC_Xfer。'],['用在','任何「一個設備一個擁有者」的通訊迴圈都可以照這個模板寫。'],['動畫練習','<a href="lab-handshake.html#hb">交握實驗室：心跳與逾時</a>：拔線後 PLC 和 LabVIEW 誰先發現、重連時為什麼要 Flush Queue。']],
 check:'能說出 Host_CommStep 斷線時做哪 4 件事、連線時做哪 4 件事，以及 21 個字的最後一個是什麼。',
 body:[
 C.h3('懂','','分 5 層，每層只做一件事'),
@@ -79,7 +79,7 @@ C.h3('測','q','小測驗'),
    A5：檢測迴圈
    ====================================================================== */
 L.push({id:'A05',order:35,no:'A5',part:PART,title:'檢測迴圈：交握、上升緣、錯誤分流',mins:80,
-goals:[['學會','PLC ↔ PC 的 5 步交握；用 Shift Register 做上升緣／下降緣；Wait on Notification；錯誤碼分流；用錯誤線排順序。'],['看懂','檢測迴圈 3 個 Case：上升緣（檢測）、下降緣（D511=0）、進入步序 20（伺服復歸）。'],['用在','任何「PLC 要求、PC 回覆」的工作都用同樣的交握。']],
+goals:[['學會','PLC ↔ PC 的 5 步交握；用 Shift Register 做上升緣／下降緣；Wait on Notification；錯誤碼分流；用錯誤線排順序。'],['看懂','檢測迴圈 3 個 Case：上升緣（檢測）、下降緣（D511=0）、進入步序 20（伺服復歸）。'],['用在','任何「PLC 要求、PC 回覆」的工作都用同樣的交握。'],['動畫練習','<a href="lab-handshake.html#insp">交握實驗室：檢測交握</a>：b0、D510、D511 四個動作的時序；用位準不用上升緣時，同一顆零件會被檢測兩次。']],
 check:'能默寫 5 步交握，並解釋為什麼要等 b0 下降才把 D511 清 0。',
 body:[
 C.h3('懂','','5 步交握：PLC 和 PC 怎麼「確定對方收到了」'),

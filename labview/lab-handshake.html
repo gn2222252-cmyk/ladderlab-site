@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="4930f3dc83">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>交握實驗室：命令、回應、上升緣、逾時 | LadderLab</title>
+<meta name="description" content="PLC 與 LabVIEW 上位機交握的動畫實驗室：D106 脈衝命令怎麼算送達、寫太快與 PLC 沒清的後果；13_PLC 檢測交握的 b0、D510、D511 時序與上升緣；D240 心跳兩邊互相看門狗，斷線時誰先發現、各自進哪個安全狀態。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .lab-stage h3.sub { font-size: 16px; margin: 14px 0 6px; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 180px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .log b { color: var(--on); }
+  .kv { font: 13px ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+  .empty { color: var(--mute); font-size: 13px; }
+  .tog.on { background: #dc2626; border-color: #7f1d1d; color: #fff; font-weight: 700; }
+  .tog.hold.on { background: #1f9d3a; border-color: #14532d; }
+
+  /* 兩條泳道：LabVIEW 與 PLC */
+  .lanes { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin: 10px 0; }
+  @media (max-width: 720px) { .lanes { grid-template-columns: minmax(0, 1fr); } }
+  .lane { border: 3px solid; border-radius: 10px; padding: 8px 10px; min-width: 0; background: var(--card); font-size: 14px; }
+  .lane h4 { margin: 0 0 6px; font-size: 15px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .lane h4 small { font-weight: 400; color: var(--mute); font-size: 12px; }
+  .lane.hlv { border-color: #1f6feb; } .lane.hlv h4 { color: #1f6feb; }
+  .lane.plc { border-color: #b45309; } .lane.plc h4 { color: #b45309; }
+  .lane.dead { opacity: .55; border-style: dashed; }
+  .hregs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
+  .reg { display: inline-flex; flex-direction: column; align-items: center; min-width: 58px; border: 2px solid var(--line); border-radius: 6px; padding: 2px 6px; font: 700 15px ui-monospace, Consolas, monospace; }
+  .reg small { font: 400 11px system-ui, sans-serif; color: var(--mute); }
+  .reg.hot { border-color: #f59e0b; background: rgba(245, 158, 11, .18); }
+  .reg.bad { border-color: #dc2626; background: rgba(220, 38, 38, .14); }
+  .reg.ok { border-color: #16a34a; background: rgba(22, 163, 74, .14); }
+  .hlamps { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 4px 0; font-size: 13px; }
+  .led { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #4b5563; vertical-align: -1px; border: 1px solid #111; margin-right: 3px; }
+  .led.on { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .led.warn { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+  .led.err { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  .pk { display: inline-flex; flex-direction: column; align-items: flex-start; max-width: 100%; border-radius: 6px; padding: 2px 8px; font: 700 13px ui-monospace, Consolas, monospace; background: #dbeafe; border: 2px solid #1f6feb; color: #111; line-height: 1.25; overflow-wrap: anywhere; }
+  .pk small { font-size: 11px; font-weight: 400; }
+  .pk.rd { background: #fef3c7; border-color: #b45309; }
+  .pk.bad { background: #fecaca; border-color: #dc2626; }
+  .pk.lost { background: #e5e7eb; border-color: #9ca3af; text-decoration: line-through; opacity: .65; }
+  .pks { display: flex; flex-wrap: wrap; gap: 4px; min-height: 26px; align-items: flex-start; }
+  .mfly { position: absolute; z-index: 5; pointer-events: none; box-shadow: 0 4px 14px rgba(0, 0, 0, .25); white-space: nowrap; max-width: none; }
+
+  /* 時序圖 */
+  .chartbox { border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; margin-top: 10px; overflow: hidden; background: var(--card); }
+  .chartbox svg { display: block; width: 100%; height: auto; color: var(--ink); }
+  .chartbox svg text { fill: currentColor; font: 11px ui-monospace, Consolas, monospace; }
+  .chartbox svg text.gh { font: 700 12px system-ui, sans-serif; }
+  .hwho2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 10px; }
+  @media (max-width: 720px) { .hwho2 { grid-template-columns: minmax(0, 1fr); } }
+  .hwho2 > div { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+  @media (prefers-reduced-motion: reduce) { .mfly { display: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-handshake.html" class="here">交握</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>PLC 與上位機交握：命令、回應、上升緣、逾時</h1>
+  <p class="why">兩台各跑各的機器要合作，靠的是「我寫一個值，等對方回應，再收回」。左邊（或上面）是 LabVIEW 的迴圈，右邊（或下面）是 PLC 的 D／M；下面的時序圖把兩邊的每個訊號畫在同一條時間軸上。分頁 ① 和 ③ 用雙龍門專案（<a href="index.html#L17">第 17 課</a>、<a href="index.html#L19">第 19 課</a>）的位址，分頁 ② 用 13_PLC 檢測分選機（<a href="index.html#A05">A5</a>）的位址。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="cmd" class="here">① 命令脈衝 D106</button>
+    <button type="button" data-t="insp">② 檢測交握</button>
+    <button type="button" data-t="hb">③ 心跳與逾時</button>
+    <button type="button" data-t="quiz">④ 猜一猜</button>
+  </div>
+
+  <!-- ================= 1. D106 ================= -->
+  <section class="lab-stage" id="t-cmd">
+    <p class="why">雙龍門的 PLC 每次掃描執行 <code>LD&gt; D106 K0 → MOV D106 K2M100 → MOV K0 D106</code>：D106 不是 0，就把它搬到 M100～M104（Start、Stop、Home、Reset、Clear），<b>同一個掃描就把 D106 清回 0</b>，M10x 再取一掃描脈衝。所以 LabVIEW 這邊只要寫一次 D106 = 4，PLC 就會原點復歸一次。動畫把 PLC 掃描放得很慢，一格就是 PLC 掃描一次。</p>
+    <div class="row" id="cbtns">
+      <span class="small">前面板：</span>
+      <button type="button" data-v="1">Start（1）</button>
+      <button type="button" data-v="2">Stop（2）</button>
+      <button type="button" data-v="4">Home（4）</button>
+      <button type="button" data-v="8">Reset（8）</button>
+      <button type="button" id="cburst">連按 Start、Home</button>
+    </div>
+    <div class="row">
+      <label>LabVIEW 寫法 <select id="cmode"><option value="ack">課文做法：寫完收到 ACK 就換下一筆</option><option value="confirm">加碼：寫完讀回 D106，等到 0 才寫下一筆</option></select></label>
+      <label>讀回最多等 <select id="climit"><option value="6">3 圈</option><option value="10" selected>5 圈</option><option value="16">8 圈</option></select></label>
+    </div>
+    <div class="row">
+      <label>PLC 掃描 <select id="cscan"><option value="1">每格掃描一次</option><option value="5">很慢：每 5 格才掃描一次（誇張示範）</option></select></label>
+      <button type="button" class="tog" id="cstop">PLC 切到 STOP</button>
+      <label class="check small"><input type="checkbox" id="cs0" checked> 在 S0 待機</label>
+      <label class="check small"><input type="checkbox" id="chomed"> 已原點（M20）</label>
+      <label class="check small"><input type="checkbox" id="cauto" checked> 自動模式（X10）</label>
+    </div>
+    <div class="row">
+      <button type="button" class="go" id="crun">▶ 開始</button>
+      <button type="button" id="cstep">走一格</button>
+      <button type="button" id="creset">重來</button>
+      <span class="kv">第 <b id="ct">0</b> 格</span>
+    </div>
+    <div class="lanes" id="clanes"><div class="lane hlv" id="clv"></div><div class="lane plc" id="cplc"></div></div>
+    <div class="chartbox" id="cchart"></div>
+    <p class="verdict-line" id="csay"></p>
+    <div class="log" id="clog"></div>
+    <div class="callout"><b>「送達」有三層</b>：① FX_WriteD 收到 <b>ACK</b>：PLC 收到封包、D106 已經寫進去（課文的做法，到這裡就算寫成功）；② 讀回 D106 = 0：PLC 的程式<b>真的掃到了</b>，把命令拿走；③ 機台真的動了（例如 D202 原點步序出現 10～13）。注意 ② 不等於 ③：PLC 拿走 Home 之後，還要「在 S0、沒有異常」才會開始原點；Start 還要自動模式、已原點。所以想知道命令有沒有「生效」，要看狀態（步序、異常碼），不是只看 D106。<br>PLC 在 STOP 時程式不掃描，D106 就一直停在寫進去的值。真機上 PLC 掃描是毫秒級、LabVIEW 每寫一筆都要等 ACK，「上一筆還沒被拿走就寫下一筆」平常很難撞到；動畫把掃描放慢只是為了讓你看見：D106 只有一格，沒被拿走前再寫一次，前一筆就被蓋掉了。</div>
+  </section>
+
+  <!-- ================= 2. 檢測交握 ================= -->
+  <section class="lab-stage" id="t-insp" hidden>
+    <p class="why">13_PLC 的 5 步交握：PLC 到步序 70，寫 D306 = 零件 ID、<b>D302.b0 = 1</b>（請求檢測）→ 檢測迴圈看到 b0 <b>上升緣</b>就檢測，寫 <b>D510</b>（結果）再寫 <b>D511 = 1</b>（完成）→ PLC 看到 D511 = 1，讀 D510，<b>b0 = 0</b>，往下走 → 檢測迴圈看到 b0 <b>下降緣</b>，寫 D511 = 0 → 下一顆。通訊迴圈每 100 ms 讀一次 PLC，用 Notifier 送給檢測迴圈；檢測迴圈的 Wait on Notification timeout 500 ms。一格 = 100 ms。</p>
+    <div class="row">
+      <label>檢測迴圈怎麼判斷 <select id="imode"><option value="edge">課文：上升緣（Host_Edge）</option><option value="level">錯誤示範：位準（b0 = 1 就檢測）</option></select></label>
+      <label class="check small"><input type="checkbox" id="ito"> Host_Edge 不管 Timed Out（錯誤示範）</label>
+    </div>
+    <div class="row">
+      <button type="button" id="istall">下一次檢測完，通訊迴圈卡 0.7 秒</button>
+      <button type="button" class="tog" id="icam">相機斷線</button>
+    </div>
+    <div class="row">
+      <button type="button" class="go" id="irun">▶ 開始</button>
+      <button type="button" id="istep">走一格（100 ms）</button>
+      <button type="button" id="ireset">重來</button>
+      <label>速度 <select id="ispeed"><option value="260">慢動作</option><option value="140" selected>中</option><option value="70">快</option></select></label>
+      <span class="kv">t = <b id="it">0.0</b> s</span>
+    </div>
+    <div class="lanes" id="ilanes"><div class="lane hlv" id="ilv"></div><div class="lane plc" id="iplc"></div></div>
+    <div class="chartbox" id="ichart"></div>
+    <p class="verdict-line" id="isay"></p>
+    <div class="log" id="ilog"></div>
+    <div class="callout"><b>為什麼要用上升緣</b>：b0 = 1 會維持好幾圈（PLC 要等通訊迴圈把 D511 = 1 寫過去，才會把 b0 收回，再等下一圈讀回來）。用位準判斷，檢測完時通知裡的 b0 多半還是 1，同一顆就再檢測一次；而且 b0 = 0 的每一圈都寫一次 D511 = 0，寫入佇列一直有東西。上升緣只在「這圈 1、上一圈 0」那一圈成立一次。<br><b>為什麼要管 Timed Out</b>：通知逾時那一圈，Wait on Notification 輸出的是預設值（全 0）。把它當成 b0 = 0，就會誤判一個下降緣；通訊恢復後第一筆通知又是 b0 = 1，變成新的上升緣，同一顆檢測兩次。課文的 Host_Edge 在逾時時保留上一圈的值（Next = Timed Out ? Prev : b0）。<br><b>相機斷線</b>：檢測出錯，錯誤線讓後面的 Enqueue 都不執行，不寫結果；PLC 等不到 D511，逾時報 9005（課文 A5 的練習是約 5 秒，PLC 的檢測逾時參數是 D531）。</div>
+  </section>
+
+  <!-- ================= 3. 心跳 ================= -->
+  <section class="lab-stage" id="t-hb" hidden>
+    <p class="why">雙龍門的心跳是<b>兩邊互相看門狗</b>：LabVIEW 每秒把 D240 加 1（1～32767 循環）；PLC 用 T30 計時「D240 和上一次掃描一樣、而且大於 0」，<b>3 秒</b>沒變化就算 HMI 斷線。LabVIEW 這邊看的是通訊本身：VISA Read 等不到回應，逾時（課文是 2 秒）就出錯，下一圈進錯誤頁重連。通訊迴圈約 200 ms 一圈。一格 = 100 ms。先按 ▶ 讓它跑幾秒，再拔線。</p>
+    <div class="row">
+      <button type="button" class="tog" id="hcut">拔掉通訊線</button>
+      <button type="button" class="tog hold" id="hjog">按住 L Forward（點動）</button>
+      <label class="check small"><input type="checkbox" id="hman" checked> 手動模式（X10 OFF）</label>
+      <button type="button" id="hrst">Reset（D106 = 8）</button>
+    </div>
+    <div class="row">
+      <span class="small">LabVIEW 怎麼結束：</span>
+      <button type="button" id="hexit">按 Exit（寫 D240 = 0 再關埠）</button>
+      <button type="button" id="habort">按 Abort（立刻砍掉）</button>
+    </div>
+    <div class="row">
+      <button type="button" class="go" id="hrun">▶ 開始</button>
+      <button type="button" id="hstep">走一格（100 ms）</button>
+      <button type="button" id="hreset">重來</button>
+      <label>速度 <select id="hspeed"><option value="200">慢動作</option><option value="100" selected>真實速度</option><option value="50">快</option></select></label>
+      <span class="kv">t = <b id="ht">0.0</b> s</span>
+    </div>
+    <div class="lanes" id="hlanes"><div class="lane hlv" id="hlv"></div><div class="lane plc" id="hplc"></div></div>
+    <div class="hwho2" id="hwho"></div>
+    <div class="chartbox" id="hchart"></div>
+    <p class="verdict-line" id="hsay"></p>
+    <div class="log" id="hlog"></div>
+    <div class="callout"><b>各自的安全狀態</b>（課文第 17、19 課，PLC 程式 P7、P8）：<br>PLC：T30 一到，「手動有效」M5 變 OFF，<b>D107 清 0、M110～M125 全部 RST</b>，點動馬上停；<b>只有手動模式</b>會報異常 40（因為這時 HMI 是唯一的操作站），異常要等 Reset 才清掉。自動模式不報 40。D240 = 0 代表「沒有 HMI」，PLC 不檢查，所以正常 Exit 先寫 D240 = 0 就不會報警；用 Abort 砍掉就沒寫到，手動模式 3 秒後報 40。<br>LabVIEW：錯誤頁做 Clear Errors → VISA Close → Wait 1000 ms → FX_Open 重開 → <b>Flush Queue</b>，把斷線期間累積的命令全部丟掉（舊的點動命令不能在重連後才送出去），PLC Connected 燈熄滅，程式不停。<br>13_PLC 用的是 D520、2 秒、警報 9006，想法一樣，數字不同。</div>
+  </section>
+
+  <!-- ================= 4. 猜一猜 ================= -->
+  <section class="lab-stage" id="t-quiz" hidden>
+    <p class="why">題目隨機產生，選項順序也會打亂。答錯會看到解說，按「下一題」換一題。</p>
+    <div class="lab-challenge" id="hquiz"></div>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。位址與 PLC 行為以本站課文與雙龍門 PLC 程式為準，動畫裡沒有標出處的時間只是示意。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-handshake.js?v=0ebdac036a"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "4930f3dc83" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

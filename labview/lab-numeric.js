@@ -75,7 +75,7 @@
     $("rp0").style.left = pos(x);
     $("rp1").style.left = pos(x);
     $("rl1").style.left = pos(x);
-    requestAnimationFrame(() => requestAnimationFrame(() => { $("rp1").style.left = pos(y); $("rl1").style.left = pos(y); $("rl1").textContent = `${RN[f]} → ${y}`; }));
+    requestAnimationFrame(() => requestAnimationFrame(() => { $("rp1").style.left = pos(y); $("rl1").textContent = `${RN[f]} → ${y}`; const L = $("rl1"), W = $("rline").clientWidth, h = L.offsetWidth / 2, px = parseFloat(pos(y)) / 100 * W; L.style.left = Math.max(h, Math.min(W - h, px)) + "px"; }));
     const xs = [2.5, 3.5, -2.5, 2.4, 2.6, -1.2];
     $("rtab").innerHTML = `<tr><th>x</th><th>Nearest</th><th>−Infinity</th><th>+Infinity</th></tr>` +
       xs.map((v) => `<tr class="${Math.abs(v - x) < 1e-9 ? "here" : ""}"><td>${v}</td><td>${roundEven(v)}</td><td>${Math.floor(v)}</td><td>${Math.ceil(v)}</td></tr>`).join("");
