@@ -1027,6 +1027,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/instlab.html",
+     "href": "labview/instlab.html",
+     "label": "儀器接入練習台：先和模擬儀器講到話"
+    },
+    {
+     "k": "G",
      "id": "labview/labs.html",
      "href": "labview/labs.html",
      "label": "動畫實驗室總覽"

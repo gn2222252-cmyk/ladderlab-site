@@ -117,7 +117,7 @@ ask('用什麼工具送？',
 <p>下面是同樣用途的網頁版，接的是一台模擬的 GPD-3303S。</p>`),
 SIMNOTE,
 {fn:term({inst:'gpd',cfg:{baud:9600,bits:8,parity:'N',stop:1,term:''},presets:['*IDN?','VOUT1?','IOUT1?','STATUS?','ERR?'],showHex:true})},
-`<p>照順序做下面三個實驗。每一個都先猜會看到什麼，再按送出。</p>`,
+`<p>照順序做下面三個實驗。每一個都先猜會看到什麼，再按「送出並讀回覆」。命令可以自己打，也可以點下面現成的。</p>`,
 {todo:[
  '<b>實驗 1</b>：結尾字元選「無」，送 <code>*IDN?</code>。先猜：會收到什麼？',
  '<b>實驗 2</b>：只改一樣：結尾字元改成 <code>\\n</code>，再送一次 <code>*IDN?</code>。跟實驗 1 差在哪？',

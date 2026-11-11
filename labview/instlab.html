@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="6f07aec991">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>儀器練習台：新儀器先講到話，再寫程式 | LadderLab</title>
+<meta name="description" content="拿到一台沒用過的儀器怎麼接進 LabVIEW：先用終端機和模擬儀器講到話，把原始資料原封不動看一遍，再想怎麼切成數字。七台模擬儀器：電源供應器、數位電表、電子天平、溫控器（Modbus）、ADAM 模組、DAQ 卡。">
+<link rel="stylesheet" href="../style.css?v=fe0ae63584">
+<link rel="stylesheet" href="lab.css?v=89a89d8063">
+<style>
+  .il-row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+  .il-pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .il-pick button { text-align: left; border: 1px solid var(--line); border-radius: 6px; background: var(--card); padding: 6px 10px; cursor: pointer; font: inherit; color: inherit; }
+  .il-pick button small { display: block; color: var(--mute); font-size: 12px; }
+  .il-pick button.here { border-color: var(--on); box-shadow: inset 4px 0 0 var(--on); background: var(--onbg); font-weight: 700; }
+  .il-two { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 900px) { .il-two { grid-template-columns: minmax(0, 1fr); } }
+  .il-card { border: 1px solid var(--line); border-radius: 6px; background: var(--card); padding: 0 0 8px; min-width: 0; }
+  .il-card h3 { margin: 0; padding: 6px 12px; background: var(--plate); color: var(--plate-ink); border-radius: 5px 5px 0 0; font-size: 15px; letter-spacing: .02em; }
+  .il-card > div, .il-card > p, .il-card > details, .il-card > ul { margin: 8px 12px; }
+  .il-kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; font-size: 14px; }
+  .il-kv dt { color: var(--mute); } .il-kv dd { margin: 0; overflow-wrap: anywhere; }
+  .il-cmds { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .il-cmds td { border-top: 1px solid var(--line); padding: 3px 4px; vertical-align: top; overflow-wrap: anywhere; }
+  .il-cmds td:first-child { font-family: ui-monospace, Consolas, monospace; white-space: nowrap; }
+  @media (max-width: 420px) { .il-cmds td:first-child { white-space: normal; } }
+  .il-card ul { padding-left: 18px; font-size: 14px; } .il-card li { margin: 2px 0; }
+  .il-sim { border-left: 4px solid var(--amber, #e8a200); background: var(--onbg); border-radius: 4px; padding: 6px 10px; font-size: 14px; }
+  .il-tasks { list-style: none; padding: 0; margin: 8px 0; font-size: 14px; }
+  .il-tasks li { padding: 3px 0 3px 26px; position: relative; }
+  .il-tasks li::before { content: ""; position: absolute; left: 4px; top: 8px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--rail); }
+  .il-tasks li.ok::before { background: var(--go); border-color: var(--go); }
+  .il-tasks li.ok { color: var(--mute); }
+  .il-m { display: grid; gap: 6px; margin: 8px 0; }
+  .il-m button { text-align: left; border: 1px solid var(--line); border-radius: 6px; background: var(--card); padding: 8px 10px; cursor: pointer; font: inherit; color: inherit; overflow-wrap: anywhere; }
+  .il-m button.ok { border-color: var(--lab-ok); box-shadow: inset 4px 0 0 var(--lab-ok); }
+  .il-m button.no { border-color: var(--lab-bad); box-shadow: inset 4px 0 0 var(--lab-bad); }
+  .il-m button.near { border-color: var(--amber, #e8a200); box-shadow: inset 4px 0 0 var(--amber, #e8a200); }
+  .il-res { font: 700 18px var(--f-tech, ui-monospace); font-variant-numeric: tabular-nums; }
+  .il-clue { border: 1px dashed var(--line); border-radius: 6px; padding: 8px 12px; margin: 8px 0; background: var(--card); }
+  .il-clue blockquote { margin: 6px 0 0; padding-left: 10px; border-left: 3px solid var(--rail); color: var(--mute); font-family: ui-monospace, Consolas, monospace; font-size: 13.5px; overflow-wrap: anywhere; }
+  .il-step { border-top: 1px solid var(--line); padding: 8px 0; }
+  .il-step.done { color: var(--mute); }
+  .il-step .il-m button:disabled { cursor: default; opacity: 1; }
+  .il-end { border-left: 4px solid var(--go); background: var(--card); padding: 8px 12px; border-radius: 4px; margin: 10px 0; }
+  .il-why { color: var(--mute); font-size: 14px; margin: 6px 0; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="instlab.html" class="here">儀器練習台</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>儀器練習台：先講到話，再寫程式</h1>
+  <p class="why">拿到一台沒用過的儀器，第一件事不是開 LabVIEW 拉迴圈，而是<b>先讓資料進得來</b>：用最笨的方法送一個命令，把收到的東西原封不動看一遍。這裡有七台模擬儀器和一個終端機（像 NI MAX 的 VISA Test Panel），設錯會真的收不到、收到亂碼。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="talk" class="here">① 先講到話</button>
+    <button type="button" data-t="parse">② 把原始資料變成數字</button>
+    <button type="button" data-t="flow">③ VISA、DAQ 還是 TCP？</button>
+    <button type="button" data-t="quiz">④ 猜一猜</button>
+  </div>
+
+  <section class="lab-stage" id="t-talk">
+    <p class="why">選一台儀器，先讀左邊的「說明書摘要卡」，再到右邊的終端機自己試。終端機一開始是電腦常見的預設值（序列埠 9600-8-N-1），<b>不會自動幫你設成對的</b>：要照說明書改。</p>
+    <div class="il-pick" id="pick"></div>
+    <div class="il-two">
+      <div class="il-card" id="card"></div>
+      <div style="min-width:0">
+        <div id="term"></div>
+        <ul class="il-tasks" id="tasks"></ul>
+        <details>
+          <summary>沒有回應？照這個順序想</summary>
+          <ol class="il-why">
+            <li>線和連線：序列埠選對了嗎？網路的要先按「連線」，IP 和埠對嗎？</li>
+            <li>通訊參數：鮑率、資料位元、同位，和儀器那一邊一樣嗎？收到亂碼幾乎都是這一項。</li>
+            <li>結尾字元：命令後面有沒有加？加的是儀器要的那一種嗎？</li>
+            <li>這個命令本來就沒有回覆嗎？設定類的命令常常不回。</li>
+            <li>命令拼對了嗎？有錯誤佇列的儀器，問一下它剛才發生什麼錯。</li>
+            <li>儀器來得及嗎？量測要時間，逾時設太短就等不到。</li>
+            <li>收到的是不是「舊的」？自己一直送的儀器，先清緩衝區再讀。</li>
+          </ol>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab-stage" id="t-parse" hidden>
+    <p class="why">講到話之後，手上是一串<b>原始資料</b>。先看清楚它長什麼樣子（有沒有單位、結尾字元、標頭、是文字還是位元組），再決定怎麼切。選一種切法，看它對這一筆資料會算出什麼。</p>
+    <div class="il-pick" id="ppick"></div>
+    <div class="il-row"><button type="button" id="p-sample">用範例資料</button><span class="il-why" id="p-src"></span></div>
+    <div id="p-raw"></div>
+    <p><b id="p-goal"></b></p>
+    <div class="il-m" id="p-m"></div>
+    <p class="verdict-line" id="p-say"></p>
+    <div class="callout">切法只對「這一種長相」有效，所以順序一定是：先收一筆真的、看原始資料，再選函式。說明書常常沒寫回覆帶不帶單位、結尾是什麼，這一頁的模擬回覆也只是其中一種可能；換一台實機，先回 ① 的做法再收一次。</div>
+  </section>
+
+  <section class="lab-stage" id="t-flow" hidden>
+    <p class="why">LabVIEW 接儀器的函式有好幾組（VISA、DAQmx、TCP…）。用哪一組，看的是線索：接頭長什麼樣子、說明書怎麼寫。選一台設備，一步一步回答。</p>
+    <div class="il-pick" id="fpick"></div>
+    <div id="flow"></div>
+  </section>
+
+  <section class="lab-stage" id="t-quiz" hidden>
+    <p class="why">題目隨機產生，數字每次不同。答錯會看到解說。</p>
+    <div class="lab-challenge" id="iquiz"></div>
+  </section>
+</main>
+<footer><p>LabVIEW、NI-VISA、NI-DAQmx 為 NI 之商標；其他廠牌與型號為各公司之商標。本站為獨立製作，與各廠商無關。儀器是模擬的：標示「模擬」的回覆以原廠說明書與實機為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="assets/instsim.js?v=cb6a1e5da1"></script>
+<script src="instlab.js?v=c7128b16b7"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "6f07aec991" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
