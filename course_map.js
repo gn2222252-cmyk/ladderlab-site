@@ -600,6 +600,12 @@ window.COURSE = {
      "label": "急停、安全迴路與硬體互鎖：為什麼不能只靠程式"
     },
     {
+     "k": "G",
+     "id": "lab-alarm.html",
+     "href": "lab-alarm.html",
+     "label": "動畫實驗室：異常鎖住、閃爍燈、蜂鳴器靜音、首發異常"
+    },
+    {
      "k": "L",
      "id": "A8",
      "href": "learn.html#A8",

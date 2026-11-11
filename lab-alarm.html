@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="10455ce95b">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>異常處理實驗室：鎖住、閃爍、蜂鳴器、首發異常 | LadderLab</title>
+<meta name="description" content="FX3S 異常處理的動畫實驗室：一瞬間的異常要用 SET 或自保持鎖住，復歸才清；M8013 與兩個計時器做 0.5 秒閃爍的時間軸比較；蜂鳴器靜音後燈繼續閃、排除後才熄；D220 只記第一個異常碼。">
+<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="labview/lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .ld { width: 100%; max-width: 680px; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  .ld .rail { stroke: var(--ink); stroke-width: 3; }
+  .ld .w { stroke: var(--mute); stroke-width: 2; fill: none; }
+  .ld .ct { stroke: var(--ink); stroke-width: 2; fill: none; }
+  .ld .ct.on { stroke: #16a34a; stroke-width: 3; }
+  .ld .ctf { fill: transparent; } .ld .ctf.on { fill: rgba(22, 163, 74, .22); }
+  .ld .coil.on { stroke: #16a34a; stroke-width: 3; }
+  .ld .coilf.on { fill: rgba(22, 163, 74, .22); }
+  .ld text { fill: var(--ink); font: 12px ui-monospace, Consolas, monospace; }
+  .ld .il { fill: var(--mute); font-size: 11px; }
+  .hold { user-select: none; touch-action: none; min-width: 96px; }
+  .hold.on { background: #1e6fff; color: #fff; border-color: #1e6fff; }
+  .tog.on { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .tl { width: 100%; height: 160px; display: block; background: #0b0f14; border-radius: 8px; margin-top: 8px; }
+  .panel { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+  .tower { display: inline-grid; gap: 3px; padding: 6px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); }
+  .tower i { display: block; width: 34px; height: 18px; border-radius: 4px; background: #374151; }
+  .tower i.r.on { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+  .tower i.y.on { background: #facc15; box-shadow: 0 0 10px #facc15; }
+  .tower i.g.on { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+  .bz { font-size: 26px; opacity: .35; }
+  .bz.on { opacity: 1; animation: buzz .2s linear infinite; }
+  @keyframes buzz { 50% { transform: rotate(-8deg) scale(1.1); } }
+  .val { font: 700 18px ui-monospace, Consolas, monospace; border: 2px solid var(--line); border-radius: 6px; padding: 2px 10px; }
+  .lamp { width: 22px; height: 22px; border-radius: 50%; background: #374151; display: inline-block; vertical-align: middle; }
+  .lamp.on { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+  .lamp.y.on { background: #facc15; box-shadow: 0 0 10px #facc15; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="path.html">課程</a> · 異常處理實驗室</p>
+  <h1>異常處理實驗室</h1>
+  <p class="why">機台出問題時，PLC 要做三件事：<b>記住</b>發生過異常、<b>讓人知道</b>（燈閃、蜂鳴器響）、<b>等人處理完再復歸</b>。這裡用練習題 E6、E11、E22 和課程 C4 的寫法，一圈一圈模擬（每圈 10 ms），看燈號塔和時間軸。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="lat" class="here">異常要鎖住</button>
+    <button type="button" data-t="fl">0.5 秒閃爍</button>
+    <button type="button" data-t="bz">蜂鳴器靜音</button>
+    <button type="button" data-t="ff">首發異常</button>
+  </div>
+
+  <section class="lab-stage" id="t-lat">
+    <p class="why">X1 是異常訊號（例如逾時或過載接點），X3 是復歸鈕，Y0 是紅色異常燈。按「一瞬間的異常」只讓 X1 ON 0.1 秒。</p>
+    <div class="row"><label>寫法 <select id="lsel"></select></label></div>
+    <svg class="ld" id="lld" role="img" aria-label="梯形圖"></svg>
+    <div class="row">
+      <button type="button" id="lpulse">一瞬間的異常（X1 ON 0.1 秒）</button>
+      <button type="button" class="hold" id="lx1">按住：異常持續</button>
+      <button type="button" class="hold" id="lx3">按住 X3 復歸</button>
+      <span class="panel"><span class="tower"><i class="r" id="lr"></i><i class="y"></i><i class="g"></i></span></span>
+    </div>
+    <canvas class="tl" id="ltl"></canvas>
+    <p class="verdict-line" id="lsay"></p>
+    <div class="callout">E11：逾時就 <b>SET M3</b> 記下異常，按復歸 X3 才 <b>RST M3</b>。用自保持（OR M0、ANI X3）效果一樣。異常訊號本身常常只出現一下，不鎖住的話燈只閃一下，人根本來不及看。課程 C4 也提醒：復歸要先把原因排除；原因還在就按復歸，放開後程式會再記一次異常。</div>
+  </section>
+
+  <section class="lab-stage" id="t-fl" hidden>
+    <p class="why">開關 X0 打開時，兩個燈都要「亮 0.5 秒、熄 0.5 秒」。Y0 用內建的 M8013；Y1 照練習題 E6 的解法，用兩個計時器互相重置。打開、關掉 X0 幾次，比較兩條時間軸。</p>
+    <svg class="ld" id="fld" role="img" aria-label="梯形圖"></svg>
+    <div class="row">
+      <button type="button" class="tog" id="fx0">X0 開關：OFF</button>
+      <span class="panel">Y0（M8013）<span class="lamp y" id="fy0"></span>　Y1（T0、T1）<span class="lamp y" id="fy1"></span></span>
+    </div>
+    <canvas class="tl" id="ftl"></canvas>
+    <p class="verdict-line" id="fsay"></p>
+    <div class="callout">M8013 是 PLC 內建的 1 秒時脈（0.5 秒 ON、0.5 秒 OFF），一開機就自己在跑，和 X0 什麼時候打開無關，所以打開後第一次亮的長短不一定。E6 的兩個計時器從 X0 打開那一刻才開始數：先熄 0.5 秒（T0 在數），再亮 0.5 秒（T1 在數），T1 到了把 T0 斷掉，重新一輪。E18 的復歸黃燈、E22 的故障燈都是這種 0.5 秒閃爍；E22 寫明用 M8013，E6 則要求不能用。</div>
+  </section>
+
+  <section class="lab-stage" id="t-bz" hidden>
+    <p class="why">X1 是過載（例如積熱電驛跳脫），X2 是靜音（警報復歸）鈕，X3 是復歸鈕；Y0 是異常燈，Y2 是蜂鳴器。選一種規定，照順序試：異常發生 → 按靜音 → 排除異常 → 按復歸。</p>
+    <div class="row"><label>規定 <select id="bsel"><option value="common">常見做法：靜音只停蜂鳴器，排除後按復歸才熄燈</option><option value="e22">依 E22 題意：按 PB3 蜂鳴器停、故障燈閃，原因排除後燈熄</option></select></label></div>
+    <svg class="ld" id="bld" role="img" aria-label="梯形圖"></svg>
+    <div class="row">
+      <button type="button" class="tog" id="bx1">X1 過載：OFF</button>
+      <button type="button" class="hold" id="bx2">按住 X2 靜音</button>
+      <button type="button" class="hold" id="bx3">按住 X3 復歸</button>
+      <span class="panel"><span class="tower"><i class="r" id="br"></i><i class="y"></i><i class="g"></i></span><span class="bz" id="bbz">🔔</span></span>
+    </div>
+    <canvas class="tl" id="btl"></canvas>
+    <p class="verdict-line" id="bsay"></p>
+    <div class="callout">E22（工業配線乙級自動門）的過載規定：BZ 響；按 PB3 BZ 停、PL4 閃；門全開且 TH 復歸後 PL4 熄、恢復。本頁只取「過載、靜音、排除」這一段，門的動作省略。另一種「靜音後燈繼續閃、排除後還要按復歸才熄」是<b>常見做法</b>，不是哪一題的規定，選哪一種要看題目或客戶的要求。</div>
+  </section>
+
+  <section class="lab-stage" id="t-ff" hidden>
+    <p class="why">課程 C4：X0 是軸逾時（異常碼 10）、X1 是氣缸逾時（異常碼 20），X2 是 Reset。兩個異常接近同時發生時，D220 應該留下<b>第一個</b>。雙龍門的程式（急停是異常碼 1）也是「D220 為 0 才寫入」。</p>
+    <div class="row"><label>寫法 <select id="fsel2"><option value="c4">課程 C4：AND= D220 K0，只寫第一個</option><option value="raw">沒有 AND= D220 K0：每一圈都寫</option></select></label></div>
+    <svg class="ld" id="ffld" role="img" aria-label="梯形圖"></svg>
+    <div class="row">
+      <button type="button" class="tog" id="ffx0">X0 軸逾時：OFF</button>
+      <button type="button" class="tog" id="ffx1">X1 氣缸逾時：OFF</button>
+      <button type="button" class="hold" id="ffx2">按住 X2 Reset</button>
+      <span class="panel">D220 <span class="val" id="ffd">0</span>　M3 警報 <span class="lamp" id="ffm"></span></span>
+    </div>
+    <p class="verdict-line" id="ffsay"></p>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="aquiz" style="margin-top:16px"></section>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="common.js?v=26e7d4e9ea"></script>
+<script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-alarm.js?v=e5360c4eab"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "10455ce95b" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
