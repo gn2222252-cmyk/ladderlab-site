@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="10455ce95b">
+<meta name="ll-version" content="16534bb0c9">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>全班進度表：合併學生的進度檔 | LadderLab</title>
 <meta name="description" content="老師一次選取多位學生匯出的 LadderLab 進度檔，在瀏覽器裡合併成「學生 × 章節、練習題」的全班進度表，可以複製到 Excel 或下載 CSV。檔案不會上傳。">
-<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
 <style>
   .mtable td, .mtable th { text-align: center; white-space: nowrap; }
   .mtable td:first-child, .mtable th:first-child { text-align: left; position: sticky; left: 0; background: var(--card); }
@@ -160,7 +160,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "10455ce95b" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "16534bb0c9" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

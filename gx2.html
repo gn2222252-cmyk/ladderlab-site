@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="10455ce95b">
+<meta name="ll-version" content="16534bb0c9">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GX Works2 實作：FX3S 的階梯圖、STL 與 SFC | LadderLab</title>
 <meta name="description" content="一步一步在 GX Works2 建立 FX3S 工程：一般階梯圖、STL 步進階梯圖、SFC 順序功能圖的差別與建立方法，含寫入、監看、常見錯誤。">
-<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
 </head>
 <body class="learn guide-page">
 <header class="top">
@@ -469,7 +469,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "10455ce95b" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "16534bb0c9" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="10455ce95b">
+<meta name="ll-version" content="16534bb0c9">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LadderLab 梯圖實驗室｜三菱 FX PLC 互動課程</title>
 <meta name="description" content="三菱 FX3S PLC 完整線上課程：接線、階梯圖、FX 指令、步進 STL 與 SFC、GX Works2 操作、異常與復歸、整機設計、故障排除。每課都能在瀏覽器裡操作，練習自動評分。">
-<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
 </head>
 <body>
 <header class="top">
@@ -16,10 +16,41 @@
 </header>
 
 <main>
-  <section class="hero">
-    <h1 data-t="h1">三菱 FX PLC：從接線、階梯圖到會設計、會除錯，全部在瀏覽器裡練</h1>
-    <p data-t="sub">為正在學 FX3S、用 GX Works2 的學生寫的一條完整課程：每一課都有會動的階梯圖，學完馬上自己寫程式，在虛擬機台上自動評分。不用買 PLC、不用安裝軟體。</p>
-    <p class="hero-cta"><a class="btnlink go big" id="start" href="learn.html#0">從第 1 章開始 ›</a> <a class="btnlink" href="path.html">看完整課程地圖</a></p>
+  <section class="hero panel-hero">
+    <div>
+      <h1 data-t="h1">三菱 FX PLC：從接線、階梯圖到會設計、會除錯，全部在瀏覽器裡練</h1>
+      <p class="sub" data-t="sub">為正在學 FX3S、用 GX Works2 的學生寫的一條完整課程：每一課都有會動的階梯圖，學完馬上自己寫程式，在虛擬機台上自動評分。不用買 PLC、不用安裝軟體。</p>
+      <p class="hero-cta"><a class="btnlink go big" id="start" href="learn.html#0">從第 1 章開始 ›</a> <a class="btnlink" href="path.html">看完整課程地圖</a></p>
+    </div>
+    <figure class="rung-demo" aria-label="可以按的自保持迴路">
+      <svg viewBox="0 0 440 210" role="img" aria-labelledby="rd-t">
+        <title id="rd-t">自保持迴路：X000 啟動、X001 停止、Y000 馬達</title>
+        <line class="rail" x1="20" y1="20" x2="20" y2="190"/>
+        <line class="rail" x1="420" y1="20" x2="420" y2="190"/>
+        <path class="w" data-w="a" d="M20 70 H60"/>
+        <path class="w" data-w="b" d="M60 70 H92"/>
+        <path class="w" data-w="c" d="M128 70 H160"/>
+        <path class="w" data-w="d" d="M60 70 V140 H92"/>
+        <path class="w" data-w="e" d="M128 140 H160 V70"/>
+        <path class="w" data-w="f" d="M160 70 H202"/>
+        <path class="w" data-w="g" d="M238 70 H300"/>
+        <path class="w" data-w="h" d="M340 70 H420"/>
+        <g class="ct" data-c="x0"><line x1="92" y1="52" x2="92" y2="88"/><line x1="128" y1="52" x2="128" y2="88"/><line class="bridge" x1="92" y1="70" x2="128" y2="70" visibility="hidden"/></g>
+        <g class="ct" data-c="y0"><line x1="92" y1="122" x2="92" y2="158"/><line x1="128" y1="122" x2="128" y2="158"/><line class="bridge" x1="92" y1="140" x2="128" y2="140" visibility="hidden"/></g>
+        <g class="ct" data-c="x1"><line x1="202" y1="52" x2="202" y2="88"/><line x1="238" y1="52" x2="238" y2="88"/><line x1="196" y1="88" x2="244" y2="52"/><line class="bridge" x1="202" y1="70" x2="238" y2="70"/></g>
+        <circle class="coil" cx="320" cy="70" r="20"/>
+        <text x="110" y="42" text-anchor="middle">X000</text><text class="cm" x="110" y="104" text-anchor="middle">啟動</text>
+        <text x="110" y="180" text-anchor="middle">Y000</text><text class="cm" x="110" y="196" text-anchor="middle">自己的接點</text>
+        <text x="220" y="42" text-anchor="middle">X001</text><text class="cm" x="220" y="104" text-anchor="middle">停止（常閉）</text>
+        <text x="320" y="42" text-anchor="middle">Y000</text><text class="cm" x="320" y="108" text-anchor="middle">馬達</text>
+        <circle class="lamp" cx="380" cy="150" r="18"/><text class="cm" x="380" y="184" text-anchor="middle">運轉燈</text>
+      </svg>
+      <div class="rung-ctl">
+        <button type="button" class="pb start" id="rdStart" aria-label="按住 X000 啟動">X000</button>
+        <button type="button" class="pb stop" id="rdStop" aria-label="按住 X001 停止">X001</button>
+        <p class="say" id="rdSay" aria-live="polite">按一下綠色的啟動鈕，看電流怎麼流過去。</p>
+      </div>
+    </figure>
   </section>
 
   <div class="who">
@@ -32,6 +63,12 @@
 
   <h2 class="sec-h">課程主線：七章</h2>
   <ol class="home-map" id="homemap"></ol>
+
+  <h2 class="sec-h">動畫實驗室：把看不見的東西放慢給你看</h2>
+  <div class="lab-entry">
+    <a class="plc" href="plclabs.html"><span class="big" id="nPlc">9</span><b>PLC 動畫實驗室</b><span>掃描週期、接線電流、計時器、步進、氣壓缸、故障排除…一個掃描一個掃描看。</span></a>
+    <a href="labview/labs.html"><span class="big" id="nLv">26</span><b>LabVIEW 動畫實驗室</b><span>資料流、迴圈、事件、佇列、VISA、檔案 I/O，CLAD 常考的觀念都能自己動手試。</span></a>
+  </div>
 
   <h2 class="sec-h">先看一台真實設計的機台在跑</h2>
   <p class="hint" data-t="lab_intro">這是課程最後幾章的主角：雙龍門取放機。程式用 FX 指令寫成，現在就在你的瀏覽器裡執行。按「原點復歸」再按「啟動」，也可以製造故障看它怎麼報警。</p>
@@ -161,13 +198,62 @@
   }
 })();
 </script>
+<script>
+(function () {
+  "use strict";
+  var svg = document.querySelector(".rung-demo svg"); if (!svg) return;
+  var st = { x0: false, x1: false, y0: false };
+  var say = document.getElementById("rdSay");
+  function q(sel) { return svg.querySelectorAll(sel); }
+  function draw() {
+    var x1closed = !st.x1;
+    st.y0 = (st.x0 || st.y0) && x1closed;
+    var a = st.x0 || st.y0;
+    var live = st.y0;
+    q(".w").forEach(function (w) {
+      var k = w.getAttribute("data-w"), on = false;
+      if (k === "a") on = a;
+      if (k === "b" || k === "c") on = st.x0 && x1closed;
+      if (k === "d" || k === "e") on = st.y0 && x1closed;
+      if (k === "f") on = a && x1closed;
+      if (k === "g" || k === "h") on = live;
+      w.classList.toggle("live", on);
+    });
+    [["x0", st.x0], ["y0", st.y0], ["x1", x1closed]].forEach(function (c) {
+      var g = svg.querySelector('[data-c="' + c[0] + '"]');
+      g.classList.toggle("live", c[1] && live);
+      g.querySelector(".bridge").setAttribute("visibility", c[1] ? "visible" : "hidden");
+    });
+    svg.querySelector(".coil").classList.toggle("live", live);
+    svg.querySelector(".lamp").classList.toggle("on", live);
+    say.textContent = st.x1 ? "按住停止：X001 斷開，迴路沒電，Y000 放開。" :
+      st.x0 ? "按住啟動：X000 接通，電流流到 Y000，馬達轉。" :
+      st.y0 ? "放開了還在轉：Y000 自己的接點把迴路接住。這就是自保持，第一章就會教。" :
+      "按一下綠色的啟動鈕，看電流怎麼流過去。";
+  }
+  function hold(btn, key) {
+    function on(e) { e.preventDefault(); st[key] = true; btn.classList.add("down"); draw(); }
+    function off() { if (!st[key]) return; st[key] = false; btn.classList.remove("down"); draw(); }
+    btn.addEventListener("pointerdown", on);
+    ["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { btn.addEventListener(ev, off); });
+    btn.addEventListener("keydown", function (e) { if (e.key === " " || e.key === "Enter") on(e); });
+    btn.addEventListener("keyup", off);
+  }
+  hold(document.getElementById("rdStart"), "x0");
+  hold(document.getElementById("rdStop"), "x1");
+  draw();
+  try {
+    document.getElementById("nPlc").textContent = String(9);
+  } catch (e) { /* 無 */ }
+})();
+</script>
 <script src="app.js?v=ec192ffd32"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "10455ce95b" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "16534bb0c9" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

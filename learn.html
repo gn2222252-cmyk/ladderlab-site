@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="10455ce95b">
+<meta name="ll-version" content="16534bb0c9">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 互動課程 | LadderLab</title>
 <meta name="description" content="免費 PLC 互動課（三菱 FX3S）：從 PLC 接線、階梯圖、FX 指令、步進 STL／SFC 到異常與復歸。每一課都是會動的階梯圖，看示範、自己按、慢動作看掃描。">
-<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
 </head>
 <body class="learn">
 <header class="top">
@@ -107,7 +107,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "10455ce95b" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "16534bb0c9" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

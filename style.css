@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap");
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1d2430;--mute:#5b6576;--line:#d9dee6;--on:#1e6fff;--onbg:#dce8ff;--go:#127a3e;--stop:#c62828;--warn:#b26a00;--belt:#c9ced6;--rail:#8a94a6}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11151b;--card:#1a2029;--ink:#e6eaf0;--mute:#9aa4b4;--line:#2c3440;--on:#5b9bff;--onbg:#1d3357;--belt:#39414d;--rail:#6c7688}}
 *{box-sizing:border-box}
@@ -732,3 +733,152 @@ kbd{display:inline-block;border:1px solid var(--rail);border-bottom-width:2px;bo
 .dial { display: inline-grid; place-items: center; width: 34px; height: 44px; border: 2px solid var(--line); border-radius: 6px; font: 700 22px ui-monospace, Consolas, monospace; }
 .seg-bits { font: 12px ui-monospace, Consolas, monospace; color: var(--mute); margin-left: 4px; }
 .seg-note { font-size: 12px; color: var(--mute); margin: 4px 0 0; }
+
+
+/* LadderLab 視覺系統：控制盤
+   盤體灰底、龍膽藍主色；綠＝通電、紅＝停止、琥珀＝電流與焦點。
+   這個檔案由 style.css 最後載入，只覆蓋外觀，不改版面邏輯。 */
+
+:root {
+  --bg: #eceeeb;
+  --card: #ffffff;
+  --ink: #18212a;
+  --mute: #56606b;
+  --line: #c9d0cf;
+  --on: #0a57a4;
+  --onbg: #dde8f4;
+  --go: #1e9e55;
+  --stop: #d32f2f;
+  --warn: #a86400;
+  --amber: #e8a200;
+  --plate: #1c2228;
+  --plate-ink: #f3f4f1;
+  --wire-bn: #7a4a22;
+  --wire-bu: #2a64b0;
+  --rail: #7d8790;
+  --belt: #c3c9cc;
+  --f-body: "Noto Sans TC", system-ui, "Microsoft JhengHei", "PingFang TC", sans-serif;
+  --f-tech: "Barlow Semi Condensed", "Noto Sans TC", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15191d;
+    --card: #1d2329;
+    --ink: #e8ebe7;
+    --mute: #9ba5ae;
+    --line: #333c45;
+    --on: #6aa7ea;
+    --onbg: #1b2f46;
+    --go: #3cc77a;
+    --stop: #f0605d;
+    --warn: #e0a24a;
+    --plate: #0d1013;
+    --plate-ink: #eef0ec;
+    --rail: #6f7a84;
+    --belt: #3a424b;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15191d; --card: #1d2329; --ink: #e8ebe7; --mute: #9ba5ae; --line: #333c45;
+  --on: #6aa7ea; --onbg: #1b2f46; --go: #3cc77a; --stop: #f0605d; --warn: #e0a24a;
+  --plate: #0d1013; --plate-ink: #eef0ec; --rail: #6f7a84; --belt: #3a424b;
+}
+
+body { font-family: var(--f-body); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+a { color: var(--on); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; border-radius: 4px; }
+
+/* 標題：中文粗黑、字距收緊；數字與英文用窄體 */
+h1, h2, h3 { letter-spacing: -0.01em; }
+h1 { font-weight: 900; line-height: 1.22; }
+h2 { font-weight: 800; }
+.num, .brand, .home-map .no, .hub .ic { font-family: var(--f-tech); }
+
+/* 頂列：品牌是一塊銘牌，下方一條 DIN 軌 */
+.top { background: var(--card); border-bottom: 0; position: relative; padding: 10px 16px 14px; }
+.top::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 22px, rgba(0,0,0,.18) 22px 30px) 0 2px / 100% 2px no-repeat,
+    linear-gradient(var(--line), var(--line));
+}
+.brand {
+  display: inline-flex; align-items: baseline; gap: 8px;
+  background: var(--plate); color: var(--plate-ink); padding: 4px 12px 5px; border-radius: 3px;
+  font-weight: 700; font-size: 18px; letter-spacing: .02em; text-decoration: none;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.brand span { color: #b8bfc4; font-family: var(--f-body); font-weight: 500; font-size: 13px; letter-spacing: .04em; margin-left: 0; }
+.topnav a { border-radius: 4px; font-weight: 500; }
+.topnav a.here { background: transparent; box-shadow: inset 0 -3px 0 var(--on); color: var(--ink); }
+.topnav a:hover { background: var(--onbg); }
+
+/* 按鈕：像面板按鈕，綠＝啟動、紅＝停止 */
+button, .btnlink { border-radius: 6px; }
+button.go, .btnlink.go { background: var(--go); border-color: var(--go); color: #fff; font-weight: 700; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
+button.go:active, .btnlink.go:active { box-shadow: inset 0 2px 0 rgba(0,0,0,.2); }
+.btnlink { font-weight: 500; }
+
+/* 頁尾 */
+footer { border-top: 1px solid var(--line); background: var(--card); }
+
+/* ---------- 首頁 ---------- */
+.hero.panel-hero {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 28px; align-items: center;
+  padding: 36px 0 30px;
+}
+@media (max-width: 880px) { .hero.panel-hero { grid-template-columns: 1fr; gap: 18px; padding-top: 22px; } }
+.panel-hero h1 { font-size: clamp(27px, 3.6vw, 40px); margin: 0 0 14px; }
+.panel-hero h1 .l2 { display: block; color: var(--mute); font-weight: 700; font-size: .62em; margin-top: 8px; letter-spacing: 0; }
+.panel-hero p.sub { color: var(--mute); font-size: 17px; max-width: 34em; margin: 0 0 20px; }
+
+/* 主視覺：一條真的會通電的自保持迴路 */
+.rung-demo { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 14px 10px; }
+.rung-demo svg { width: 100%; height: auto; display: block; }
+.rung-demo .rail { stroke: var(--ink); stroke-width: 4; }
+.rung-demo .w { stroke: var(--rail); stroke-width: 2.5; fill: none; transition: stroke .15s; }
+.rung-demo .w.live { stroke: var(--amber); stroke-width: 3.5; stroke-dasharray: 10 8; animation: flow .7s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -18; } }
+.rung-demo .ct { stroke: var(--ink); stroke-width: 2.5; fill: none; }
+.rung-demo .ct.live { stroke: var(--amber); }
+.rung-demo .coil { stroke: var(--ink); stroke-width: 2.5; fill: var(--card); transition: fill .15s; }
+.rung-demo .coil.live { fill: var(--amber); stroke: var(--amber); }
+.rung-demo text { font-family: var(--f-tech); font-weight: 600; font-size: 15px; fill: var(--ink); }
+.rung-demo text.cm { font-family: var(--f-body); font-weight: 500; font-size: 12px; fill: var(--mute); }
+.rung-demo .lamp { fill: #2a3a2f; stroke: var(--ink); stroke-width: 2.5; transition: fill .2s; }
+.rung-demo .lamp.on { fill: var(--go); filter: drop-shadow(0 0 8px rgba(30,158,85,.7)); }
+.rung-ctl { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.rung-ctl .pb { border-radius: 50%; width: 58px; height: 58px; padding: 0; font: 700 14px var(--f-tech); color: #fff; border: 3px solid rgba(0,0,0,.25); box-shadow: inset 0 -4px 0 rgba(0,0,0,.25); touch-action: none; user-select: none; }
+.rung-ctl .pb.start { background: var(--go); }
+.rung-ctl .pb.stop { background: var(--stop); }
+.rung-ctl .pb.down { box-shadow: inset 0 3px 0 rgba(0,0,0,.3); transform: translateY(1px); }
+.rung-ctl .say { color: var(--mute); font-size: 14px; flex: 1 1 180px; min-height: 2.6em; }
+@media (prefers-reduced-motion: reduce) { .rung-demo .w.live { animation: none; stroke-dasharray: none; } }
+
+/* 誰在用：一列一列，左邊一條導線色 */
+.who { gap: 0; border-top: 1px solid var(--line); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.who a { border: 0; border-radius: 0; border-bottom: 1px solid var(--line); border-left: 4px solid var(--wire-bu); background: transparent; padding: 12px 14px; }
+.who a:nth-child(2) { border-left-color: var(--wire-bn); }
+.who a:nth-child(3) { border-left-color: var(--go); }
+.who a:nth-child(4) { border-left-color: var(--amber); }
+.who a:nth-child(5) { border-left-color: var(--ink); }
+.who a:hover { background: var(--card); border-color: var(--line); }
+.who a:hover b { color: var(--on); }
+
+/* 課程地圖：章號做成端子台的編號牌 */
+.sec-h { font-size: 22px; font-weight: 900; margin: 34px 0 12px; }
+.home-map a { border-radius: 6px; }
+.home-map .no { border-radius: 3px; background: var(--plate); color: var(--plate-ink); width: 28px; height: 24px; font-size: 15px; font-weight: 700; }
+.lab-entry { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin: 0 0 8px; }
+.lab-entry a { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; background: var(--card); border: 1px solid var(--line); border-left: 6px solid var(--on); border-radius: 6px; padding: 14px 16px; color: inherit; text-decoration: none; }
+.lab-entry a.plc { border-left-color: var(--go); }
+.lab-entry a:hover { border-color: var(--on); }
+.lab-entry .big { grid-row: span 2; font: 700 40px/1 var(--f-tech); color: var(--ink); min-width: 2ch; text-align: right; }
+.lab-entry b { font-size: 17px; }
+.lab-entry span { color: var(--mute); font-size: 14px; }
+
+/* ---------- 實驗室總覽頁（labs.html、plclabs.html） ---------- */
+.hub a.card { border-radius: 6px; border-left: 6px solid var(--card-c, var(--on)); transition: border-color .15s; }
+.hub a.card:hover { transform: none; box-shadow: none; border-color: var(--on); border-left-color: var(--card-c, var(--on)); }
+.hub .ic { border-radius: 4px; }
+.order a { border-radius: 4px; }

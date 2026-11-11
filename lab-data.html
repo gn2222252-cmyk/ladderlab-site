@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="10455ce95b">
+<meta name="ll-version" content="16534bb0c9">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>數值指令實驗室：位元、字、數字怎麼搬 | LadderLab</title>
 <meta name="description" content="三菱 FX 數值指令的動畫實驗室：K1X000、K2Y000 位數組合（八進位跳號）、MOV、CMP 與 ZCP 的三個 M、BIN 讀指撥開關與 BCD 送七段顯示器、DIV 的商和餘數放在哪、SFTL 和 SFTLP 跑馬燈、ROL 旋轉。位元格子和數字一起看。">
-<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="style.css?v=b1a6cbeb47">
 <link rel="stylesheet" href="labview/lab.css?v=0d769919de">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
@@ -148,7 +148,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "10455ce95b" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "16534bb0c9" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

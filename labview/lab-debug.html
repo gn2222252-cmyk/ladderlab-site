@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="10455ce95b">
+<meta name="ll-version" content="16534bb0c9">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>除錯實驗室：找出程式哪裡錯 | LadderLab</title>
 <meta name="description" content="LabVIEW 除錯工具的動畫實驗室：斷掉的執行箭頭與 Error List，點錯誤跳到出錯的節點；在線上放 Probe、在節點放 Breakpoint，用 Step Into、Step Over、Step Out 一步一步找出脈波換算 mm 哪裡算錯；Retain Wire Values；迴圈裡的 Probe 與 Conditional Probe 找出少跑一圈的 For Loop。">
-<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="../style.css?v=b1a6cbeb47">
 <link rel="stylesheet" href="lab.css?v=0d769919de">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
@@ -152,7 +152,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "10455ce95b" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "16534bb0c9" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
