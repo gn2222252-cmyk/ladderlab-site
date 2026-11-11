@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="e14972f5f4">
+<meta name="ll-version" content="d8ad231164">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
@@ -50,12 +50,13 @@
     { f: 'lab-cluster.html', n: '叢集', ic: '{ }', c: '#9333ea', d: '把資料打包、拆開，錯誤沿著錯誤線往後傳。', t: ['Bundle／Unbundle 與 By Name', 'Type Def 一改全部跟著改', '錯誤叢集怎麼流、Close 為什麼照樣執行'], l: '第 8、11 課、C10、C18' },
     { f: 'lab-prop.html', n: '屬性節點', ic: 'P', c: '#be185d', d: '用程式改前面板：顏色、反灰、閃爍，還有會不會觸發事件。', t: ['Visible、Disabled 0/1/2、Blinking、顏色', 'Value、Value (Signaling)、Local Variable：誰會觸發事件', '控制參考傳進 SubVI，一次 Disable 一組按鈕'], l: '第 18 課、C7、C11' },
     { f: 'lab-subvi.html', n: 'SubVI', ic: 'VI', c: '#1d4ed8', d: '接線端怎麼配、必要輸入沒接會怎樣、兩個迴圈同時呼叫誰要等。', t: ['4-2-2-4 接線端：輸入在左、輸出在右、錯誤在下角', 'Required／Recommended／Optional 沒接的差別', '可重入：排隊等待與各自一份記憶'], l: '第 10 課、C7' },
+    { f: 'lab-formula.html', n: 'Formula Node', ic: 'f(x)', c: '#a16207', d: '同一個公式：拉線版和文字版並排算，打錯字當場告訴你。', t: ['圖形節點與 Formula Node 對照，一步一步高亮', '語法檢查器：少分號、沒宣告、大小寫', '整數除法、Quotient & Remainder 分組動畫'], l: 'C2、C4' },
     { f: 'lab-graph.html', n: '圖表', ic: '∿', c: '#0f766e', d: 'Chart 會記住舊資料，Graph 每次整張換掉。', t: ['六種資料型別各畫出什麼', 'XY Graph 用兩個陣列畫圓'], l: 'C11、C14' },
     { f: 'lab-var.html', n: '變數', ic: 'x', c: '#7c3aed', d: '兩個迴圈共用一個變數，資料是怎麼不見的。', t: ['競爭條件：你來當排程器', '一顆 Stop 停兩個迴圈的四種接法', 'FGV 功能型全域變數'], l: '第 16 課、C8' },
     { f: 'lab-queue.html', n: '佇列', ic: 'Q', c: '#0891b2', d: '迴圈之間傳資料：一筆都不能少用 Queue，只要最新用 Notifier。', t: ['生產者、佇列、消費者三欄動畫', 'Queue、Notifier、Local Variable 比一比', 'Producer/Consumer 怎麼關才不掉資料'], l: '第 16 課、C8、A2' },
     { f: 'lab-daq.html', n: 'DAQ', ic: 'AI', c: '#dc2626', d: '資料擷取的三個 R：取樣率、解析度、範圍。', t: ['取樣率不夠時的混疊', '解析度與範圍：最小可分辨電壓', 'DAQmx 流程與緩衝區溢位'], l: 'C12' },
     { f: 'lab-visa.html', n: 'VISA 序列通訊', ic: 'TX', c: '#475569', d: '位元組怎麼在線上走、VISA Read 什麼時候返回。', t: ['鮑率、資料位元、同位、停止位元的波形', 'Read 的三個返回條件：筆數、終止字元、逾時', 'Bytes at Port 的陷阱'], l: '第 12～14 課' },
-    { f: 'lab-file.html', n: '檔案 I/O', ic: 'CSV', c: '#15803d', d: '開檔方式選錯會清空或出錯；往後加要先移檔案指標。', t: ['6 種 operation × 檔案在不在：錯誤 7、8、43', '檔案指標：覆蓋還是往後加', '寫 CSV：分隔符號、換行、小數位數'], l: 'F1～F5、C6' },
+    { f: 'lab-file.html', n: '檔案 I/O', ic: 'CSV', c: '#15803d', d: '開檔方式選錯會清空或出錯；往後加要先移檔案指標。', t: ['6 種 operation × 檔案在不在：錯誤 7、10、43', '檔案指標：覆蓋還是往後加', '寫 CSV：分隔符號、換行、小數位數'], l: 'F1～F5、C6' },
     { f: 'fxlab.html', n: 'FX 封包練習台', ic: 'ENQ', c: '#334155', d: '對一台模擬的 FX PLC 送封包，看它怎麼回。', t: ['讀寫 D 暫存器、ACK／NAK', '10 個任務、封包解碼練習'], l: '第 9、12～14 課' }
   ];
   var seen = {}; try { seen = JSON.parse(localStorage.getItem('ll_lv_labs_seen') || '{}'); } catch (e) {}
@@ -78,7 +79,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "e14972f5f4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d8ad231164" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

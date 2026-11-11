@@ -255,7 +255,7 @@ C.h3('懂','','Open/Create/Replace File 的 operation'),
 C.table(['值','operation','檔案已經存在','檔案不存在'],[
  ['0','open（預設）','打開','<b>錯誤 7</b>（找不到檔案）'],
  ['1','replace','清空重寫','錯誤 7'],
- ['2','create','<b>錯誤 8</b>','建立'],
+ ['2','create','<b>錯誤 10</b>','建立'],
  ['3','open or create','打開（寫入位置在開頭，會蓋掉前面的字）','建立'],
  ['4','replace or create','<b>清空</b>重寫','建立'],
  ['5','replace or create with confirmation','跳出對話框問要不要取代','建立']]),
@@ -446,7 +446,7 @@ C.h3('測','q','小測驗'),
    F5：高階 vs 低階、選盤導覽、錯誤碼
    ====================================================================== */
 L.push({id:'F04',order:25,no:'F5',part:PART,title:'File I/O 選盤導覽：高階、低階怎麼選，常見錯誤碼',mins:30,
-goals:[['學會','File I/O 選盤上每個圖示的用途；什麼時候用一行搞定的高階 VI、什麼時候用開寫關；看到錯誤 7、8、43 知道原因。'],['之後','異常紀錄（第 20 課）用的是高階的 Write Delimited Spreadsheet；量測迴圈用低階。'],['動畫練習','<a href="lab-file.html">檔案 I/O 實驗室</a>：6 種 operation × 檔案在不在，哪些會清空、哪些出錯 7、8、43。']],
+goals:[['學會','File I/O 選盤上每個圖示的用途；什麼時候用一行搞定的高階 VI、什麼時候用開寫關；看到錯誤 7、8、43 知道原因。'],['之後','異常紀錄（第 20 課）用的是高階的 Write Delimited Spreadsheet；量測迴圈用低階。'],['動畫練習','<a href="lab-file.html">檔案 I/O 實驗室</a>：6 種 operation × 檔案在不在，哪些會清空、哪些出錯 7、10、43。']],
 check:'能說出 Write Delimited Spreadsheet.vi 和「開、寫、關」各適合什麼情況，以及檔案被 Excel 開著時寫入會出現哪個錯誤。',
 body:[
 C.h3('懂','','File I/O 選盤（Functions ▸ Programming ▸ File I/O）'),

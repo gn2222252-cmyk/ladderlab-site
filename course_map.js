@@ -997,6 +997,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-formula.html",
+     "href": "labview/lab-formula.html",
+     "label": "動畫實驗室：Formula Node 與數學運算"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-graph.html",
      "href": "labview/lab-graph.html",
      "label": "動畫實驗室：Chart、Graph、XY Graph"

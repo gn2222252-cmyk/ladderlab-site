@@ -2539,6 +2539,19 @@ class Rig(object):
             self.plant.plc = self.plc
             self.plant.apply()
 
+    def run_to_stop(self):
+        """RUN -> STOP (FX3 programming manual 2.6.2): outputs OFF, M, T and C that are not latched are cleared,
+        D and S do not change."""
+        old = self.plc
+        self.power_cycle(0)
+        self.plc.d[:] = old.d
+        self.plc.s[:] = old.s
+        self.plc.s_ran[:] = old.s_ran
+
+    def stop_to_run(self):
+        """STOP -> RUN: nothing is cleared; the scan starts again, so M8002 is ON for the first scan."""
+        self.plc.scans = 0
+
     TOGETHER_MS = 50      # turning ON within this time counts as "at the same time" (an interlock may delay one by a scan)
 
     def record_sequence(self, ms, devices):

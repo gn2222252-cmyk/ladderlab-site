@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="d8ad231164">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formula Node 實驗室：把公式寫成文字 | LadderLab</title>
+<meta name="description" content="LabVIEW Formula Node 的動畫實驗室：同一個公式用圖形節點拉線和寫在 Formula Node 裡並排對照（脈波換算位置、溫度補償、量測判定、梯形速度）；語法檢查器提示少分號、變數沒宣告、大小寫不一致；整數相除、Quotient & Remainder 與取餘數。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .two { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 860px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .panel { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .panel h3 { margin: 0 0 6px; font-size: 15px; }
+  .bdw { overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #d1d5db; }
+  .bdw svg { display: block; min-width: 520px; width: 100%; height: auto; font-family: ui-monospace, Consolas, monospace; }
+  .bdw .nd rect, .bdw .nd circle { fill: #fff7d6; stroke: #c58b00; stroke-width: 1.5; transition: fill .25s; }
+  .bdw .nd text { fill: #3b2f00; font-size: 12px; font-weight: 700; }
+  .bdw .nd.hl rect, .bdw .nd.hl circle { fill: #fbbf24; }
+  .bdw .ctl rect { fill: #fff; stroke: #e8820c; stroke-width: 2; }
+  .bdw .ctl text { fill: #111; font-size: 11px; }
+  .bdw .cst rect { fill: #fff; stroke: #e8820c; stroke-width: 1; stroke-dasharray: 3 2; }
+  .bdw .cst text { fill: #111; font-size: 11px; }
+  .bdw .ind rect { fill: #fff; stroke: #e8820c; stroke-width: 3; }
+  .bdw .ind text { fill: #111; font-size: 12px; font-weight: 700; }
+  .bdw line, .bdw polyline { stroke: #e8820c; stroke-width: 2; fill: none; }
+  .bdw .wb { stroke: #1f9d3a; }
+  .bdw .val { fill: #1e40af; font-size: 11px; font-weight: 700; }
+  .fn { border: 3px solid #6b6b6b; border-radius: 4px; position: relative; padding: 10px 26px; background: var(--card); }
+  .fn pre { margin: 0; font: 14px/1.6 ui-monospace, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .fn .op { border-radius: 3px; transition: background .25s; }
+  .fn .op.hl { background: #fbbf24; color: #111; }
+  .fn .side { position: absolute; top: 8px; display: grid; gap: 4px; }
+  .fn .side.l { left: -12px; } .fn .side.r { right: -12px; }
+  .fn .side span { font: 11px ui-monospace, Consolas, monospace; background: #fff; color: #111; border: 2px solid #e8820c; border-radius: 3px; padding: 0 4px; }
+  .fn .side.r span { border-width: 3px; }
+  .ins { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 8px 0; }
+  .ins label { display: grid; gap: 2px; font-size: 13px; }
+  .ins input { font: 14px ui-monospace, Consolas, monospace; width: 100%; box-sizing: border-box; }
+  .res { font: 700 18px ui-monospace, Consolas, monospace; }
+  .ed { width: 100%; box-sizing: border-box; min-height: 190px; font: 14px/1.5 ui-monospace, Consolas, monospace; tab-size: 2; }
+  .lst { font: 13px/1.5 ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 8px; padding: 6px 0; overflow-x: auto; }
+  .lst div { padding: 0 8px; white-space: pre; }
+  .lst div.bad { background: rgba(220, 38, 38, .15); }
+  .lst i { font-style: normal; color: var(--mute); display: inline-block; width: 2.2em; user-select: none; }
+  .msgs { list-style: none; padding: 0; margin: 8px 0; }
+  .msgs li { margin: 4px 0; padding: 6px 8px; border-radius: 6px; }
+  .msgs li.e { background: rgba(220, 38, 38, .12); color: #b91c1c; }
+  .msgs li.w { background: rgba(217, 119, 6, .14); color: #92400e; }
+  .msgs li.ok { background: rgba(22, 163, 74, .14); color: #15803d; }
+  .runarrow { display: inline-block; font-size: 22px; vertical-align: middle; }
+  .runarrow.broken { color: #9ca3af; text-decoration: line-through; }
+  .kv { font: 14px ui-monospace, Consolas, monospace; }
+  .dots { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; min-height: 40px; }
+  .grp { display: flex; flex-wrap: wrap; gap: 3px; border: 2px solid #1e5bd7; border-radius: 6px; padding: 4px; max-width: 120px; }
+  .grp.rest { border-color: #dc2626; border-style: dashed; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: #e8820c; transition: transform .25s, opacity .25s; }
+  .dot.pending { opacity: .25; transform: scale(.6); }
+  .cmp { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .cmp > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  .cmp h4 { margin: 0 0 6px; font-size: 14px; }
+  .tag { display: inline-block; font: 11px ui-monospace, Consolas, monospace; border-radius: 4px; padding: 0 5px; color: #fff; }
+  .tag.dbl { background: #e8820c; } .tag.i32 { background: #1e5bd7; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-formula.html" class="here">Formula Node</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>Formula Node 實驗室</h1>
+  <p class="why">算式一長，用 Add、Multiply、Divide 一個一個拉線會變成一大片。Formula Node 讓你把公式直接打成文字，語法很像 C。這裡用雙龍門機台常算的四個公式，對照兩種寫法，再練習 Formula Node 的語法規則和整數除法。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="cmp" class="here">兩種寫法對照</button>
+    <button type="button" data-t="syn">語法檢查器</button>
+    <button type="button" data-t="int">整數除法</button>
+  </div>
+  <label class="check small"><input type="checkbox" id="slow"> 慢動作</label>
+
+  <section class="lab-stage" id="t-cmp">
+    <div class="row">
+      <label>公式 <select id="ex"></select></label>
+      <button type="button" class="go" id="step">▶ 一步一步算</button>
+    </div>
+    <p class="why" id="exdesc"></p>
+    <div class="ins" id="exins"></div>
+    <div class="two">
+      <div class="panel"><h3>圖形節點拉線</h3><div class="bdw" id="bd"></div><p class="why">同一個控制項分岔出去的線，圖上為了清楚畫成好幾個方塊。</p></div>
+      <div class="panel"><h3>Formula Node</h3><div class="fn" id="fnbox"></div><p class="why">左邊框上是輸入變數、右邊框上（粗框）是輸出變數，都要在邊框上右鍵 Add Input／Add Output 宣告。</p></div>
+    </div>
+    <p class="verdict-line" id="exsay"></p>
+    <div class="callout">兩邊算出來一樣，差別在好不好讀、好不好改。四則運算加一兩個函式，圖形節點一眼看得懂；公式長、有 if/else 或要照著規格書抄公式時，Formula Node 比較清楚。Formula Node 裡面沒有線，不能在中間放探針（Probe）看中間值，要看就多拉一個輸出變數出來。</div>
+  </section>
+
+  <section class="lab-stage" id="t-syn" hidden>
+    <p class="why">在框裡打 Formula Node 的內容，按「檢查」。這是用 JavaScript 做的<b>簡化模擬</b>：只認得一小部分語法（宣告、指定、+ − × ÷ %、比較、if/else、for、while 和幾個常用函式），用來練習 LabVIEW 最常擋下來的錯誤。</p>
+    <div class="row">
+      <label>範例 <select id="sx"></select></label>
+    </div>
+    <div class="row">
+      <label>輸入變數（邊框左邊）<input id="sin" value="x = 3, y = 4" style="width:180px;font:13px ui-monospace,Consolas,monospace"></label>
+      <label>輸出變數（邊框右邊）<input id="sout" value="z" style="width:120px;font:13px ui-monospace,Consolas,monospace"></label>
+    </div>
+    <textarea class="ed" id="src" spellcheck="false" aria-label="Formula Node 內容"></textarea>
+    <div class="row"><button type="button" class="go" id="chk">檢查並執行</button><span>執行箭頭：<span class="runarrow" id="arrow">➡</span></span></div>
+    <div class="lst" id="lst"></div>
+    <ul class="msgs" id="msgs"></ul>
+    <div class="callout"><b>規則：</b>① 大小寫有分，<code>x</code> 和 <code>X</code> 是兩個不同的變數。② 每個敘述結尾要分號 <code>;</code>。③ 輸入、輸出變數要在邊框上宣告；公式裡自己用的變數要先宣告型別，例如 <code>int32 i;</code>、<code>float64 s;</code>。④ 可以用 <code>if / else</code>、<code>for</code>、<code>while</code>，寫法和 C 一樣。⑤ 本模擬器認得的函式：<code>sin cos tan sqrt abs exp floor ceil pow max min</code>（LabVIEW 實際支援的更多，請看說明文件的 Formula Node 函式表）。語法錯了，LabVIEW 的執行箭頭會變成斷的，按下去 Error List 會指出是這個 Formula Node 有錯。</div>
+  </section>
+
+  <section class="lab-stage" id="t-int" hidden>
+    <p class="why">右軸馬達一圈 10000 個脈波。PLC 回傳累積脈波數，想知道「轉了幾整圈、還多幾個脈波」，用的是整數除法。先用小數字看清楚：x 個東西，每 y 個一組。</p>
+    <div class="row">
+      <label>x（I32）<input id="ix" class="scalar" value="17" style="width:90px"></label>
+      <label>y（I32）<input id="iy" class="scalar" value="5" style="width:70px"></label>
+      <button type="button" class="go" id="irun">▶ 分組</button>
+      <button type="button" id="ipulse">換成脈波例子（25300 ÷ 10000）</button>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div class="cmp">
+      <div><h4>Divide（÷）</h4><div class="kv">x ÷ y = <b id="o-div">?</b> <span class="tag dbl">DBL</span></div><p class="why">兩個 I32 相除，輸出是 DBL 小數，不會自動變整數。</p></div>
+      <div><h4>Quotient &amp; Remainder</h4><div class="kv">IQ = <b id="o-iq">?</b> <span class="tag i32">I32</span><br>R = <b id="o-r">?</b> <span class="tag i32">I32</span></div><p class="why">一次給「幾整組」和「剩幾個」，輸入是 I32，輸出也是整數。</p></div>
+      <div><h4>Formula Node</h4><div class="kv">q = floor(x / y); → <b id="o-fq">?</b><br>r = x % y; → <b id="o-fr">?</b></div><p class="why">% 是取餘數。整數商用 floor() 包起來，意思最清楚。</p></div>
+    </div>
+    <p class="verdict-line" id="isay"></p>
+    <div class="callout">本頁只用 0 和正整數。遇到負數時，「往 0 截斷」和「往下取整」的結果會不一樣，Quotient &amp; Remainder 和 Formula Node 的 %、整數 / 用的是哪一種，請以 LabVIEW 說明文件或自己實測為準。輸入限制 y ≥ 1，不示範除以 0。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="fquiz" style="margin-top:16px"></section>
+  <div class="anim-layer" id="layer" aria-hidden="true"></div>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；Formula Node 語法以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-formula.js?v=6dade80390"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "d8ad231164" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

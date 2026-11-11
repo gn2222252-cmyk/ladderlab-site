@@ -131,10 +131,14 @@ class Sandbox(Practice):
         self.rig.power_cycle(0)
 
     def run_mode(self, on):
-        """The RUN/STOP switch. STOP -> RUN restarts the scan, so M8002 is ON again for the first scan."""
+        """The RUN/STOP switch. RUN -> STOP: outputs OFF, M/T/C that are not latched are cleared, D and S keep
+        their values. STOP -> RUN clears nothing; M8002 is ON again for the first scan."""
         on = bool(on)
         if self.rig and on != self.running:
-            self.rig.power_cycle(0)
+            if on:
+                self.rig.stop_to_run()
+            else:
+                self.rig.run_to_stop()
         self.running = on
 
     bx = by = ()

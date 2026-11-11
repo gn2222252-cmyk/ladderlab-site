@@ -43,7 +43,7 @@
     switch (name) {
       case 'open': return exists ? { kind: 'open' } : { kind: 'error', code: 7 };
       case 'replace': return exists ? { kind: 'truncate' } : { kind: 'error', code: 7 };
-      case 'create': return exists ? { kind: 'error', code: 8 } : { kind: 'create' };
+      case 'create': return exists ? { kind: 'error', code: 10 } : { kind: 'create' };
       case 'open or create': return exists ? { kind: 'open' } : { kind: 'create' };
       case 'replace or create': return exists ? { kind: 'truncate' } : { kind: 'create' };
       default: return exists ? { kind: 'confirm' } : { kind: 'create' };
@@ -91,7 +91,7 @@
       drawFile(ex); resBox('<p class="why">執行中…</p>'); $('onode').classList.remove('bad');
       if ($('odlg').checked && !auto) {
         var go = await askDialog('選擇檔案', '路徑沒有給，Open/Create/Replace File 跳出檔案對話框，問要開哪個檔。', '確定（選 log.csv）');
-        if (!go) { resBox(errRes(43, '使用者在檔案對話框按了取消。這不是「壞掉」，用 canceled 輸出判斷，取消時就不要往下寫。')); f.classList.add('bad'); return; }
+        if (!go) { resBox(errRes(43, '使用者在檔案對話框按了取消：canceled 輸出是 True，error out 是 43。這不是「壞掉」，取消時就不要往下寫。')); f.classList.add('bad'); return; }
       }
       await sleep(350);
       var r = openResult(op, ex);
@@ -103,7 +103,7 @@
       }
       if (r.kind === 'error') {
         f.classList.add('bad');
-        resBox(errRes(r.code, r.code === 7 ? '找不到檔案：這個 operation 不會幫你建檔。' : 'create 只建新檔，檔案已經在了就不做，回報錯誤 8。'));
+        resBox(errRes(r.code, r.code === 7 ? '找不到檔案：這個 operation 不會幫你建檔。' : 'create 只建新檔，檔案已經在了就不做，回報錯誤 10（重複路徑）。錯誤 8 是另一回事：沒有權限，或檔案正被別的程式（例如 Excel）占用。'));
         return;
       }
       if (r.kind === 'truncate') { f.classList.add('wipe'); await sleep(450); $('ofpre').textContent = '（0 個位元組）'; f.classList.remove('wipe'); }
@@ -307,13 +307,13 @@
      4. 猜一猜
      ===================================================================== */
   function opAnswer(i, ex) { var r = openResult(i, ex); return r.kind === 'error' ? '錯誤 ' + r.code : { open: '打開，內容保留', truncate: '清空後打開', create: '建立新的空檔', confirm: '跳出對話框問要不要取代' }[r.kind]; }
-  var ALLOP = ['打開，內容保留', '清空後打開', '建立新的空檔', '跳出對話框問要不要取代', '錯誤 7', '錯誤 8'];
+  var ALLOP = ['打開，內容保留', '清空後打開', '建立新的空檔', '跳出對話框問要不要取代', '錯誤 7', '錯誤 10'];
   function letters(n) { var s = ''; for (var i = 0; i < n; i++) s += String.fromCharCode(65 + rint(0, 25)); return s; }
   var GENS = [
     function () {
       var i = rint(0, 5), ex = Math.random() < .5, ans = opAnswer(i, ex);
       return { q: 'Open/Create/Replace File 的 operation = <b>' + OPS[i] + '</b>，檔案' + (ex ? '<b>已經存在</b>' : '<b>不存在</b>') + '，結果是？', ans: ans, wrong: ALLOP.filter(function (x) { return x !== ans; }),
-        ex: '有 create 的沒檔就建，有 replace 的有檔就清空；單獨的 open／replace 沒檔是錯誤 7，單獨的 create 有檔是錯誤 8。' };
+        ex: '有 create 的沒檔就建，有 replace 的有檔就清空；單獨的 open／replace 沒檔是錯誤 7，單獨的 create 有檔是錯誤 10。' };
     },
     function () {
       return { q: 'file path 沒接，執行時跳出檔案對話框，使用者按了<b>取消</b>。error out 是？', ans: '錯誤 43', wrong: ['錯誤 7', '錯誤 8', '沒有錯誤，refnum 指向空檔', '錯誤 1430'], ex: '43 表示使用者取消了操作。用 canceled 輸出或錯誤碼判斷，取消時不要往下寫。' };

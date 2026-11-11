@@ -137,6 +137,7 @@
   }
   function rDraw(use) {
     var br = rBroken();
+    if (!br.length && /bad/.test($('rsay').className)) say('rsay', '');
     $('rarrow').innerHTML = arrowSVG(!br.length);
     $('rrun').disabled = false;
     INS.forEach(function (x) {

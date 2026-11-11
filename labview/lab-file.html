@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="e14972f5f4">
+<meta name="ll-version" content="d8ad231164">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>檔案 I/O 實驗室：開檔方式、檔案指標、CSV 紀錄 | LadderLab</title>
-<meta name="description" content="LabVIEW 檔案 I/O 的動畫實驗室：Open/Create/Replace File 的六種 operation 遇到檔案存在或不存在會怎樣（錯誤 7、8、43）；檔案指標怎麼移動、為什麼要 Set File Position 到 end 才是往後加；每圈寫一筆 PLC 讀值成 CSV，換行、分隔符號、小數位數的常見錯誤。">
+<meta name="description" content="LabVIEW 檔案 I/O 的動畫實驗室：Open/Create/Replace File 的六種 operation 遇到檔案存在或不存在會怎樣（錯誤 7、10、43）；檔案指標怎麼移動、為什麼要 Set File Position 到 end 才是往後加；每圈寫一筆 PLC 讀值成 CSV，換行、分隔符號、小數位數的常見錯誤。">
 <link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
 <link rel="stylesheet" href="lab.css?v=e8438eac1f">
 <style>
@@ -106,7 +106,7 @@ Replace File</div>
     <div class="row"><button type="button" class="go" id="orun">▶ 執行</button><button type="button" id="oall">全部填滿</button><button type="button" id="oclr">清空表格</button></div>
     <div id="odialog"></div>
     <div class="mxw"><table class="mx" id="omx"></table></div>
-    <div class="callout">一句話記：名字裡有 <b>create</b> 的，沒檔就建；名字裡有 <b>replace</b> 的，有檔就清空；只有 <b>open</b> 的保留內容。單獨的 open、replace 遇到沒檔都是錯誤 7；單獨的 create 遇到有檔是錯誤 8。</div>
+    <div class="callout">一句話記：名字裡有 <b>create</b> 的，沒檔就建；名字裡有 <b>replace</b> 的，有檔就清空；只有 <b>open</b> 的保留內容。單獨的 open、replace 遇到沒檔都是錯誤 7；單獨的 create 遇到有檔是錯誤 10（重複路徑）。錯誤 8 是沒有權限或檔案正被別的程式占用。</div>
   </section>
 
   <section class="lab-stage" id="t-mark" hidden>
@@ -163,14 +163,14 @@ Replace File</div>
 </main>
 <footer><p>LabVIEW 為 NI 之商標；Excel 為 Microsoft 之商標。本站為獨立製作，與兩者無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-file.js?v=19ebde8299"></script>
+<script src="lab-file.js?v=006df3deed"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "e14972f5f4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d8ad231164" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
