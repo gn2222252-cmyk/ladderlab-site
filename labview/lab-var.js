@@ -113,3 +113,33 @@
   if (/^#(race|stop|fgv)$/.test(location.hash)) show(location.hash.slice(1));
   window.VarLab = { rStep: rStep, rc: function () { return rc; }, rReset: rReset, pickScn: pickScn, press: press, sTick: sTick, sp: function () { return sp; }, fcall: fcall, fg: fg, show: show };
 })();
+
+/* ---------- 猜一猜 ---------- */
+(function () {
+  'use strict';
+  function p1(a) { return a[Math.floor(Math.random() * a.length)]; }
+  var KIND = [
+    function () {
+      var n = p1([2, 3, 5]);
+      return { q: '兩個平行迴圈各做 <b>' + n + '</b> 次「讀 Local Variable x → 加 1 → 寫回 x」，x 從 0 開始。最後 x 可能是多少？', ans: '介於 ' + Math.max(2, n) + ' 和 ' + 2 * n + ' 之間都有可能', wrong: ['一定是 ' + 2 * n, '一定是 ' + n, '一定是 0', 'LabVIEW 會報錯，不能執行'], ex: '這是競爭條件：讀和寫之間另一個迴圈可能插進來，結果取決於執行順序，每次可能不同。' };
+    },
+    function () {
+      return { q: 'Stop 按鈕的機械動作是預設的 <b>Latch When Released</b>，對它建立 Local Variable 給另一個迴圈讀，會怎樣？', ans: '執行箭頭斷掉，不能執行', wrong: ['兩個迴圈一起停', '只有第一個迴圈停', '要按兩次才停', '可以執行，但會出警告'], ex: 'Latch 動作的布林不能建立 Local Variable：被讀一次就彈回，兩個地方讀會讓結果不確定，所以 LabVIEW 直接禁止。改成 Switch 動作，結束後寫回 False。' };
+    },
+    function () {
+      return { q: '從迴圈 1 裡的 Stop 拉一條線到平行的迴圈 2，當迴圈 2 的停止條件。執行後會怎樣？', ans: '迴圈 2 要等迴圈 1 結束才開始，而且只跑一圈', wrong: ['兩個迴圈同時停', '迴圈 2 永遠不會停', '執行箭頭斷掉', '迴圈 2 每圈都讀到最新的 Stop'], ex: '資料流：線上的值要等迴圈 1 整個結束才送出。用一條線連起來，兩個迴圈就變成一前一後，不再平行。' };
+    },
+    function () {
+      return { q: 'FGV 裡的 Shift Register <b>沒有接初始值</b>。第一次呼叫 Add 5，第二次呼叫 Add 1（中間沒有 Init，VI 一直開著），第二次回傳多少？', ans: '6', wrong: ['1', '5', '0', '每次都不一定'], ex: '沒初始化的 Shift Register 會記住上次呼叫留下的值：0+5=5，再 +1 = 6。這就是 FGV 能「記住」資料的原因。' };
+    },
+    function () {
+      return { q: '一個只有 Set 和 Get 兩個動作的 FGV，兩個迴圈都做「Get → 加 1 → Set」。這樣能避免競爭條件嗎？', ans: '不能，加 1 要放進 FGV 裡面才安全', wrong: ['能，FGV 一定安全', '能，因為 SubVI 不可重入', '不能，FGV 根本不能用在兩個迴圈', '能，只要加 Wait'], ex: 'Get 和 Set 是兩次分開的呼叫，中間另一個迴圈還是能插進來。要把「讀＋改＋寫」做成 FGV 裡的一個動作（Action Engine）。' };
+    },
+    function () {
+      return { q: 'Global Variable 和 Local Variable 最大的差別是？', ans: 'Global 可以在不同 VI 之間共用，Local 只在同一個 VI 裡', wrong: ['Global 不會有競爭條件', 'Local 可以跨電腦共用', 'Global 存在硬碟裡', '兩者完全一樣'], ex: 'Global Variable 是一個獨立的 .vi 檔，多個 VI 都能讀寫；資料在記憶體，不是硬碟。跨電腦要用 Shared Variable。兩者都一樣有競爭條件。' };
+    }
+  ];
+  function gen() { return p1(KIND)(); }
+  if (window.LabQuiz) window.VarLab.quiz = window.LabQuiz('vquiz', gen);
+  window.VarLab.quizKinds = KIND;
+})();

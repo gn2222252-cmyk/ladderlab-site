@@ -296,3 +296,35 @@
 
   window.StructLab = { pick: pick, roundEven: roundEven, ev: ev, sm: sm, show: show, smTick: smTick };
 })();
+
+/* ---------- 猜一猜：Event、State Machine、Sequence ---------- */
+(function () {
+  'use strict';
+  function p1(a) { return a[Math.floor(Math.random() * a.length)]; }
+  var KIND = [
+    function () {
+      var n = p1([2, 3, 4]), ms = p1([500, 1000, 2000]);
+      return { q: 'Event 結構每個事件要處理 <b>' + ms + ' ms</b>。使用者在 0.1 秒內連按 OK 按鈕 <b>' + n + '</b> 次，會怎樣？', ans: n + ' 個事件都會處理，依序排隊', wrong: ['只處理第一次', '只處理最後一次', '程式當掉', '只處理 1 次，其他被丟掉'], ex: '事件會進佇列排隊，一個也不會掉，只是後面的要等前面處理完。全部處理完大約要 ' + (n * ms / 1000) + ' 秒。' };
+    },
+    function () {
+      var to = p1([-1, 0, 100, 3000]);
+      return { q: 'Event 結構的 Timeout 接 <b>' + to + '</b>，一直沒有使用者操作。會怎樣？', ans: to < 0 ? '一直等，Timeout 頁永遠不會執行' : to === 0 ? 'Timeout 頁不停執行，迴圈全速空轉' : '每 ' + to + ' ms 執行一次 Timeout 頁', wrong: ['一直等，Timeout 頁永遠不會執行', 'Timeout 頁不停執行，迴圈全速空轉', '每 ' + (to > 0 ? to : 100) + ' ms 執行一次 Timeout 頁', '執行箭頭斷掉', '迴圈立刻結束'], ex: '-1（預設）是永不逾時；0 是不等，馬上逾時，迴圈會吃滿 CPU；正數是等那麼多毫秒沒事件就走 Timeout 頁。' };
+    },
+    function () {
+      return { q: '簡單狀態機（While＋Shift Register＋Case）正在「洗衣」狀態時，使用者先按了「暫停」又按了「停止」。洗衣狀態結束時只判斷一次按鈕，會怎樣？', ans: '只有一個會生效，另一個被蓋掉', wrong: ['兩個依序都執行', '兩個都被忽略', '程式報錯', '按鈕會自己排隊'], ex: 'Shift Register 一次只存一個「下一個狀態」。要不漏掉，改用 Queued Message Handler，把每個請求放進 Queue。' };
+    },
+    function () {
+      return { q: '狀態機的狀態為什麼建議用 <b>Enum 做成 Type Def</b>，而不是用字串？', ans: '新增或改名狀態時，所有常數一起更新，打錯字會在編輯時就被抓到', wrong: ['Enum 執行比較快', '字串不能接到 Case 選擇器', 'Type Def 可以讓狀態機跑兩個狀態', '這是 LabVIEW 的強制規定'], ex: '字串可以接 Case，但打錯一個字只會默默走 Default。Enum Type Def 讓 Case 頁籤和常數都來自同一個定義。' };
+    },
+    function () {
+      return { q: '三個節點：讀 Tick Count、要量時間的程式、再讀 Tick Count，<b>彼此沒有連線</b>。相減得到的時間可信嗎？', ans: '不可信，三個節點的執行順序不一定', wrong: ['可信，LabVIEW 從左到右執行', '可信，從上到下執行', '一定是 0', '執行箭頭斷掉'], ex: 'LabVIEW 照資料流執行，沒有連線就沒有先後。用 Flat Sequence 或錯誤線把順序定下來。' };
+    },
+    function () {
+      var v = p1(['2.5', '3.5', '-0.5', '6.5']), r = window.StructLab.roundEven(parseFloat(v));
+      return { q: 'Case 選擇器接一個 DBL 值 <b>' + v + '</b>，頁籤是整數。它會走哪個整數的頁？', ans: String(r), wrong: [String(Math.floor(parseFloat(v))), String(Math.ceil(parseFloat(v))), '一定走 Default', '執行箭頭斷掉'], ex: '數值選擇器接 DBL 會先捨入到最接近的整數，剛好 .5 時捨入到偶數：' + v + ' → ' + r + '。' };
+    }
+  ];
+  function gen() { return p1(KIND)(); }
+  if (window.LabQuiz) window.StructLab.quiz = window.LabQuiz('squiz', gen);
+  window.StructLab.quizKinds = KIND;
+})();

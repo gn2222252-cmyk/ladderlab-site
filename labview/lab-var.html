@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="e174d788d4">
+<meta name="ll-version" content="5d6e853f28">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>變數實驗室：競爭條件、一顆 Stop 停兩個迴圈、FGV | LadderLab</title>
@@ -102,16 +102,18 @@
     <div class="log" id="flog"></div>
     <div class="callout">動作用 Enum（做成 Type Def）選：Init 把值設回起始值、Add 做「讀＋改＋寫」、Get 只讀。只做 Get／Set 的 FGV 和 Global Variable 一樣會有競爭條件；要把「改」的運算放在 FGV <b>裡面</b>才安全（這種寫法也叫 Action Engine）。講義裡的計時器 FGV 也是同一招：Init 時記下 Tick Count，Get 時回傳現在減掉記下的值。</div>
   </section>
+  <section class="lab-stage lab-challenge" id="vquiz" style="margin-top:16px"></section>
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
-<script src="lab-var.js?v=1d54ceb43f"></script>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-var.js?v=7ac6abd600"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "e174d788d4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "5d6e853f28" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
