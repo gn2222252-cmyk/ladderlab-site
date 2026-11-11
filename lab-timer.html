@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="37d1844806">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>計時器與計數器實驗室：FX3S 一個掃描一個掃描看 | LadderLab</title>
+<meta name="description" content="FX3S 計時器 T 與計數器 C 的動畫實驗室：100 ms、10 ms、1 ms 計時器同一個 K 值差多少時間；積算計時器 T128～T137 斷電不歸零要 RST；計數器只在上升緣加 1、到設定值就停；C16～C31 停電保持；計時器接點寫在線圈上面為什麼慢一圈。">
+<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="labview/lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; }
+  .row select, .row input { max-width: 100%; min-width: 0; }
+  .ld { width: 100%; max-width: 640px; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  .ld .rail { stroke: var(--ink); stroke-width: 3; }
+  .ld .w { stroke: var(--mute); stroke-width: 2; fill: none; }
+  .ld .w.on { stroke: #16a34a; stroke-width: 3; }
+  .ld .ct { stroke: var(--ink); stroke-width: 2; fill: none; }
+  .ld .ct.on { stroke: #16a34a; }
+  .ld .ctf { fill: transparent; }
+  .ld .ctf.on { fill: rgba(22, 163, 74, .25); }
+  .ld text { fill: var(--ink); font: 12px ui-monospace, Consolas, monospace; }
+  .ld .lab { font-weight: 700; }
+  .ld .val { fill: #1e6fff; font-weight: 700; }
+  .ld .cur rect { fill: rgba(250, 204, 21, .25); stroke: #eab308; }
+  .hold { user-select: none; touch-action: none; min-width: 120px; }
+  .hold.on { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .tl { width: 100%; height: 170px; display: block; background: #0b0f14; border-radius: 8px; margin-top: 8px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 10px 0; }
+  .stats div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+  .stats b { display: block; font: 700 18px ui-monospace, Consolas, monospace; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .pane { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .pane h3 { margin: 0 0 6px; font-size: 15px; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 190px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; overflow-wrap: anywhere; }
+  .log .hi { color: #16a34a; font-weight: 700; }
+  .power { font-weight: 700; }
+  .off-all { opacity: .45; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="path.html">課程</a> · 計時器與計數器實驗室</p>
+  <h1>計時器與計數器實驗室</h1>
+  <p class="why">課程 A2、A3 和停電保持那一課講了 FX3S 的 T 和 C。這裡把它們畫成梯形圖加時間軸，自己按 X0，看現在值怎麼跑、什麼時候歸零、停電後還剩什麼，最後一行一行看掃描順序對計時器接點的影響。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="t" class="here">一般計時器</button>
+    <button type="button" data-t="a">積算計時器</button>
+    <button type="button" data-t="c">計數器</button>
+    <button type="button" data-t="s">掃描順序</button>
+  </div>
+
+  <section class="lab-stage" id="t-t">
+    <div class="row">
+      <label>計時器 <select id="tsel"><option value="0">T0（100 ms）</option><option value="32a">T32，M8028 OFF（100 ms）</option><option value="32b">T32，M8028 ON（10 ms）</option><option value="63">T63（1 ms）</option></select></label>
+      <label>設定值 K <input id="tk" type="number" min="1" max="32767" value="30" style="width:80px"></label>
+      <label>時間放慢 <select id="tslow"><option value="1">實際速度</option><option value="10">放慢 10 倍</option><option value="100">放慢 100 倍</option></select></label>
+    </div>
+    <svg class="ld" id="tld" viewBox="0 0 640 130" role="img" aria-label="梯形圖：X0 接 OUT T、T 接點接 Y0"></svg>
+    <div class="row"><button type="button" class="hold" id="tx0">按住 X0</button><label class="check small"><input type="checkbox" id="tlock"> X0 一直 ON（不用按住）</label></div>
+    <div class="stats" id="tst"></div>
+    <canvas class="tl" id="ttl" aria-label="時間軸"></canvas>
+    <p class="verdict-line" id="tsay"></p>
+    <div class="callout">FX3S 的計時器（課程 A2）：T0～T31 是 100 ms；T32～T62 平常 100 ms，M8028 ON 時變 10 ms；T63～T127 是 1 ms。所以同樣寫 K30，T0 是 3 秒、T63 只有 0.03 秒。一般計時器的線圈一斷電，現在值立刻歸零，下次從 0 重新數。</div>
+  </section>
+
+  <section class="lab-stage" id="t-a" hidden>
+    <p class="why">同一個 X0 同時接一般計時器 T0 和積算計時器 T132（100 ms 積算型），設定值都是 K50（5 秒）。放開 X0 再按，看兩個現在值的差別；也可以按「模擬停電」。</p>
+    <svg class="ld" id="ald" viewBox="0 0 640 210" role="img" aria-label="梯形圖：X0 接 T0 與 T132，X1 RST T132"></svg>
+    <div class="row">
+      <button type="button" class="hold" id="ax0">按住 X0</button>
+      <button type="button" id="ax1">按一下 X1（RST T132）</button>
+      <button type="button" id="apow">模擬停電再復電</button>
+      <span class="power" id="apw"></span>
+    </div>
+    <div class="stats" id="ast"></div>
+    <canvas class="tl" id="atl" aria-label="時間軸"></canvas>
+    <p class="verdict-line" id="asay"></p>
+    <div class="callout">積算型（課程 A2）：FX3S 是 T128～T131（1 ms）、T132～T137（100 ms）。線圈斷電時現在值<b>保留</b>，下次接著數，要 <b>RST</b> 才歸零。停電也一樣保留（FX3S 存在 EEPROM，停電保持那一課的表）。一般計時器停電後歸零。</div>
+  </section>
+
+  <section class="lab-stage" id="t-c" hidden>
+    <p class="why">X0 是工件感測器，同時接 C0（一般）和 C16（停電保持），設定值都是 K5。X1 是清除。按幾下、按住不放、超過 5 個、再模擬停電，看兩個計數器。</p>
+    <svg class="ld" id="cld" viewBox="0 0 640 250" role="img" aria-label="梯形圖：X0 接 C0、C16，X1 RST"></svg>
+    <div class="row">
+      <button type="button" class="hold" id="cx0">按住 X0（工件經過）</button>
+      <button type="button" id="cpulse">X0 按一下</button>
+      <button type="button" id="cx1">按一下 X1（RST C0、C16）</button>
+      <button type="button" id="cpow">模擬停電再復電</button>
+    </div>
+    <div class="stats" id="cst"></div>
+    <canvas class="tl" id="ctl" aria-label="時間軸"></canvas>
+    <p class="verdict-line" id="csay"></p>
+    <div class="callout">計數器（課程 A3）只在線圈<b>由 OFF 變 ON</b> 的那一圈加 1，按住不會一直加。到設定值接點 ON 並保持，現在值停在設定值、後面的脈衝不再增加（16 位元計數器，最大 32767），要 RST 才歸零。FX3S 的 C0～C15 停電歸零、C16～C31 停電保持。</div>
+  </section>
+
+  <section class="lab-stage" id="t-s" hidden>
+    <p class="why">課程第 3 課：PLC 一次只算一行，「慢一圈」是行的順序造成的。計時器也一樣：本站模擬器在執行 <b>OUT T</b> 那一行時更新現在值和接點，寫在它下面的行同一圈就看得到，寫在上面的行要等下一圈。為了看清楚，這裡把一圈放大成 100 ms（實機一圈只有幾毫秒），T0 K3 = 0.3 秒。</p>
+    <div class="row">
+      <button type="button" id="sstep">下一行</button>
+      <button type="button" class="go" id="sauto">▶ 自動跑</button>
+      <button type="button" id="sreset">重來</button>
+      <span class="why" id="sscan"></span>
+    </div>
+    <div class="two">
+      <div class="pane"><h3>A：接點寫在線圈下面</h3><svg class="ld" id="sldA" viewBox="0 0 640 130"></svg><div class="log" id="slogA"></div></div>
+      <div class="pane"><h3>B：接點寫在線圈上面</h3><svg class="ld" id="sldB" viewBox="0 0 640 130"></svg><div class="log" id="slogB"></div></div>
+    </div>
+    <p class="verdict-line" id="ssay"></p>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="tquiz" style="margin-top:16px"></section>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="common.js?v=26e7d4e9ea"></script>
+<script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-timer.js?v=159f8a71d1"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "37d1844806" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

@@ -343,6 +343,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "lab-timer.html",
+     "href": "lab-timer.html",
+     "label": "動畫實驗室：計時器與計數器一個掃描一個掃描看"
+    },
+    {
+     "k": "G",
      "id": "review.html#ch3",
      "href": "review.html#ch3",
      "label": "第 3 章 章末小考"
