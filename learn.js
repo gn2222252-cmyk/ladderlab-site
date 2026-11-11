@@ -126,6 +126,8 @@ function draw() {
     $("inputs").insertAdjacentHTML("beforeend", `<button type="button" class="inp power" id="powerbtn"><i></i><span><b>⚡</b> 停電再復電</span><small>電源</small></button>`);
     $("powerbtn").onclick = () => course.power_cycle();
   }
+  $("lockwrap").hidden = l.inputs.filter((x) => x[2] === "hold").length < 2;
+  $("lockhold").checked = false;
   $("outputs").innerHTML = l.outputs.map(([dev, label]) => `<li data-dev="${dev}"><i></i><b>${dev}</b> ${esc(label)}</li>`).join("");
   $("panel-box").hidden = !l.panel;
   panel = l.panel ? FX3S.live($("panel")) : null;
@@ -204,11 +206,18 @@ function useStage(name) {
   draw();
   $("hold").checked = keep.hold;
 }
+$("lockhold").addEventListener("change", () => {       // leaving lock mode releases everything that was latched
+  if (!$("lockhold").checked) $("inputs").querySelectorAll('.inp[data-kind="hold"]').forEach((b) => { if (b._held) { b._held = false; course.set_input(b.dataset.dev, 0); } });
+});
 function wireInput(b) {
   const dev = b.dataset.dev, kind = b.dataset.kind;
   if (kind === "hold") {
-    const on = (e) => { e.preventDefault(); course.set_input(dev, 1); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic or finished pointer */ } };
-    const off = () => course.set_input(dev, 0);
+    /* "lock" mode: a click latches the button, so two hold buttons can be down together with one mouse */
+    const lock = () => $("lockhold").checked;
+    const on = (e) => { e.preventDefault();
+      if (lock()) { b._held = !b._held; course.set_input(dev, b._held ? 1 : 0); return; }
+      course.set_input(dev, 1); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic or finished pointer */ } };
+    const off = () => { if (!lock()) { b._held = false; course.set_input(dev, 0); } };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off);
     b.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); course.set_input(dev, 1); } });
     b.addEventListener("keyup", (e) => { if (e.key === " " || e.key === "Enter") course.set_input(dev, 0); });

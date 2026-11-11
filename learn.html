@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="fb46b3a0db">
+<meta name="ll-version" content="80099f9f70">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 互動課程 | LadderLab</title>
@@ -58,11 +58,13 @@
         <div class="sfc-wrap" id="sfcview" hidden></div>
         <div id="explain" class="explain" hidden></div>
         <p class="hint" data-t="hint">藍色＝導通、通電。點任何一條，看它的意思和現在為什麼通或不通。</p>
+        <p class="hint">常閉接點（有斜線的）符號不會變：平常是藍色（導通），它的元件 ON 時變成不藍（斷開）。GX Works2 的監視畫面也是這樣看。</p>
       </section>
 
       <aside class="side">
         <div id="conflict" class="conflict" hidden></div>
-        <div class="box"><h3 data-t="inputs">輸入（可以按）</h3><div id="inputs" class="inputs"></div></div>
+        <div class="box"><h3 data-t="inputs">輸入（可以按）</h3><div id="inputs" class="inputs"></div>
+          <label class="check small" id="lockwrap" hidden><input id="lockhold" type="checkbox"> 按一下就保持按住（再按一下放開）：要同時按住兩顆按鈕時用</label></div>
         <div class="box"><h3 data-t="outputs">輸出</h3><ul id="outputs" class="lamps"></ul></div>
         <div class="box" id="panel-box" hidden><h3>FX3S 面板（燈號同步）</h3><div id="panel" class="fx-live"></div><p class="hint"><a href="wiring.html">每條線接在哪個端子 ›</a></p></div>
         <div class="box" id="plant-box" hidden><h3 data-t="plant">機構</h3><canvas id="plant" width="200" height="130"></canvas></div>
@@ -99,13 +101,13 @@
 <script src="sfc.js?v=254aa66b02"></script>
 <script src="course_map.js?v=70538253ef"></script>
 <script src="course.js?v=764fe70243"></script>
-<script src="learn.js?v=ece36d6837"></script>
+<script src="learn.js?v=10698336ca"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "fb46b3a0db" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "80099f9f70" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
