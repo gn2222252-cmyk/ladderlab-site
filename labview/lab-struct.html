@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="34016b828c">
+<meta name="ll-version" content="6114fbc50d">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>結構實驗室：Case、Event、State Machine、Sequence | LadderLab</title>
@@ -71,7 +71,7 @@
   </section>
 
   <section class="lab-stage" id="t-event" hidden>
-    <p class="why">Event 結構放在 While Loop 裡，每一圈「等」一個事件發生，處理完再回去等下一個。使用者按得比程式處理快的時候，事件會<b>排隊</b>，一個也不會掉，但會晚一點才處理。Timeout 接 -1（預設）就一直等；接了毫秒數，等這麼久都沒事件就執行 Timeout 頁。</p>
+    <p class="why">Event 結構放在 While Loop 裡，每一圈「等」一個事件發生，處理完再回去等下一個。使用者按得比程式處理快的時候，事件會<b>排隊</b>，依序一個一個處理，只是會晚一點（Lock front panel 預設勾選：處理期間使用者的操作先暫存，這一頁跑完才輪到）。Timeout 接 -1（預設）就一直等；接了毫秒數，等這麼久都沒事件就執行 Timeout 頁。</p>
     <div class="row">
       <button type="button" data-ev="OK 按鈕：Value Change">按 OK</button>
       <button type="button" data-ev="數值：Value Change">改數值</button>
@@ -121,7 +121,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "34016b828c" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6114fbc50d" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

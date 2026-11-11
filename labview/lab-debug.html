@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="6114fbc50d">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>除錯實驗室：找出程式哪裡錯 | LadderLab</title>
+<meta name="description" content="LabVIEW 除錯工具的動畫實驗室：斷掉的執行箭頭與 Error List，點錯誤跳到出錯的節點；在線上放 Probe、在節點放 Breakpoint，用 Step Into、Step Over、Step Out 一步一步找出脈波換算 mm 哪裡算錯；Retain Wire Values；迴圈裡的 Probe 與 Conditional Probe 找出少跑一圈的 For Loop。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .lbl { font-size: 13px; color: var(--mute); margin: 10px 0 4px; }
+  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .scn button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .two { display: grid; grid-template-columns: minmax(0, 270px) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .dg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .dg text { font: 13px ui-monospace, Consolas, "Microsoft JhengHei", monospace; fill: var(--ink); }
+  .dg .fn rect { fill: #fff7d6; stroke: #c58b00; stroke-width: 2; }
+  .dg .fn text { fill: #6b4b00; font-weight: 700; }
+  .dg .sub rect { fill: #e0ecff; stroke: #1e40af; stroke-width: 2; }
+  .dg .sub text { fill: #1e3a8a; font-weight: 700; }
+  .dg .ter rect { fill: var(--card); stroke: #e8820c; stroke-width: 2; }
+  .dg .ter.str rect { stroke: #db2777; }
+  .dg .nd { cursor: pointer; }
+  .dg .nd.ran rect { stroke: #16a34a; stroke-width: 3; }
+  .dg .nd.next rect { stroke: #f59e0b; stroke-width: 4; animation: blink .8s infinite; }
+  .dg .nd.bp rect { stroke: #dc2626 !important; stroke-width: 4; stroke-dasharray: 0; }
+  .dg .nd.flash rect { animation: flash .35s 4; }
+  @keyframes blink { 50% { stroke-opacity: .25; } }
+  @keyframes flash { 50% { fill: #fca5a5; } }
+  .dg .w { fill: none; stroke: #e8820c; stroke-width: 3; }
+  .dg .w.i32 { stroke: #1e5bd7; } .dg .w.str { stroke: #db2777; } .dg .w.err { stroke: #a16207; stroke-width: 4; } .dg .w.bool { stroke: #16a34a; }
+  .dg .w.broken { stroke: #111; stroke-dasharray: 5 4; }
+  .dg .hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; }
+  .dg .pb { fill: #fef08a; stroke: #854d0e; stroke-width: 1.5; }
+  .dg .pbt { font-size: 11px; font-weight: 700; fill: #111; }
+  .dg .xmark { stroke: #dc2626; stroke-width: 3; }
+  .dg .coerce { fill: #e8820c; }
+  .arrow { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; background: var(--card); }
+  .arrow svg { width: 34px; height: 26px; }
+  .elist { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+  .elist h4 { margin: 0; padding: 6px 10px; background: rgba(128, 128, 128, .12); font-size: 14px; }
+  .elist button { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 8px 10px; background: var(--card); cursor: pointer; font: inherit; font-size: 14px; color: inherit; }
+  .elist button:hover { background: var(--onbg); }
+  .elist .why { padding: 0 10px 8px; margin: 0; }
+  .probes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 8px 0; }
+  .probe { border: 2px solid #854d0e; border-radius: 6px; background: #fefce8; color: #222; font-size: 13px; overflow: hidden; }
+  .probe b { display: block; background: #fde68a; padding: 2px 6px; font-size: 12px; }
+  .probe span { display: block; padding: 4px 6px; font: 700 16px ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+  .probe span.none { font: 12px system-ui, sans-serif; color: #6b7280; }
+  .probe small { display: block; padding: 0 6px 4px; color: #555; overflow-wrap: anywhere; }
+  .probe.bad span { color: #dc2626; }
+  .panel { border: 1px solid var(--line); border-radius: 10px; padding: 8px; margin-top: 10px; transition: box-shadow .3s; }
+  .panel.active { box-shadow: 0 0 0 3px #1e40af; }
+  .panel h3 { margin: 0 0 6px; font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chips span { min-width: 46px; height: 32px; display: grid; place-items: center; border: 2px solid #16a34a; background: #bbf7d0; border-radius: 6px; font: 700 13px ui-monospace, Consolas, monospace; color: #111; padding: 0 4px; }
+  .chips span.miss { border-color: #dc2626; background: #fecaca; text-decoration: line-through; }
+  .chips span.wait { border-style: dashed; border-color: var(--line); background: transparent; color: var(--mute); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-debug.html" class="here">除錯</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>除錯實驗室：找出程式哪裡錯</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="err" class="here">斷掉的箭頭與 Error List</button>
+    <button type="button" data-t="probe">Probe、Breakpoint、單步執行</button>
+    <button type="button" data-t="loop">迴圈的除錯</button>
+  </div>
+
+  <section class="lab-stage" id="t-err">
+    <p class="why">方塊圖有錯，執行箭頭就會斷掉，按了不會跑。點斷掉的箭頭打開 Error List，再點一個錯誤項目，出錯的地方會閃爍（在 LabVIEW 裡是雙擊項目）。選一張圖試試，最後一張是「看起來怪，其實可以跑」。</p>
+    <div class="two">
+      <div class="scn" id="escn"></div>
+      <div style="min-width:0">
+        <div class="row"><span class="arrow" id="earrow" role="button" tabindex="0"></span><button type="button" id="efix">🔧 修好它</button></div>
+        <svg class="dg" id="esvg" viewBox="0 0 560 200" role="img" aria-label="有錯的方塊圖"></svg>
+        <div id="elist"></div>
+        <p class="verdict-line" id="esay"></p>
+      </div>
+    </div>
+    <div class="callout">斷掉的箭頭是「還沒執行就知道不能跑」的錯：線的型別接不起來、一個輸入有兩個來源、Required 的輸入沒接、Case 結構沒有處理到所有可能的值。Error List 會一條一條列出來，從上面開始修，常常修好一個，其他幾個也跟著消失。黃色三角形的警告和 Coercion Dot（轉型點）不會讓箭頭斷掉，但值得看一眼：轉型點表示資料被自動轉換了型別。</div>
+  </section>
+
+  <section class="lab-stage" id="t-probe" hidden>
+    <p class="why">龍門 X 軸的位置顯示怪怪的。實際狀況：PLC 的 D300 是 12000 脈波，馬達每轉 2000 脈波，導程（每轉移動）10 mm，原點偏移 5 mm，所以應該顯示 <b>65 mm</b>。<b>點線</b>放 Probe（再點一次拿掉），<b>點節點</b>放 Breakpoint（紅框）。按「執行」會停在 Breakpoint 前面，再用 Step Into／Step Over／Step Out 一步一步走，找出<b>第一條值不對的線</b>。</p>
+    <div class="row">
+      <label>情境 <select id="pscn"><option value="A">① 單位換算算錯</option><option value="B">② 錯誤線斷了沒接</option></select></label>
+      <label class="check small"><input type="checkbox" id="pfix"> 套用修正</label>
+      <label class="check small"><input type="checkbox" id="pret"> Retain Wire Values</label>
+    </div>
+    <div class="row">
+      <button type="button" class="go" id="prun">▶ 執行</button>
+      <button type="button" id="pinto">Step Into</button>
+      <button type="button" id="pover">Step Over</button>
+      <button type="button" id="pout">Step Out</button>
+      <button type="button" id="preset">■ 停止／重來</button>
+    </div>
+    <div class="panel" id="pmainp"><h3>主程式 X_Position.vi</h3><svg class="dg" id="pmain" viewBox="0 0 560 210" role="img" aria-label="主程式方塊圖"></svg></div>
+    <div class="panel" id="psubp"><h3>SubVI PulseToMM.vi 的方塊圖</h3><svg class="dg" id="psub" viewBox="0 0 560 150" role="img" aria-label="SubVI 方塊圖"></svg></div>
+    <div class="lbl">Probe Watch（放了 Probe 的線）</div>
+    <div class="probes" id="pprobes"></div>
+    <p class="verdict-line" id="psay"></p>
+    <div class="log" id="plog"></div>
+    <div class="callout">找錯的原則：從輸入往輸出，一條一條線看，找出<b>第一條</b>值不對的線，錯就在它前面那個節點裡。Step Over 把整個 SubVI 當一步跑完，不進去；Step Into 會打開 SubVI 在裡面一步一步走；Step Out 把目前這一層跑完，回到上一層再停。Probe 平常要在執行前放好；VI 跑完才想看某條線的值，要先開 Retain Wire Values 再執行一次，之後放的 Probe 才看得到最後的值。<br>情境 ② 的教訓：error out 沒接下去，後面的節點不知道前面已經出錯，照樣拿 0 去算、去寫紀錄檔。錯誤線一路串起來，出錯之後的節點才會跳過不做，最後由錯誤處理把問題報出來。</div>
+  </section>
+
+  <section class="lab-stage" id="t-loop" hidden>
+    <p class="why">龍門要依序走 5 個點位 [100, 250, 400, 550, 700] mm。寫程式的人以為「索引是 0～4，所以 N 要接 4」，把陣列大小減 1 接到 For Loop 的 N。執行後機台好像少走了一點。在迴圈裡的線放 Probe，打開 Highlight Execution 慢慢看，或在 i 的線上設 Conditional Probe，讓它在某一圈暫停。</p>
+    <div class="row">
+      <label class="check small"><input type="checkbox" id="lhl" checked> 💡 Highlight Execution</label>
+      <label>Conditional Probe（i 的線）：當 i = <select id="lcond"><option value="">不設</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select> 時暫停</label>
+      <label class="check small"><input type="checkbox" id="lfix"> 套用修正（N 直接接陣列大小）</label>
+    </div>
+    <div class="row">
+      <button type="button" class="go" id="lrun">▶ 執行</button>
+      <button type="button" id="lcont">繼續</button>
+      <button type="button" id="lreset">■ 停止／重來</button>
+    </div>
+    <svg class="dg" id="lsvg" viewBox="0 0 560 230" role="img" aria-label="For Loop 方塊圖"></svg>
+    <div class="lbl">Probe Watch（點迴圈裡的線放 Probe；這裡另外列出每一圈的值，方便比較）</div>
+    <div class="probes" id="lprobes"></div>
+    <div class="lbl">機台實際走到的點位</div>
+    <div class="chips" id="lgot"></div>
+    <p class="verdict-line" id="lsay"></p>
+    <div class="log" id="llog"></div>
+    <div class="callout">迴圈裡的 Probe 只顯示<b>最新一圈</b>的值，迴圈跑得快時根本看不清楚。這時可以開 Highlight Execution 讓它慢下來，或用 Conditional Probe：設定條件（例如 i 等於某個值、數值大於某個上限），條件成立時程式就暫停，再用 Probe 看當下每條線的值。這個 bug 的關鍵在 N 那條線：Probe 一看是 4，For Loop 就只會跑 i = 0～3 四圈。N 是「要跑幾圈」，不是「最後一個索引」；更不容易錯的寫法是把陣列直接接進迴圈用自動索引，不接 N。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="dquiz" style="margin-top:16px"></section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-debug.js?v=d42d221fde"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "6114fbc50d" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

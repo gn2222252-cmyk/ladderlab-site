@@ -33,7 +33,7 @@ const addr={name:'L02_Address.vi',view:'split',ratio:1.5,
  sim:{live:true,step(i){const m=i.d*2,a=m+4096,b=i.n*2;return {out:{a,b},vals:{d:i.d,n:i.n,c2:2,c4:4096,'mul.out':m,'add.out':a,'mul2.out':b}};}}
 };
 L.push({id:'L02',order:2,no:'2',part:'LabVIEW 基礎',title:'資料流：節點什麼時候執行',mins:40,files:['練習\\L02_Address.vi'],
-goals:[['學會','資料流規則、常數、線的分岔、Highlight Execution。'],['做出','把 D 編號換算成 FX 協定位址：位址 = 4096 + 2 × D。'],['用在專案','第 9 課組封包時，位址就是這樣算的。'],['動畫練習','<a href="lab-flow.html">資料流實驗室</a>：一步一步看小球沿線流動，節點要等所有輸入到齊才執行；平行的兩條路同時跑。']],
+goals:[['學會','資料流規則、常數、線的分岔、Highlight Execution。'],['做出','把 D 編號換算成 FX 協定位址：位址 = 4096 + 2 × D。'],['用在專案','第 9 課組封包時，位址就是這樣算的。'],['動畫練習','<a href="lab-flow.html">資料流實驗室</a>：一步一步看小球沿線流動，節點要等所有輸入到齊才執行；平行的兩條路同時跑。'],['動畫練習','<a href="lab-debug.html#err">除錯實驗室：斷掉的箭頭</a>：點斷掉的箭頭打開 Error List，點錯誤跳到出錯的節點。']],
 check:'D Number = 100 時 Address = 4296；Words = 2 時 Bytes = 4。',
 body:[
 C.h3('懂','','LabVIEW 不是「由上往下」執行'),

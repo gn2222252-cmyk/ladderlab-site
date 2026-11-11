@@ -1069,6 +1069,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-debug.html",
+     "href": "labview/lab-debug.html",
+     "label": "動畫實驗室：除錯工具"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-numeric.html",
      "href": "labview/lab-numeric.html",
      "label": "動畫實驗室：溢位、捨入、商與餘數"
