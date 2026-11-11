@@ -11,6 +11,7 @@
   function show(t) {
     Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) { b.classList.toggle('here', b.dataset.t === t); });
     ['case', 'event', 'sm', 'seq'].forEach(function (k) { $('t-' + k).hidden = k !== t; });
+    if (typeof sm !== 'undefined' && sm) { if (t !== 'sm' && sm.timer) { clearInterval(sm.timer); sm.timer = null; sm.paused = true; } else if (t === 'sm' && sm.paused) { sm.paused = false; smRun(); } }
   }
   tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { show(b.dataset.t); history.replaceState(null, '', '#' + b.dataset.t); } });
   if (/^#(case|event|sm|seq)$/.test(location.hash)) show(location.hash.slice(1));
@@ -166,7 +167,7 @@
       evlog(stamp() + '　開始處理「' + esc(e.name) + '」（在佇列等了 ' + waited + ' 秒）');
       var ms = e.stop ? 300 : (parseInt($('evms').value, 10) || 0);
       handle(e.name, ms, function () {
-        if (e.stop) { ev.running = false; evlog(stamp() + '　Stop 頁輸出 True 給迴圈的停止條件 → While Loop 結束'); $('evstop').textContent = '▶ 重新執行 VI'; }
+        if (e.stop) { ev.running = false; if (ev.q.length) { evlog(stamp() + '　佇列裡還有 ' + ev.q.length + ' 個沒處理的事件，VI 結束時一起被丟掉'); ev.q = []; drawQueue(); } evlog(stamp() + '　Stop 頁輸出 True 給迴圈的停止條件 → While Loop 結束'); $('evstop').textContent = '▶ 重新執行 VI'; }
         waitNext();
       });
       return;

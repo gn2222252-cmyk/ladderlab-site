@@ -8,7 +8,7 @@
 
   /* '\' Codes 寫法 → 真正的字串 */
   function unesc(s) {
-    return s.replace(/\\([0-9A-Fa-f]{2}|[rntsbf\\])/g, function (m, c) {
+    return s.replace(/\\([0-9A-F]{2}|[rntsbf\\])/g, function (m, c) {
       if (c.length === 2) return String.fromCharCode(parseInt(c, 16));
       return { r: '\r', n: '\n', t: '\t', s: ' ', b: '\b', f: '\f', '\\': '\\' }[c];
     });
@@ -65,7 +65,7 @@
     { key: 'replace', name: 'Replace Substring', zh: '替換部分字串', desc: '在 offset 位置，拿掉 length 個字元，換成 substring。',
       ins: [['s', 'string', 'str', 'Motor=OFF'], ['sub', 'substring', 'str', 'ON'], ['o', 'offset', 'num', 6], ['n', 'length', 'num', 3]],
       run: function (v) { var o = Math.max(0, Math.min(v.o, v.s.length)), n = Math.max(0, v.n), gone = v.s.substr(o, n), r = v.s.slice(0, o) + v.sub + v.s.slice(o + n); return { inmark: rng(o, gone.length), outs: [['result string', r, 'str', function (i) { return i >= o && i < o + v.sub.length ? 'new' : ''; }], ['replaced substring', gone, 'str']], say: '拿掉 "' + gone + '"（' + gone.length + ' 個字元），放進 "' + v.sub + '"（' + v.sub.length + ' 個字元）。兩邊長度不必一樣。' }; },
-      notes: ['length 設 0 就變成「插入」；substring 給空字串就變成「刪除」。', 'length 沒接線時，預設等於 substring 的長度（等長覆蓋）。'] },
+      notes: ['length 設 0 就變成「插入」；substring 給空字串就變成「刪除」。', 'length 等於 substring 的長度，就是等長覆蓋，字串總長不變。'] },
     { key: 'sr', name: 'Search and Replace String', zh: '搜尋並取代', desc: '找出 search string，換成 replace string。不用自己算位置。',
       ins: [['s', 'input string', 'str', 'a-b-c-d'], ['f', 'search string', 'str', '-'], ['r', 'replace string', 'str', ', '], ['all', 'replace all?', 'bool', false], ['ic', 'ignore case?', 'bool', false]],
       run: function (v) {
@@ -90,7 +90,7 @@
         return { inmark: rng(a, n), outs: [['before substring', v.s.slice(0, a), 'str'], ['match substring', m[0], 'str'], ['after substring', v.s.slice(a + n), 'str'], ['offset past match', a + n, 'num']],
           say: '在位置 ' + a + ' 找到 "' + m[0] + '"。offset past match = ' + (a + n) + '，是符合處的「下一個」位置；把它接回 offset 再找一次，就能找到下一個。' };
       },
-      notes: ['常用樣式：[0-9]+ 一串數字、[A-Za-z]+ 一串英文字母、^ 開頭、$ 結尾、. 任一字元。', '要把所有符合的都找出來：放進 While Loop，offset past match 用 Shift Register 傳回 offset，直到變成 -1。', '需要「或」( | ) 和分組時，改用 Match Regular Expression。'] },
+      notes: ['常用樣式：[0-9]+ 一串數字、[A-Za-z]+ 一串英文字母、^ 開頭、$ 結尾、. 任一字元。', '要把所有符合的都找出來：放進 While Loop，offset past match 用 Shift Register 傳回 offset，直到變成 -1。', '這個實驗室用瀏覽器的規則運算式來模擬。真正的 Match Pattern 語法比較少：不支援 \d、\w、{n} 這類寫法，數字請寫 [0-9]。需要分組、指定次數時，改用 Match Regular Expression。'] },
     { key: 'trim', name: 'Trim Whitespace', zh: '去掉頭尾空白', desc: '去掉字串兩端的空格、Tab、換行。中間的不動。',
       ins: [['s', 'string（可用 \\r \\n \\t）', 'code', '  OK 123 \\r\\n']],
       run: function (v) { var a = v.s.length - v.s.replace(/^\s+/, '').length, r = v.s.trim(); return { inmark: function (i) { return i < a || i >= a + r.length ? 'dim' : ''; }, outs: [['trimmed string', r, 'str']], say: '頭去掉 ' + a + ' 個、尾去掉 ' + (v.s.length - a - r.length) + ' 個空白字元。' }; },
@@ -297,6 +297,7 @@
     if (/\r\n/.test(s)) tip.push('Windows 的換行是兩個字元：CR（\\r，0D）＋ LF（\\n，0A）。Normal 模式只看到「換了一行」，長度卻多 2。');
     if (/ $/.test(s)) tip.push('尾巴的空格在 Normal 模式完全看不到，切到 \'\\\' Codes 才看得見 \\s。兩個字串「看起來一樣卻不相等」多半是這個原因。');
     if (/[\x02\x03\x05\x06\x15]/.test(s)) tip.push('通訊封包裡的控制碼（ENQ=05、STX=02、ETX=03、ACK=06、NAK=15）在 Normal 模式是空白或方塊。除錯通訊時一律切到 Hex 或 \'\\\' Codes 看。常數也一樣：右鍵字串常數 ▸ \'\\\' Codes Display，才能打 \\05。');
+    if (/[^\x00-\x7f]/.test(s)) tip.push('含中文時，真正的 LabVIEW 依系統編碼存成 2 個位元組（繁體中文 Windows 是 Big5）。這裡的 Hex 欄只示範 ASCII，中文字只顯示低位元組，僅供參考。');
     if (/\t/.test(s)) tip.push('Tab（\\t，09）是 Spreadsheet String 預設的欄位分隔符號。');
     $('dtip').innerHTML = tip.length ? tip.map(esc).join('<br>') : '試試下面的範例，或自己打 \\r\\n、\\05。';
   }

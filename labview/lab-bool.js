@@ -133,7 +133,10 @@
   drawGates(); gate();
 
   /* bit masks: computed one bit at a time so the student sees the column rule */
+  let bitbusy = false;
   async function bitrun() {
+    if (bitbusy) return; bitbusy = true;
+    try {
     const x = (parseInt($("mx").value, 10) || 0) & 255, y = (parseInt($("my").value, 10) || 0) & 255, op = $("mop").value;
     const f = { And: (a, b) => a & b, Or: (a, b) => a | b, Xor: (a, b) => a ^ b }[op];
     const bits = (n) => Array.from({ length: 8 }, (_, i) => (n >> (7 - i)) & 1);
@@ -148,6 +151,7 @@
     }
     const v = f(x, y);
     $("bres").innerHTML = `結果 = <b>${v}</b>` + (op === "And" && y === 1 ? `　→ 最低位元是 ${v}，所以 ${x} 是<b>${v ? "奇數" : "偶數"}</b>。` : "");
+    } finally { bitbusy = false; }
   }
   $("mrun").onclick = bitrun;
 

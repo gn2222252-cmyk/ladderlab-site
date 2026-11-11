@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="5d6e853f28">
+<meta name="ll-version" content="a138daa79d">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>數值實驗室：溢位、捨入、商與餘數 | LadderLab</title>
@@ -104,6 +104,7 @@
     <div class="mrow">
       <label>x <input class="scalar" id="qx" value="17"></label>
       <label>y <input class="scalar" id="qy" value="5"></label>
+      <span class="why">（這裡只示範非負整數、除數至少 1）</span>
       <button type="button" id="qrun">▶ 分組</button>
       <span>IQ = <b id="qiq"></b>　R = <b id="qr"></b></span>
     </div>
@@ -122,7 +123,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "5d6e853f28" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a138daa79d" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

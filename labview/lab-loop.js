@@ -145,7 +145,10 @@
     $("srbox").innerHTML = `<span class="sr l" style="top:50px">${l}</span><span class="sr r" style="top:50px">${r}</span>` +
       `<div class="bodynode" style="margin-top:44px">左邊 + i</div><span class="lbl" style="left:14px;top:8px">${note || ""}</span>`;
   }
+  let srbusy = false;
   async function srrun() {
+    if (srbusy) return; srbusy = true; $("srrun").disabled = $("srreset").disabled = true;
+    try {
     const n = Math.max(0, Math.floor(Number($("srn").value) || 0)), init = $("srinit").checked;
     let v = init ? 0 : mem;
     runs++;
@@ -161,6 +164,7 @@
     }
     mem = v; $("srout").textContent = v;
     $("srlog").insertAdjacentHTML("beforeend", `<div><b>輸出 ${v}</b>${init ? "" : "　再按一次執行看看：沒接初始值，結果會越來越大。"}</div>`);
+    } finally { srbusy = false; $("srrun").disabled = $("srreset").disabled = false; }
   }
   $("srrun").onclick = srrun;
   $("srreset").onclick = () => { mem = 0; runs = 0; srDraw(0, "", "VI 重新載入：沒初始化的 Shift Register 回到預設值 0"); $("srout").textContent = "-"; $("srlog").innerHTML = ""; };

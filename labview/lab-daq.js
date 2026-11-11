@@ -86,12 +86,16 @@
     if (bs.phase === 'timing') { hl('timing'); if (bs.t > 0.8) { bs.phase = 'start'; } return bDraw(); }
     if (bs.phase === 'start') { hl('start'); if (bs.t > 1.2) { bs.phase = 'read'; bs.iter0 = bs.t; say('Start 之後卡就開始量了，緩衝區開始累積。Read 在等資料…'); } return bDraw(); }
     bs.buf += bs.rate * dt;
-    if (bs.buf >= CAP) { bs.buf = CAP; hl('read', true); return finish('✖ 錯誤 -200279：緩衝區滿了，還沒被拿走的舊資料被蓋掉，擷取中止。原因是迴圈一圈花 ' + (bs.work / 1000 + (bs.n > 0 ? 0 : 0)) + ' 秒以上，這段時間卡量了 ' + Math.round(bs.rate * bs.work / 1000).toLocaleString() + ' 筆，卻只拿走 ' + bs.n + ' 筆。解法：每次多拿一點、把慢的工作（存檔、畫圖）移到另一個迴圈，或降低取樣率。', 'bad'); }
+    if (bs.buf >= CAP) { bs.buf = CAP; hl('read', true); return finish('✖ 錯誤 -200279：緩衝區滿了，還沒被拿走的舊資料被蓋掉，擷取中止。原因是迴圈裡的其他工作要 ' + bs.work / 1000 + ' 秒，這段時間卡量了 ' + Math.round(bs.rate * bs.work / 1000).toLocaleString() + ' 筆，一圈卻只拿走 ' + bs.n + ' 筆。解法：每次多拿一點、把慢的工作（存檔、畫圖）移到另一個迴圈，或降低取樣率。', 'bad'); }
     if (bs.phase === 'work') { hl('work'); bs.workLeft -= dt * 1000; if (bs.workLeft <= 0) bs.phase = 'read'; return bDraw(); }
     hl('read');
+    var reads = 0;
+    while (reads < 50) {
     var take = bs.n < 0 ? bs.buf : (bs.buf >= bs.n ? bs.n : 0);
-    if (bs.n < 0 || take > 0) {
-      bs.buf -= take; bs.got += take; bs.it++; bs.per = bs.t - bs.iter0; bs.iter0 = bs.t;
+    if (!(bs.n < 0 || take > 0)) break;
+    reads++;
+    {
+      bs.buf -= take; bs.got += take; bs.it++; bs.per = bs.n > 0 && !bs.work ? bs.n / bs.rate : bs.t - bs.iter0; bs.iter0 = bs.t;
       if (bs.stopReq) return finish('按了 Stop：迴圈結束，Clear Task 停止擷取並釋放資源。共拿到 ' + Math.round(bs.got).toLocaleString() + ' 筆。', 'ok');
       if (bs.it === 3) {
         if (bs.n < 0) say(bs.work ? '-1 表示「緩衝區裡有多少拿多少」，不會溢位，但每次拿到的筆數不固定（這次 ' + Math.round(take) + ' 筆）。' : '-1 加上迴圈裡沒有其他工作：Read 不等待，迴圈空轉、吃滿 CPU，每次只拿到一點點。要自己加 Wait。', bs.work ? '' : 'bad');
@@ -99,6 +103,8 @@
         else say('✔ 穩定：Read 等滿 ' + bs.n + ' 筆才往下走，所以一圈大約 ' + Math.round(bs.n / bs.rate * 1000) + ' ms（筆數 ÷ 取樣率）。緩衝區不會累積。', 'ok');
       }
       if (bs.work > 0) { bs.phase = 'work'; bs.workLeft = bs.work; }
+    }
+    if (bs.n < 0 || bs.phase === 'work') break;
     }
     bDraw();
   }

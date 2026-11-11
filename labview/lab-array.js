@@ -248,10 +248,11 @@
 
   /* ---------- run / predict ---------- */
   function parsePred(t) {
-    t = t.trim();
+    t = t.trim().replace(/[\[\]]/g, "").trim();
+    if (!t) return [];
     if (t.includes(";")) return t.split(";").map((r) => r.split(/[,\s]+/).filter(Boolean).map(num));
     const parts = t.split(/[,\s]+/).filter(Boolean).map(num);
-    return parts.length === 1 && !/^\[/.test(t) ? parts[0] : parts;
+    return parts.length === 1 && !Array.isArray(primary(F[key].run(st))) ? parts[0] : parts;
   }
   function primary(res) {
     const f = F[key];
@@ -272,7 +273,7 @@
     await animate(res);
     drawOutputs(res, true);
     let msg = res.say || "", cls = "verdict-line";
-    if (pred !== null && pred.trim() !== "") {
+    if (pred !== null && (pred.trim() !== "" || Array.isArray(primary(res)) && !primary(res).length)) {
       total++;
       const ok = JSON.stringify(parsePred(pred)) === JSON.stringify(primary(res));
       if (ok) { right++; done.add(key); try { localStorage.setItem("ll_lv_lab_array", JSON.stringify([...done])); } catch (e) { /* private */ } }

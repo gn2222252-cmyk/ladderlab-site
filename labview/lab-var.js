@@ -121,7 +121,7 @@
   var KIND = [
     function () {
       var n = p1([2, 3, 5]);
-      return { q: '兩個平行迴圈各做 <b>' + n + '</b> 次「讀 Local Variable x → 加 1 → 寫回 x」，x 從 0 開始。最後 x 可能是多少？', ans: '介於 ' + Math.max(2, n) + ' 和 ' + 2 * n + ' 之間都有可能', wrong: ['一定是 ' + 2 * n, '一定是 ' + n, '一定是 0', 'LabVIEW 會報錯，不能執行'], ex: '這是競爭條件：讀和寫之間另一個迴圈可能插進來，結果取決於執行順序，每次可能不同。' };
+      return { q: '兩個平行迴圈各做 <b>' + n + '</b> 次「讀 Local Variable x → 加 1 → 寫回 x」，x 從 0 開始。最後 x 可能是多少？', ans: '介於 2 和 ' + 2 * n + ' 之間都有可能', wrong: ['一定是 ' + 2 * n, '一定是 ' + n, '一定是 0', 'LabVIEW 會報錯，不能執行'], ex: '這是競爭條件：讀和寫之間另一個迴圈可能插進來，結果取決於執行順序，每次可能不同。最壞的排法只剩 2。' };
     },
     function () {
       return { q: 'Stop 按鈕的機械動作是預設的 <b>Latch When Released</b>，對它建立 Local Variable 給另一個迴圈讀，會怎樣？', ans: '執行箭頭斷掉，不能執行', wrong: ['兩個迴圈一起停', '只有第一個迴圈停', '要按兩次才停', '可以執行，但會出警告'], ex: 'Latch 動作的布林不能建立 Local Variable：被讀一次就彈回，兩個地方讀會讓結果不確定，所以 LabVIEW 直接禁止。改成 Switch 動作，結束後寫回 False。' };
