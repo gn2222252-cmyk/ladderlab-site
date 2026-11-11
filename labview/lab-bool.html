@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="f8a8883e5e">
+<meta name="ll-version" content="df1f875d6c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>布林實驗室：按鈕機械動作、邏輯閘、比較 | LadderLab</title>
@@ -126,7 +126,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "f8a8883e5e" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "df1f875d6c" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
