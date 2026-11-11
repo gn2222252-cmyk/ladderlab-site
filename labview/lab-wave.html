@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="e3ba5fefe2">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>波形實驗室：Waveform、統計與移動平均 | LadderLab</title>
+<meta name="description" content="LabVIEW 波形資料的動畫實驗室：Waveform 的 t0、dt、Y 三個元素怎麼組合拆開，改 dt 時 Graph 的時間軸怎麼變；對帶雜訊的馬達電流、振動、溫度訊號即時算 Mean、標準差、RMS、最大最小與峰對峰值；移動平均讓雜訊變小但訊號變慢。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .row input[type=range] { width: 160px; max-width: 100%; }
+  canvas.g { width: 100%; height: 250px; background: #0b0f14; border-radius: 8px; display: block; }
+  .wfrow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin: 12px 0; }
+  @media (max-width: 760px) { .wfrow { grid-template-columns: minmax(0, 1fr); } .wfrow .node { justify-self: center; } }
+  .wfrow .node { width: auto; min-width: 96px; padding: 6px; white-space: pre-line; }
+  .src { display: grid; gap: 6px; }
+  .src .it { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+  .chip { display: inline-block; font: 600 13px ui-monospace, Consolas, monospace; border: 2px solid #e8820c; border-radius: 5px; padding: 2px 8px; background: var(--bg); max-width: 100%; overflow-wrap: anywhere; }
+  .chip.ts { border-color: #6b4f2a; }
+  .chip.arr { border-color: #e8820c; border-style: double; border-width: 3px; }
+  .wf { border: 3px double #6b4f2a; border-radius: 6px; padding: 16px 8px 8px; position: relative; display: grid; gap: 6px; min-height: 96px; }
+  .wf > .cl { position: absolute; top: -11px; left: 8px; background: var(--card); padding: 0 6px; font-size: 13px; font-weight: 700; }
+  .wf .slot { display: flex; gap: 6px; align-items: center; font-size: 13px; min-height: 26px; }
+  .wf .slot small { color: var(--mute); min-width: 1.6em; font: 12px ui-monospace, Consolas, monospace; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 10px 0; }
+  .stats div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+  .stats b { display: block; font: 700 18px ui-monospace, Consolas, monospace; }
+  .stats i { font-style: normal; color: var(--mute); font-size: 12px; display: block; }
+  .key { font-size: 12px; color: var(--mute); display: flex; gap: 10px; flex-wrap: wrap; }
+  .key span::before { content: ""; display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 4px; vertical-align: middle; background: var(--c); }
+  .win { display: flex; gap: 3px; flex-wrap: wrap; align-items: center; font: 12px ui-monospace, Consolas, monospace; margin: 6px 0; min-height: 30px; }
+  .win span { border: 1px solid var(--line); border-radius: 4px; padding: 3px 5px; min-width: 38px; text-align: center; background: var(--bg); transition: background .2s; }
+  .win span.new { background: rgba(255, 216, 77, .4); }
+  .fx { font: 13px ui-monospace, Consolas, monospace; background: var(--onbg); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-wave.html" class="here">波形</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>波形實驗室</h1>
+  <p class="why">DAQ 讀回來的資料多半是 Waveform：一串數字加上「從什麼時候開始、每點隔多久」。這裡看 Waveform 怎麼組合拆開，再對龍門機台的馬達電流、振動、溫度訊號做最常用的統計和移動平均。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="wf" class="here">Waveform：t0、dt、Y</button>
+    <button type="button" data-t="st">統計：Mean、σ、RMS</button>
+    <button type="button" data-t="ma">移動平均</button>
+  </div>
+  <label class="check small"><input type="checkbox" id="slow"> 慢動作</label>
+
+  <section class="lab-stage" id="t-wf">
+    <p class="why">右軸振動感測器，量了 25 點。Waveform 是一個特殊的叢集，三個主要元素：<b>t0</b>（第一點的時間戳記）、<b>dt</b>（每點間隔幾秒）、<b>Y</b>（量到的值陣列）。另外還能帶屬性（attributes），本頁不用。</p>
+    <div class="wfrow">
+      <div class="src" id="wsrc"></div>
+      <div class="node" id="wnode">Build
+Waveform</div>
+      <div class="wf" id="wbox"><span class="cl">Waveform</span><div class="slot"><small>t0</small><span id="w-t0"></span></div><div class="slot"><small>dt</small><span id="w-dt"></span></div><div class="slot"><small>Y</small><span id="w-y"></span></div></div>
+    </div>
+    <div class="row">
+      <button type="button" class="go" id="wbuild">▶ Build Waveform（組合）</button>
+      <button type="button" id="wget">▶ Get Waveform Components（拆開）</button>
+    </div>
+    <div class="row">
+      <label>dt <input type="range" id="wdt" min="0" max="5" step="1" value="2"><b id="wdtv"></b></label>
+      <label>X 軸顯示 <select id="wfmt"><option value="rel">相對時間（從 0 秒起）</option><option value="abs">絕對時間（從 t0 的時鐘時間起）</option></select></label>
+    </div>
+    <canvas class="g" id="cwf" aria-label="Waveform Graph"></canvas>
+    <p class="verdict-line" id="wsay"></p>
+    <div class="callout">dt 只是「標籤」：改 dt，Y 陣列一個數字都沒變，只是 Graph 的 X 軸刻度跟著放大縮小。dt 錯了，算出來的頻率、時間全部跟著錯，程式卻不會報錯。dt 的倒數就是取樣率：dt = 0.001 s 就是 1000 S/s。X 軸要顯示成時鐘時間還是從 0 起算的秒數，是 Graph 的 X 軸顯示格式設定（右鍵 ▸ 屬性 ▸ Display Format），本頁用下拉選單示意兩種看法。</div>
+  </section>
+
+  <section class="lab-stage" id="t-st" hidden>
+    <div class="row">
+      <label>訊號 <select id="ssig"><option value="cur">馬達電流（直流偏移＋漣波）</option><option value="vib">振動（正弦，平均 0）</option><option value="tmp">溫度（幾乎不變＋雜訊）</option></select></label>
+      <button type="button" id="sre">重新取樣</button>
+    </div>
+    <div class="row">
+      <label>偏移量 <input type="range" id="soff" min="-5" max="5" step="0.5"><b id="soffv"></b></label>
+      <label>振幅 <input type="range" id="samp" min="0" max="5" step="0.5"><b id="sampv"></b></label>
+      <label>雜訊 <input type="range" id="snoise" min="0" max="2" step="0.1"><b id="snoisev"></b></label>
+    </div>
+    <canvas class="g" id="cst" aria-label="統計圖"></canvas>
+    <div class="key"><span style="--c:#ffd84d">訊號</span><span style="--c:#4ade80">Mean</span><span style="--c:rgba(96,165,250,.6)">Mean ± 1σ</span><span style="--c:#f472b6">RMS</span><span style="--c:#f87171">Max／Min</span></div>
+    <div class="stats" id="sbox"></div>
+    <div class="fx" id="sfx"></div>
+    <p class="verdict-line" id="ssay"></p>
+    <div class="callout">RMS 和 Mean 只有在「平均是 0」的時候差很多：振動訊號平均是 0，但 RMS 告訴你它抖多大。有直流偏移時（例如馬達電流），RMS 會被偏移量拉大。兩者的關係：RMS² = Mean² + σ²（這裡的 σ 是除以 N 的母體標準差）。LabVIEW 的 Std Deviation and Variance VI 有 weighting 輸入，可以選 Sample（除以 N − 1）或 Population（除以 N），兩種本頁都列出來。</div>
+  </section>
+
+  <section class="lab-stage" id="t-ma" hidden>
+    <p class="why">右軸馬達電流：第 40 點啟動（0.3 A → 3 A），第 100 點停止。電流計有雜訊。移動平均：每一點的輸出 = <b>最近 N 點的平均</b>。在 While Loop 裡可以用 Shift Register 記住最近 N 點，或對整個陣列一段一段算。</p>
+    <div class="row">
+      <label>視窗 N <select id="mn"><option>1</option><option>3</option><option selected>5</option><option>9</option><option>15</option><option>25</option></select></label>
+      <label>雜訊 <input type="range" id="mnoise" min="0" max="1" step="0.05" value="0.35"><b id="mnoisev"></b></label>
+      <button type="button" class="go" id="mrun">▶ 一點一點算</button>
+      <button type="button" id="mall">直接算完</button>
+    </div>
+    <canvas class="g" id="cma" aria-label="移動平均圖"></canvas>
+    <div class="key"><span style="--c:#6b7785">原始訊號</span><span style="--c:#ffd84d">移動平均</span><span style="--c:rgba(96,165,250,.6)">目前的視窗</span></div>
+    <div class="why" id="mwl">最近 N 點（Shift Register 裡的內容）：</div>
+    <div class="win" id="mwin"></div>
+    <div class="stats" id="mbox"></div>
+    <p class="verdict-line" id="msay"></p>
+    <div class="callout">N 越大，雜訊越小，但有兩個代價：① <b>變慢</b>：電流已經跳上去了，平均值還要等視窗裡的舊點都換掉，N 點之後才完全跟上；② <b>邊緣變鈍</b>：原本直上直下的變化被拉成斜坡。要看很快的變化（例如過電流保護），N 不能太大。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="wquiz" style="margin-top:16px"></section>
+  <div class="anim-layer" id="layer" aria-hidden="true"></div>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-wave.js?v=965caf8240"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "e3ba5fefe2" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

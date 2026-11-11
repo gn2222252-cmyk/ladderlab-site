@@ -109,7 +109,7 @@ function chartDemo(d){
   },50);
 }
 L.push({id:'C11',order:111,no:'C11',part:PART,title:'Chart、Graph 與使用者介面',mins:50,
-goals:[['學會','Waveform Chart 與 Graph 的差別、Chart 的更新模式與歷史長度、各種 Graph 接受的資料、多條曲線、常用 UI 技巧。'],['考試重點','Chart 一次加一個（或一段）點並保留歷史；Graph 每次重畫整個陣列；XY Graph 要 X、Y 兩個陣列。'],['動畫練習','<a href="lab-graph.html">圖表實驗室</a>：同一筆資料同時送給 Chart 和 Graph，看純量、1D、2D、Bundle、Waveform 各畫出什麼；<a href="lab-graph.html#xy">XY Graph 畫圓</a>。'],['動畫練習','<a href="lab-prop.html#val">屬性節點實驗室：Value 與事件</a>：Local Variable、Value、Value (Signaling) 哪一種會觸發 Value Change。']],
+goals:[['學會','Waveform Chart 與 Graph 的差別、Chart 的更新模式與歷史長度、各種 Graph 接受的資料、多條曲線、常用 UI 技巧。'],['考試重點','Chart 一次加一個（或一段）點並保留歷史；Graph 每次重畫整個陣列；XY Graph 要 X、Y 兩個陣列。'],['動畫練習','<a href="lab-graph.html">圖表實驗室</a>：同一筆資料同時送給 Chart 和 Graph，看純量、1D、2D、Bundle、Waveform 各畫出什麼；<a href="lab-graph.html#xy">XY Graph 畫圓</a>。'],['動畫練習','<a href="lab-prop.html#val">屬性節點實驗室：Value 與事件</a>：Local Variable、Value、Value (Signaling) 哪一種會觸發 Value Change。'],['動畫練習','<a href="lab-wave.html#wf">波形實驗室：Waveform</a>：改 dt 時 Graph 的 X 軸跟著變，Y 一個數字都沒變。']],
 check:'能說出 Waveform Graph、XY Graph、Waveform Chart 各接什麼資料。',
 body:[
 C.h3('懂','','Chart 和 Graph 的差別'),
@@ -163,7 +163,7 @@ const daqFig={name:'DAQmx 連續擷取的標準寫法',bd:{w:860,h:200,structs:[
   {id:'w13',from:'rd.task out',to:'sp.task/channels in',t:'clu'},{id:'w14',from:'rd.error out',to:'sp.error in',t:'err',mx:640},
   {id:'w15',from:'sp.task out',to:'cl.task/channels in',t:'clu'},{id:'w16',from:'sp.error out',to:'cl.error in',t:'err'},{id:'w17',from:'cl.error out',to:'seh',t:'err'}]}};
 L.push({id:'C12',order:112,no:'C12',part:PART,title:'硬體：DAQmx 擷取與儀器控制',mins:60,
-goals:[['學會','MAX、DAQmx 的 Task/Channel/Timing、有限與連續擷取、取樣率與緩衝區、類比輸入接法、儀器控制（GPIB/Serial/USB/Ethernet）、VISA、儀器驅動程式。'],['考試重點','DAQmx 的呼叫順序、連續擷取每次讀多少、緩衝區溢位錯誤的原因、VISA 資源名稱、Instrument Driver 的好處。'],['動畫練習','<a href="lab-daq.html">DAQ 實驗室</a>：取樣率不夠時的混疊、解析度與範圍怎麼算最小可分辨電壓、<a href="lab-daq.html#buf">DAQmx 流程與緩衝區溢位（錯誤 -200279）</a>。']],
+goals:[['學會','MAX、DAQmx 的 Task/Channel/Timing、有限與連續擷取、取樣率與緩衝區、類比輸入接法、儀器控制（GPIB/Serial/USB/Ethernet）、VISA、儀器驅動程式。'],['考試重點','DAQmx 的呼叫順序、連續擷取每次讀多少、緩衝區溢位錯誤的原因、VISA 資源名稱、Instrument Driver 的好處。'],['動畫練習','<a href="lab-daq.html">DAQ 實驗室</a>：取樣率不夠時的混疊、解析度與範圍怎麼算最小可分辨電壓、<a href="lab-daq.html#buf">DAQmx 流程與緩衝區溢位（錯誤 -200279）</a>。'],['動畫練習','<a href="lab-wave.html">波形實驗室</a>：DAQ 讀回來的 Waveform 怎麼拆出 dt；Mean、RMS、標準差在圖上畫出來；移動平均濾雜訊的代價。']],
 check:'能默寫 DAQmx 連續擷取的六個步驟。',
 body:[
 C.h3('懂','','NI MAX（Measurement & Automation Explorer）'),

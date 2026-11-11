@@ -1033,6 +1033,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-wave.html",
+     "href": "labview/lab-wave.html",
+     "label": "動畫實驗室：Waveform、統計、移動平均"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-visa.html",
      "href": "labview/lab-visa.html",
      "label": "動畫實驗室：VISA 序列通訊"
