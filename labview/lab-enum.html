@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Enum 實驗室：Enum、Ring 與 Type Def | LadderLab</title>
@@ -17,7 +17,7 @@
   .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: start; }
   @media (max-width: 860px) { .three { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 700px) { .two { grid-template-columns: minmax(0, 1fr); } }
-  .lane, .vi { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; background: var(--card); }
+  .lane, .vi { border: 1px solid var(--line); border-radius: 6px; padding: 10px; min-width: 0; background: var(--card); }
   .lane h3, .vi h4 { margin: 0 0 6px; font-size: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .modes { display: flex; gap: 6px; flex-wrap: wrap; }
   .modes button.here { background: var(--on); color: var(--card); border-color: var(--on); }
@@ -34,24 +34,24 @@
   .cs .body { padding: 8px; font-size: 13px; min-height: 34px; }
   .ind { display: inline-grid; place-items: center; min-width: 56px; height: 30px; border: 3px solid #1e5bd7; border-radius: 5px; font: 700 15px ui-monospace, Consolas, monospace; background: var(--bg); }
   .arrow { font-size: 18px; } .arrow.broken { color: #9ca3af; text-decoration: line-through; }
-  .ctlcard { border: 2px solid #4b5563; border-radius: 10px; padding: 10px; max-width: 520px; background: var(--card); }
+  .ctlcard { border: 2px solid #4b5563; border-radius: 6px; padding: 10px; max-width: 520px; background: var(--card); }
   .items { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
   .items span { font: 12px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; background: var(--bg); }
   .items span.new { background: rgba(22, 163, 74, .2); border-color: #16a34a; }
   .vi.old { border-color: #9ca3af; }
   .vi .note { font-size: 12px; color: var(--mute); margin: 6px 0 0; }
   .vi .bad { color: #dc2626; }
-  .inst { border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin: 6px 0; }
+  .inst { border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin: 6px 0; }
   .fpc { display: inline-flex; flex-direction: column; gap: 3px; border: 2px solid #4b5563; border-radius: 6px; padding: 6px 10px; min-width: 120px; transition: background .4s, width .4s; color: #111; background: #f3f4f6; }
   .fpc b { font-size: 12px; }
   .fpc .v { font: 600 13px system-ui, sans-serif; }
   .fpc .v::after { content: " ▾"; color: #6b7280; }
   .sm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 10px 0; }
-  .st { min-width: 92px; padding: 10px; text-align: center; border: 3px solid var(--line); border-radius: 12px; font-weight: 700; font-size: 14px; transition: all .3s; }
+  .st { min-width: 92px; padding: 10px; text-align: center; border: 3px solid var(--line); border-radius: 6px; font-weight: 700; font-size: 14px; transition: all .3s; }
   .st.on { border-color: var(--on); background: color-mix(in srgb, var(--on) 12%, transparent); transform: scale(1.06); }
   .st.def { border-style: dashed; }
   .st.def.on { border-color: #dc2626; background: rgba(220, 38, 38, .12); }
-  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; overflow-wrap: anywhere; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px; overflow-wrap: anywhere; }
   .fly { padding: 0 6px; font-size: 12px; }
 </style>
 </head>
@@ -146,7 +146,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

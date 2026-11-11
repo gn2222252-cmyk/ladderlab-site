@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SubVI 實驗室：接線端、必要輸入、可重入 | LadderLab</title>
@@ -16,14 +16,14 @@
   .row { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
   .row select { max-width: 100%; min-width: 0; }
-  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
   .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; }
   @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
-  .bx { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .bx { border: 1px solid var(--line); border-radius: 6px; padding: 10px; min-width: 0; }
   .bx h3 { margin: 0 0 6px; font-size: 15px; }
   .lbl { font-size: 13px; margin: 10px 0 4px; }
   .items { display: flex; flex-wrap: wrap; gap: 6px; }
-  .items button { display: inline-flex; align-items: center; gap: 6px; text-align: left; padding: 6px 10px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; font-size: 14px; color: inherit; }
+  .items button { display: inline-flex; align-items: center; gap: 6px; text-align: left; padding: 6px 10px; border: 2px solid var(--line); border-radius: 6px; background: var(--card); cursor: pointer; font: inherit; font-size: 14px; color: inherit; }
   .items button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
   .items button.used { opacity: .55; }
   .items i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex: none; }
@@ -37,11 +37,11 @@
   .tips li { margin: 3px 0; }
   .tips li.ok { color: var(--lab-green); } .tips li.bad { color: var(--lab-red); }
   .ins { display: grid; gap: 8px; }
-  .inrow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  .inrow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
   .inrow .h { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
   .inrow.miss { border-color: #dc2626; background: rgba(220, 38, 38, .06); }
   .inrow.dflt { border-color: #f59e0b; background: rgba(245, 158, 11, .08); }
-  .ch { font-size: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: rgba(128, 128, 128, .05); }
+  .ch { font-size: 14px; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: rgba(128, 128, 128, .05); }
   .ch .req { font-weight: 800; } .ch .rec { font-weight: 400; } .ch .opt { color: var(--mute); opacity: .7; }
   .runarrow { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
   .runarrow svg { width: 34px; height: 26px; }
@@ -50,7 +50,7 @@
   .sfp b { display: block; font: 700 18px ui-monospace, Consolas, monospace; color: var(--ink); }
   .sfp div.use { background: #fde68a; color: #333; }
   .sfp div.use b { color: #111; }
-  .gantt { border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  .gantt { border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
   .gl { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 6px; align-items: center; margin: 6px 0; font-size: 14px; }
   .gtrack { position: relative; height: 30px; background: rgba(128, 128, 128, .08); border-radius: 4px; overflow: hidden; }
   .gbar { position: absolute; top: 0; bottom: 0; border-radius: 4px; font: 12px ui-monospace, Consolas, monospace; color: #0b1b3a; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
@@ -59,13 +59,13 @@
   .gbar.wait { background: repeating-linear-gradient(45deg, rgba(220, 38, 38, .25) 0 6px, transparent 6px 12px); border: 1px dashed #dc2626; color: #991b1b; }
   .gcur { position: absolute; top: 0; bottom: 0; width: 2px; background: #dc2626; }
   .mem { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0; }
-  .clone { border: 3px solid #c58b00; background: #fff7d6; color: #6b4b00; border-radius: 8px; padding: 8px 12px; min-width: 150px; text-align: center; transition: box-shadow .2s; }
+  .clone { border: 3px solid #c58b00; background: #fff7d6; color: #6b4b00; border-radius: 6px; padding: 8px 12px; min-width: 150px; text-align: center; transition: box-shadow .2s; }
   .clone b.sr { display: inline-block; margin-top: 4px; border: 2px solid #1e5bd7; border-radius: 4px; padding: 2px 12px; font: 700 22px ui-monospace, Consolas, monospace; background: #fff; color: #111; }
   .clone.busyA { box-shadow: 0 0 0 4px #60a5fa; }
   .clone.busyB { box-shadow: 0 0 0 4px #fbbf24; }
   .clone small { display: block; color: #6b4b00; }
   .got { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .got div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--mute); }
+  .got div { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--mute); }
   .got b { font: 700 18px ui-monospace, Consolas, monospace; color: var(--ink); }
 </style>
 </head>
@@ -139,7 +139,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

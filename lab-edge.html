@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="a67834ecef">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>上升緣與下降緣實驗室：LDP、LDF、PLS、PLF | LadderLab</title>
+<meta name="description" content="三菱 FX3S 上升緣、下降緣的動畫實驗室：按住放開 X0，一個掃描一個掃描看 LDP、LDF、PLS、PLF 的脈衝只亮一圈；LD X0 加 INC 為什麼按一下加上百次、ALT 要配上升緣、PLS 的 M 寫在讀它的行下面要慢一圈；一個按鈕啟動停止的兩種寫法。">
+<link rel="stylesheet" href="style.css?v=fe0ae63584">
+<link rel="stylesheet" href="labview/lab.css?v=89a89d8063">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .lab-stage select { max-width: 100%; min-width: 0; }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .lab-stage h3.sub { font-size: 16px; margin: 16px 0 6px; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 160px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+  .bx { border: 1px solid var(--line); border-radius: 6px; padding: 10px; min-width: 0; background: var(--card); }
+  .bx h4 { margin: 0 0 6px; font-size: 14px; }
+  button.press { min-width: 120px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  button.press.on { background: #15803d; border-color: #14532d; color: #fff; font-weight: 700; }
+  .rung { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; font: 13px ui-monospace, Consolas, monospace; margin: 4px 0; }
+  .rung .no { color: var(--mute); min-width: 1.6em; }
+  .rung .ct, .rung .cl { padding: 1px 6px; border: 1.5px solid var(--mute); border-radius: 3px; white-space: nowrap; }
+  .rung .cl { border-radius: 10px; }
+  .rung .ct.on { background: #bbf7d0; color: #18212a; border-color: #15803d; }
+  .rung .cl.on { background: #fde047; color: #18212a; border-color: #a16207; }
+  .rung .wr { color: var(--mute); }
+  .rung.cur { outline: 2px solid #f59e0b; outline-offset: 2px; border-radius: 4px; }
+  .tl { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); }
+  .tl text { fill: currentColor; font: 11px ui-monospace, Consolas, monospace; }
+  .big { font: 700 28px ui-monospace, Consolas, monospace; }
+  .lampx { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+  .lampx i { width: 22px; height: 22px; border-radius: 50%; background: #4b5563; border: 2px solid #111; display: inline-block; }
+  .lampx.on i { background: #facc15; box-shadow: 0 0 10px #facc15; }
+  .il { font: 12px ui-monospace, Consolas, monospace; white-space: pre-wrap; color: var(--mute); margin: 4px 0 0; }
+  table.sc { border-collapse: collapse; font: 12px ui-monospace, Consolas, monospace; width: 100%; }
+  table.sc th, table.sc td { border: 1px solid var(--line); padding: 2px 5px; text-align: center; }
+  table.sc td.on { background: #bbf7d0; color: #18212a; font-weight: 700; }
+  .scw { overflow-x: auto; max-width: 100%; }
+</style>
+</head>
+<body class="plc">
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="path.html">課程</a> · <a href="plclabs.html">PLC 動畫實驗室</a></p>
+  <h1>上升緣與下降緣：按一下，只算一次</h1>
+  <p class="why">按鈕按住的時候，每一個掃描 X0 都是 ON。PLC 一秒跑幾百圈，「按一下」其實是連續好幾十圈的 ON。要「按一次只做一次」，就要抓 X0 <b>從 OFF 變 ON 的那一圈</b>（上升緣）或 <b>從 ON 變 OFF 的那一圈</b>（下降緣）。FX3S 有兩種寫法：邊緣接點 LDP、LDF（還有 ANDP、ORP…），或脈衝指令 PLS、PLF 先做出一個只 ON 一圈的 M。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="tl" class="here">① 一圈一圈看脈衝</button>
+    <button type="button" data-t="trap">② 常見的坑</button>
+    <button type="button" data-t="prac">③ 一個按鈕啟動／停止</button>
+    <button type="button" data-t="quiz">④ 猜一猜</button>
+  </div>
+
+  <section class="lab-stage" id="t-tl">
+    <p class="why">按住「X0」再放開（或勾「X0 一直按著」），用「下一圈」一圈一圈走。右邊的時間軸一格是一個掃描：X0 亮了好幾格，LDP、PLS 只在按下那一格亮，LDF、PLF 只在放開那一格亮，最下面的 OUT 對照組跟著 X0 一直亮。</p>
+    <div class="row">
+      <button type="button" class="press" id="tx0">X0（按住）</button>
+      <label class="check small"><input type="checkbox" id="tlatch"> X0 一直按著</label>
+      <button type="button" class="go" id="tstep">下一圈</button>
+      <button type="button" id="trun">▶ 自動跑</button>
+      <button type="button" id="treset">重來</button>
+      <span class="kv">第 <b id="tn">0</b> 圈</span>
+    </div>
+    <div class="grid2">
+      <div class="bx"><h4>程式（這一圈的狀態）</h4><div id="tlad"></div></div>
+      <div class="bx"><h4>時間軸（一格＝一個掃描，最近 24 圈）</h4><svg class="tl" id="tsvg" role="img" aria-label="時間軸"></svg></div>
+    </div>
+    <p class="verdict-line" id="tsay"></p>
+    <div class="callout">LDP X0 和「LD X0 → PLS M0 → LD M0」效果一樣，只是不用多用一個 M。每個邊緣接點、每個 PLS 都各自記得「上一次看到的值」，所以同一個 X0 寫在兩個地方，兩個地方都抓得到那一次邊緣。PLS、PLF 的對象只能是 Y、M（M8000 起的特殊 M 不能用）；邊緣接點可以接 X、Y、M、S、T、C。PLS、PLF 也可以寫在步進 STL～RET 之間。<br>兩個特別的時機（FX3 程式手冊）：PLC 從 STOP 切到 RUN 時條件已經 ON，<code>PLS M0</code> 這種一般 M 會在第一圈動作一次，停電保持的 M（例如 M600）則不會；RUN 中寫入程式時，條件已經 ON 的上升緣指令會執行，下降緣指令一律不執行。</div>
+  </section>
+
+  <section class="lab-stage" id="t-trap" hidden>
+    <h3 class="sub">坑 1：按一下，D0 加了上百次</h3>
+    <p class="why">兩行並排：上面 <code>LD X0 → INC D0</code>，下面 <code>LDP X0 → INC D1</code>。這裡一圈算 10 ms（本站模擬器的設定），按住 1 秒就是 100 圈。</p>
+    <div class="row"><button type="button" class="go" id="ainc">按住 X0 1 秒</button><button type="button" id="ainc2">很快點一下（5 圈）</button><button type="button" id="aincr">歸零</button></div>
+    <div class="grid2"><div class="bx"><h4>LD X0 → INC D0</h4><span class="big" id="ad0">0</span></div><div class="bx"><h4>LDP X0 → INC D1</h4><span class="big" id="ad1">0</span></div></div>
+    <p class="verdict-line" id="asay"></p>
+
+    <h3 class="sub">坑 2：ALT 是連續型，按住的每一圈都反轉</h3>
+    <p class="why">左邊 <code>LD X0 → ALT Y0</code>，右邊 <code>LD X0 → ALTP Y1</code>。ALT（連續型）在條件 ON 的每一圈都反轉一次，按住多久就反轉多少次，放開時停在哪裡要看運氣；要一按一切換，用 <b>ALTP</b>，或 <b>LDP X0 → ALT</b>。</p>
+    <div class="row"><label>按住 <select id="altn"><option value="7">7 圈</option><option value="12" selected>12 圈</option><option value="33">33 圈</option></select></label><button type="button" class="go" id="altgo">按一下</button><button type="button" id="altr">重來</button></div>
+    <div class="grid2"><div class="bx"><h4>LD X0 → ALT Y0</h4><span class="lampx" id="aly0"><i></i>Y0</span> <span class="kv">反轉了 <b id="alc0">0</b> 次</span></div><div class="bx"><h4>LD X0 → ALTP Y1</h4><span class="lampx" id="aly1"><i></i>Y1</span> <span class="kv">反轉了 <b id="alc1">0</b> 次</span></div></div>
+    <svg class="tl" id="altsvg" role="img" aria-label="ALT 時間軸"></svg>
+    <p class="verdict-line" id="alsay"></p>
+
+    <h3 class="sub">坑 3：PLS 寫在讀它的行下面，要慢一圈</h3>
+    <p class="why">PLS 的 M0 只 ON 一圈。讀 M0 的行如果寫在 PLS <b>上面</b>，那一圈還沒輪到 PLS，讀到的是 0；下一圈才讀到 1（這時 PLS 又把 M0 寫回 0 了，但上面那行已經讀過）。結果一樣只加 1，只是晚了一圈。</p>
+    <div class="row"><label>順序 <select id="plsord"><option value="below">PLS 在上、INC 在下（讀的行在下面）</option><option value="above">INC 在上、PLS 在下（讀的行在上面）</option></select></label><button type="button" class="go" id="plsgo">X0 按下 3 圈</button></div>
+    <pre class="il" id="plsil"></pre>
+    <div class="scw"><table class="sc" id="plstab"></table></div>
+    <p class="verdict-line" id="plssay"></p>
+  </section>
+
+  <section class="lab-stage" id="t-prac" hidden>
+    <p class="why">現場常見的需求：只有一個按鈕 X0，按一下輸送帶啟動，再按一下停止。選一種寫法，按「按一下 X0」（會按住 20 圈），看 Y0 怎麼變。</p>
+    <div class="row"><label>寫法 <select id="psel"></select></label></div>
+    <pre class="il" id="pil"></pre>
+    <div class="row"><button type="button" class="go" id="pgo">按一下 X0（按住 20 圈）</button><button type="button" id="preset">重來</button><span class="lampx" id="py0"><i></i>Y0 輸送帶</span><span class="kv">按了 <b id="pcnt">0</b> 次</span></div>
+    <div class="bx"><h4>程式（最後一圈的狀態）</h4><div id="plad"></div></div>
+    <svg class="tl" id="psvg" role="img" aria-label="時間軸"></svg>
+    <p class="verdict-line" id="psay"></p>
+    <div class="callout">ALTP（或 LDP X0 → ALT）一行就解決，最好讀。PLS 加自保持的寫法是「這一圈剛按下，而且 Y0 原本是 OFF → 變 ON；Y0 原本 ON 而且沒有剛按下 → 保持 ON」，剛按下時兩條路都不通，所以 ON 會變 OFF。兩種都要用上升緣；如果直接用 LD X0，按住的每一圈都在切換，放開時停在哪裡沒人知道。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="t-quiz" hidden></section>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。指令行為以三菱 FX3S 程式手冊為準。</p></footer>
+<script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-edge.js?v=7a055b735e"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>除錯實驗室：找出程式哪裡錯 | LadderLab</title>
@@ -16,13 +16,13 @@
   .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
   .row select { max-width: 100%; min-width: 0; }
-  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
   .lbl { font-size: 13px; color: var(--mute); margin: 10px 0 4px; }
-  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
   .scn button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
   .two { display: grid; grid-template-columns: minmax(0, 270px) minmax(0, 1fr); gap: 16px; }
   @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
-  .dg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .dg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
   .dg text { font: 13px ui-monospace, Consolas, "Microsoft JhengHei", monospace; fill: var(--ink); }
   .dg .fn rect { fill: #fff7d6; stroke: #c58b00; stroke-width: 2; }
   .dg .fn text { fill: #6b4b00; font-weight: 700; }
@@ -45,9 +45,9 @@
   .dg .pbt { font-size: 11px; font-weight: 700; fill: #111; }
   .dg .xmark { stroke: #dc2626; stroke-width: 3; }
   .dg .coerce { fill: #e8820c; }
-  .arrow { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; background: var(--card); }
+  .arrow { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; background: var(--card); }
   .arrow svg { width: 34px; height: 26px; }
-  .elist { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+  .elist { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-top: 8px; }
   .elist h4 { margin: 0; padding: 6px 10px; background: rgba(128, 128, 128, .12); font-size: 14px; }
   .elist button { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 8px 10px; background: var(--card); cursor: pointer; font: inherit; font-size: 14px; color: inherit; }
   .elist button:hover { background: var(--onbg); }
@@ -59,7 +59,7 @@
   .probe span.none { font: 12px system-ui, sans-serif; color: #6b7280; }
   .probe small { display: block; padding: 0 6px 4px; color: #555; overflow-wrap: anywhere; }
   .probe.bad span { color: #dc2626; }
-  .panel { border: 1px solid var(--line); border-radius: 10px; padding: 8px; margin-top: 10px; transition: box-shadow .3s; }
+  .panel { border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin-top: 10px; transition: box-shadow .3s; }
   .panel.active { box-shadow: 0 0 0 3px #1e40af; }
   .panel h3 { margin: 0 0 6px; font-size: 14px; }
   .chips { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -152,7 +152,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

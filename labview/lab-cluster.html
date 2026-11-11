@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>叢集實驗室：Bundle、Type Def、錯誤叢集 | LadderLab</title>
@@ -37,13 +37,13 @@
   .trow { display: flex; align-items: center; gap: 6px; margin: 5px 0; flex-wrap: wrap; font-size: 14px; }
   .trow .tn { font: 12px ui-monospace, Consolas, monospace; color: var(--mute); min-width: 5.5em; }
   .tdrow { display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap; margin: 12px 0; }
-  .vi { flex: 1 1 200px; border: 2px solid var(--line); border-radius: 10px; padding: 8px; background: var(--card); min-width: 0; }
+  .vi { flex: 1 1 200px; border: 2px solid var(--line); border-radius: 6px; padding: 8px; background: var(--card); min-width: 0; }
   .vi h4 { margin: 0 0 4px; font-size: 15px; }
   .vi.behind { border-color: #dc2626; }
   .vlink { display: flex; align-items: center; justify-content: center; flex: 0 0 34px; }
   @media (max-width: 560px) { .vlink { flex-basis: 100%; height: 22px; } .vlink .tw { width: 6px; height: 22px; } .vlink .tw.broken { background: repeating-linear-gradient(180deg, #dc2626 0 5px, transparent 5px 9px); } }
   .chain { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 12px 0; }
-  .en { border: 2px solid var(--line); border-radius: 8px; padding: 6px 8px; min-width: 104px; text-align: center; font-size: 13px; background: var(--card); transition: all .3s; }
+  .en { border: 2px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 104px; text-align: center; font-size: 13px; background: var(--card); transition: all .3s; }
   .en b { display: block; font-size: 14px; }
   .en select { font-size: 12px; margin-top: 4px; max-width: 130px; }
   .en .stt { display: block; font-size: 12px; color: var(--mute); min-height: 1.3em; }
@@ -55,8 +55,8 @@
   .ecl span { overflow-wrap: anywhere; }
   .led { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #9ca3af; vertical-align: -1px; margin-right: 4px; }
   .led.t { background: #dc2626; box-shadow: 0 0 6px #dc2626; } .led.f { background: #16a34a; }
-  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 190px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; overflow-wrap: anywhere; }
-  .dlg { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); max-width: 420px; margin: 10px 0; background: var(--card); overflow: hidden; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 190px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px; overflow-wrap: anywhere; }
+  .dlg { border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); max-width: 420px; margin: 10px 0; background: var(--card); overflow: hidden; }
   .dlg .dt { background: #2b4f8a; color: #fff; padding: 4px 10px; font-size: 13px; }
   .dlg .db { padding: 10px; font-size: 14px; overflow-wrap: anywhere; }
   .dlg .db button { display: block; margin: 8px 0 0 auto; }
@@ -87,7 +87,7 @@
   .cbox { display: inline-flex; flex-wrap: wrap; gap: 3px; border: 3px double #b0418f; border-radius: 6px; padding: 4px; background: rgba(176, 65, 143, .05); align-items: center; }
   .lbl2 { font-size: 12px; color: var(--mute); display: block; margin-bottom: 3px; }
   .inrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
-  .fpc2 { position: relative; height: 210px; border: 3px double #b0418f; border-radius: 8px; background: #d9dde3; color: #1d2430; max-width: 460px; margin: 8px 0; }
+  .fpc2 { position: relative; height: 210px; border: 3px double #b0418f; border-radius: 6px; background: #d9dde3; color: #1d2430; max-width: 460px; margin: 8px 0; }
   .fpc2 .cl { position: absolute; top: -11px; left: 8px; background: var(--card); color: var(--ink); padding: 0 6px; font-size: 13px; font-weight: 700; }
   .fe { position: absolute; display: grid; gap: 2px; font-size: 12px; transition: left .5s, top .5s; cursor: default; }
   .fe .box { border: 2px solid #6b7280; border-radius: 4px; background: #fff; padding: 3px 8px; font: 600 13px ui-monospace, Consolas, monospace; min-width: 60px; color: #18212a; }
@@ -263,7 +263,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

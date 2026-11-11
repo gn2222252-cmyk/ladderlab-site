@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>布林實驗室：按鈕機械動作、邏輯閘、比較 | LadderLab</title>
@@ -14,23 +14,23 @@
   .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .mech { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 18px; align-items: start; }
   @media (max-width: 900px) { .mech { grid-template-columns: 1fr; } }
-  .mlist button { display: block; width: 100%; text-align: left; margin: 3px 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .mlist button { display: block; width: 100%; text-align: left; margin: 3px 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
   .mlist button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
   .mlist small { display: block; color: var(--mute); font-size: 12px; }
-  .bigbtn { width: 150px; height: 64px; border-radius: 12px; border: 3px solid #555; background: #ddd; font: 700 18px inherit; cursor: pointer; user-select: none; touch-action: none; transition: transform .05s; color: #18212a; }
+  .bigbtn { width: 150px; height: 64px; border-radius: 6px; border: 3px solid #555; background: #ddd; font: 700 18px inherit; cursor: pointer; user-select: none; touch-action: none; transition: transform .05s; color: #18212a; }
   .bigbtn.down { transform: translateY(2px); background: #bbb; color: #18212a; }
   .led { display: inline-block; width: 34px; height: 34px; border-radius: 50%; background: #2b3a2b; border: 3px solid #555; vertical-align: middle; transition: background .1s; }
   .led.on { background: #3ee66b; box-shadow: 0 0 14px #3ee66b; color: #18212a; }
   .mrow { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
-  canvas.tl { width: 100%; height: 190px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg, #fff); }
+  canvas.tl { width: 100%; height: 190px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg, #fff); }
   .gates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-  .gate { border: 1px solid var(--line); border-radius: 10px; padding: 8px; text-align: center; cursor: pointer; background: var(--card); }
+  .gate { border: 1px solid var(--line); border-radius: 6px; padding: 8px; text-align: center; cursor: pointer; background: var(--card); }
   .gate.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
   .gate b { display: block; }
   .tt { border-collapse: collapse; margin: 8px 0; }
   .tt td, .tt th { border: 1px solid var(--line); padding: 4px 12px; text-align: center; font-family: ui-monospace, Consolas, monospace; }
   .tt tr.cur td { background: rgba(245, 158, 11, .25); }
-  .sw { display: inline-flex; align-items: center; gap: 6px; border: 2px solid #1f9d3a; border-radius: 8px; padding: 4px 10px; cursor: pointer; user-select: none; font-weight: 700; }
+  .sw { display: inline-flex; align-items: center; gap: 6px; border: 2px solid #1f9d3a; border-radius: 6px; padding: 4px 10px; cursor: pointer; user-select: none; font-weight: 700; }
   .sw.on { background: #1f9d3a; color: #fff; }
   .bits { display: inline-flex; gap: 3px; font: 600 15px ui-monospace, Consolas, monospace; }
   .bits span { width: 24px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; transition: background .25s; }
@@ -126,7 +126,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

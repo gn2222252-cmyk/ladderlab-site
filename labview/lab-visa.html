@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VISA 實驗室：位元組怎麼在序列線上走 | LadderLab</title>
@@ -17,10 +17,10 @@
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
   .row select { max-width: 100%; min-width: 0; }
   .row input[type=range] { width: 160px; }
-  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
   .cfg2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   @media (max-width: 800px) { .cfg2 { grid-template-columns: minmax(0, 1fr); } }
-  .box { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .box { border: 1px solid var(--line); border-radius: 6px; padding: 10px; min-width: 0; }
   .box h3 { margin: 0 0 4px; font-size: 16px; }
   .box .row { margin: 6px 0; }
   .lbl { font-size: 13px; color: var(--mute); margin: 10px 0 4px; }
@@ -36,13 +36,13 @@
   button.chip { cursor: pointer; }
   .chip.in { animation: flyin .4s ease-out; }
   @keyframes flyin { from { transform: translateY(-22px) scale(.7); opacity: 0; } }
-  .wave { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .wave { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
   .wave text { font: 16px ui-monospace, Consolas, monospace; fill: var(--ink); }
   .wave .mu { fill: var(--mute); }
   .nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 10px 0; }
-  .nums div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--mute); }
+  .nums div { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--mute); }
   .nums b { display: block; font: 700 20px ui-monospace, Consolas, monospace; color: var(--ink); }
-  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
   .scn button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
   .two { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 16px; }
   @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
@@ -50,7 +50,7 @@
   .cond span { border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
   .cond span.hit { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 700; }
   .cond span.miss { background: #dc2626; color: #fff; border-color: #dc2626; font-weight: 700; }
-  .tbar { position: relative; height: 54px; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+  .tbar { position: relative; height: 54px; border: 1px solid var(--line); border-radius: 6px; margin: 8px 0; overflow: hidden; }
   .tbar .tk { position: absolute; top: 8px; width: 3px; height: 22px; background: #f59e0b; transform: translateX(-1px); }
   .tbar .tk.got { background: #16a34a; }
   .tbar .cur { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--on); }
@@ -164,7 +164,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

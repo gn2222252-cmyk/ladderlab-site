@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>掃描週期實驗室：輸入、程式、輸出一圈一圈看 | LadderLab</title>
@@ -31,7 +31,7 @@
   .scanbox { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.9fr) minmax(0, 1fr); gap: 12px; align-items: start; }
   @media (max-width: 780px) { .scanbox { grid-template-columns: minmax(0, 1fr); } }
   .sccol { display: grid; gap: 10px; min-width: 0; }
-  .scp { border: 2px solid var(--line); border-radius: 10px; padding: 8px; min-width: 0; background: var(--card); transition: box-shadow .2s, border-color .2s; }
+  .scp { border: 2px solid var(--line); border-radius: 6px; padding: 8px; min-width: 0; background: var(--card); transition: box-shadow .2s, border-color .2s; }
   .scp h4 { margin: 0 0 6px; font-size: 14px; }
   .scp h4 small { font-weight: 400; color: var(--mute); }
   .scp.hot { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, .3); }
@@ -209,7 +209,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

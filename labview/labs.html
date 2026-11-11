@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
@@ -13,7 +13,7 @@
   .hub a.card { display: block; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--card); color: inherit; text-decoration: none; transition: transform .15s, box-shadow .15s; position: relative; }
   .hub a.card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, .12); border-color: var(--on); }
   .hub h2 { margin: 0 0 4px; font-size: 19px; display: flex; align-items: center; gap: 8px; }
-  .hub .ic { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color: #fff; font: 700 15px ui-monospace, Consolas, monospace; flex: none; }
+  .hub .ic { width: 34px; height: 34px; border-radius: 6px; display: grid; place-items: center; color: #fff; font: 700 15px ui-monospace, Consolas, monospace; flex: none; }
   .hub p { margin: 6px 0; font-size: 14px; }
   .hub ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--mute); }
   .hub .les { font-size: 12px; color: var(--mute); margin-top: 8px; }
@@ -91,7 +91,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

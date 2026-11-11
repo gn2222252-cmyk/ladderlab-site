@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>方法節點實驗室：Invoke Node 與 VI Server | LadderLab</title>
@@ -18,7 +18,7 @@
   .row select { max-width: 100%; min-width: 0; }
   .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
   @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
-  .fp { background: #d9dde3; color: #1d2430; border: 1px solid #b5bcc7; border-radius: 8px; padding: 12px; display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-start; min-width: 0; }
+  .fp { background: #d9dde3; color: #1d2430; border: 1px solid #b5bcc7; border-radius: 6px; padding: 12px; display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-start; min-width: 0; }
   .fp .cap { width: 100%; font-size: 12px; color: #4b5563; margin: -4px 0 0; }
   .ctl { display: grid; gap: 3px; font-size: 13px; position: relative; transition: opacity .3s, filter .3s, transform .3s; border-radius: 6px; padding: 2px; }
   .ctl .lb { font-size: 12px; font-weight: 600; }
@@ -56,9 +56,9 @@
   .feat { font-size: 13px; }
   .feat li { margin: 3px 0; }
   .feat .lv { font: 11px ui-monospace, Consolas, monospace; color: var(--mute); }
-  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
   .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
-  .flow .st { border: 2px solid var(--line); border-radius: 8px; padding: 6px 10px; font: 12px ui-monospace, Consolas, monospace; background: var(--card); transition: all .25s; }
+  .flow .st { border: 2px solid var(--line); border-radius: 6px; padding: 6px 10px; font: 12px ui-monospace, Consolas, monospace; background: var(--card); transition: all .25s; }
   .flow .st.on { border-color: #f59e0b; background: rgba(245, 158, 11, .2); }
   .flow .st.done { border-color: #16a34a; }
   .flow .st.bad { border-color: #dc2626; background: rgba(220, 38, 38, .12); }
@@ -160,7 +160,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

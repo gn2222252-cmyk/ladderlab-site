@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DAQ 實驗室：取樣率、解析度與範圍、DAQmx 緩衝區 | LadderLab</title>
@@ -13,20 +13,20 @@
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
   .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
-  canvas.g { width: 100%; height: 260px; background: #0b0f14; border-radius: 8px; display: block; }
+  canvas.g { width: 100%; height: 260px; background: #0b0f14; border-radius: 6px; display: block; }
   .big { font: 700 20px ui-monospace, Consolas, monospace; }
   .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0; }
-  .flow .n { border: 2px solid var(--line); border-radius: 8px; padding: 8px 10px; text-align: center; font-size: 13px; transition: all .3s; background: var(--card); }
+  .flow .n { border: 2px solid var(--line); border-radius: 6px; padding: 8px 10px; text-align: center; font-size: 13px; transition: all .3s; background: var(--card); }
   .flow .n b { display: block; font-size: 14px; }
   .flow .n.on { border-color: var(--on); background: color-mix(in srgb, var(--on) 15%, transparent); transform: translateY(-3px); }
   .flow .n.err { border-color: #dc2626; background: rgba(220, 38, 38, .15); }
-  .flow .lp { border: 3px solid #6b6b6b; border-radius: 10px; padding: 6px; display: flex; gap: 6px; align-items: center; }
-  .buf { position: relative; height: 34px; border: 2px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--card); }
+  .flow .lp { border: 3px solid #6b6b6b; border-radius: 6px; padding: 6px; display: flex; gap: 6px; align-items: center; }
+  .buf { position: relative; height: 34px; border: 2px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--card); }
   .buf i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--on); transition: width .08s linear; }
   .buf i.hot { background: #dc2626; }
   .buf span { position: absolute; left: 8px; top: 6px; font: 600 14px ui-monospace, Consolas, monospace; color: #fff; mix-blend-mode: difference; }
   .stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: 10px 0; }
-  .stat div { border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 13px; }
+  .stat div { border: 1px solid var(--line); border-radius: 6px; padding: 8px; font-size: 13px; }
   .stat b { display: block; font: 700 20px ui-monospace, Consolas, monospace; }
 </style>
 </head>
@@ -112,7 +112,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

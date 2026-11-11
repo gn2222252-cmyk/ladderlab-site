@@ -254,6 +254,12 @@ window.COURSE = {
      "label": "練習 E8 按一次只加一次"
     },
     {
+     "k": "G",
+     "id": "lab-edge.html",
+     "href": "lab-edge.html",
+     "label": "動畫實驗室：上升緣、下降緣、PLS／PLF、ALTP"
+    },
+    {
      "k": "L",
      "id": "A2",
      "href": "learn.html#A2",

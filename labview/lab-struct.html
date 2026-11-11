@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>結構實驗室：Case、Event、State Machine、Sequence | LadderLab</title>
@@ -20,14 +20,14 @@
   .case.run { opacity: 1; transform: translateY(-4px); box-shadow: 0 6px 16px color-mix(in srgb, var(--on) 35%, transparent); border-color: var(--on); }
   .case.run .sel { background: var(--on); color: var(--card); }
   .selbox { display: inline-grid; place-items: center; width: 34px; height: 30px; border: 2px solid #1e5bd7; font: 700 16px ui-monospace, Consolas, monospace; }
-  .q { position: relative; height: 70px; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0; overflow: hidden; }
-  .ev { position: absolute; top: 18px; padding: 6px 10px; border-radius: 8px; background: #fde68a; border: 2px solid #f59e0b; font-size: 13px; white-space: nowrap; transition: left .5s ease, opacity .4s; color: #18212a; }
+  .q { position: relative; height: 70px; border: 1px solid var(--line); border-radius: 6px; margin: 8px 0; overflow: hidden; }
+  .ev { position: absolute; top: 18px; padding: 6px 10px; border-radius: 6px; background: #fde68a; border: 2px solid #f59e0b; font-size: 13px; white-space: nowrap; transition: left .5s ease, opacity .4s; color: #18212a; }
   .ev.to { background: #e5e7eb; border-color: #9ca3af; color: #18212a; }
   .handler { border: 4px solid #6b6b6b; border-radius: 6px; padding: 10px; min-height: 60px; }
   .handler.busy { border-color: var(--on); }
   .bar { height: 8px; background: var(--on); width: 0; transition: width linear; border-radius: 4px; }
   .sm { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
-  .st { min-width: 110px; padding: 12px; text-align: center; border: 3px solid var(--line); border-radius: 12px; font-weight: 700; transition: all .3s; }
+  .st { min-width: 110px; padding: 12px; text-align: center; border: 3px solid var(--line); border-radius: 6px; font-weight: 700; transition: all .3s; }
   .st.on { border-color: var(--on); background: color-mix(in srgb, var(--on) 12%, transparent); transform: scale(1.06); }
   .arrow { color: var(--mute); }
   .frames { display: flex; gap: 0; margin: 12px 0; }
@@ -35,7 +35,7 @@
   .frame:last-child { border-right-width: 4px; }
   .frame.on { background: color-mix(in srgb, var(--on) 12%, transparent); }
   .frame b { display: block; margin-bottom: 4px; }
-  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px; }
 </style>
 </head>
 <body>
@@ -121,7 +121,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

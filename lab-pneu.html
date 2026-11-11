@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>氣壓缸實驗室：電磁閥與位移－時間圖 | LadderLab</title>
@@ -26,7 +26,7 @@
 
   /* 氣缸 */
   .pn-cyls { display: grid; gap: 10px; }
-  .pn-cyl { border: 2px solid var(--line); border-radius: 10px; padding: 6px 10px 8px; background: var(--card); min-width: 0; }
+  .pn-cyl { border: 2px solid var(--line); border-radius: 6px; padding: 6px 10px 8px; background: var(--card); min-width: 0; }
   .pn-cyl h4 { margin: 0 0 4px; font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
   .pn-cyl h4 small { font-weight: 400; color: var(--mute); }
   .pn-body { position: relative; height: 34px; margin: 4px 26px 20px 0; }
@@ -44,7 +44,7 @@
 
   .pn-two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; align-items: start; }
   @media (max-width: 760px) { .pn-two { grid-template-columns: minmax(0, 1fr); } }
-  .stl { border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; background: var(--card); font-size: 13px; min-width: 0; }
+  .stl { border: 2px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--card); font-size: 13px; min-width: 0; }
   .stl h4 { margin: 0 0 4px; font-size: 14px; }
   .stl div.s { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px; padding: 2px 4px; border-radius: 6px; border: 2px solid transparent; }
   .stl div.s b { font-family: ui-monospace, Consolas, monospace; }
@@ -171,7 +171,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

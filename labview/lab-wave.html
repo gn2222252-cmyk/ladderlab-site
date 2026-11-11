@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>波形實驗室：Waveform、統計與移動平均 | LadderLab</title>
@@ -15,7 +15,7 @@
   .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .row input[type=range] { width: 160px; max-width: 100%; }
-  canvas.g { width: 100%; height: 250px; background: #0b0f14; border-radius: 8px; display: block; }
+  canvas.g { width: 100%; height: 250px; background: #0b0f14; border-radius: 6px; display: block; }
   .wfrow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin: 12px 0; }
   @media (max-width: 760px) { .wfrow { grid-template-columns: minmax(0, 1fr); } .wfrow .node { justify-self: center; } }
   .wfrow .node { width: auto; min-width: 96px; padding: 6px; white-space: pre-line; }
@@ -29,7 +29,7 @@
   .wf .slot { display: flex; gap: 6px; align-items: center; font-size: 13px; min-height: 26px; }
   .wf .slot small { color: var(--mute); min-width: 1.6em; font: 12px ui-monospace, Consolas, monospace; }
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 10px 0; }
-  .stats div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+  .stats div { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 13px; }
   .stats b { display: block; font: 700 18px ui-monospace, Consolas, monospace; }
   .stats i { font-style: normal; color: var(--mute); font-size: 12px; display: block; }
   .key { font-size: 12px; color: var(--mute); display: flex; gap: 10px; flex-wrap: wrap; }
@@ -37,7 +37,7 @@
   .win { display: flex; gap: 3px; flex-wrap: wrap; align-items: center; font: 12px ui-monospace, Consolas, monospace; margin: 6px 0; min-height: 30px; }
   .win span { border: 1px solid var(--line); border-radius: 4px; padding: 3px 5px; min-width: 38px; text-align: center; background: var(--bg); transition: background .2s; }
   .win span.new { background: rgba(255, 216, 77, .4); }
-  .fx { font: 13px ui-monospace, Consolas, monospace; background: var(--onbg); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; }
+  .fx { font: 13px ui-monospace, Consolas, monospace; background: var(--onbg); border-radius: 6px; padding: 8px 10px; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -124,7 +124,7 @@ Waveform</div>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

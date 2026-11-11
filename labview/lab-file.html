@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>檔案 I/O 實驗室：開檔方式、檔案指標、CSV 紀錄 | LadderLab</title>
@@ -25,7 +25,7 @@
   .fic.wipe pre { opacity: 0; }
   .fic.bad { border-color: #dc2626; }
   @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
-  .res { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-height: 90px; }
+  .res { border: 1px solid var(--line); border-radius: 6px; padding: 10px; min-height: 90px; }
   .refw { display: inline-block; width: 40px; height: 3px; background: #2f6f4f; vertical-align: middle; transition: width .5s; }
   .refw.dead { width: 0; }
   .ew { display: inline-block; width: 40px; height: 5px; background: #b59a00; vertical-align: middle; }
@@ -36,10 +36,10 @@
   .mx td.e { color: #dc2626; font-weight: 700; }
   .mx td.k { color: #15803d; }
   .mxw { overflow-x: auto; }
-  .dlg { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); max-width: 340px; background: var(--card); overflow: hidden; margin: 8px 0; }
+  .dlg { border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); max-width: 340px; background: var(--card); overflow: hidden; margin: 8px 0; }
   .dlg .dt { background: #2b4f8a; color: #fff; padding: 4px 10px; font-size: 13px; }
   .dlg .db { padding: 10px; font-size: 14px; }
-  .grid { position: relative; display: flex; flex-wrap: wrap; gap: 3px; padding: 22px 6px 8px; border: 1px solid var(--line); border-radius: 8px; min-height: 60px; }
+  .grid { position: relative; display: flex; flex-wrap: wrap; gap: 3px; padding: 22px 6px 8px; border: 1px solid var(--line); border-radius: 6px; min-height: 60px; }
   .ch { width: 26px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; font: 600 14px ui-monospace, Consolas, monospace; background: var(--bg); transition: background .3s; }
   .ch.cc { font-size: 9px; color: var(--mute); }
   .ch.eof { border-style: dashed; opacity: .5; font-size: 9px; }
@@ -50,7 +50,7 @@
   .mk::after { content: "▼"; }
   .lanes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
   @media (max-width: 640px) { .lanes { grid-template-columns: minmax(0, 1fr); } }
-  .lane { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .lane { border: 1px solid var(--line); border-radius: 6px; padding: 10px; min-width: 0; }
   .lane h4 { margin: 0 0 6px; }
   .cnt { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
   .cnt b { font: 700 18px ui-monospace, Consolas, monospace; display: block; }
@@ -62,13 +62,13 @@
   .plc { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font: 13px ui-monospace, Consolas, monospace; }
   .plc span { border: 2px solid var(--line); border-radius: 6px; padding: 3px 8px; }
   .line { font: 13px ui-monospace, Consolas, monospace; border: 2px solid #d63fa0; border-radius: 6px; padding: 4px 8px; display: inline-block; min-height: 28px; overflow-wrap: anywhere; max-width: 100%; }
-  .ftxt { font: 13px/1.5 ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-height: 120px; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); }
+  .ftxt { font: 13px/1.5 ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 6px; padding: 8px; min-height: 120px; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); }
   .ws { color: var(--lab-rust); font-weight: 700; }
   .xl { border-collapse: collapse; font: 12px ui-monospace, Consolas, monospace; }
   .xl th { background: #e7eef8; color: #333; font-weight: 600; padding: 2px 6px; border: 1px solid #c6cfdb; }
   .xl td { border: 1px solid #d6dbe3; padding: 2px 6px; white-space: nowrap; min-width: 46px; background: #fff; color: #111; }
   .xl td.n { text-align: right; }
-  .xlw { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+  .xlw { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 6px; }
   .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
   @media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } }
   .fly { padding: 0 4px; }
@@ -170,7 +170,7 @@ Replace File</div>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

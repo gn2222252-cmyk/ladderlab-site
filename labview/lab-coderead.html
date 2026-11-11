@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b6ed87c24">
+<meta name="ll-version" content="a67834ecef">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>看圖說答案：CLAD 程式判讀 | LadderLab</title>
@@ -19,18 +19,18 @@
   .qhead { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; margin: 6px 0; }
   .qhead .tag { font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--mute); }
   .qtext { font-size: 17px; margin: 8px 0; }
-  .dg { width: 100%; max-width: 640px; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: #fbfbf9; color: #18212a; }
+  .dg { width: 100%; max-width: 640px; height: auto; display: block; border: 1px solid var(--line); border-radius: 6px; background: #fbfbf9; color: #18212a; }
   .dg text { font: 12px ui-monospace, Consolas, "Microsoft JhengHei", monospace; fill: #222; }
   .dg .hl rect, .dg rect.hl { stroke: #f59e0b !important; stroke-width: 4 !important; }
   .dg .bub rect { fill: #fef08a; stroke: #854d0e; stroke-width: 1; }
   .dg .bub text { font-weight: 700; font-size: 11px; fill: #111; }
   .opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0; max-width: 640px; }
   @media (max-width: 560px) { .opts { grid-template-columns: minmax(0, 1fr); } }
-  .opts button { text-align: left; padding: 10px 12px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: 15px ui-monospace, Consolas, "Microsoft JhengHei", monospace; color: inherit; overflow-wrap: anywhere; }
+  .opts button { text-align: left; padding: 10px 12px; border: 2px solid var(--line); border-radius: 6px; background: var(--card); cursor: pointer; font: 15px ui-monospace, Consolas, "Microsoft JhengHei", monospace; color: inherit; overflow-wrap: anywhere; }
   .opts button.pick { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
   .opts button.right { border-color: #16a34a; box-shadow: 0 0 0 2px #16a34a inset; }
   .opts button.wrong { border-color: #dc2626; box-shadow: 0 0 0 2px #dc2626 inset; }
-  .anim { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 8px 0; max-width: 640px; }
+  .anim { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin: 8px 0; max-width: 640px; }
   .anim .st { min-height: 2.6em; font-size: 15px; }
   .timer { font: 700 18px ui-monospace, Consolas, monospace; }
   .result { font-size: 20px; font-weight: 700; }
@@ -107,7 +107,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b6ed87c24" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a67834ecef" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
