@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="9bf5761aa5">
+<meta name="ll-version" content="e174d788d4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>圖表實驗室：Chart、Graph、XY Graph 接什麼畫什麼 | LadderLab</title>
@@ -77,16 +77,18 @@
     <p class="verdict-line" id="xysay"></p>
     <div class="callout">XY Graph 接受兩種資料：① <b>叢集（X 陣列, Y 陣列）</b>，就是上面這種；② <b>「點」的陣列</b>，每個元素是一個 (x, y) 叢集。畫多條線時，把每條線的叢集再用 Build Array 組成陣列。X 和 Y 陣列長度不一樣時，只畫到短的那個為止。</div>
   </section>
+  <section class="lab-stage lab-challenge" id="gquiz" style="margin-top:16px"></section>
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；圖表行為以 LabVIEW 說明文件為準。</p></footer>
-<script src="lab-graph.js?v=7eb20dde8e"></script>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-graph.js?v=4fddb4c19e"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "9bf5761aa5" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "e174d788d4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

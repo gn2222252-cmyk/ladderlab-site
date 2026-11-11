@@ -115,3 +115,35 @@
   if (/^#(rate|res|buf)$/.test(location.hash)) show(location.hash.slice(1));
   window.DaqLab = { alias: alias, quant: quant, bTick: bTick, bRun: bRun, bs: function () { return bs; }, show: show };
 })();
+
+/* ---------- 猜一猜 ---------- */
+(function () {
+  'use strict';
+  function p1(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function volt(v) { var a = Math.abs(v); return a >= 1 ? +v.toPrecision(3) + ' V' : a >= 1e-3 ? +(v * 1e3).toPrecision(3) + ' mV' : +(v * 1e6).toPrecision(3) + ' µV'; }
+  var KIND = [
+    function () {
+      var c = p1([[9, 10], [7, 10], [12, 10], [45, 50], [60, 50], [8, 5], [130, 100]]), f = c[0], fs = c[1], fa = window.DaqLab.alias(f, fs);
+      return { q: '訊號是 <b>' + f + ' Hz</b> 的正弦波，用 <b>' + fs + ' S/s</b> 取樣。Graph 上看到的訊號是幾 Hz？', ans: fa + ' Hz', wrong: [f + ' Hz', fs + ' Hz', fs / 2 + ' Hz', (f + fs) + ' Hz', Math.abs(fs - 2 * f) + ' Hz', '0 Hz'], ex: '取樣率不到 2 倍會混疊：看到的頻率＝訊號頻率和「最接近的取樣率整數倍」的差，|' + f + ' − ' + fs * Math.round(f / fs) + '| = ' + fa + ' Hz。' };
+    },
+    function () {
+      var f = p1([50, 100, 400, 1000, 20000]);
+      return { q: '要量的訊號最高頻率是 <b>' + f + ' Hz</b>。照奈奎斯特定理，取樣率至少要大於多少？', ans: 2 * f + ' S/s', wrong: [f + ' S/s', f / 2 + ' S/s', 10 * f + ' S/s', 4 * f + ' S/s'], ex: '大於最高頻率的 2 倍才量得出正確頻率；要看清楚波形，實務上抓 5～10 倍（' + 5 * f + '～' + 10 * f + ' S/s）。' };
+    },
+    function () {
+      var b = p1([12, 16]), R = p1([10, 5, 1]), lsb = 2 * R / Math.pow(2, b);
+      return { q: '<b>' + b + ' 位元</b>的 DAQ，量測範圍設 <b>±' + R + ' V</b>。最小可分辨的電壓變化大約是多少？', ans: volt(lsb), wrong: [volt(R / Math.pow(2, b)), volt(2 * R / Math.pow(2, b === 12 ? 16 : 12)), volt(2 * R / b), volt(lsb * 10), volt(4 * R / Math.pow(2, b))], ex: '範圍寬度 ' + 2 * R + ' V ÷ 2 的 ' + b + ' 次方（' + Math.pow(2, b).toLocaleString() + ' 階）＝ ' + volt(lsb) + '。注意 ±' + R + ' V 的寬度是 ' + 2 * R + ' V，不是 ' + R + ' V。' };
+    },
+    function () {
+      var c = p1([[1000, 100], [1000, 500], [5000, 500], [10000, 1000], [2000, 500], [1000, 1000]]), ms = c[1] / c[0] * 1000;
+      return { q: '連續擷取，取樣率 <b>' + c[0].toLocaleString() + ' S/s</b>，迴圈裡的 DAQmx Read 每次讀 <b>' + c[1] + '</b> 筆，沒有其他 Wait。迴圈一圈大約多久？', ans: ms + ' ms', wrong: [ms * 10 + ' ms', ms / 10 + ' ms', '1 ms', c[1] + ' ms', '0 ms（全速空轉）', 1000 + ms + ' ms'], ex: 'Read 會等緩衝區湊滿 ' + c[1] + ' 筆才往下走：' + c[1] + ' ÷ ' + c[0] + ' = ' + ms / 1000 + ' 秒。所以迴圈不用再加 Wait。' };
+    },
+    function () {
+      var c = p1([[0.05, [10, 5, 1, 0.2], 0.2], [0.8, [10, 5, 1, 0.2], 1], [3, [10, 5, 1, 0.2], 5], [7, [10, 5, 1, 0.2], 10]]);
+      return { q: '感測器輸出在 <b>±' + c[0] + ' V</b> 之間。要量得最細又不被削平，範圍選哪一個？', ans: '±' + c[2] + ' V', wrong: c[1].filter(function (r) { return r !== c[2]; }).map(function (r) { return '±' + r + ' V'; }), ex: '選「剛好包住訊號」的最小範圍：比它小會削平，比它大則每一階變粗，浪費解析度。' };
+    }
+  ];
+  function gen() { return p1(KIND)(); }
+  if (window.LabQuiz) window.DaqLab.quiz = window.LabQuiz('dquiz', gen);
+  window.DaqLab.quizGen = gen; window.DaqLab.quizKinds = KIND;
+})();

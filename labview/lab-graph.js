@@ -146,3 +146,23 @@
 
   window.GraphLab = { st: st, send: send, pickType: pickType, xy: xy, gen: gen, show: show };
 })();
+
+/* ---------- 猜一猜：幾條線、每條幾點 ---------- */
+(function () {
+  'use strict';
+  function p1(a) { return a[Math.floor(Math.random() * a.length)]; }
+  var BROKEN = '線是斷的，接不上';
+  function L(n, p) { return n + ' 條線，每條 ' + p + ' 個點'; }
+  function gen() {
+    var ind = p1(['Chart', 'Graph']), k = p1([1, 2, 3, 5]), t = p1(['scalar', 'arr1', 'bundle', 'arr2', 'arr2t']), ans, ex, name;
+    if (t === 'scalar') { name = '一個 DBL 純量'; ans = ind === 'Chart' ? L(1, k) : BROKEN; ex = ind === 'Chart' ? 'Chart 每次多一個點，而且記得舊的。' : 'Graph 不接受單一純量，要一次給整個陣列。'; }
+    else if (t === 'arr1') { name = '有 4 個元素的 1D 陣列'; ans = ind === 'Chart' ? L(1, 4 * k) : L(1, 4); ex = ind === 'Chart' ? 'Chart 把每次的 4 點接在後面，執行 ' + k + ' 次就是 ' + 4 * k + ' 點。' : 'Graph 每次整張重畫，不管執行幾次都只有最後那 4 點。'; }
+    else if (t === 'bundle') { name = 'Bundle 起來的 2 個純量'; ans = ind === 'Chart' ? L(2, k) : BROKEN; ex = ind === 'Chart' ? '叢集裡每個純量是一條線，每次各多一點。' : 'Graph 不接受純量的叢集。'; }
+    else if (t === 'arr2') { name = '2 列 × 4 欄的 2D 陣列（沒有 Transpose）'; ans = ind === 'Chart' ? L(4, 2 * k) : L(2, 4); ex = ind === 'Chart' ? 'Chart 預設每一「欄」一條線：4 條，每次各多 2 點。' : 'Graph 預設每一「列」一條線：2 條各 4 點，而且不累積。'; }
+    else { name = '2 列 × 4 欄的 2D 陣列（勾了 Transpose Array）'; ans = ind === 'Chart' ? L(2, 4 * k) : L(4, 2); ex = ind === 'Chart' ? 'Transpose 之後 Chart 每一列一條線：2 條，每次各多 4 點。' : 'Transpose 之後 Graph 每一欄一條線：4 條各 2 點。'; }
+    var wrong = [L(1, k), L(1, 4), L(1, 4 * k), L(2, k), L(2, 4), L(4, 2), L(4, 2 * k), L(2, 4 * k), L(k, 4), BROKEN];
+    return { q: '把 <b>' + name + '</b> 接到清空過的 <b>Waveform ' + ind + '</b>，VI 執行 <b>' + k + '</b> 次之後，畫面上是什麼？', ans: ans, wrong: wrong, ex: ex };
+  }
+  if (window.LabQuiz) window.GraphLab.quiz = window.LabQuiz('gquiz', gen);
+  window.GraphLab.quizGen = gen;
+})();

@@ -113,6 +113,35 @@
   ];
 
   var cur = F[0], vals = {};
+  /* 隨機挑戰：每個函式的出題範圍，QOUT 是要回答第幾個輸出 */
+  var quiz = { on: false, ok: 0, n: 0, last: null };
+  var QOUT = { match: 1 };
+  function pick1(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function ri(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  var QGEN = {
+    len: function () { return { s: pick1(['PLC ', 'Hello', ' ab c', 'D100=25', 'OK\t', 'a  b']) }; },
+    concat: function () { return { a: pick1(['D', 'M', 'X0', 'ab']), b: pick1(['', ' ', '-', '10']), c: pick1(['0', 'ON', ' 5', 'z']) }; },
+    subset: function () { return { s: pick1(['00FF12AB3C', 'LabVIEW2018', 'ABCDEFGH', 'T=25.6C']), o: ri(0, 6), n: ri(1, 5) }; },
+    replace: function () { return { s: pick1(['Motor=OFF', 'ABCDEF', 'X0=1;X1=0']), sub: pick1(['ON', '', '##', 'z']), o: ri(0, 6), n: ri(0, 3) }; },
+    sr: function () { var c = pick1([['a-b-c-d', '-'], ['1,2,3', ','], ['Run run RUN', 'run'], ['x==y==z', '=='], ['a-b-c', ',']]); return { s: c[0], f: c[1], r: pick1([' ', ';', 'go', '']), all: Math.random() < 0.5, ic: Math.random() < 0.3 }; },
+    match: function () { return { s: pick1(['Temp: 25.6 C', 'D100=4660', 'abc', 'No.7 and No.12']), p: pick1(['[0-9]+', '[A-Z]+', '[a-z]+']), o: pick1([0, 0, 5]) }; },
+    trim: function () { return { s: pick1(['  OK 123 \\r\\n', '\\tA B\\s', 'x\\s\\sy', '\\s\\s7']) }; },
+    d2n: function () { return { s: pick1(['120rpm', 'abc', '-7 C', '  42', '3.9V', 'x15']), o: pick1([0, 0, 1]), d: pick1([0, -1]) }; }
+  };
+  function newQuiz() {
+    var g = QGEN[cur.key]; if (!g) { $('qmsg').textContent = '這個函式的輸出是表格，沒有出題。換一個函式。'; return; }
+    var v = g(); quiz.on = true;
+    cur.ins.forEach(function (d) { var e = $('in_' + d[0]); if (!e || v[d[0]] == null) return; if (d[2] === 'bool') e.checked = v[d[0]]; else e.value = v[d[0]]; });
+    $('qans').value = ''; $('qmsg').textContent = '字串答案要一字不差（空格也算）；數字直接打。'; $('qmsg').className = 'why';
+    update(); $('qans').focus();
+  }
+  function checkQuiz() {
+    if (!quiz.on) return;
+    var x = quiz.last.outs[QOUT[cur.key] || 0], want = x[1], got = $('qans').value, good = x[2] === 'num' ? Number(got) === want && got.trim() !== '' : got === want;
+    quiz.n++; if (good) quiz.ok++; quiz.on = false; update();
+    $('qmsg').textContent = (good ? '✔ 答對！' : '✖ 你答「' + got + '」，正確是「' + want + '」。看上面黃色、綠色標出來的位置。') + '　答對 ' + quiz.ok + ' / ' + quiz.n;
+    $('qmsg').className = 'verdict-line ' + (good ? 'ok' : 'bad');
+  }
   function readVals() {
     var v = {};
     cur.ins.forEach(function (d) {
@@ -127,8 +156,10 @@
   function update() {
     var v = readVals(), r = cur.run(v);
     var src = r.src != null ? r.src : v.s != null ? v.s : (v.a + v.b + v.c);
-    strip($('inchars'), cur.key === 'concat' ? v.a + v.b + v.c : src, r.inmark);
+    strip($('inchars'), cur.key === 'concat' ? v.a + v.b + v.c : src, quiz.on ? null : r.inmark);
     var o = $('outs'); o.innerHTML = '';
+    quiz.last = r;
+    if (quiz.on) { o.appendChild(el('p', 'why', '（先在下面寫出「' + esc((r.outs[QOUT[cur.key] || 0] || ['?'])[0]) + '」的答案，再對答案）')); $('say').textContent = ''; return; }
     (r.outs || []).forEach(function (x) {
       var row = el('div', 'outrow'); row.appendChild(el('span', 'k', esc(x[0])));
       if (x[2] === 'num') row.appendChild(el('span', 'scalar', String(x[1])));
@@ -139,7 +170,7 @@
     $('say').textContent = r.say || '';
   }
   function pickFn(f) {
-    cur = f;
+    cur = f; quiz.on = false; if ($('qmsg')) { $('qmsg').textContent = ''; }
     Array.prototype.forEach.call($('fnlist').querySelectorAll('button'), function (b) { b.classList.toggle('here', b.dataset.k === f.key); });
     $('fname').innerHTML = esc(f.name) + ' <small style="font-weight:400;color:var(--mute)">' + f.zh + '</small>';
     $('fdesc').textContent = f.desc;
@@ -162,6 +193,8 @@
     b.onclick = function () { pickFn(f); }; $('fnlist').appendChild(b);
   });
   pickFn(F[0]);
+  $('qnew').onclick = newQuiz; $('qchk').onclick = checkQuiz;
+  $('qans').onkeydown = function (e) { if (e.key === 'Enter') checkQuiz(); };
 
   /* ---------- 格式碼 ---------- */
   var FRE = /%([-+0 ]*)(\d+)?(?:\.(\d+))?([dfsxXeEgoubi%])/g;
