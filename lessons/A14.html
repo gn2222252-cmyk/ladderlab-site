@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="d585aa05ca">
+<meta name="ll-version" content="d88743be75">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>3.10 數字的輸入與顯示：指撥開關、BCD／BIN、七段顯示器｜PLC 互動課程</title>
@@ -24,7 +24,7 @@
 <h1>3.10 數字的輸入與顯示：指撥開關、BCD／BIN、七段顯示器</h1>
 <p class="lesson-goal"><b>本課目標</b>讀指撥開關、送七段顯示器時用對 BIN、BCD，看懂 K2X000 這種位數指定。</p>
 <div class="text">PLC 裡的數字是二進位，人看的是十進位。指撥開關和七段顯示器是「一位數字用 4 條線」（1、2、4、8），這叫 BCD：25 的 BCD 是 0010｜0101（十位 2、個位 5），二進位卻是 0001 1001。所以讀指撥開關用 BIN（BCD → 二進位），送七段顯示器用 BCD（二進位 → BCD）。直接用 MOV 搬，0～9 剛好一樣，10 以上就錯：指撥 12 用 MOV 讀進來是 18。
-K2X000 是「從 X0 開始的 2 位數」＝X0～X7：X0～X3 是個位、X4～X7 是十位。K2Y000 就是 Y0～Y7。起點建議用末位是 0 的編號。
+K2X000 是「從 X0 開始的 2 位數」＝X0～X7：X0～X3 是個位、X4～X7 是十位。K2Y000 就是 Y0～Y7。起點建議用末位是 0 的編號（手冊 5.4 節：任意編號可以，但建議 X、Y 用 X000、X010…，M 用 M0、M10…）。
 本課：兩位數指撥設定目標（BIN 讀進 D0），工件感測器 X10 每來一個 C0 加 1，C0 用 BCD 送到 Y0～Y7 的兩位數七段顯示器；數滿或目標被調小，Y10 數滿燈亮；X11 歸零。D1 是用 MOV 直接搬的對照組。</div>
 <p><a class="btnlink go" href="../learn.html#A14">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
 <div class="table-box"><table class="gtable"><thead><tr><th>指撥</th><th>X7～X0（BCD）</th><th>BIN 讀到</th><th>MOV 讀到</th></tr></thead><tbody><tr><td>05</td><td>0000 0101</td><td>5</td><td>5</td></tr><tr><td>12</td><td>0001 0010</td><td>12</td><td>18</td></tr><tr><td>25</td><td>0010 0101</td><td>25</td><td>37</td></tr><tr><td>99</td><td>1001 1001</td><td>99</td><td>153</td></tr></tbody></table></div>
@@ -66,7 +66,7 @@ RST C0</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d88743be75" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

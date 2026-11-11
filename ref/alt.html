@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="d585aa05ca">
+<meta name="ll-version" content="d88743be75">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ALT（ALTP）：交替輸出（按一下 ON、再按一下 OFF）｜三菱 FX PLC 指令</title>
@@ -23,7 +23,7 @@
 <p class="crumb"><a href="index.html">FX 指令說明</a> · 輸出</p>
 <h1>ALT（ALTP）：交替輸出（按一下 ON、再按一下 OFF）</h1>
 <p class="lead-text">每執行一次，元件就反轉一次。一般用 ALTP：每按一下按鈕切換一次。</p>
-<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>ALTP 元件</td><td>Y、M</td></tr></tbody></table></div>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>ALTP 元件</td><td>Y、M、S（FX3 程式手冊 14.7 節）</td></tr></tbody></table></div>
 <p>一個按鈕控制開和關（例如照明、啟動／停止切換）最省事的寫法。</p><p>用 ALT（沒有 P）時，條件 ON 的每一個掃描都會反轉，看起來像亂閃。</p>
 <h2>範例</h2>
 <pre class="il">LD X000
@@ -42,7 +42,7 @@ ALTP Y000</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d88743be75" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

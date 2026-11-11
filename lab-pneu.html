@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="d88743be75">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>氣壓缸實驗室：電磁閥與位移－時間圖 | LadderLab</title>
+<meta name="description" content="氣壓缸與電磁閥的動畫實驗室：單線圈、5/2 雙線圈、5/3 中位封閉／加壓／排氣型在同一個操作與急停下怎麼動；輸入動作順序自動畫位移－時間圖並跑 STL 步序；感測器一直 OFF 時卡在哪一步。">
+<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="labview/lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; }
+  .lab-stage select, .lab-stage input[type=text] { max-width: 100%; }
+  .lab-stage input[type=text] { font: 14px ui-monospace, Consolas, monospace; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); width: 260px; }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .lab-stage h3.sub { font-size: 16px; margin: 14px 0 6px; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .log b { color: var(--on); }
+  .tog.on { background: #dc2626; border-color: #7f1d1d; color: #fff; font-weight: 700; }
+  .stbtn { background: #16a34a; border-color: #14532d; color: #fff; font-weight: 700; }
+
+  /* 氣缸 */
+  .pn-cyls { display: grid; gap: 10px; }
+  .pn-cyl { border: 2px solid var(--line); border-radius: 10px; padding: 6px 10px 8px; background: var(--card); min-width: 0; }
+  .pn-cyl h4 { margin: 0 0 4px; font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+  .pn-cyl h4 small { font-weight: 400; color: var(--mute); }
+  .pn-body { position: relative; height: 34px; margin: 4px 26px 20px 0; }
+  .pn-barrel { position: absolute; left: 0; top: 4px; width: 58%; height: 26px; border: 2px solid #64748b; border-radius: 4px; background: rgba(100, 116, 139, .12); }
+  .pn-piston { position: absolute; top: 2px; width: 8px; height: 18px; background: #475569; border-radius: 2px; }
+  .pn-rod { position: absolute; top: 14px; height: 6px; background: #94a3b8; border-radius: 3px; }
+  .pn-head { position: absolute; top: 6px; width: 10px; height: 22px; background: #334155; border-radius: 2px; }
+  .pn-mark { position: absolute; top: 34px; transform: translateX(-50%); font: 11px ui-monospace, Consolas, monospace; display: flex; flex-direction: column; align-items: center; }
+  .pn-mark i { width: 11px; height: 11px; border-radius: 50%; background: #4b5563; border: 1px solid #111; display: block; }
+  .pn-mark.on i { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .pn-mark.dead i { background: #4b5563; outline: 2px solid #dc2626; }
+  .coils { display: inline-flex; gap: 6px; font: 12px ui-monospace, Consolas, monospace; }
+  .coil { border: 2px solid var(--line); border-radius: 5px; padding: 0 5px; }
+  .coil.on { border-color: #1e6fff; background: rgba(30, 111, 255, .2); font-weight: 700; }
+
+  .pn-two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  @media (max-width: 760px) { .pn-two { grid-template-columns: minmax(0, 1fr); } }
+  .stl { border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; background: var(--card); font-size: 13px; min-width: 0; }
+  .stl h4 { margin: 0 0 4px; font-size: 14px; }
+  .stl div.s { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px; padding: 2px 4px; border-radius: 6px; border: 2px solid transparent; }
+  .stl div.s b { font-family: ui-monospace, Consolas, monospace; }
+  .stl div.s.on { border-color: #f59e0b; background: rgba(245, 158, 11, .15); }
+  .stl div.s.hold { border-color: #9ca3af; border-style: dashed; }
+  .stl div.s.bad { border-color: #dc2626; background: rgba(220, 38, 38, .12); }
+  .chartbox { border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; margin-top: 10px; overflow: hidden; background: var(--card); }
+  .chartbox svg { display: block; color: var(--ink); }
+  .chartbox svg text { fill: currentColor; font: 11px ui-monospace, Consolas, monospace; }
+  .err { color: #dc2626; font-weight: 700; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="path.html">課程</a> · 動畫實驗室</p>
+  <h1>氣壓缸與電磁閥：位移－時間圖動起來</h1>
+  <p class="why">PLC 只管電磁閥的線圈 ON／OFF，氣缸怎麼走是閥決定的。這一頁把課程 4.7「看懂位移－時間圖」、氣壓乙級 <a href="practice.html#E18">E18</a> 的動作順序和急停規定做成可以按的模擬。氣缸速度、感測器位置照本站模擬器的氣缸模型（E18 的 A 缸全行程 2 秒、開快速閥 1 秒；B、C 缸 1 秒）。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="valve" class="here">① 三種電磁閥</button>
+    <button type="button" data-t="dtd">② 位移－時間圖</button>
+    <button type="button" data-t="sens">③ 感測器壞了</button>
+    <button type="button" data-t="quiz">④ 猜一猜</button>
+  </div>
+
+  <!-- ================= 1 ================= -->
+  <section class="lab-stage" id="t-valve">
+    <p class="why">五支一樣的氣缸，分別接五種閥，收到<b>同一串命令</b>。「伸出命令」＝單線圈閥的線圈 ON、5/2 和 5/3 閥的「+」線圈 ON；「縮回命令」＝單線圈閥線圈 OFF、其他閥的「−」線圈 ON；「線圈全部 OFF」就是急停或停電時 PLC 輸出全斷的樣子。5/3 閥兩個線圈都 OFF 時，彈簧讓閥回到中位，中位有三種：<b>中位封閉</b>（兩側出口封住）、<b>中位加壓</b>（兩側都接壓力）、<b>中位排氣</b>（兩側都通大氣）。試試在伸出到一半時按「線圈全部 OFF」。</p>
+    <div class="row">
+      <button type="button" id="v-plus">伸出命令</button>
+      <button type="button" id="v-minus">縮回命令</button>
+      <button type="button" class="tog" id="v-off">線圈全部 OFF（急停／停電）</button>
+      <button type="button" id="v-push">用手推活塞桿</button>
+    </div>
+    <div class="row">
+      <span class="small">示範：</span>
+      <button type="button" id="v-demo1">伸出 0.5 秒後斷電</button>
+      <button type="button" id="v-demo2">伸到底後斷電</button>
+      <button type="button" id="v-demo3">縮回途中斷電</button>
+      <button type="button" id="v-reset">重來</button>
+    </div>
+    <div class="pn-cyls" id="v-cyls"></div>
+    <div class="chartbox" id="v-chart"></div>
+    <p class="verdict-line" id="v-say"></p>
+    <div class="log" id="v-log"></div>
+    <div class="callout"><b>整理</b>：單線圈閥（彈簧復歸）斷電會回到彈簧側（常見是縮回，要看配管）；5/2 雙線圈閥線圈都 OFF 時保持最後的閥位，氣缸一路走到行程底，不會中途停；5/3 閥兩個線圈都斷電時回中位——中位封閉型把兩側封住，氣缸停在當時的位置；中位加壓型兩側都有壓力，無桿側面積比較大，活塞桿會慢慢移動，不能說「停在原位」；中位排氣型兩側都沒有壓力，沒有東西推它，但外力（用手、重力、負載）推得動。中位加壓的移動速度、排氣型被推動的距離在動畫裡只是示意。<br><b>兩個線圈不要同時通電</b>：5/2 雙線圈閥、5/3 閥兩個線圈同時通電時怎麼動，各廠、各型不一樣，程式要互鎖，不要賭它。<br><b>和檢定的關係</b>：氣壓乙級 08000-1090201（變速迴路）的急停原文只寫結果：「氣壓缸 A 需立即停止於該位置，氣壓缸 B、C 則停止於該步驟終點」，壓按 ST 無效、控制器輸出端斷電，沒有寫閥型；歷年公告的元件表列的是「5/3 中位加壓型引導式電磁閥」和「5/2 雙邊（雙線圈）引導式電磁閥」。08000-1090202（釋壓迴路）的急停又不同：A、B、C 停止，B、C 兩側無壓（可以用手拉動）。本站模擬器把 E18 的 A 缸做成 5/3 中位封閉型、B、C 做成 5/2 雙線圈閥，是為了做出試題要求的結果所選的示範模型。<br>動畫裡五支缸都用 1 秒全行程；單線圈閥和 5/3 各型的速度本站模擬器沒有定義，這裡沿用同一個值。</div>
+  </section>
+
+  <!-- ================= 2 ================= -->
+  <section class="lab-stage" id="t-dtd" hidden>
+    <p class="why">位移－時間圖：橫向一格＝一個時段＝一步，縱向每支缸一列；斜線＝這一格在動，終點的感測器就是換步條件。選一個動作順序，下面會自動畫出圖和 STL 步序，按 ST 讓氣缸照著跑，正在執行的那一格會框起來，圓點是氣缸現在的位置。</p>
+    <div class="row">
+      <label>動作順序 <select id="d-pre">
+        <option value="ex67">課程 4.7 的例子：A+　B+　A-/B-</option>
+        <option value="ex65">A+　B+　B-　A-</option>
+        <option value="e18" selected>E18 變速迴路（8 個時段）</option>
+        <option value="custom">自己輸入</option>
+      </select></label>
+      <input type="text" id="d-seq" value="A+ B+ A- B-" aria-label="自己輸入的動作順序" hidden>
+    </div>
+    <div class="row" id="d-valrow" hidden>
+      <label>自己輸入的缸用 <select id="d-valve">
+        <option value="memory">雙線圈閥（5/2）</option>
+        <option value="setrst">單線圈閥＋SET／RST 保持</option>
+        <option value="outonly">單線圈閥＋每步只 OUT（常見錯誤）</option>
+      </select></label>
+      <span class="why">寫法：A+ 伸出、A- 縮回，空格分開步驟，同一步兩支缸用 / 連起來（例如 A-/B-）。可用 A～D，最多 10 步。</span>
+    </div>
+    <div class="row">
+      <label>模式 <select id="d-mode"><option value="single">單一循環</option><option value="manual">手動步進（按一次 ST 走一格）</option></select></label>
+      <button type="button" class="stbtn" id="d-st">ST 啟動</button>
+      <button type="button" class="tog" id="d-ems">急停 EMS</button>
+      <button type="button" id="d-reset">重來</button>
+      <label>速度 <select id="d-speed"><option value="0.5">慢動作</option><option value="1" selected>真實速度</option><option value="2">快</option></select></label>
+      <span class="kv">t = <b id="d-t">0.0</b> s</span>
+    </div>
+    <p class="err" id="d-err"></p>
+    <div class="pn-two"><div class="pn-cyls" id="d-cyls"></div><div class="stl" id="d-stl"></div></div>
+    <div class="chartbox" id="d-chart"></div>
+    <p class="verdict-line" id="d-say"></p>
+    <div class="log" id="d-log"></div>
+    <div class="callout">讀圖規則照課程 4.7：①一格＝一個時段＝一步（手動步進每按一次 ST 走一格）；②斜線＝輸出，斜線終點＝換步條件；③同一格兩條斜線＝同一步輸出兩個線圈，換步條件是兩個感測器都到（AND）；④水平線那幾格要不要輸出看閥：雙線圈閥不用，單線圈閥要保持（SET／RST）。最後一條線寫「n=1」表示回到第 1 條、下一輪。E18 第 1 格 A 只走到中間的 a1 就停，5/2 雙線圈閥會一路走到 a2，所以 A 要用能停在中間的 5/3 閥（課文寫三位置中封閥；本站模擬成 5/3 中位封閉型）；第 7 格比較陡＝比較快，要多開快速閥。急停：試題原文是「A 需立即停止於該位置，B、C 則停止於該步驟終點」，按 EMS 看看本站的模型怎麼做到。相鄰兩步一個 A+、一個 A-，換步那一個掃描兩步同時作用，程式要加互鎖。</div>
+  </section>
+
+  <!-- ================= 3 ================= -->
+  <section class="lab-stage" id="t-sens" hidden>
+    <p class="why">每一步都在等「上一個動作到位」的感測器。感測器斷線或壞了（一直 OFF），條件永遠不成立，步序就卡在那一步，<b>輸出也一直留著</b>。選一個壞掉的感測器，按 ST，看卡在哪一步、氣缸跑到哪裡。</p>
+    <div class="row">
+      <label>動作順序 <select id="s-pre"><option value="e18" selected>E18 變速迴路</option><option value="ex65">A+　B+　B-　A-（雙線圈閥）</option></select></label>
+      <label>壞掉的感測器（一直 OFF） <select id="s-dead"></select></label>
+      <label class="check small"><input type="checkbox" id="s-to"> 加逾時監視（課程第 5 章的寫法）</label>
+    </div>
+    <div class="row">
+      <button type="button" class="stbtn" id="s-st">ST 啟動</button>
+      <button type="button" id="s-reset">重來</button>
+      <label>速度 <select id="s-speed"><option value="0.5">慢動作</option><option value="1" selected>真實速度</option><option value="2">快</option></select></label>
+      <span class="kv">t = <b id="s-t">0.0</b> s</span>
+    </div>
+    <div class="pn-two"><div class="pn-cyls" id="s-cyls"></div><div class="stl" id="s-stl"></div></div>
+    <div class="chartbox" id="s-chart"></div>
+    <p class="verdict-line" id="s-say"></p>
+    <div class="log" id="s-log"></div>
+    <div class="callout"><b>怎麼看出來</b>：故障排除頁的判斷方法——輸出有出去、氣缸也離開了起點，可是終點的感測器沒來，是感測器的問題；輸出有出去、氣缸根本沒離開起點，是閥、氣管或氣壓的問題（F3、F4）。<br><b>中間位置的感測器要特別小心</b>：E18 的 a1 壞掉時，A+ 一直輸出，5/3 閥一直在「+」側，A 就一路走過 a1 直到 a2。<br><b>燈號</b>：氣壓乙級試題沒有規定感測器故障時亮什麼燈；E18 的黃燈是「復歸中」閃爍，不是異常燈。要讓機台自己發現，就照課程第 5 章：每個等感測器的步配一個逾時計時器（逾時值＝正常動作時間乘 1.5～2 倍），逾時就記異常、斷輸出。這裡的逾時監視用 2 倍。</div>
+  </section>
+
+  <!-- ================= 4 ================= -->
+  <section class="lab-stage" id="t-quiz" hidden>
+    <p class="why">題目隨機產生，選項順序也會打亂。答錯會看到解說，按「下一題」換一題。</p>
+    <div class="lab-challenge" id="pn-quiz"></div>
+  </section>
+</main>
+<footer>
+  <p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p>
+</footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="common.js?v=26e7d4e9ea"></script>
+<script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-pneu.js?v=871a83c787"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "d88743be75" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="d585aa05ca">
+<meta name="ll-version" content="d88743be75">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>氣壓乙級、工業配線乙級 PLC 術科練習：線上模擬與自動評分 | LadderLab</title>
@@ -31,7 +31,7 @@
       <tr><td>單一循環</td><td>按啟動做完一次就停</td><td>完成後回原點、不再動作</td></tr>
       <tr><td>連續循環</td><td>一直重複，按停止後做完這一循環才停</td><td>中途按 STOP，確認做完才停</td></tr>
       <tr><td>模式切換</td><td>運轉中切換無效</td><td>運轉中把單一切成連續，結果仍是單一</td></tr>
-      <tr><td>急停</td><td>A 立即停（中封閥）、B、C 停在該步終點；啟動無效；PLC 輸出斷電</td><td>按下後輸出全斷、啟動無效</td></tr>
+      <tr><td>急停</td><td>A 立即停在該位置（試題只寫結果；本站模擬用中封閥）、B、C 停在該步終點；啟動無效；PLC 輸出斷電</td><td>按下後輸出全斷、啟動無效</td></tr>
       <tr><td>復歸</td><td>復歸模式按復歸鈕，黃燈 0.5 秒閃爍，依題目順序回原點；未復歸啟動無效</td><td>檢查順序（先 B、C 再 A）、黃燈閃爍、完成後可啟動</td></tr>
       <tr><td>停電</td><td>恢復供電後的處理（各題規定不同）</td><td>模擬 PLC 重新上電、氣壓缸停在原位</td></tr>
       <tr><td>安全</td><td>不可爆衝、相反動作不可同時</td><td>每個掃描檢查 A+／A-、B+／B-、C+／C- 不同時 ON</td></tr>
@@ -42,7 +42,7 @@
   <div class="table-box"><table class="gtable small">
     <thead><tr><th>輸入</th><th>用途</th><th>輸出</th><th>用途</th></tr></thead>
     <tbody>
-      <tr><td>X0、X1</td><td>啟動 ST、停止 STOP</td><td>Y0、Y1</td><td>A+、A-（5 口 3 位置中封閥）</td></tr>
+      <tr><td>X0、X1</td><td>啟動 ST、停止 STOP</td><td>Y0、Y1</td><td>A+、A-（5 口 3 位置閥：歷年元件表為中位加壓型，本站模擬用中封）</td></tr>
       <tr><td>X2</td><td>緊急停止 EMS（常閉）</td><td>Y2、Y3</td><td>B+、B-（雙線圈閥）</td></tr>
       <tr><td>X3</td><td>復歸／運轉選擇（ON＝運轉）</td><td>Y4、Y5</td><td>C+、C-（雙線圈閥）；第 5、6 題是 Y4＝V+（真空），沒有 C 缸</td></tr>
       <tr><td>X4</td><td>復歸按鈕</td><td>Y6、Y7、Y10</td><td>綠燈、紅燈、黃燈（練習用）</td></tr>
@@ -160,7 +160,7 @@
 </main>
 <footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機、勞動部技能檢定中心無關。</p></footer>
 <script src="config.js?v=eca98dd0d9"></script>
-<script src="course_map.js?v=b43fdd3cdf"></script>
+<script src="course_map.js?v=6ddf5f60f3"></script>
 <script src="course.js?v=764fe70243"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script src="waitlist.js?v=92656de277"></script>
@@ -170,7 +170,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d88743be75" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

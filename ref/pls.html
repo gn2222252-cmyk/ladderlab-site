@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="d585aa05ca">
+<meta name="ll-version" content="d88743be75">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLS：上升緣脈衝（只 ON 一個掃描）｜三菱 FX PLC 指令</title>
@@ -23,7 +23,7 @@
 <p class="crumb"><a href="index.html">FX 指令說明</a> · 輸出</p>
 <h1>PLS：上升緣脈衝（只 ON 一個掃描）</h1>
 <p class="lead-text">條件從 OFF 變 ON 的那一個掃描，元件 ON；下一個掃描就 OFF。</p>
-<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>PLS 元件</td><td>Y、M</td></tr></tbody></table></div>
+<div class="table-box"><table class="gtable"><thead><tr><th>語法</th><th>可用元件</th></tr></thead><tbody><tr><td>PLS 元件</td><td>Y、M（特殊 M，例如 M8000 起，不能用；手冊 7.12 節）</td></tr></tbody></table></div>
 <p>按鈕按住時每個掃描都是 ON。要「按一次只做一次」（加 1、換一次模式），先用 PLS 變成單次脈衝。</p>
 <h2>範例</h2>
 <pre class="il">LD X000
@@ -44,7 +44,7 @@ INC D0</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d88743be75" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="d585aa05ca">
+<meta name="ll-version" content="d88743be75">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 動畫實驗室總覽 | LadderLab</title>
@@ -48,7 +48,8 @@
     { f: 'lab-timer.html', n: '計時器與計數器', ic: 'T/C', c: '#0e7490', d: '100 ms、1 ms、積算計時器；計數器只在上升緣加 1；停電保持。', t: ['一般計時器放開就歸零、積算型要 RST', '計數器 C0 停電歸零、C16 保留', '接點寫在線圈上面或下面差一圈'], l: '第 3 章' },
     { f: 'lab-data.html', n: '數值指令', ic: 'D', c: '#7c3aed', d: '位元、字、數字怎麼搬：K2Y、CMP、ZCP、BCD、移位。', t: ['K1X、K2Y 的位數組合', 'CMP、ZCP 輸出三個 M', 'BIN／BCD 與七段顯示、SFTL 跑馬燈'], l: '第 3 章' },
     { f: 'lab-stl.html', n: '步進 STL', ic: 'S', c: '#c2410c', d: '一步一步看狀態怎麼換：換步那一圈、並行合流、停電。', t: ['OUT 和 SET 離開步後的差別', '換步那一個掃描前後兩步同時 ON', '並行分支與合流、M8002 與停電保持'], l: '第 4 章' },
-    { soon: 1, f: 'lab-pneu.html', n: '氣壓缸與電磁閥', ic: 'A±', c: '#475569', d: '位移－時間圖動起來：單線圈、雙線圈、5/3 中封閥，急停時各怎麼停。', t: ['三種閥的動作與斷電行為', '動作順序自動畫成位移－時間圖', '感測器就是轉移條件'], l: '第 4 章、技能檢定' }
+    { f: 'lab-pneu.html', n: '氣壓缸與電磁閥', ic: 'A±', c: '#475569', d: '位移－時間圖動起來：單線圈、雙線圈、5/3 三種中位（中封、中位加壓、中位排氣），急停時各怎麼停。', t: ['三種閥的動作與斷電行為', '動作順序自動畫成位移－時間圖', '感測器就是轉移條件'], l: '第 4 章、技能檢定' }
+    { f: 'lab-trouble.html', n: '故障排除實戰', ic: '?!', c: '#be123c', d: '報修單上只有一句話：看燈、看監看、量電壓，用最少時間找出哪裡壞。', t: ['16 個情境：輸送帶、氣缸推料、自動門', '每查一項都要花時間，結算時和最少時間比較', '照先看燈、再監看、最後量的順序'], l: '第 6 章故障排除' },
   ];
   function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
   var hub = document.getElementById('hub'), order = document.getElementById('order'), n = 0;
@@ -68,7 +69,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d88743be75" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

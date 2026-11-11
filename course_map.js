@@ -554,6 +554,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "lab-pneu.html",
+     "href": "lab-pneu.html",
+     "label": "動畫實驗室：氣壓缸與電磁閥、位移－時間圖、感測器壞了"
+    },
+    {
+     "k": "G",
      "id": "lab-stl.html",
      "href": "lab-stl.html",
      "label": "動畫實驗室：步進一步一步看（換步那一圈、並行合流、停電）"
@@ -786,6 +792,18 @@ window.COURSE = {
      "id": "faults.html",
      "href": "faults.html",
      "label": "故障排除：診斷流程"
+    },
+    {
+     "k": "G",
+     "id": "lab-trouble.html",
+     "href": "lab-trouble.html",
+     "label": "故障排除實戰：看燈、看監看、量電壓，找出哪裡壞（16 題）"
+    },
+    {
+     "k": "G",
+     "id": "lab-trouble.html",
+     "href": "lab-trouble.html",
+     "label": "故障排除實戰：看燈、看監看、量電壓，找出哪裡壞（16 題）"
     },
     {
      "k": "F",
