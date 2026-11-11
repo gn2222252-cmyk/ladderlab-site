@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="37d1844806">
+<meta name="ll-version" content="d58ffa3912">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>4.4 步進的寫法規則｜PLC 互動課程</title>
@@ -25,7 +25,7 @@
 <p class="lesson-goal"><b>本課目標</b>照固定規則寫 STL，知道 OUT 與 SET 在步裡的差別。</p>
 <div class="text">步進有固定寫法，照底下的規則寫就不會出錯。這一課的程式有三步：Y0 同時寫在 S20 和 S21，Y2 用 SET，看看離開步之後有什麼不同。</div>
 <p><a class="btnlink go" href="../learn.html#6-2">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
-<div class="table-box"><table class="gtable"><thead><tr><th>規則</th><th>為什麼</th><th>寫錯會怎樣</th></tr></thead><tbody><tr><td>M8002 開機 SET S0～S9 的初始步</td><td>開機時沒有任何步作用</td><td>機器永遠不會動</td></tr><tr><td>S20 之類的一般步，由別的步 SET</td><td>流程才是一條清楚的線</td><td>步會亂跳，SFC 也轉不回來</td></tr><tr><td>步進區最後一定要 RET</td><td>告訴 PLC 回到一般階梯</td><td>程式錯誤，寫不進去</td></tr><tr><td>每一步：做什麼 → 等什麼 → 去哪裡</td><td>固定順序，一看就懂</td><td>邏輯難追，容易漏條件</td></tr><tr><td>同一線圈可寫在不同步</td><td>同時只有一步作用</td><td>平行分支同時作用的步不可共用</td></tr><tr><td>SET 的東西要自己 RST</td><td>離開步只會關 OUT</td><td>輸出一直留著</td></tr><tr><td>步裡不能用 MC／MCR</td><td>手冊規定步裡不能用主控（程式手冊 35.1 節的指令表）</td><td>轉換時報錯</td></tr><tr><td>轉移條件裡的 ANB、ORB、MPS</td><td>STL 梯形圖：一般步可以用，但分支、合流那一步的轉移條件不能用；SFC 圖：轉移條件一律不能用（手冊 35.1.7、35.2.5 節）</td><td>最保險：複雜條件先算到 M，再用 M 當條件</td></tr><tr><td>步裡的 LDP、LDF 要小心</td><td>步不作用時接點的變化抓不到，下次進這一步才被看到，可能一進步就跳走（35.1 節）</td><td>莫名其妙連跳兩步；要即時抓邊緣，在 RET 後面用 PLS 做成 M 再用</td></tr><tr><td>一個分支最多 8 條</td><td>並行或選擇分支最多 8 條，一個初始步底下的分支合計不超過 16 條（35.1.10 節）</td><td>GX Works2 轉換錯誤</td></tr></tbody></table></div>
+<div class="table-box"><table class="gtable"><thead><tr><th>規則</th><th>為什麼</th><th>寫錯會怎樣</th></tr></thead><tbody><tr><td>M8002 開機 SET S0～S9 的初始步</td><td>開機時沒有任何步作用</td><td>機器永遠不會動</td></tr><tr><td>S20 之類的一般步，由別的步 SET</td><td>流程才是一條清楚的線</td><td>步會亂跳，SFC 也轉不回來</td></tr><tr><td>步進區最後一定要 RET</td><td>告訴 PLC 回到一般階梯</td><td>程式錯誤，寫不進去</td></tr><tr><td>每一步：做什麼 → 等什麼 → 去哪裡</td><td>固定順序，一看就懂</td><td>邏輯難追，容易漏條件</td></tr><tr><td>同一線圈可寫在不同步</td><td>平常只有一步作用（換步那一個掃描前後兩步同時 ON）</td><td>平行分支同時作用的步不可共用</td></tr><tr><td>SET 的東西要自己 RST</td><td>離開步只會關 OUT</td><td>輸出一直留著</td></tr><tr><td>步裡不能用 MC／MCR</td><td>手冊規定步裡不能用主控（程式手冊 35.1 節的指令表）</td><td>轉換時報錯</td></tr><tr><td>轉移條件裡的 ANB、ORB、MPS</td><td>STL 梯形圖：一般步可以用，但分支、合流那一步的轉移條件不能用；SFC 圖：轉移條件一律不能用（手冊 35.1.7、35.2.5 節）</td><td>最保險：複雜條件先算到 M，再用 M 當條件</td></tr><tr><td>步裡的 LDP、LDF 要小心</td><td>步不作用時接點的變化抓不到，下次進這一步才被看到，可能一進步就跳走（35.1 節）</td><td>莫名其妙連跳兩步；要即時抓邊緣，在 RET 後面用 PLS 做成 M 再用</td></tr><tr><td>一個分支最多 8 條</td><td>並行或選擇分支最多 8 條，一個初始步底下的分支合計不超過 16 條（35.1.10 節）</td><td>GX Works2 轉換錯誤</td></tr></tbody></table></div>
 
 <h2>這一課的程式（指令表）</h2>
 <pre class="il">LD M8002
@@ -64,7 +64,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "37d1844806" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d58ffa3912" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="37d1844806">
+<meta name="ll-version" content="d58ffa3912">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>4.2 步進（STL）：同一件事，不打結｜PLC 互動課程</title>
@@ -24,7 +24,7 @@
 <h1>4.2 步進（STL）：同一件事，不打結</h1>
 <p class="lesson-goal"><b>本課目標</b>看懂 STL 步進：每一步只寫做什麼、等什麼、去哪裡。</p>
 <div class="text">這就是這台機台用的「步進階梯圖」。把機器想成流程圖：每個方塊是一步，一次只有一步作用（黃色）。
-怎麼看：S 是步。STL S20 的意思是「以下是 S20 這一步的內容」。第一步由 M8002 開機時 SET S0 進入。S0～S9 是流程開頭的初始步，一般步從 S20 開始，編號不用連續。
+怎麼看：S 是步。STL S20 的意思是「以下是 S20 這一步的內容」。第一步由 M8002 開機時 SET S0 進入。S0～S9 是流程開頭的初始步，一般步從 S20 開始，編號不用連續（S10～S19 留給 IST 指令的原點復歸用；FX3S 的一般步是 S20～S255）。
 每一步只寫三件事：做什麼 → 等什麼 → 去哪裡。
 為什麼不打結：① SET S 會自動關掉目前這一步，不用下一步回頭切斷；② 離開時這一步的 OUT 自動 OFF；③ 每一步只管自己，插一步只改一個跳轉。
 在 GX Works2 裡，STL 畫成左母線上的一個接點，下面的階梯都掛在它後面；三菱還有 SFC 流程圖畫法，右邊那張就是。</div>
@@ -65,7 +65,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "37d1844806" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d58ffa3912" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

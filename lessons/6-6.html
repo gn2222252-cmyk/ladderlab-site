@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="37d1844806">
+<meta name="ll-version" content="d58ffa3912">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>4.5 步進的陷阱：OUT 和 SET、共用計時器、往回跳｜PLC 互動課程</title>
@@ -25,7 +25,7 @@
 <p class="lesson-goal"><b>本課目標</b>避開步進的三個陷阱：OUT／SET 的差別、相鄰步共用計時器、往回跳的寫法。</p>
 <div class="text">步進大多很直覺，但有三條規則不知道就會寫出「偶爾怪怪的」程式（三菱程式手冊 JY997D16601 第 35 章）。
 ①離開步時，步裡 OUT 的輸出會自動 OFF，SET 的會保持，要 RST 才關。本課 S20 用 SET Y0 讓氣缸 A 伸出，離開 S20 仍然伸出，到 S22 才 RST；伸出中指示燈 Y4 用 OUT，一進 S21 就熄。
-②相鄰的兩步不能用同一個計時器（手冊 35.1.7 節 p.763）：轉移那一圈計時器線圈不會斷，現在值不歸零，下一步一進來可能已經數完，條件立刻成立。不相鄰可以共用：本課 S21 和 S23 都用 T0，中間隔著 S22。這個錯在本站模擬器裡也看得到：到 E12 讓相鄰兩步都寫 OUT T0，步序會卡住不換。實機出錯的樣子不一定一樣（常見的是一進下一步就立刻又換步），但不管哪一種都是錯的寫法。
+②相鄰的兩步不能用同一個計時器（手冊 35.1.7 節 p.764）：轉移那一圈計時器線圈不會斷，現在值不歸零，下一步一進來可能已經數完，條件立刻成立。不相鄰可以共用：本課 S21 和 S23 都用 T0，中間隔著 S22。這個錯在本站模擬器裡也看得到：到 E12 讓相鄰兩步都寫 OUT T0，步序會卡住不換。實機出錯的樣子不一定一樣（常見的是一進下一步就立刻又換步），但不管哪一種都是錯的寫法。
 ③往回跳、跳步用 OUT S，往下一步用 SET S（手冊 35.2.4 節 p.788）。GX Works2 把 SFC 的跳躍箭頭轉成指令表就是 OUT S。本站前面幾課用 SET S0 回待機，在 FX 上動作相同，但要和 GX Works2 的 SFC 一致就用 OUT S。</div>
 <p><a class="btnlink go" href="../learn.html#6-6">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
 <div class="table-box"><table class="gtable"><thead><tr><th>規則</th><th>對</th><th>錯</th></tr></thead><tbody><tr><td>要保持的輸出</td><td>SET Y0 … 到別步 RST Y0</td><td>以為 OUT Y0 離開步還會留著</td></tr><tr><td>計時器</td><td>相鄰步用不同的 T；不相鄰可以共用</td><td>S21、S22 都寫 OUT T0</td></tr><tr><td>往回跳</td><td>OUT S0（和 SFC 一致）</td><td>—（SET S0 在 FX 上也會動，但和 SFC 不一致）</td></tr><tr><td>STL 後第一個指令</td><td>LD、SET、OUT …</td><td>MPS（手冊規定不行）</td></tr></tbody></table></div>
@@ -71,7 +71,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "37d1844806" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d58ffa3912" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
