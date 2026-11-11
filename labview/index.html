@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="056a9b8f7f">
+<meta name="ll-version" content="3d8dfba6df">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -17,7 +17,7 @@
   <a href="fxlab.html" style="margin-left:10px;font-weight:700">FX 封包練習台（網頁版模擬 PLC）</a>
   <a href="instlab.html" style="margin-left:10px;font-weight:700">儀器接入練習台（八台模擬儀器）</a>
   <a href="labs.html" style="margin-left:10px;font-weight:700">動畫實驗室（29 個）</a>
-  <span class="fine">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
+  <span class="fine">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。「接入新儀器」I1～I14 教拿到沒看過的儀器怎麼接、怎麼規劃程式：網頁上有模擬儀器，也可以下載軟儀器用真的 LabVIEW 練。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
 </div>
 <button id="menuBtn" class="btn">☰ 課程目錄</button>
 <div id="app">
@@ -64,7 +64,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "056a9b8f7f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "3d8dfba6df" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
