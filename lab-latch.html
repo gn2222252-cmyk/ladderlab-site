@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="d585aa05ca">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>自保持與互鎖實驗室：停止優先、常閉停止鈕、正反轉 | LadderLab</title>
+<meta name="description" content="FX3S 自保持與互鎖的動畫實驗室：啟動放開仍保持；停止優先與啟動優先兩種寫法同時按兩顆鈕的差別，SET／RST 的先後；停止鈕現場接常閉時程式要用 AND；馬達正反轉的輸出互鎖、按鈕互鎖，沒有互鎖時兩個輸出同時 ON 的危險。">
+<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="labview/lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .ld { width: 100%; max-width: 680px; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  .ld .rail { stroke: var(--ink); stroke-width: 3; }
+  .ld .w { stroke: var(--mute); stroke-width: 2; fill: none; }
+  .ld .ct { stroke: var(--ink); stroke-width: 2; fill: none; }
+  .ld .ct.on { stroke: #16a34a; stroke-width: 3; }
+  .ld .ctf { fill: transparent; } .ld .ctf.on { fill: rgba(22, 163, 74, .22); }
+  .ld .coil.on { stroke: #16a34a; stroke-width: 3; }
+  .ld .coilf.on { fill: rgba(22, 163, 74, .22); }
+  .ld text { fill: var(--ink); font: 12px ui-monospace, Consolas, monospace; }
+  .ld .il { fill: var(--mute); font-size: 11px; }
+  .hold { user-select: none; touch-action: none; min-width: 96px; }
+  .hold.on { background: #1e6fff; color: #fff; border-color: #1e6fff; }
+  .tl { width: 100%; height: 150px; display: block; background: #0b0f14; border-radius: 8px; margin-top: 8px; }
+  .mach { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+  .motor { width: 64px; height: 64px; border-radius: 50%; border: 4px solid var(--line); display: grid; place-items: center; font: 700 22px system-ui; position: relative; }
+  .motor.f { border-color: #16a34a; } .motor.r { border-color: #1e6fff; }
+  .motor.f span { animation: spin 1s linear infinite; display: inline-block; }
+  .motor.r span { animation: spin 1s linear infinite reverse; display: inline-block; }
+  .motor.short { border-color: #dc2626; animation: shake .15s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shake { 50% { transform: translateX(3px); } }
+  .lamp { width: 22px; height: 22px; border-radius: 50%; background: #374151; display: inline-block; vertical-align: middle; }
+  .lamp.on { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+  .warnbox { border: 2px solid #dc2626; background: rgba(220, 38, 38, .12); color: #b91c1c; border-radius: 8px; padding: 6px 10px; font-weight: 700; }
+  .mx { border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+  .mx th, .mx td { border: 1px solid var(--line); padding: 4px 8px; text-align: center; }
+  .mx td.cur { outline: 3px solid var(--on); outline-offset: -3px; }
+  .mx td.ok { color: #15803d; } .mx td.bad { color: #b91c1c; }
+  .mxw { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="path.html">課程</a> · 自保持與互鎖實驗室</p>
+  <h1>自保持與互鎖實驗室</h1>
+  <p class="why">課程第 4 課的自保持、第 9 課的互鎖、A9 的常閉停止鈕，放在一起比。每 40 ms 掃描一次（示意），按住按鈕看梯形圖哪些接點導通、下面的時間軸記下每一圈。兩個按鈕「一起按」時，不同寫法的結果不一樣。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="hold" class="here">自保持：誰優先</button>
+    <button type="button" data-t="nc">停止鈕接常閉</button>
+    <button type="button" data-t="fr">正反轉互鎖</button>
+  </div>
+
+  <section class="lab-stage" id="t-hold">
+    <div class="row"><label>寫法 <select id="hsel"></select></label></div>
+    <svg class="ld" id="hld" role="img" aria-label="梯形圖"></svg>
+    <div class="row">
+      <button type="button" class="hold" id="hx0">按住 X0 啟動</button>
+      <button type="button" class="hold" id="hx1">按住 X1 停止</button>
+      <button type="button" class="hold" id="hboth">兩個一起按住</button>
+      <span class="mach"><span class="motor" id="hm"><span>⟳</span></span>馬達 Y0</span>
+    </div>
+    <canvas class="tl" id="htl"></canvas>
+    <p class="verdict-line" id="hsay"></p>
+    <div class="callout">自保持（第 4 課）：啟動鈕並聯 Y0 自己的接點，放開後電從自己的接點繞回來。同時按啟動和停止時：<b>停止優先</b>（停止串在最後，擋住整條）→ 停；<b>啟動優先</b>（啟動並聯在最外面，繞過停止）→ 轉。SET／RST 分兩行寫時，因為掃描由上往下，<b>寫在後面的那一行蓋掉前面的</b>：RST 在後就是停止優先。</div>
+  </section>
+
+  <section class="lab-stage" id="t-nc" hidden>
+    <p class="why">課程 A9：停止鈕現場接常閉時，平常 X1 是 ON，程式要用 <b>AND X1</b>（常開接點）；現場接常開時才用 ANI X1。選現場接法和程式寫法，看四種組合。</p>
+    <div class="row">
+      <label>停止鈕現場接 <select id="nfield"><option value="nc">常閉（平常 X1 ON）</option><option value="no">常開（平常 X1 OFF）</option></select></label>
+      <label>程式 <select id="nprog"><option value="and">LD X0 / OR Y0 / AND X1 / OUT Y0</option><option value="ani">LD X0 / OR Y0 / ANI X1 / OUT Y0</option></select></label>
+    </div>
+    <svg class="ld" id="nld" role="img" aria-label="梯形圖"></svg>
+    <div class="row">
+      <button type="button" class="hold" id="nx0">按住 X0 啟動</button>
+      <button type="button" class="hold" id="nx1">按住停止鈕</button>
+      <label class="check small"><input type="checkbox" id="ncut"> 停止鈕的線斷了</label>
+      <span class="mach">X1 輸入燈 <span class="lamp" id="nlamp"></span>　<span class="motor" id="nm"><span>⟳</span></span>馬達 Y0</span>
+    </div>
+    <div class="mxw"><table class="mx" id="nmx"></table></div>
+    <canvas class="tl" id="ntl"></canvas>
+    <p class="verdict-line" id="nsay"></p>
+  </section>
+
+  <section class="lab-stage" id="t-fr" hidden>
+    <div class="row"><label>寫法 <select id="fsel"><option value="0">沒有互鎖</option><option value="1" selected>輸出互鎖（ANI Y1／ANI Y0）</option><option value="2">輸出互鎖＋按鈕互鎖（再加 ANI X1／ANI X0）</option></select></label></div>
+    <svg class="ld" id="fld" role="img" aria-label="梯形圖"></svg>
+    <div class="row">
+      <button type="button" class="hold" id="fx0">按住 X0 正轉</button>
+      <button type="button" class="hold" id="fx1">按住 X1 反轉</button>
+      <button type="button" class="hold" id="fx2">按住 X2 停止</button>
+      <button type="button" class="hold" id="fboth">正反一起按住</button>
+    </div>
+    <div class="mach"><span class="motor" id="fm"><span>⟳</span></span><span>正轉 Y0 <span class="lamp" id="fy0"></span>　反轉 Y1 <span class="lamp" id="fy1"></span></span><span class="warnbox" id="fwarn" hidden>Y0、Y1 同時 ON：正轉、反轉接觸器同時吸合會短路！</span></div>
+    <canvas class="tl" id="ftl"></canvas>
+    <p class="verdict-line" id="fsay"></p>
+    <div class="callout">互鎖（第 9 課）：正轉的條件串上反轉的常閉接點（ANI Y1），反過來也一樣，兩個就不會同時 ON。互鎖要寫在輸出那裡，不管誰下命令都逃不掉。<b>實機上還要再加硬體互鎖</b>（正反轉接觸器互相串常閉輔助接點），程式不是唯一的保護（<a href="safety.html">急停、安全迴路與硬體互鎖</a>，那一頁也講了換向延遲）。只有輸出互鎖時，正轉中按反轉不會動，要先按停止；再加按鈕互鎖，按反轉會先切掉正轉、同一圈就換成反轉，本頁不示範延時。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="lquiz" style="margin-top:16px"></section>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="common.js?v=26e7d4e9ea"></script>
+<script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-latch.js?v=141cb0d270"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

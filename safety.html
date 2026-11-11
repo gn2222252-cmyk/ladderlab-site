@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b7adef8f2">
+<meta name="ll-version" content="d585aa05ca">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>急停、安全迴路與硬體互鎖：為什麼不能只靠 PLC 程式 | LadderLab</title>
@@ -83,7 +83,7 @@
 
     <section id="s4">
       <h2>4　正反轉接觸器：三層互鎖</h2>
-      <p>正轉 MC1、反轉 MC2 同時吸合，就是相間短路（兩相電源直接接在一起，會跳電甚至燒毀）。課程 <a href="learn.html#9">2.5 互鎖</a> 教了程式互鎖，但手冊要求在<b>外部</b>也要做互鎖，因為：</p>
+      <p>正轉 MC1、反轉 MC2 同時吸合，就是相間短路（兩相電源直接接在一起，會跳電甚至燒毀）。課程 <a href="learn.html#9">2.5 互鎖</a> 教了程式互鎖，但三菱 FX3S 手冊的設計注意事項要求 PLC <b>外部</b>也要有正反轉的互鎖電路（實務上用接觸器的常閉輔助接點做電氣互鎖，再加機械連鎖），因為：</p>
       <ul class="steps-list">
         <li>輸出元件故障卡在 ON，程式擋不住。</li>
         <li><b>接觸器主接點熔著</b>（大電流把接點燒黏在一起，線圈斷電也打不開）：線圈已經斷電，接點還黏著，程式完全不知道。</li>
@@ -160,7 +160,7 @@ OUT Y001      ; 反轉</pre>
       <ul class="steps-list">
         <li><b>氣壓殘壓</b>：電磁閥斷電後，管路和氣缸裡的空氣不會自己消失。一拆接頭，氣缸可能突然衝出去。氣源要有<b>殘壓排氣閥</b>（關斷氣源時把下游空氣排掉），拆修前關氣、排氣，再看壓力錶歸零。</li>
         <li><b>復氣時的衝擊</b>：下游排空後重新送氣，氣缸會被突然灌滿的空氣推得很猛，這就是檢定題說的「爆衝」。<b>緩啟動閥（soft-start）</b>讓壓力慢慢上升，到一定壓力才全開；廠商也說明它是運轉功能，不是安全功能。</li>
-        <li><b>單線圈閥（彈簧復歸）</b>斷電會回到彈簧那一側。設計時要問：氣缸回到哪一邊才安全？就把那一邊放在彈簧側。<b>雙線圈閥（5/2）</b>斷電保持最後的閥位，氣缸會走完這一行程；<b>三位置中封閥</b>斷電停在原位，但它會把壓縮空氣封在氣缸兩側：拆修前一定要先排氣；垂直負載或管路洩漏時氣缸還是會慢慢掉或飄移，要另外加止回閥或機械鎖。</li>
+        <li><b>單線圈閥（彈簧復歸）</b>斷電會回到彈簧那一側。設計時要問：氣缸回到哪一邊才安全？就把那一邊放在彈簧側。<b>雙線圈閥（5/2）</b>斷電保持最後的閥位，氣缸會走完這一行程；<b>5/3 中位封閉型（中封）閥</b>斷電停在原位，但它會把壓縮空氣封在氣缸兩側（5/3 還有中位加壓型：中位時兩側都有壓力，活塞桿可能因面積差慢慢動；中位排氣型：兩側排空，可以用手推）：拆修前一定要先排氣；垂直負載或管路洩漏時氣缸還是會慢慢掉或飄移，要另外加止回閥或機械鎖。</li>
         <li><b>夾爪和吸盤斷氣會掉料</b>：機電整合丙級規定急停時夾住、吸住的料件不可掉落，所以夾爪常用雙線圈閥（斷電保持夾緊）；氣壓乙級第 5、6 題要求真空蓄壓迴路，斷電後仍能吸住一段時間。</li>
         <li><b>停止類別</b>（IEC 60204-1 的分類，這裡只講意思）：類別 0＝直接切斷致動器的電源讓它自己停；類別 1＝先受控減速，停住之後才切電；類別 2＝受控停下、電源保持。急停一般用類別 0 或 1，用哪一類要依風險評估決定。</li>
       </ul>
@@ -193,7 +193,7 @@ OUT Y001      ; 反轉</pre>
 </div>
 <footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
 <script src="config.js?v=eca98dd0d9"></script>
-<script src="course_map.js?v=ef38b86ee5"></script>
+<script src="course_map.js?v=b43fdd3cdf"></script>
 <script src="course.js?v=764fe70243"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script>
@@ -205,7 +205,7 @@ OUT Y001      ; 反轉</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b7adef8f2" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

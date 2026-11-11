@@ -205,6 +205,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "lab-latch.html",
+     "href": "lab-latch.html",
+     "label": "動畫實驗室：自保持、停止優先、常閉停止鈕、正反轉互鎖"
+    },
+    {
+     "k": "G",
      "id": "review.html#ch2",
      "href": "review.html#ch2",
      "label": "第 2 章 章末小考"

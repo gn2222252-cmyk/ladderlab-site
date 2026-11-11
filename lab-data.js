@@ -205,7 +205,7 @@
   var SH = { p: null, gen: 0, timer: null, n: 0, prevY: '' };
   function shIL() { return 'LD X000\n' + $('sop').value + ' ' + $('ssrc').value + ' Y000 K8 K1\nLD X002\nZRST Y000 Y007'; }
   function shNew() { var old = SH.p; shStop(); SH.p = new PLC(shIL()); if (old) for (var i = 0; i < 8; i++) SH.p.y[i] = old.y[i]; SH.n = 0; shDraw(); }
-  function shStop() { SH.gen++; if (SH.timer) { clearInterval(SH.timer); SH.timer = null; } }
+  function shStop() { SH.gen++; if (SH.timer) { clearInterval(SH.timer); SH.timer = null; } var hb = $('shold'); if (hb) hb.disabled = false; }
   function shScan(x0, x2) {
     var p = SH.p;
     p.x[0] = x0 ? 1 : 0; p.x[1] = $('sx1').checked ? 1 : 0; p.x[2] = x2 ? 1 : 0; p.scan();
@@ -288,7 +288,7 @@
   function q(o) { var seen = {}; seen[o.ans] = 1; o.wrong = o.wrong.map(String).filter(function (w) { if (seen[w]) return false; seen[w] = 1; return true; }); return o; }
   function bin16(v, n) { var s = ''; for (var i = n - 1; i >= 0; i--) { s += (v >> i) & 1; if (i % 4 === 0 && i) s += ' '; } return s; }
   var KIND = [
-    function () { var s = p1([0, 4, 8]), d = p1([1, 2]), a = L.octName('X', s), b = L.octName('X', s + d * 4 - 1); return q({ q: '<code>K' + d + L.octName('X', s) + '</code> 包含哪些輸入？', ans: a + '～' + b, wrong: [a + '～' + L.octName('X', s + d * 4), 'X' + (s + 0) + '～X' + (s + d * 4 - 1), a + '～' + L.octName('X', s + d * 8 - 1), a + ' 一個點'], ex: 'K' + d + ' 是 ' + d * 4 + ' 個位元；X 的編號是八進位，沒有 8、9。' }); },
+    function () { var s = p1([0, 4, 8]), d = p1([1, 2]), a = L.octName('X', s), b = L.octName('X', s + d * 4 - 1); return q({ q: '<code>K' + d + L.octName('X', s) + '</code> 包含哪些輸入？', ans: a + '～' + b, wrong: [a + '～' + L.octName('X', s + d * 4), (s === 8 ? 'X8～X' + (8 + d * 4 - 1) + '（照十進位算）' : a + '～' + L.octName('X', s + d * 4 + 1)), a + '～' + L.octName('X', s + d * 8 - 1), a + ' 一個點'], ex: 'K' + d + ' 是 ' + d * 4 + ' 個位元；X 的編號是八進位，沒有 8、9。' }); },
     function () { var bits = [], v = 0; for (var i = 0; i < 8; i++) if (Math.random() < .4) { bits.push(L.octName('X', i)); v |= 1 << i; } if (!bits.length) { bits = ['X001']; v = 2; } return q({ q: '只有 ' + bits.join('、') + ' 是 ON，其他 OFF。<code>MOV K2X000 D0</code> 之後 D0 是？', ans: String(v), wrong: [v + 1, v * 2, bits.length, 255 - v, v >> 1], ex: '每個位元的權重：X0=1、X1=2、X2=4…X7=128，ON 的加起來：' + v + '。' }); },
     function () { var v = r(1, 255); return q({ q: '<code>MOV K' + v + ' K2Y000</code> 之後，Y7～Y0 是？', ans: bin16(v, 8), wrong: [bin16(255 - v, 8), bin16((v << 1) & 255, 8), bin16(v >> 1, 8), bin16(L.bcdOf(v % 100) & 255, 8)], ex: v + ' 的二進位，Y0 是最低位。' }); },
     function () { var t = r(1, 9), o = r(0, 9), v = t * 10 + o, raw = t * 16 + o; return q({ q: '兩位數指撥開關撥在 ' + v + '，接 X0～X7（BCD）。<code>MOV K2X000 D1</code> 讀到多少？', ans: String(raw), wrong: [v, L.binOf(raw), raw + 6, t + o], ex: 'MOV 把 X7～X0 的 ' + bin16(raw, 8) + ' 當二進位：' + raw + '。要用 BIN 才得到 ' + v + '。' }); },

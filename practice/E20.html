@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b7adef8f2">
+<meta name="ll-version" content="d585aa05ca">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E20 氣壓乙級 PLC 題：平衡迴路（08000-1090203）｜PLC 練習題（自動評分）</title>
@@ -25,7 +25,7 @@
 <div class="task">依 08000-1090203「PLC-氣壓控制－平衡迴路」的操作功能（只練 PLC 程式）。C 是負載缸：三個位置 c0、c1、c2，原點在 c2（上方）。
 動作順序：A+ → B+ → C- 到 c1 → A- → C- 到 c0 → A+ → B- → C+ 回 c2 → A-。
 ・燈號、手動步進、單一循環、連續循環（STOP 做完這一循環）、運轉中切換無效：同 E18。
-・急停：ST 無效；A、B 停在該步終點（雙線圈閥）；C 在第 3 步（往 c1、還沒到）要立即退回 c2，其他步驟就地停止（5 口 3 位置中封閥）。
+・急停：ST 無效；A、B 停在該步終點（雙線圈閥）；C 在第 3 步（往 c1、還沒到）要立即退回 c2，其他步驟就地停止（本站模擬用 5/3 中位封閉閥）。
 ・解除急停後，復歸模式按復歸鈕：黃燈 0.5 秒閃爍，C 回 c2 → B 回 b0 → A 回 a0；未復歸啟動無效。
 I/O：X0～X7 同 E18；a0 X10、a1 X11、b0 X12、b1 X13、c0 X14、c1 X15、c2 X16；A+ Y0、A- Y1、B+ Y2、B- Y3、C+（往 c2）Y4、C-（往 c0）Y5。</div>
 <div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>啟動 ST</td><td>按鈕</td></tr><tr><td>X001</td><td>停止 STOP</td><td>按鈕</td></tr><tr><td>X002</td><td>緊急停止 EMS（常閉）</td><td>開關</td></tr><tr><td>X003</td><td>復歸/運轉（ON＝運轉）</td><td>開關</td></tr><tr><td>X004</td><td>復歸按鈕</td><td>按鈕</td></tr><tr><td>X005</td><td>手動步進</td><td>開關</td></tr><tr><td>X006</td><td>單一循環</td><td>開關</td></tr><tr><td>X007</td><td>連續循環</td><td>開關</td></tr><tr><td>X010</td><td>a0</td><td>感測器</td></tr><tr><td>X011</td><td>a1</td><td>感測器</td></tr><tr><td>X012</td><td>b0</td><td>感測器</td></tr><tr><td>X013</td><td>b1</td><td>感測器</td></tr><tr><td>X014</td><td>c0</td><td>感測器</td></tr><tr><td>X015</td><td>c1</td><td>感測器</td></tr><tr><td>X016</td><td>c2</td><td>感測器</td></tr><tr><td>Y000</td><td>A+</td><td>輸出</td></tr><tr><td>Y001</td><td>A-</td><td>輸出</td></tr><tr><td>Y002</td><td>B+</td><td>輸出</td></tr><tr><td>Y003</td><td>B-</td><td>輸出</td></tr><tr><td>Y004</td><td>C+（往 c2）</td><td>輸出</td></tr><tr><td>Y005</td><td>C-（往 c0）</td><td>輸出</td></tr><tr><td>Y006</td><td>綠燈</td><td>輸出</td></tr><tr><td>Y007</td><td>紅燈</td><td>輸出</td></tr><tr><td>Y010</td><td>黃燈</td><td>輸出</td></tr></tbody></table></div>
@@ -41,7 +41,7 @@ I/O：X0～X7 同 E18；a0 X10、a1 X11、b0 X12、b1 X13、c0 X14、c1 X15、c2
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b7adef8f2" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

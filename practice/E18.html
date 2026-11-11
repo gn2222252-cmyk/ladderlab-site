@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6b7adef8f2">
+<meta name="ll-version" content="d585aa05ca">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E18 氣壓乙級 PLC 題：變速迴路（08000-1090201）｜PLC 練習題（自動評分）</title>
@@ -28,7 +28,7 @@
 ・變速：試題要求 A 缸第 6 時段前進較慢、第 7 時段較快（迴路裝配條件）。本站用 Y11「A 快速閥」代表快速：Y11 ON 時 A 缸速度加倍，所以第 7 時段要同時輸出 A+ 和 Y11，第 6 時段只輸出 A+。試題的 I/O 參考配置表只列 Y0～Y5，快速閥接哪一個輸出由你規劃，本站固定用 Y11。
 ・燈號：上電且在原點待機時綠燈亮；按 ST 後紅燈亮、綠燈滅；完成後停在起始步驟，紅燈滅、綠燈亮。上電時不在原點：試題沒有規定，本站的做法是還沒復歸時綠燈不亮，要先復歸。
 ・模式：復歸／運轉用二段式開關；手動步進／單一循環／連續循環用多段式開關。連續循環按 STOP 後做完這一循環才停。運轉中切換模式必須無效。三個模式輸入都 OFF 時：試題沒有規定，本站的做法是按 ST 不動作。
-・急停 EMS（常閉，按下為 OFF）：A 立即停在該位置（5 口 3 位置中封閥），B、C 停在該步驟終點（5/2 雙線圈閥斷電保持閥位，自己走完）；按 ST 無效；PLC 輸出端斷電。
+・急停 EMS（常閉，按下為 OFF）：A 立即停在該位置，B、C 停在該步驟終點；按 ST 無效；PLC 輸出端斷電（以上是試題原文的要求）。本站模擬 A 用 5/3 中位封閉閥、B、C 用 5/2 雙線圈閥（斷電保持閥位，自己走完）；考場依元件表，歷年公告列的是 5/3 中位加壓型，行為和中封不同。
 ・解除急停後：切到復歸模式按復歸鈕，黃燈 0.5 秒 ON／0.5 秒 OFF 閃爍，先 B、C 回原點，再 A 回原點；完成後才能在運轉模式啟動，未復歸按 ST 無效。所有氣壓缸不可爆衝。
 ・停電：恢復供電後要復歸（黃燈閃、先 B、C 再 A），未復歸按 ST 無效。
 I/O 照試題的 PLC I/O 參考配置表：X0 ST、X1 STOP、X2 EMS、X3 復歸／運轉、X4 復歸鈕、X5 手動步進、X6 單一循環、X7 連續循環；Y0～Y5 為 A+、A-、B+、B-、C+、C-。感測器（X10～）、燈號（Y6～Y10）、快速閥（Y11）是本站的練習配置。
@@ -46,7 +46,7 @@ I/O 照試題的 PLC I/O 參考配置表：X0 ST、X1 STOP、X2 EMS、X3 復歸�
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6b7adef8f2" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "d585aa05ca" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
