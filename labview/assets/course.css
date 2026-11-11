@@ -253,3 +253,28 @@ h3 .tag{background:#0a57a4} h3 .tag.b{background:#17803f} h3 .tag.q{background:#
 .lhead h2 { font-size: clamp(26px, 3vw, 36px); font-weight: 900; letter-spacing: -.01em; }
 h3 { font-weight: 800; border-left: 4px solid var(--accent); padding: 2px 0 2px 12px; margin-top: 44px; }
 @media (max-width: 900px) { .lhead h2 { font-size: 24px; } }
+
+/* 接入新儀器 */
+/* 問自己：課文停下來想一件事。左邊一條色線，不是另一張卡 */
+.think{border-left:4px solid var(--accent);padding:4px 0 4px 16px;margin:18px 0}
+.think .q{font-weight:800;font-size:17px;margin:0 0 4px}
+/* 六個步驟：真的有先後，所以用編號 */
+.sixsteps{list-style:none;counter-reset:st;padding:0;margin:14px 0;display:grid;gap:10px}
+.sixsteps li{counter-increment:st;position:relative;margin:0;padding:10px 14px 10px 58px;background:var(--paper);border:1px solid var(--line);border-radius:6px;max-width:none}
+.sixsteps li::before{content:counter(st);position:absolute;left:12px;top:10px;width:32px;height:32px;display:grid;place-items:center;background:var(--side);color:#f3f4f1;border-radius:3px;font-family:var(--tech);font-weight:700;font-size:18px}
+.sixsteps b{display:block;font-size:17px}
+.sixsteps .ans,.sixsteps .pass{display:block;font-size:15px}
+.sixsteps .ans{color:var(--accent);font-weight:700}
+.sixsteps .pass{color:var(--mute)}
+/* 判斷流程 */
+#content .dtree{background:var(--paper);color:var(--ink)}
+.dtree p{max-width:none}
+.dt-pick select{font:inherit;padding:5px 8px;max-width:100%;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.dt-card{border:1px dashed var(--line);border-radius:6px;padding:6px 12px;margin:10px 0;background:var(--bg)}
+.dt-path{margin:8px 0;padding-left:22px;color:var(--mute);font-size:15px}
+.dt-q{font-weight:800;font-size:17px;margin:12px 0 2px}
+.dt-hint{color:var(--mute);font-size:15px;margin:0 0 8px}
+.dt-msg{border-left:4px solid var(--warn);padding-left:12px;font-weight:700}
+.dt-res{border-left:6px solid var(--accent);padding:4px 0 4px 14px;margin:10px 0}
+.dt-res>b{font-size:20px}
+.dtree .btn{margin:3px 4px 3px 0;text-align:left}

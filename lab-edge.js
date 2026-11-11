@@ -101,6 +101,7 @@
     b.addEventListener('pointerdown', on); ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (t) { b.addEventListener(t, off); });
     b.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); set(true); b.classList.add('on'); } });
     b.addEventListener('keyup', function (e) { if (e.key === ' ' || e.key === 'Enter') off(); });
+    b.addEventListener('blur', off);
   }
 
   /* ================= ① 一圈一圈看 ================= */
@@ -269,7 +270,7 @@
     function () { var a = '按住期間一直切換，放開停在哪裡不一定'; return { q: '一個按鈕啟動／停止，寫成 <code>LD X0 / ANI Y0 / LD Y0 / ANI X0 / ORB / OUT Y0</code>（沒有上升緣），按一下會怎樣？', ans: a, wrong: dq(a, ['正常：按一下切換一次', 'Y0 永遠不會亮', 'Y0 亮了就停不下來', 'PLC 報錯']), ex: '沒有上升緣，按住的每一圈都在切換，結果等於看按了奇數圈還是偶數圈。' }; },
     function () { var a = 'Y、M、S'; return { q: 'ALT（ALTP）可以接哪些元件？', ans: a, wrong: dq(a, ['只有 Y', 'X、Y', 'D、T、C', 'Y、M']), ex: 'FX3 程式手冊：ALT 的對象是 Y、M、S。' }; },
     function () { var a = '用 ALTP，或 LDP X0 → ALT'; return { q: '想讓一個按鈕「按一下切換一次」，下面哪個寫法對？', ans: a, wrong: dq(a, ['LD X0 → ALT（連續型就可以）', 'LD X0 → OUT Y0', 'LDF X0 → OUT Y0', 'LD X0 → SET Y0']), ex: 'ALT 連續型在條件 ON 的每一圈都反轉；ALTP 或前面接上升緣，才是一按一切換（FX3 程式手冊 ALT）。' }; },
-    function () { var latch = Math.random() < .5, a = latch ? '不會動作' : '會 ON 一圈'; return { q: 'PLC 從 STOP 切到 RUN 時，X0 已經按著。程式 <code>LD X0 → PLS ' + (latch ? 'M600（停電保持）' : 'M0（一般 M）') + '</code>，第一圈這個 M 會？', ans: a, wrong: dq(a, ['會 ON 一圈', '不會動作', '一直 ON', 'PLC 報錯']), ex: 'FX3 程式手冊：條件在 STOP→RUN 時已經 ON，一般 M 的 PLS 第一圈會動作一次；停電保持的 M（如 M600）不會。' }; },
+    function () { var latch = Math.random() < .5, a = latch ? '不會動作' : '會 ON 一圈'; return { q: 'PLC 從 STOP 切到 RUN 時，X0 已經按著。程式 <code>LD X0 → PLS ' + (latch ? 'M400（停電保持）' : 'M0（一般 M）') + '</code>，第一圈這個 M 會？', ans: a, wrong: dq(a, ['會 ON 一圈', '不會動作', '一直 ON', 'PLC 報錯']), ex: 'FX3 程式手冊：條件在 STOP→RUN 時已經 ON，一般 M 的 PLS 第一圈會動作一次；停電保持的 M 不會（FX3S 的停電保持區是 M384～M511；手冊範例用的 M600 是 FX3U／FX3G 的編號）。' }; },
     function () { var a = '可以'; return { q: 'PLS、PLF 可以寫在步進 STL 和 RET 之間嗎？', ans: a, wrong: dq(a, ['不行，步進裡只能用 LDP', '不行，會讓步序卡住', '只能寫在 S0 裡', '只能用 PLS，不能用 PLF']), ex: 'FX3 程式手冊：PLS、PLF 可以用在 STL～RET 之間。' }; },
     function () { var a = '下降緣指令一律不執行'; return { q: 'PLC 在 RUN 中寫入程式（RUN 中寫入），寫入的那一刻條件已經 ON 或已經 OFF，邊緣指令會怎樣？', ans: a, wrong: dq(a, ['上升緣、下降緣都不執行', '上升緣、下降緣都會執行一次', '上升緣一律不執行', 'PLC 會自動停機']), ex: 'FX3 程式手冊：RUN 中寫入時，條件已經 ON 的上升緣指令會執行，下降緣指令一律不執行。' }; }
   ];
