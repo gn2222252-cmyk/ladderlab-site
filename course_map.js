@@ -24,6 +24,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "plclabs.html",
+     "href": "plclabs.html",
+     "label": "PLC 動畫實驗室總覽"
+    },
+    {
+     "k": "G",
      "id": "wiring.html",
      "href": "wiring.html",
      "label": "FX3S 實機與接線：每條線接在哪"

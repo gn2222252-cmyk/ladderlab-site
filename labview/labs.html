@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6addbb7f53">
+<meta name="ll-version" content="3c50c37c7a">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
@@ -35,6 +35,7 @@
   <div class="order" id="order"></div>
   <div class="hub" id="hub"></div>
   <p class="why" id="prog"></p>
+  <p class="why">PLC 那邊也有一組：<a href="../plclabs.html">PLC 動畫實驗室</a>（掃描週期、接線、計時器、步進…）。</p>
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關。</p></footer>
 <script>
@@ -87,7 +88,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6addbb7f53" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "3c50c37c7a" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
