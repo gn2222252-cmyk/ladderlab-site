@@ -1,10 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap");
 /* ===== 雙龍門 LabVIEW 課程：版面 ===== */
 :root{
-  --bg:#f4f5f7; --paper:#ffffff; --ink:#1d2330; --mute:#5c6577; --line:#d9dde5;
-  --accent:#1f6feb; --accent2:#0b8a5f; --warn:#c2410c; --bad:#b91c1c; --hl:#fff4c2;
-  --side:#1b2333; --side-ink:#c9d3e4; --side-hi:#ffffff;
+  --bg:#eceeeb; --paper:#ffffff; --ink:#18212a; --mute:#56606b; --line:#c9d0cf;
+  --accent:#0a57a4; --accent2:#1e9e55; --warn:#c2410c; --bad:#b91c1c; --hl:#fff4c2;
+  --side:#1c2228; --side-ink:#c9d3e4; --side-hi:#ffffff;
   --code:#eef1f6;
-  --font:"Microsoft JhengHei UI","Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  --font:"Noto Sans TC","Microsoft JhengHei UI","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;
+  --tech:"Barlow Semi Condensed","Noto Sans TC",system-ui,sans-serif;
   --mono:Consolas,"Cascadia Mono","Courier New",monospace;
 }
 *{box-sizing:border-box}
@@ -26,7 +28,7 @@ kbd{background:#fff;border:1px solid #b9c0cc;border-bottom-width:2px;border-radi
 #side a.ls{display:flex;gap:8px;align-items:flex-start;padding:6px 18px;color:var(--side-ink);text-decoration:none;font-size:14px;line-height:1.45;border-left:3px solid transparent}
 #side a.ls:hover{background:#243049;color:#fff}
 #side a.ls.on{background:#2a3958;color:#fff;border-left-color:#58a6ff}
-#side a.ls .no{flex:0 0 26px;font-family:var(--mono);color:#7f93b4}
+#side a.ls .no{flex:0 0 26px;font-family:var(--tech);font-weight:600;color:#7f93b4}
 #side a.ls .ck{margin-left:auto;color:#3fb950;visibility:hidden}
 #side a.ls.done .ck{visibility:visible}
 #main{overflow-y:auto;scroll-behavior:smooth}
@@ -159,3 +161,9 @@ li{margin:3px 0}
 .fmtres .sp,.t .sp{color:#c2410c}
 .q15 tr.hot th,.q15 tr.hot td{background:#fff6cc}.q15 td.pick{outline:3px solid #dc2626;outline-offset:-3px;font-weight:700}
 .q18 tr.hot th,.q18 tr.hot td{background:#fff6cc}.q18 td.pick{outline:3px solid #dc2626;outline-offset:-3px;font-weight:700}
+
+/* 控制盤設計系統（與 style.css 一致）：側欄像銘牌，進度條是通電綠，焦點是琥珀框 */
+#side h1{font-weight:900;letter-spacing:-.01em}
+#side .part{text-transform:none;letter-spacing:.02em;font-weight:700;color:#9aa8b8}
+:focus-visible{outline:3px solid #e8a200;outline-offset:2px;border-radius:4px}
+h1,h2,h3{letter-spacing:-.01em}

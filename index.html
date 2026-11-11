@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="a42d7f6093">
+<meta name="ll-version" content="11449f64a4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LadderLab 梯圖實驗室｜三菱 FX PLC 互動課程</title>
@@ -67,7 +67,7 @@
   <h2 class="sec-h">動畫實驗室：把看不見的東西放慢給你看</h2>
   <div class="lab-entry">
     <a class="plc" href="plclabs.html"><span class="big" id="nPlc">9</span><b>PLC 動畫實驗室</b><span>掃描週期、接線電流、計時器、步進、氣壓缸、故障排除…一個掃描一個掃描看。</span></a>
-    <a href="labview/labs.html"><span class="big" id="nLv">26</span><b>LabVIEW 動畫實驗室</b><span>資料流、迴圈、事件、佇列、VISA、檔案 I/O，CLAD 常考的觀念都能自己動手試。</span></a>
+    <a href="labview/labs.html"><span class="big" id="nLv">27</span><b>LabVIEW 動畫實驗室</b><span>資料流、迴圈、事件、佇列、VISA、檔案 I/O，CLAD 常考的觀念都能自己動手試。</span></a>
   </div>
 
   <h2 class="sec-h">先看一台真實設計的機台在跑</h2>
@@ -253,7 +253,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "a42d7f6093" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "11449f64a4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
