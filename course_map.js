@@ -1015,6 +1015,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-file.html",
+     "href": "labview/lab-file.html",
+     "label": "動畫實驗室：檔案 I/O、檔案指標、CSV"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-bool.html",
      "href": "labview/lab-bool.html",
      "label": "動畫實驗室：按鈕機械動作、邏輯閘、比較"

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="b386e3f950">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>檔案 I/O 實驗室：開檔方式、檔案指標、CSV 紀錄 | LadderLab</title>
+<meta name="description" content="LabVIEW 檔案 I/O 的動畫實驗室：Open/Create/Replace File 的六種 operation 遇到檔案存在或不存在會怎樣（錯誤 7、8、43）；檔案指標怎麼移動、為什麼要 Set File Position 到 end 才是往後加；每圈寫一筆 PLC 讀值成 CSV，換行、分隔符號、小數位數的常見錯誤。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .ostage { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 14px; align-items: center; margin: 14px 0; }
+  @media (max-width: 760px) { .ostage { grid-template-columns: minmax(0, 1fr); } .ostage .node { justify-self: center; } }
+  .ostage .node { width: auto; min-width: 96px; padding: 6px; white-space: pre-line; }
+  .fic { position: relative; width: 150px; min-height: 120px; border: 2px solid var(--mute); border-radius: 4px 22px 4px 4px; background: var(--card); padding: 22px 8px 8px; transition: opacity .4s, transform .4s, border-color .3s; margin: 0 auto; }
+  .fic::before { content: ""; position: absolute; top: -2px; right: -2px; width: 20px; height: 20px; background: linear-gradient(225deg, var(--bg) 50%, var(--line) 50%); border-radius: 0 20px 0 0; }
+  .fic .fn { position: absolute; top: 3px; left: 8px; font: 600 12px ui-monospace, Consolas, monospace; color: var(--mute); }
+  .fic pre { margin: 0; font: 12px/1.45 ui-monospace, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; transition: opacity .4s; }
+  .fic.none { opacity: .25; border-style: dashed; }
+  .fic.pop { animation: pop .5s; }
+  .fic.wipe pre { opacity: 0; }
+  .fic.bad { border-color: #dc2626; }
+  @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+  .res { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-height: 90px; }
+  .refw { display: inline-block; width: 40px; height: 3px; background: #2f6f4f; vertical-align: middle; transition: width .5s; }
+  .refw.dead { width: 0; }
+  .ew { display: inline-block; width: 40px; height: 5px; background: #b59a00; vertical-align: middle; }
+  .codebig { font: 700 22px ui-monospace, Consolas, monospace; }
+  .mx { border-collapse: collapse; width: 100%; font-size: 13px; margin: 10px 0; }
+  .mx th, .mx td { border: 1px solid var(--line); padding: 4px 6px; text-align: center; }
+  .mx td.cur { outline: 3px solid var(--on); outline-offset: -3px; }
+  .mx td.e { color: #dc2626; font-weight: 700; }
+  .mx td.k { color: #15803d; }
+  .mxw { overflow-x: auto; }
+  .dlg { border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); max-width: 340px; background: var(--card); overflow: hidden; margin: 8px 0; }
+  .dlg .dt { background: #2b4f8a; color: #fff; padding: 4px 10px; font-size: 13px; }
+  .dlg .db { padding: 10px; font-size: 14px; }
+  .grid { position: relative; display: flex; flex-wrap: wrap; gap: 3px; padding: 22px 6px 8px; border: 1px solid var(--line); border-radius: 8px; min-height: 60px; }
+  .ch { width: 26px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; font: 600 14px ui-monospace, Consolas, monospace; background: var(--bg); transition: background .3s; }
+  .ch.cc { font-size: 9px; color: var(--mute); }
+  .ch.eof { border-style: dashed; opacity: .5; font-size: 9px; }
+  .ch.over { background: rgba(220, 38, 38, .2); }
+  .ch.nw { background: rgba(22, 163, 74, .2); }
+  .ch small { position: absolute; }
+  .mk { position: absolute; top: 2px; width: 26px; text-align: center; color: #1e6fff; font-size: 16px; line-height: 1; transition: left .35s, top .35s; pointer-events: none; }
+  .mk::after { content: "▼"; }
+  .lanes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 640px) { .lanes { grid-template-columns: minmax(0, 1fr); } }
+  .lane { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .lane h4 { margin: 0 0 6px; }
+  .cnt { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+  .cnt b { font: 700 18px ui-monospace, Consolas, monospace; display: block; }
+  .tl { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 8px; min-height: 14px; }
+  .tl i { display: block; height: 12px; border-radius: 2px; }
+  .tl i.o { background: #dc2626; } .tl i.w { background: #16a34a; } .tl i.c { background: #9333ea; }
+  .key { font-size: 12px; color: var(--mute); }
+  .key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin: 0 3px 0 8px; }
+  .plc { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font: 13px ui-monospace, Consolas, monospace; }
+  .plc span { border: 2px solid var(--line); border-radius: 6px; padding: 3px 8px; }
+  .line { font: 13px ui-monospace, Consolas, monospace; border: 2px solid #d63fa0; border-radius: 6px; padding: 4px 8px; display: inline-block; min-height: 28px; overflow-wrap: anywhere; max-width: 100%; }
+  .ftxt { font: 13px/1.5 ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-height: 120px; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); }
+  .ws { color: #d97706; font-weight: 700; }
+  .xl { border-collapse: collapse; font: 12px ui-monospace, Consolas, monospace; }
+  .xl th { background: #e7eef8; color: #333; font-weight: 600; padding: 2px 6px; border: 1px solid #c6cfdb; }
+  .xl td { border: 1px solid #d6dbe3; padding: 2px 6px; white-space: nowrap; min-width: 46px; background: #fff; color: #111; }
+  .xl td.n { text-align: right; }
+  .xlw { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  .fly { padding: 0 4px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-file.html" class="here">檔案</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>檔案 I/O 實驗室</h1>
+  <p class="why">F1～F5 課學了「開檔 → 寫 → 關檔」。這裡用動畫看三件課文不容易想像的事：開檔方式遇到「有檔／沒檔」的結果、檔案裡那支看不見的寫入指標、還有 CSV 紀錄一行一行長出來的樣子。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="open" class="here">開檔方式</button>
+    <button type="button" data-t="mark">檔案指標</button>
+    <button type="button" data-t="csv">寫 CSV 紀錄</button>
+  </div>
+  <label class="check small"><input type="checkbox" id="slow"> 慢動作</label>
+
+  <section class="lab-stage" id="t-open">
+    <p class="why">要寫的檔案是 <code>D:\雙龍門\log.csv</code>。選 operation、決定檔案原本在不在，按「執行」。把 12 種組合都試過，下面的表就會填滿。</p>
+    <div class="row">
+      <label>operation <select id="oop"></select></label>
+      <label class="check small"><input type="checkbox" id="oex" checked> 檔案已經存在（裡面有舊資料）</label>
+      <label class="check small"><input type="checkbox" id="odlg"> file path 空白（use dialog）</label>
+    </div>
+    <div class="ostage">
+      <div><div class="fic" id="ofile"><span class="fn">log.csv</span><pre id="ofpre"></pre></div></div>
+      <div class="node" id="onode">Open/Create/
+Replace File</div>
+      <div class="res" id="ores"></div>
+    </div>
+    <div class="row"><button type="button" class="go" id="orun">▶ 執行</button><button type="button" id="oall">全部填滿</button><button type="button" id="oclr">清空表格</button></div>
+    <div id="odialog"></div>
+    <div class="mxw"><table class="mx" id="omx"></table></div>
+    <div class="callout">一句話記：名字裡有 <b>create</b> 的，沒檔就建；名字裡有 <b>replace</b> 的，有檔就清空；只有 <b>open</b> 的保留內容。單獨的 open、replace 遇到沒檔都是錯誤 7；單獨的 create 遇到有檔是錯誤 8。</div>
+  </section>
+
+  <section class="lab-stage" id="t-mark" hidden>
+    <p class="why">每個開著的檔案都有一個「寫入位置」（file mark，藍色 ▼）。開檔時它在最前面；Write to Text File 從 ▼ 開始寫，寫幾個字元它就往後移幾格，寫到的地方原本有字就<b>蓋掉</b>。一格是一個位元組，換行 \r\n 佔兩格（CR、LF）。</p>
+    <div class="row">
+      <label>開檔 operation <select id="mop"><option value="3">open or create</option><option value="4">replace or create</option></select></label>
+      <button type="button" id="mopen">Open</button>
+      <button type="button" id="mend">Set File Position（from = end）</button>
+      <button type="button" id="mstart">Set File Position（from = start）</button>
+    </div>
+    <div class="row">
+      <label>text <input id="mtext" value="102,25.2\r\n" style="width:150px;font:14px ui-monospace,Consolas,monospace"></label>
+      <button type="button" class="go" id="mwrite">Write to Text File</button>
+      <button type="button" id="mclose">Close File</button>
+      <button type="button" id="mreset">檔案還原成兩行</button>
+    </div>
+    <p class="why" id="mstate"></p>
+    <div class="grid" id="mgrid"></div>
+    <p class="verdict-line" id="msay"></p>
+    <div class="log" id="mlog" style="font:13px ui-monospace,Consolas,monospace;max-height:150px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px"></div>
+
+    <h3>每圈開關檔 vs 迴圈外開一次</h3>
+    <p class="why">同樣記 20 筆。左邊每圈都 Open → Write → Close；右邊迴圈外 Open 一次、迴圈內只 Write、迴圈外 Close。色條長度是<b>示意</b>：開、關檔比寫一行慢得多，實際差多少看電腦和硬碟。</p>
+    <div class="row"><button type="button" class="go" id="prun">▶ 兩種一起跑</button><span class="key"><i style="background:#dc2626"></i>Open<i style="background:#16a34a"></i>Write<i style="background:#9333ea"></i>Close</span></div>
+    <div class="lanes">
+      <div class="lane"><h4>每圈開、寫、關</h4><div class="cnt"><div>Open<b id="pa-o">0</b></div><div>Write<b id="pa-w">0</b></div><div>Close<b id="pa-c">0</b></div><div>花的時間（示意）<b id="pa-t">0</b></div></div><div class="tl" id="pa-tl"></div></div>
+      <div class="lane"><h4>迴圈外開、關一次</h4><div class="cnt"><div>Open<b id="pb-o">0</b></div><div>Write<b id="pb-w">0</b></div><div>Close<b id="pb-c">0</b></div><div>花的時間（示意）<b id="pb-t">0</b></div></div><div class="tl" id="pb-tl"></div></div>
+    </div>
+    <p class="verdict-line" id="psay"></p>
+  </section>
+
+  <section class="lab-stage" id="t-csv" hidden>
+    <p class="why">量測迴圈每圈從 PLC 讀兩個值：D0（右軸位置，脈波數）和 D1（溫度 ×10，例如 254 代表 25.4 °C），組成一行寫進 <code>log.csv</code>。改下面的設定，看檔案和 Excel 打開的樣子。</p>
+    <div class="row">
+      <label>組一行用 <select id="cway"><option value="fis">Format Into String</option><option value="a2s">Array To Spreadsheet String</option></select></label>
+      <label>分隔 <select id="cdel"><option value=",">逗號 ,</option><option value="\t">Tab</option><option value=";">分號 ;</option></select></label>
+      <label>溫度格式 <select id="cfmt"><option value="%.1f">%.1f</option><option value="%d">%d</option><option value="%.3f">%.3f</option></select></label>
+      <label>行尾 <select id="ceol"><option value="crlf">\r\n 寫在 format string 裡</option><option value="none">什麼都沒加</option><option value="lit">另外接一個字串常數 \r\n（常數沒切 '\' Codes）</option></select></label>
+      <label class="check small"><input type="checkbox" id="chead" checked> 迴圈前先寫標題列</label>
+    </div>
+    <p class="why" id="cfmtline"></p>
+    <div class="row"><button type="button" class="go" id="crun">▶ 記錄 6 圈</button><button type="button" id="cstep">只記 1 圈</button><button type="button" id="cnew">清空檔案</button></div>
+    <div class="plc" id="cplc"></div>
+    <div style="margin:8px 0"><span class="why">這一圈組出來的字串：</span><br><span class="line" id="cline"></span></div>
+    <div class="cols">
+      <div><div class="why">log.csv 的內容（<span class="ws">→</span> 是 Tab、<span class="ws">↵</span> 是 \r\n）</div><div class="ftxt" id="cfile"></div></div>
+      <div><div class="why">用 Excel 打開（台灣地區設定，清單分隔是逗號）</div><div class="xlw" id="cxl"></div></div>
+    </div>
+    <p class="verdict-line" id="csay"></p>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="fquiz" style="margin-top:16px"></section>
+  <div class="anim-layer" id="layer" aria-hidden="true"></div>
+</main>
+<footer><p>LabVIEW 為 NI 之商標；Excel 為 Microsoft 之商標。本站為獨立製作，與兩者無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-file.js?v=481e9730df"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "b386e3f950" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

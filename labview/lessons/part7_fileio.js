@@ -213,7 +213,7 @@ const appendFig={name:'F3_Append_Line.vi',view:'bd',bd:{w:820,h:280,nodes:[
 L.push({id:'F01',order:22,no:'F1',part:PART,title:'把 2D 陣列存成 CSV：Array To Spreadsheet String 與開、寫、關',mins:65,files:['F0_Random_2D.vi','F1_Save_Array.vi'],
 goals:[['學會','兩層 For Loop + Random Number 產生 3 × 4 的 2D 陣列；Array To Spreadsheet String 的 format string 和 delimiter；低階檔案函式「開檔 → 寫 → 關檔」三步驟；refnum 線和錯誤線怎麼串。'],
  ['做出','用亂數產生一個 3 列 × 4 行的陣列，存成 data.csv，用 Excel 打開是 3 列 4 欄。'],
- ['用在哪','量測數據、生產紀錄、參數表都是這樣存。這也是課堂上「File I/O」第一個範例。']],
+ ['用在哪','量測數據、生產紀錄、參數表都是這樣存。這也是課堂上「File I/O」第一個範例。'],['動畫練習','<a href="lab-file.html#csv">檔案 I/O 實驗室：寫 CSV</a>：改分隔符號、行尾、小數位數，看 Excel 打開是什麼樣子。']],
 check:'執行後選一個路徑存檔，用記事本打開看到 4 行、每行 3 個用逗號隔開的數字；改 format string 再存一次，數字的樣子跟著變。',
 body:[
 C.h3('懂','','這支程式在做什麼'),
@@ -411,7 +411,7 @@ C.h3('測','q','小測驗'),
    F4：紀錄檔一直往後加
    ====================================================================== */
 L.push({id:'F03',order:24,no:'F4',part:PART,title:'紀錄檔：一筆一筆往後加（Set File Position）',mins:45,files:['F3_Append_Line.vi'],
-goals:[['學會','open or create + Set File Position（end）接在檔案最後面；Format Date/Time String 做時間欄；\\r\\n 換行。'],['做出','每執行一次，log.csv 就多一行「時間,數值」。'],['用在專案','量測紀錄、異常紀錄、生產履歷，都是這個模式。']],
+goals:[['學會','open or create + Set File Position（end）接在檔案最後面；Format Date/Time String 做時間欄；\\r\\n 換行。'],['做出','每執行一次，log.csv 就多一行「時間,數值」。'],['用在專案','量測紀錄、異常紀錄、生產履歷，都是這個模式。'],['動畫練習','<a href="lab-file.html#mark">檔案 I/O 實驗室：檔案指標</a>：沒有 Set File Position 到 end 就從頭蓋掉；每圈開關檔和迴圈外開一次差多少次。']],
 check:'連續執行三次（數值 1.5、2.25、3），log.csv 有三行，最舊的在最上面。',
 body:[
 C.h3('懂','','為什麼要 Set File Position'),
@@ -446,7 +446,7 @@ C.h3('測','q','小測驗'),
    F5：高階 vs 低階、選盤導覽、錯誤碼
    ====================================================================== */
 L.push({id:'F04',order:25,no:'F5',part:PART,title:'File I/O 選盤導覽：高階、低階怎麼選，常見錯誤碼',mins:30,
-goals:[['學會','File I/O 選盤上每個圖示的用途；什麼時候用一行搞定的高階 VI、什麼時候用開寫關；看到錯誤 7、8、43 知道原因。'],['之後','異常紀錄（第 20 課）用的是高階的 Write Delimited Spreadsheet；量測迴圈用低階。']],
+goals:[['學會','File I/O 選盤上每個圖示的用途；什麼時候用一行搞定的高階 VI、什麼時候用開寫關；看到錯誤 7、8、43 知道原因。'],['之後','異常紀錄（第 20 課）用的是高階的 Write Delimited Spreadsheet；量測迴圈用低階。'],['動畫練習','<a href="lab-file.html">檔案 I/O 實驗室</a>：6 種 operation × 檔案在不在，哪些會清空、哪些出錯 7、8、43。']],
 check:'能說出 Write Delimited Spreadsheet.vi 和「開、寫、關」各適合什麼情況，以及檔案被 Excel 開著時寫入會出現哪個錯誤。',
 body:[
 C.h3('懂','','File I/O 選盤（Functions ▸ Programming ▸ File I/O）'),

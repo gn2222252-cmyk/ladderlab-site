@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="744ff020da">
+<meta name="ll-version" content="b386e3f950">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
-<meta name="description" content="LabVIEW 動畫實驗室總覽：迴圈、結構、陣列、字串、圖表、變數、DAQ、布林、數值九個互動實驗室，加上 FX 封包練習台。不用安裝 LabVIEW，在瀏覽器裡改輸入、看動畫、先預測再對答案。">
+<meta name="description" content="LabVIEW 動畫實驗室總覽：迴圈、結構、陣列、字串、叢集、圖表、變數、佇列、DAQ、VISA 序列通訊、檔案 I/O、布林、數值等互動實驗室，加上 FX 封包練習台。不用安裝 LabVIEW，在瀏覽器裡改輸入、看動畫、先預測再對答案。">
 <link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
 <link rel="stylesheet" href="lab.css?v=e8438eac1f">
 <style>
@@ -52,6 +52,7 @@
     { f: 'lab-queue.html', n: '佇列', ic: 'Q', c: '#0891b2', d: '迴圈之間傳資料：一筆都不能少用 Queue，只要最新用 Notifier。', t: ['生產者、佇列、消費者三欄動畫', 'Queue、Notifier、Local Variable 比一比', 'Producer/Consumer 怎麼關才不掉資料'], l: '第 16 課、C8、A2' },
     { f: 'lab-daq.html', n: 'DAQ', ic: 'AI', c: '#dc2626', d: '資料擷取的三個 R：取樣率、解析度、範圍。', t: ['取樣率不夠時的混疊', '解析度與範圍：最小可分辨電壓', 'DAQmx 流程與緩衝區溢位'], l: 'C12' },
     { f: 'lab-visa.html', n: 'VISA 序列通訊', ic: 'TX', c: '#475569', d: '位元組怎麼在線上走、VISA Read 什麼時候返回。', t: ['鮑率、資料位元、同位、停止位元的波形', 'Read 的三個返回條件：筆數、終止字元、逾時', 'Bytes at Port 的陷阱'], l: '第 12～14 課' },
+    { f: 'lab-file.html', n: '檔案 I/O', ic: 'CSV', c: '#15803d', d: '開檔方式選錯會清空或出錯；往後加要先移檔案指標。', t: ['6 種 operation × 檔案在不在：錯誤 7、8、43', '檔案指標：覆蓋還是往後加', '寫 CSV：分隔符號、換行、小數位數'], l: 'F1～F5、C6' },
     { f: 'fxlab.html', n: 'FX 封包練習台', ic: 'ENQ', c: '#334155', d: '對一台模擬的 FX PLC 送封包，看它怎麼回。', t: ['讀寫 D 暫存器、ACK／NAK', '10 個任務、封包解碼練習'], l: '第 9、12～14 課' }
   ];
   var seen = {}; try { seen = JSON.parse(localStorage.getItem('ll_lv_labs_seen') || '{}'); } catch (e) {}
@@ -74,7 +75,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "744ff020da" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "b386e3f950" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

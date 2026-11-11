@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="744ff020da">
+<meta name="ll-version" content="b386e3f950">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>佇列實驗室：Queue、Notifier、Producer/Consumer | LadderLab</title>
@@ -157,7 +157,7 @@
       </div>
     </div>
     <div class="log" id="dlog"></div>
-    <div class="callout">對的順序：生產者停下時，先把最後的資料 Enqueue，再 Enqueue 一個特殊的 <b>Exit</b> 訊息（例如資料型別用 cluster「命令＋數值」，命令填 Exit）。因為佇列先進先出，Exit 一定排在所有資料後面，消費者處理完前面每一筆才會看到它。<b>兩個迴圈都結束後</b>才 Release Queue（把佇列參考接到兩個迴圈外面，用資料流保證順序）。<br>另一種常見寫法是讓生產者直接 Release Queue：正在 Dequeue 等待的消費者會收到錯誤 <b>1122</b>，用這個錯誤停迴圈（停下後記得把 1122 清掉，不要當成真的錯誤跳視窗）。但佇列裡還沒拿走的資料就跟著佇列一起沒了，所以只有在「剩下的資料丟掉也沒關係」時才這樣做。</div>
+    <div class="callout">對的順序：生產者停下時，先把最後的資料 Enqueue，再 Enqueue 一個特殊的 <b>Exit</b> 訊息（例如資料型別用 cluster「命令＋數值」，命令填 Exit）。因為佇列先進先出，Exit 一定排在所有資料後面，消費者處理完前面每一筆才會看到它。<b>兩個迴圈都結束後</b>才 Release Queue（把佇列參考接到兩個迴圈外面，用資料流保證順序）。<br>另一種常見寫法是讓生產者直接 Release Queue：正在 Dequeue 等待的消費者會收到錯誤 <b>1122</b>，用這個錯誤停迴圈（停下後記得把 1122 清掉，不要當成真的錯誤跳視窗）。但佇列裡還沒拿走的資料就跟著佇列一起沒了，所以只有在「剩下的資料丟掉也沒關係」時才這樣做。<br>補充：Release Queue 有一個 <b>remaining elements</b> 輸出，會把還沒被拿走的元素交回來；沒接線就等於丟掉。正在 Dequeue 等待的消費者遇到 Release 會收到錯誤 1122；如果它是在 Release 之後才呼叫 Dequeue，拿到的是「參考無效」的錯誤，不是 1122。</div>
   </section>
 
   <section class="lab-stage lab-challenge" id="qquiz" style="margin-top:16px"></section>
@@ -171,7 +171,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "744ff020da" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "b386e3f950" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
