@@ -75,7 +75,7 @@ const Kit = (() => {
   const dAdd = (d, i) => d[0] + (parseInt(d.slice(1), 8) + i).toString(8).padStart(3, "0");
   const yAdd = (y, i) => "Y" + (parseInt(y.slice(1), 8) + i).toString(8).padStart(3, "0");
 
-  let W = {}, pressed = {}, sim = {}, el = null, opt = null, xs = [], ys = [], marks = {}, model = "FX3S", outs = {}, ins = {}, mute = false, audio = null;
+  let W = {}, pressed = {}, held = {}, sim = {}, el = null, opt = null, xs = [], ys = [], marks = {}, model = "FX3S", outs = {}, ins = {}, mute = false, audio = null;
   let parts = [], wires = {}, links = {}, nid = 1, msg = "", pick = null, ro = null;   // wires: terminal -> "partId.port"; links: "pid.out" -> "pid.in"
 
   /* ---------- bench model -> wiring map ---------- */
@@ -506,8 +506,11 @@ const Kit = (() => {
     el.querySelectorAll("[data-take]").forEach((b) => (b.onclick = () => { const s = stateOf(b.dataset.take); if (s.boxes.length) { const far = Math.max(...s.boxes.map((x) => x.p)); s.boxes = s.boxes.filter((x) => x.p !== far); } }));
     el.querySelectorAll(".k-pb").forEach((b) => {
       const x = b.dataset.x;
-      b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); press(x, true); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } });
-      const up = () => press(x, false);
+      const lock = () => !!(window.LL_LOCKHOLD && window.LL_LOCKHOLD());     // sim page option: a click latches the button
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation();
+        if (lock()) { held[x] = !held[x]; press(x, held[x]); return; }
+        press(x, true); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } });
+      const up = () => { if (!lock()) { held[x] = false; press(x, false); } };
       b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up);
     });
     el.querySelectorAll(".k-sw").forEach((b) => (b.onclick = () => { if (b.dataset.x && opt && opt.onToggle) opt.onToggle(b.dataset.x); }));

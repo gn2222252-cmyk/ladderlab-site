@@ -111,11 +111,16 @@ function convert() {
   save();
   setMode("monitor");
 }
+function lockHold() { const c = document.getElementById("lockhold"); return !!(c && c.checked); }
+window.LL_LOCKHOLD = lockHold;                        // the assembly bench (kit.js) asks the same question
 function wireInput(b) {
   const dev = b.dataset.dev, kind = b.dataset.kind;
   if (kind === "hold") {
-    const on = (e) => { e.preventDefault(); sb.set_input(dev, 1); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } };
-    const off = () => sb.set_input(dev, 0);
+    /* "lock" mode: a click latches the button, so two hold buttons can be down together with one mouse */
+    const on = (e) => { e.preventDefault();
+      if (lockHold()) { b._held = !b._held; sb.set_input(dev, b._held ? 1 : 0); return; }
+      sb.set_input(dev, 1); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } };
+    const off = () => { if (!lockHold()) { b._held = false; sb.set_input(dev, 0); } };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off);
   } else if (kind === "toggle" || kind === "switch") b.addEventListener("click", () => sb.toggle(dev));
 }
@@ -139,8 +144,10 @@ function freeIO() {
     const dev = b.dataset.dev, k = b.dataset.kind;
     if (k === "switch") b.addEventListener("click", () => sb.toggle(dev));
     if (k === "hold") {
-      b.addEventListener("pointerdown", (e) => { e.preventDefault(); Kit.press(dev, true); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } });
-      const up = () => Kit.press(dev, false);
+      b.addEventListener("pointerdown", (e) => { e.preventDefault();
+        if (lockHold()) { b._held = !b._held; Kit.press(dev, b._held); return; }
+        Kit.press(dev, true); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } });
+      const up = () => { if (!lockHold()) { b._held = false; Kit.press(dev, false); } };
       b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up);
     }
   });

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="5191594577">
+<meta name="ll-version" content="0b94e8dfb2">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 模擬器：畫梯形圖、SFC，接上機構跑 | LadderLab</title>
@@ -52,7 +52,8 @@
           <details class="plc-help"><summary>X、Y 不夠用怎麼辦</summary><p class="hint">X、Y 不夠用：FX3S（Ver.1.10 以上）和 FX3G（Ver.2.20 以上）可以加裝一片 I/O 擴充板（4 點輸入或 2 點輸出擇一；FX3G 要插 BD2），FX3U 不能裝，FX3G、FX3U 可以接 FX2N 擴充模組，或直接換點數多的機型。擴充模組的編號接在主機後面，從下一個 8 的倍數開始。擴充板沒有 X、Y 編號：FX3G-4EX-BD 的輸入 BX0～BX3 在程式裡讀 M8112～M8115，FX3G-2EYT-BD 的輸出 BY0、BY1 用 M8116、M8117 驅動（FX3S 硬體手冊的特殊元件表）。面板圖是 FX3S-20M 的樣子，燈只有 X0～X13、Y0～Y7；其他端子看下面的輸入、輸出和組裝台。</p></details></div>
         <details><summary>PLC 內的程式</summary><pre id="plcprog" class="plc-prog"></pre></details></div>
       <div class="box" id="plant-box"><h3>機構</h3><canvas id="plant" width="260" height="190"></canvas><div id="pfaults"></div></div>
-      <div class="box"><h3>輸入 X（點一下切換）</h3><div id="inputs" class="inputs"></div></div>
+      <div class="box"><h3>輸入 X（點一下切換）</h3><div id="inputs" class="inputs"></div>
+        <label class="check small"><input id="lockhold" type="checkbox"> 按鈕按一下就保持按住（再按一下放開）：要同時按住兩顆時用</label></div>
       <div class="box"><h3>輸出 Y</h3><ul id="outputs" class="lamps"></ul></div>
       <div class="box"><h3>元件監看</h3><table class="watch"><tbody id="watch"></tbody></table><p id="steps" class="hint"></p><p id="words" class="hint"></p></div>
     </aside>
@@ -92,14 +93,14 @@
 <script src="ledit.js?v=d905dd003e"></script>
 <script src="sfcedit.js?v=f118eb3bcb"></script>
 <script src="fx3s.js?v=e994784638"></script>
-<script src="kit.js?v=5f820d8fda"></script>
-<script src="sim.js?v=0c6e0286c7"></script>
+<script src="kit.js?v=d854cc3e58"></script>
+<script src="sim.js?v=ff20d1e6e8"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "5191594577" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "0b94e8dfb2" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
