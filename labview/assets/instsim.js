@@ -319,6 +319,114 @@
     };
   }
 
+  /* 7) Tektronix TBS2000B 示波器（網路 socket）：命令是 SCPI 文字，CURVe? 回的是一大塊波形（#<x><yyy><data><LF>）。
+     依 TBS2000B Series Programmer Manual 077-1149-03：出廠 HEADER 1、DATA:ENCDG RIBINARY、SOURCE CH1、START 1、STOP 2500、WIDTH 1；
+     每格 25 個數位化格子（100 mV/div 時 YMULT 4.0E-3）；WIDTH 2 時資料乘 256、低位元組是 0；值 = (資料 − YOFF) × YMULT + YZERO；
+     SOURCE 沒有顯示時 CURVe? 什麼都不回（事件 2244、420）；STOP 不會跟著記錄長度改；水平 15 格。 */
+  function eng(v) { if (!v) return '0.0E+0'; var e = Math.floor(Math.log10(Math.abs(v)) / 3) * 3, m = v / Math.pow(10, e); if (Math.abs(m) >= 999.99995) { e += 3; m /= 1000; } return m.toFixed(4) + 'E' + (e < 0 ? '-' : '+') + Math.abs(e); }
+  function makeScope(ctx) {
+    var CHS = ['CH1', 'CH2', 'CH3', 'CH4'], RECS = [1000, 2000, 20000], st, ld;
+    function reset() {
+      st = { header: 1, src: 'CH1', enc: 'RIBINARY', width: 1, start: 1, stop: 2500, rec: 2000, hdiv: 100e-6, vdiv: { CH1: 1, CH2: 1, CH3: 1, CH4: 1 }, pos: { CH1: 0, CH2: 0, CH3: 0, CH4: 0 },
+        on: { CH1: true, CH2: false, CH3: false, CH4: false }, seq: false, running: true, doneAt: 0, opcWait: false, signal: true, wave: null, events: [], acqs: 0 };
+    }
+    reset();
+    function xincr() { return st.hdiv * 15 / st.rec; }
+    function xzero() { return -st.hdiv * 15 / 2; }
+    function volts(ch, t) { return ch === 'CH1' ? (st.signal ? 2 * Math.sin(2 * Math.PI * 1000 * t) : 0) : ch === 'CH2' ? 0.5 * (Math.sin(2 * Math.PI * 1000 * t) > 0 ? 1 : -1) : 0; }
+    function acquire() {      // 一次擷取：每一點是 8 位元的格子（−128～127）
+      var ch = st.src, w = [], i, lv, x0 = xzero(), dx = xincr(), per = st.vdiv[ch] / 25, jit = (ctx.rng() - 0.5) * 2e-6;
+      for (i = 0; i < st.rec; i++) { lv = Math.round((volts(ch, x0 + i * dx + jit) / per) + st.pos[ch] * 25 + gauss(ctx.rng) * 0.6); w.push(Math.max(-128, Math.min(127, lv))); }
+      st.acqs++; return w;
+    }
+    function current() { if (!st.wave || (st.running && !st.seq)) st.wave = acquire(); return st.wave; }      // 連續擷取：每次都是新的一筆；單次：最後那一筆
+    function range() { var a = Math.min(st.start, st.stop), b = Math.max(st.start, st.stop); if (a > st.rec) return [st.rec, st.rec]; return [a, Math.min(b, st.rec)]; }
+    function nrPt() { var r = range(); return r[1] - r[0] + 1; }
+    function ev(code, text) { if (st.events.length < 20) st.events.push(code + ',"' + text + '; "'); }
+    function binFmt() { return /^S?RP/.test(st.enc) ? 'RP' : 'RI'; }
+    function pre(f) { return st.width === 2 ? f * 256 : f; }
+    function wfid() { var ch = st.src; return '"Ch' + ch.slice(2) + ', DC coupling, ' + (st.vdiv[ch] >= 1 ? st.vdiv[ch].toFixed(3) + 'V' : (st.vdiv[ch] * 1000).toFixed(1) + 'mV') + '/div, ' + (st.hdiv * 1e6).toFixed(1) + 'us/div, ' + st.rec + ' points, Sample mode"'; }
+    function preamble() {
+      var ch = st.src, f = [['BYT_NR', st.width], ['BIT_NR', st.width * 8], ['ENCDG', st.enc === 'ASCII' ? 'ASC' : 'BIN'], ['BN_FMT', binFmt()], ['BYT_OR', /^S/.test(st.enc) ? 'LSB' : 'MSB']];
+      if (st.on[ch]) f = f.concat([['WFID', wfid()], ['NR_PT', nrPt()], ['PT_FMT', 'Y'], ['XUNIT', '"s"'], ['XINCR', eng(xincr())], ['XZERO', eng(xzero())], ['PT_OFF', 0], ['YUNIT', '"V"'],
+        ['YMULT', eng(st.vdiv[ch] / 25 / (st.width === 2 ? 256 : 1))], ['YOFF', eng(pre(st.pos[ch] * 25))], ['YZERO', eng(0)]]);
+      return st.header ? ':WFMOUTPRE:' + f.map(function (x) { return x[0] + ' ' + x[1]; }).join(';') : f.map(function (x) { return x[1]; }).join(';');
+    }
+    function curve() {
+      var r = range(), w = current().slice(r[0] - 1, r[1]), data = [], hd, n;
+      if (st.enc === 'ASCII') return toBytes((st.header ? ':CURVE ' : '') + w.map(pre).join(',') + '\n');
+      w.forEach(function (v) {
+        var u = binFmt() === 'RP' ? v + 128 : v & 255;
+        if (st.width === 1) data.push(u); else if (/^S/.test(st.enc)) data.push(0, u); else data.push(u, 0);
+      });
+      n = String(data.length); hd = (st.header ? ':CURVE ' : '') + '#' + n.length + n;
+      return toBytes(hd).concat(data, [10]);
+    }
+    function exec(line) {
+      var s = line.trim(), sp, hdr, arg, q, m, ch, v, H = st.header;
+      function say(x, d) { ctx.send(typeof x === 'string' ? x + '\n' : x, d || 3); }
+      function ans(name, val) { return say((H ? ':' + name + ' ' : '') + val); }
+      function is(p) { return scpiIs(p, hdr); }
+      if (!s) return;
+      sp = s.search(/\s/); hdr = (sp < 0 ? s : s.slice(0, sp)).toUpperCase().replace(/^:/, ''); arg = (sp < 0 ? '' : s.slice(sp + 1).trim()).toUpperCase();
+      q = /\?$/.test(hdr); if (q) hdr = hdr.slice(0, -1);
+      if (hdr === '*IDN' && q) return say('TEKTRONIX,TBS2104B,C012345,CF:91.1CT FV:v1.26.17 TBS2XXXV:v1.26');
+      if (hdr === '*RST' || is('FACtory')) { reset(); return; }
+      if (hdr === '*CLS') { st.events = []; return; }
+      if (hdr === '*OPC' && q) { if (st.running && st.seq && st.doneAt === Infinity) { st.opcWait = true; return; } return say('1', st.running && st.seq ? Math.max(3, st.doneAt - ctx.now()) : 3); }
+      if (is('HEADer')) { if (q) return say(String(st.header)); st.header = /^(ON|1)$/.test(arg) ? 1 : 0; return; }
+      if (is('VERBose')) return;
+      if (is('ALLEv') && q) { v = st.events.length ? st.events.join(',') : '0,"No events to report - queue empty; "'; st.events = []; return ans('ALLEV', v); }
+      if (is('DATa')) { if (q) return say(H ? ':DATA:DESTINATION REF1;ENCDG ' + st.enc + ';SOURCE ' + st.src + ';START ' + st.start + ';STOP ' + st.stop + ';WIDTH ' + st.width : 'REF1;' + st.enc + ';' + st.src + ';' + st.start + ';' + st.stop + ';' + st.width); if (arg === 'INIT') { v = st.rec; reset2(); st.stop = v; } return; }
+      if (is('DATa:SOUrce')) { if (q) return ans('DATA:SOURCE', st.src); if (CHS.indexOf(arg) >= 0) st.src = arg, st.wave = null; else ev(113, 'Undefined header'); return; }
+      if (is('DATa:ENCdg')) { if (q) return ans('DATA:ENCDG', st.enc); m = { ASCI: 'ASCII', ASCII: 'ASCII', RIB: 'RIBINARY', RIBINARY: 'RIBINARY', RPB: 'RPBINARY', RPBINARY: 'RPBINARY', SRI: 'SRIBINARY', SRIBINARY: 'SRIBINARY', SRP: 'SRPBINARY', SRPBINARY: 'SRPBINARY' }[arg]; if (m) st.enc = m; else ev(113, 'Undefined header'); return; }
+      if (is('DATa:WIDth') || is('WFMOutpre:BYT_Nr')) { if (q) return ans(is('DATa:WIDth') ? 'DATA:WIDTH' : 'WFMOUTPRE:BYT_NR', st.width); if (arg === '1' || arg === '2') st.width = +arg; return; }
+      if (is('DATa:STARt') || is('DATa:STOP')) { m = is('DATa:STARt') ? 'start' : 'stop'; if (q) return ans('DATA:' + m.toUpperCase(), st[m]); v = parseInt(arg, 10); if (v >= 1) st[m] = v; return; }
+      if (is('WFMOutpre') && q) return say(preamble());      // 沒有顯示的通道只回前五欄（說明書）
+      if ((m = /^WFMO(?:UTPRE|UTPR)?:(NR_PT|XINCR|XINC|XZERO|XZE|YMULT|YMU|YOFF|YOF|YZERO|YZE|PT_OFF|PT_O|WFID|WFI|ENCDG|ENC|BN_FMT|BN_F)$/.exec(hdr))) {
+        v = m[1].slice(0, 3);
+        if (!q) { if (v === 'ENC') st.enc = /^BIN/.test(arg) ? (st.enc === 'ASCII' ? 'RIBINARY' : st.enc) : /^ASC/.test(arg) ? 'ASCII' : st.enc; if (v === 'BN_') st.enc = (/^S/.test(st.enc) ? 'S' : '') + (arg === 'RP' ? 'RPBINARY' : 'RIBINARY'); return; }
+        if (v === 'ENC') return ans('WFMOUTPRE:ENCDG', st.enc === 'ASCII' ? 'ASCII' : 'BINARY');
+        if (v === 'BN_') return ans('WFMOUTPRE:BN_FMT', binFmt());
+        if (!st.on[st.src]) { ev(2244, 'Waveform requested is not activated'); return; }      // 說明書：沒有顯示時這些查詢會逾時
+        ch = st.src;
+        return ans('WFMOUTPRE:' + { NR_: 'NR_PT', XIN: 'XINCR', XZE: 'XZERO', YMU: 'YMULT', YOF: 'YOFF', YZE: 'YZERO', PT_: 'PT_OFF', WFI: 'WFID' }[v],
+          { NR_: nrPt(), XIN: eng(xincr()), XZE: eng(xzero()), YMU: eng(st.vdiv[ch] / 25 / (st.width === 2 ? 256 : 1)), YOF: eng(pre(st.pos[ch] * 25)), YZE: eng(0), PT_: 0, WFI: wfid() }[v]);
+      }
+      if (is('CURVe') && q) { if (!st.on[st.src]) { ev(2244, 'Waveform requested is not activated'); ev(420, 'Query UNTERMINATED'); return; } v = curve(); return say(v, 5 + Math.round(v.length / 2000)); }
+      if (is('HORizontal:RECOrdlength')) { if (q) return ans('HORIZONTAL:RECORDLENGTH', st.rec); v = parseInt(arg, 10); if (RECS.indexOf(v) >= 0) { st.rec = v; st.wave = null; } else ev(222, 'Data out of range'); return; }
+      if (is('HORizontal:SCAle') || is('HORizontal:MAIn:SCAle')) { if (q) return ans('HORIZONTAL:MAIN:SCALE', eng(st.hdiv)); v = parseFloat(arg); if (v > 0) { st.hdiv = v; st.wave = null; } return; }
+      if ((m = /^(CH[1-4]):(SCA|SCALE|VOL|VOLTS|POS|POSITION)$/.exec(hdr))) {
+        ch = m[1]; v = /^POS/.test(m[2]) ? 'pos' : 'vdiv';
+        if (q) return ans(ch + (v === 'pos' ? ':POSITION' : ':SCALE'), eng(st[v][ch]));
+        arg = parseFloat(arg); if (isFinite(arg) && (v === 'pos' ? Math.abs(arg) <= 5 : arg > 0)) { st[v][ch] = arg; st.wave = null; } return;
+      }
+      if ((m = /^SEL(?:ECT)?:(CH[1-4])$/.exec(hdr))) { if (q) return ans('SELECT:' + m[1], st.on[m[1]] ? 1 : 0); st.on[m[1]] = /^(ON|1)$/.test(arg); return; }
+      if (is('ACQuire:STOPAfter')) { if (q) return ans('ACQUIRE:STOPAFTER', st.seq ? 'SEQUENCE' : 'RUNSTOP'); st.seq = /^SEQ/.test(arg); return; }
+      if (is('ACQuire:STATE')) {
+        if (q) return ans('ACQUIRE:STATE', st.running ? 1 : 0);
+        if (/^(ON|RUN)$/.test(arg) || (+arg && isFinite(+arg))) { st.running = true; st.wave = null; if (st.seq) st.doneAt = st.signal ? ctx.now() + 40 + st.hdiv * 15 * 1000 : Infinity; }
+        else st.running = false;
+        return;
+      }
+      ev(113, 'Undefined header');
+    }
+    function reset2() { var keep = { header: st.header, rec: st.rec, vdiv: st.vdiv, pos: st.pos, on: st.on, hdiv: st.hdiv, seq: st.seq, running: st.running, doneAt: st.doneAt, signal: st.signal, wave: st.wave, events: st.events }; reset(); for (var k in keep) st[k] = keep[k]; }
+    ld = lineDev('lf', function (l) { l.split(';').forEach(exec); }, ctx.now);
+    return {
+      onBytes: function (b) { ld.onBytes(b); },
+      step: function (t) { if (st.running && st.seq && t >= st.doneAt) { st.wave = acquire(); st.running = false; } },
+      garbage: ld.garbage,
+      inst: {
+        probe: function (on) {      // 訊號接上／拔掉：拔掉時單次擷取等不到觸發
+          st.signal = !!on;
+          if (on && st.running && st.seq && st.doneAt === Infinity) { st.doneAt = ctx.now() + 40 + st.hdiv * 15 * 1000; if (st.opcWait) { st.opcWait = false; ctx.send('1\n', st.doneAt - ctx.now()); } }
+        },
+        state: function () { return st; }
+      }
+    };
+  }
+
   /* 這一張表是所有儀器資料的唯一來源。
      checked：查證員對過說明書的項目；unverified：說明書沒寫或查不到、這裡用模擬值的項目（頁面會標出來）。 */
   var NOTE_SIM = '說明書沒寫回覆長什麼樣子：下面看到的是模擬的回覆，實機請自己收一筆原始資料來看。';
@@ -383,7 +491,17 @@
       card: { how: '沒有命令、沒有回覆。感測器給的是電壓，DAQ 卡把電壓變成數字。',
         cmds: [['ai0', '壓力傳送器 1～5 V ＝ 0～10 bar'], ['ai1', '4～20 mA 經 250 Ω ＝ 1～5 V（常見做法）'], ['ai2', '電位計 0～5 V'], ['取樣', '通道、幾點、每秒幾點（差動、±10 V、14 位元）']],
         notes: ['讀回來的是一串電壓（陣列），不是字串。', '同一個電壓每次讀都差一點點：雜訊和量化。', '電壓要自己依感測器的規格換算成壓力、電流。'] },
-      actions: [['壓力調到 2.0 bar', function (i) { i.set('pressure', 2); }], ['壓力調到 7.5 bar', function (i) { i.set('pressure', 7.5); }], ['電流調到 4 mA', function (i) { i.set('current', 4); }], ['電流調到 20 mA', function (i) { i.set('current', 20); }]] }
+      actions: [['壓力調到 2.0 bar', function (i) { i.set('pressure', 2); }], ['壓力調到 7.5 bar', function (i) { i.set('pressure', 7.5); }], ['電流調到 4 mA', function (i) { i.set('current', 4); }], ['電流調到 20 mA', function (i) { i.set('current', 20); }]] },
+    { id: 'tbs', name: 'TBS2000B 示波器', brand: 'Tektronix 太克', kind: 'tcp', iface: '網路線（socket server，預設埠 4000）；也有 USB（USBTMC）', host: '192.168.1.70', port: 4000, rxMax: 262144, showHead: true,
+      defaults: { term: '\n' }, replyTerm: '\n', manual: { title: 'TBS2000B Series Programmer Manual（077-1149-03）', url: 'https://www.tek.com' }, verified: false, make: makeScope,
+      checked: ['socket server 要先在面板打開（Utility ▸ Config ▸ Socket Server），預設埠 4000；協定選 None 或 Terminal', '命令以 LF 結尾（CR LF 也可以），儀器回覆以 LF 結尾', '出廠 HEADER 1：查詢的回覆前面會帶命令名稱，例如 :CURVE 61,62,61…', '出廠 DATA：ENCDG RIBINARY、SOURCE CH1、START 1、STOP 2500、WIDTH 1', '二進位區塊 #<x><yyy><data><newline>：x 是 yyy 的位數、yyy 是資料的位元組數，最後一個 LF', 'RIBinary 有號、高位元組在前；RPBinary 無號；SRI／SRP 低位元組在前；寬度 1 時不管位元組順序', '寬度 2 時資料乘 256，低位元組永遠是 0', '換算：值 = (資料 − YOFF) × YMULT + YZERO；100 mV/div 時 YMULT 4.0E-3（每格 25 個格子）', 'DATa:STOP 不會跟著記錄長度改，要自己設；記錄長度可選 1000、2000、20000、200000、2000000、5000000', 'SOURCE 的通道沒有顯示時，CURVe? 什麼都不回，記事件 2244 和 420', '單次擷取：ACQuire:STOPAfter SEQuence、ACQuire:STATE ON，再 *OPC? 等它做完', '水平 15 格'],
+      unverified: ['*IDN? 裡的序號與韌體版本（照說明書的格式編的）', 'HEADER 0 時 WFMOutpre? 各欄的寫法（這裡用分號隔開、不帶名稱）', 'WFID 字串的細節、數字的寫法（照說明書範例的樣子模擬）', '記錄長度只模擬 1000、2000、20000 點（實機還有 200000、2000000、5000000）', '訊號是本站設定的情境：CH1 是 1 kHz、振幅 2 V 的正弦波；CH2 是 1 kHz、±0.5 V 的方波', '沒有訊號時單次擷取一直等不到觸發（這裡模擬成觸發模式 Normal）', 'ALLEV? 沒有事件時的文字、多筆事件怎麼串、下錯命令記的事件碼 113', '回覆要花多久（示意）'],
+      card: { how: '命令和一般 SCPI 一樣是文字；波形（CURVe?）是一大塊資料，預設是二進位，前面有長度標頭。', simNote: '示波器上的訊號是模擬的情境；命令、預設值、資料格式照程式設計手冊。',
+        cmds: [['*IDN?', '問它是誰'], ['HEADER OFF', '回覆不要帶命令名稱（出廠是 ON）'], ['DATA:SOURCE CH1', '要哪一個通道'], ['DATA:ENCDG ASCII／RIBINARY', '文字或二進位（出廠是 RIBINARY）'], ['DATA:WIDTH 1', '每點幾個位元組'], ['DATA:START 1／DATA:STOP 2000', '要第幾點到第幾點'], ['WFMOUTPRE?', '換算要用的參數（YMULT、YOFF、XINCR…）'], ['CURVE?', '把波形送過來'], ['ACQ:STOPAFTER SEQ／ACQ:STATE ON／*OPC?', '抓一次、等它抓完']],
+        notes: ['CURVE? 送回來的數字不是電壓，是螢幕上的「第幾格」（−128～127）。要用 WFMOUTPRE? 的參數換算。', '二進位的資料裡可能剛好有 0A（就是 \\n）。讀的時候如果「讀到結尾字元就停」，會停在半路。', '出廠 HEADER 是 ON：回覆前面多了 :CURVE 這種字，程式切資料前要先關掉。', '改了記錄長度，DATA:STOP 不會跟著變：要自己設，不然只拿到前一段。'] },
+      presets: ['*IDN?', 'HEADER OFF', 'DATA:ENCDG ASCII', 'DATA:ENCDG RIBINARY', 'DATA:SOURCE CH1', 'DATA:STOP 2000', 'WFMOUTPRE?', 'CURVE?', 'ACQ:STOPAFTER SEQ', 'ACQ:STATE ON', '*OPC?', 'ALLEV?'],
+      actions: [['拔掉 CH1 的探棒', function (i) { i.probe(false); }], ['接回 CH1 的探棒', function (i) { i.probe(true); }]],
+      demo: [['connect'], 'HEADER OFF\n', 'DATA:ENCDG ASCII\n', 'CURVE?\n'] }
   ];
   function defOf(id) { for (var i = 0; i < INSTRUMENTS.length; i++) if (INSTRUMENTS[i].id === id) return INSTRUMENTS[i]; return null; }
   function list() {
@@ -424,7 +542,7 @@
         if (!baudOk(pc.baud, dv.baud)) { b = garble(b, dv.baud, pc.baud); self.lineErrors.baud += b.length; }
         else b = b.map(function (x) { var r = reframe(x, dv, pc); if (r.perr) self.lineErrors.parity++; if (r.ferr) self.lineErrors.framing++; return r.byte; });
       }
-      b.forEach(function (x) { if (self.rx.length < 4096) self.rx.push(x); else self.overrun++; });
+      b.forEach(function (x) { if (self.rx.length < (self.def.rxMax || 4096)) self.rx.push(x); else self.overrun++; });
     });
   };
   Session.prototype._run = function (until, stop) {
@@ -481,7 +599,7 @@
     o = o || {};
     if (this.closed) return { bytes: [], text: '', timedOut: true, waitedMs: 0, error: '這個連線已經關閉' };
     if (this.kind === 'tcp' && !this.connected) { this._note('err', [], '還沒連線就讀'); return { bytes: [], text: '', timedOut: true, waitedMs: 0, error: '還沒連線（要先按「連線」，等標示變成已連線）' }; }
-    term = o.term === undefined ? this.cfg.term : o.term; count = o.count == null ? 4096 : o.count; to = o.timeoutMs == null ? this.cfg.timeoutMs : o.timeoutMs;
+    term = o.term === undefined ? this.cfg.term : o.term; count = o.count == null ? (this.def.rxMax || 4096) : o.count; to = o.timeoutMs == null ? this.cfg.timeoutMs : o.timeoutMs;
     this._run(this.now);
     if (this.dev.onRead) this.dev.onRead(this.rx.length > 0 || this.events.length > 0);
     hit = this._run(t0 + to, function () { end = findTerm(self.rx, term); if (end > count) end = -1; return end > 0 || self.rx.length >= count; });
@@ -620,11 +738,32 @@
       ok('daq：取樣率太高 → 錯誤', !!s.read(0, 10, 100000).error); ok('daq：差動接法沒有 ai5', !!s.read(5, 10, 1000).error);
       s.set('pressure', 7.5); ok('daq：7.5 bar → 4.0 V', Math.abs(avg(s.read(0, 100, 1000)) - 4) < 0.005);
       ok('daq：12 mA 經 250 Ω → 3.0 V', Math.abs(avg(s.read(1, 100, 1000)) - 3) < 0.005);
+      // ---- tbs 示波器
+      s = open('tbs'); s.connect(); r = s.query('*IDN?'); ok('tbs：*IDN? 照說明書的格式（不帶標頭）', /^TEKTRONIX,TBS2\d{3}B?,\w+,CF:91\.1CT FV:/.test(r.text), r.text);
+      r = s.query('DATA?'); ok('tbs：出廠 DATA 設定（帶標頭）', r.text === ':DATA:DESTINATION REF1;ENCDG RIBINARY;SOURCE CH1;START 1;STOP 2500;WIDTH 1\n', r.text);
+      s.write('DATA:ENCDG ASCII\n'); r = s.query('CURVE?', { count: 20000 }); a = r.text.replace(/^:CURVE /, '').trim().split(',');
+      ok('tbs：ASCII 波形前面帶 :CURVE（出廠 HEADER 1）、2000 點（STOP 2500 大於記錄長度）', /^:CURVE -?\d+,/.test(r.text) && a.length === 2000, [r.text.slice(0, 20), a.length]);
+      n = a.map(Number); ok('tbs：數值是格子（2 V、1 V/div → 約 ±50）', Math.max.apply(null, n) >= 48 && Math.max.apply(null, n) <= 53 && Math.min.apply(null, n) <= -48, [Math.max.apply(null, n), Math.min.apply(null, n)]);
+      s.write('HEADER OFF\n'); r = s.query('WFMOUTPRE?'); a = r.text.trim().split(';');
+      ok('tbs：HEADER OFF 後 WFMOUTPRE? 只剩數值，第 14 欄（索引 13）是 YMULT 40.0000E-3', a.length === 16 && a[13] === '40.0000E-3' && a[9] === '750.0000E-9' && a[6] === '2000', a);
+      s.write('DATA:ENCDG RIBINARY\n'); r = s.query('CURVE?');
+      ok('tbs：二進位用「讀到 \\n 就停」會停在半路（資料裡有 0A）', !r.timedOut && r.bytes.length < 2007 && r.text.slice(0, 6) === '#42000', r.bytes.length);
+      s.flush(); s.write('CURVE?\n'); r = s.read({ term: null, count: 2 }); r2 = s.read({ term: null, count: +r.text[1] }); b = s.read({ term: null, count: +r2.text + 1 });
+      ok('tbs：先讀 #4、再讀 4 位數、再讀 2000＋1 → 完整、最後是 LF', r.text === '#4' && r2.text === '2000' && b.bytes.length === 2001 && b.bytes[2000] === 10, [r.text, r2.text, b.bytes.length]);
+      n = b.bytes.slice(0, 2000).map(function (x) { return x > 127 ? x - 256 : x; }); ok('tbs：有號（RI）解讀後是 ±50 左右，當無號會出現 200 多', Math.min.apply(null, n) < -40 && Math.max.apply(null, b.bytes.slice(0, 2000)) > 200, Math.min.apply(null, n));
+      s.write('DATA:WIDTH 2\n'); s.write('CURVE?\n'); r = s.read({ term: null, count: 6 }); b = s.read({ term: null, count: 4001 }); ok('tbs：寬度 2 → #44000，低位元組都是 0', r.text === '#44000' && b.bytes.filter(function (x, i) { return i % 2 === 1 && i < 4000; }).every(function (x) { return x === 0; }), r.text);
+      s.write('DATA:WIDTH 1\n'); s.write('HOR:RECO 20000\n'); r = s.query('WFMOUTPRE:NR_PT?'); ok('tbs：記錄長度改 20000，STOP 還是 2500 → 只有 2500 點', r.text === '2500\n', r.text);
+      s.write('DATA:STOP 20000\n'); s.write('CURVE?\n'); r = s.read({ term: null, count: 7 }); s.read({ term: null, count: 20001 }); ok('tbs：STOP 跟著改才拿到 20000 點', r.text === '#520000', r.text);
+      s.write('DATA:SOURCE CH2\n'); s.write('CURVE?\n'); r = s.read({ timeoutMs: 500 }); r2 = s.query('ALLEV?'); ok('tbs：CH2 沒顯示 → CURVE? 什麼都不回，事件 2244、420', r.timedOut && !r.bytes.length && /2244/.test(r2.text) && /420/.test(r2.text), r2.text);
+      s = open('tbs'); s.connect(); s.write('ACQ:STOPAFTER SEQ;:ACQ:STATE ON\n'); r = s.query('*OPC?', { timeoutMs: 1000 }); r2 = s.query('ACQ:STATE?'); ok('tbs：單次擷取 → *OPC? 回 1、之後停住', r.text === '1\n' && /0\n$/.test(r2.text), [r.text, r2.text]);
+      s.probe(false); s.write('ACQ:STATE ON\n'); r = s.query('*OPC?', { timeoutMs: 1000 }); ok('tbs：沒有訊號 → 等不到觸發，*OPC? 逾時', r.timedOut, r.text);
+      s.probe(true); r = s.read({ timeoutMs: 1000 }); ok('tbs：接回探棒 → 剛才的 *OPC? 回 1', r.text === '1\n', r.text);
+      s = open('tbs'); r = s.query('*IDN?'); ok('tbs：沒連線 → 錯誤', !!r.error);
       // ---- 可重現、工具、資料表
       a = open('gpd').query('*IDN?').text; b = open('gpd').query('*IDN?').text; r = open('daq').read(0, 5, 1000).join(); r2 = open('daq').read(0, 5, 1000).join(); ok('同樣的操作結果相同', a === b && r === r2);
       ok('LRC', lrc([1, 3, 0x10, 0, 0, 2]) === 0xEA, lrc([1, 3, 0x10, 0, 0, 2])); ok('CRC16', crc16([1, 3, 0, 0, 0, 1]) === 0x0A84, crc16([1, 3, 0, 0, 0, 1]));
       ok('scan', JSON.stringify(scan('ST,+00123.45  g', '%2s,%f').values) === '["ST",123.45]'); ok('fract 遇到非數字開頭回 0', fract('ST,+1.2') === 0 && fract('5.000V') === 5 && dec('12.9V') === 12);
-      ok('list() 有 7 台、欄位齊全', list().length === 7 && list().every(function (d) { return d.id && d.name && d.kind && d.manual && d.verified === false && d.card && d.unverified.length && d.checked.length; }));
+      ok('list() 有 8 台、欄位齊全', list().length === 8 && list().every(function (d) { return d.id && d.name && d.kind && d.manual && d.verified === false && d.card && d.unverified.length && d.checked.length; }));
       ok('sample() 每台都有資料', INSTRUMENTS.every(function (d) { return sample(d.id).length > 0; }));
     } catch (e) { P.push('執行時出錯：' + (e && e.stack ? e.stack.split('\n').slice(0, 3).join(' | ') : e)); }
     return { ok: P.length === 0, problems: P };
@@ -649,7 +788,7 @@
     '.isim-plot{display:block;width:100%;height:auto;background:var(--bg,#eceeeb);border-radius:4px}';
   function css() { if (!D || D.getElementById('instsim-css')) return; var s = D.createElement('style'); s.id = 'instsim-css'; s.textContent = CSS; D.head.appendChild(s); }
   function viewsHtml(bytes, opts) {
-    opts = opts || {}; var max = opts.max || 900, cut = bytes.length > max, b = cut ? bytes.slice(bytes.length - max) : bytes, plain = '', marks = '', i, c;
+    opts = opts || {}; var max = opts.max || 900, cut = bytes.length > max, b = cut ? (opts.head ? bytes.slice(0, max) : bytes.slice(bytes.length - max)) : bytes, plain = '', marks = '', i, c;
     for (i = 0; i < b.length; i++) {
       c = b[i];
       if (c === 13 && b[i + 1] === 10) { plain += '\n'; marks += '<i class="isim-ctl">\\r</i><i class="isim-ctl">\\n</i>\n'; i++; }
@@ -659,7 +798,7 @@
       else if (c > 32 && c < 127) { plain += esc(String.fromCharCode(c)); marks += esc(String.fromCharCode(c)); }
       else { plain += c >= 0xA0 ? esc(String.fromCharCode(c)) : c >= 0x80 ? '▯' : ''; marks += '<i class="isim-ctl hi">' + h2(c) + '</i>'; }
     }
-    return (opts.label ? '<div class="isim-cap">' + esc(opts.label) + '</div>' : '') + (cut ? '<div class="isim-cap">共 ' + bytes.length + ' 個位元組，只顯示最後 ' + max + ' 個。</div>' : '') +
+    return (opts.label ? '<div class="isim-cap">' + esc(opts.label) + '</div>' : '') + (cut ? '<div class="isim-cap">共 ' + bytes.length + ' 個位元組，只顯示' + (opts.head ? '最前面 ' : '最後 ') + max + ' 個。</div>' : '') +
       '<div class="isim-views"><div class="isim-v"><span class="isim-vl">① 記事本看到的</span><pre class="isim-plain">' + plain + '</pre></div>' +
       '<div class="isim-v"><span class="isim-vl">② 看不見的字元也畫出來</span><div class="isim-marks">' + marks + '</div></div>' +
       '<div class="isim-v"><span class="isim-vl">③ 十六進位（' + bytes.length + ' 個位元組）</span><div class="isim-hex">' + hex(b) + '</div></div></div>';
@@ -730,7 +869,7 @@
       var e = q('[data-o="log"]'); if (!e) return;
       e.innerHTML = ses.log.slice(-60).reverse().map(function (l) {
         var arrow = l.dir === 'tx' ? '→ 送出' : l.dir === 'rx' ? '← 收到' : l.dir === 'err' ? '⚠' : '·';
-        return '<div class="' + l.dir + '">' + (l.t / 1000).toFixed(3) + 's　' + arrow + (l.bytes.length ? ' ' + l.bytes.length + ' 個位元組　' + (!/^[\x20-\x7e\r\n]*$/.test(l.text) && def.binary ? hex(l.bytes.slice(0, 24)) + (l.bytes.length > 24 ? ' …' : '') : showText(l.text.slice(0, 60)) + (l.text.length > 60 ? '…' : '')) : '') + (l.note ? '　' + esc(l.note) : '') + '</div>';
+        return '<div class="' + l.dir + '">' + (l.t / 1000).toFixed(3) + 's　' + arrow + (l.bytes.length ? ' ' + l.bytes.length + ' 個位元組　' + (!/^[\x20-\x7e\r\n]*$/.test(l.text) ? hex(l.bytes.slice(0, 24)) + (l.bytes.length > 24 ? ' …' : '') : showText(l.text.slice(0, 60)) + (l.text.length > 60 ? '…' : '')) : '') + (l.note ? '　' + esc(l.note) : '') + '</div>';
       }).join('');
     }
     function out(html) { q('[data-o="out"]').innerHTML = html; }
@@ -751,7 +890,7 @@
       else if (r.timedOut) msg = '<p class="isim-msg bad">等了 ' + to + ' ms，' + (mode === 'count' ? '沒有湊滿 ' + cnt + ' 個位元組' : '沒有等到結尾字元') + '，只收到下面這 ' + r.bytes.length + ' 個位元組。</p>';
       else msg = '<p class="isim-msg ok">收到 ' + r.bytes.length + ' 個位元組' + (mode === 'wait' ? '' : '（等了 ' + r.waitedMs + ' ms）') + '。</p>';
       if (ses.lineErrors.baud + ses.lineErrors.parity + ses.lineErrors.framing > 0 && r.bytes.length) msg += '<p class="isim-cap">序列埠回報了同位或框架錯誤 ' + (ses.lineErrors.baud + ses.lineErrors.parity + ses.lineErrors.framing) + ' 次：通訊設定和儀器不一樣。</p>';
-      out(msg + (r.bytes.length ? viewsHtml(r.bytes) : '')); drawLog(); bap();
+      out(msg + (r.bytes.length ? viewsHtml(r.bytes, { head: def.showHead }) : '')); drawLog(); bap();
       if (opts.onReply && !r.error) opts.onReply(r, ses);
       return r;
     }

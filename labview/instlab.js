@@ -52,7 +52,14 @@
     adam6017: [['連線後讀到 AI0～AI7（25 個位元組的回應）', function (r) { return !!(r && r.bytes && r.bytes.length === 25 && r.bytes[7] === 3 || r && r.bytes && r.bytes.length === 25 && r.bytes[7] === 4); }],
       ['收到一個例外回應', function (r) { return !!(r && r.bytes && r.bytes.length >= 9 && (r.bytes[7] & 0x80)); }]],
     daq: [['讀 ai0，至少 100 點', function (r) { return !!(r && r.volts && r.ch === 0 && r.n >= 100); }],
-      ['讀到 ai1（4～20 mA 那一路）', function (r) { return !!(r && r.volts && r.ch === 1); }]]
+      ['讀到 ai1（4～20 mA 那一路）', function (r) { return !!(r && r.volts && r.ch === 1); }]],
+    tbs: [['連線後讓它回答自己是誰', function (r) { return hasText(r, /^TEKTRONIX,TBS2/); }],
+      ['拿到一筆看得懂的波形：一串用逗號分開的數字，前面沒有 :CURVE', function (r) { return hasText(r, /^-?\d+,-?\d+,-?\d+/); }],
+      ['收到一塊完整的二進位波形（標頭寫幾個位元組，就收到幾個，最後是 \\n；一次讀或分三次讀都可以）', function (r, s) {
+        function whole(b) { var x, n; if (!b.length || b[0] !== 35) return false; x = b[1] - 48; n = +U.toText(b.slice(2, 2 + x)); return x > 0 && n > 0 && b.length === 2 + x + n + 1 && b[b.length - 1] === 10; }
+        var L = s && s.log ? s.log.filter(function (e) { return e.dir === 'rx'; }).slice(-3) : [], k;
+        for (k = 0; k < L.length; k++) if (whole([].concat.apply([], L.slice(k).map(function (e) { return e.bytes; })))) return true;
+        return false; }]]
   };
   function fmtDefaults(d) {
     var P = { N: '無', E: '偶（Even）', O: '奇（Odd）' }, x = d.defaults;
@@ -103,6 +110,7 @@
     if (id === 'gpd') { s = IS.open('gpd'); s.write('ISET1:2.0\n'); s.write('VSET1:12.34\n'); s.write('OUT1\n'); r = s.query('VOUT1?'); return { bytes: r.bytes, text: r.text }; }
     if (id === 'bal') { s = IS.open('bal'); s.put(123.45); s.tick(3000); r = s.query('Q'); return { bytes: r.bytes, text: r.text }; }
     if (id === 'daq') return { volts: IS.open('daq').read(0, 100, 1000), ch: 0 };
+    if (id === 'tbs') { s = IS.open('tbs'); s.connect(); s.write('HEADER OFF\n'); s.write('CURVE?\n'); r = s.read({ term: null, count: 2007 }); return { bytes: r.bytes, text: r.text }; }
     r = IS.sample(id); return { bytes: r, text: U.toText(r) };
   }
   var PARSE = {
@@ -184,6 +192,22 @@
         { name: '只拿陣列的第 0 點 → V ÷ 250 × 1000', near: true, run: function () { return v[0] / 250 * 1000; }, why: '公式對，但單獨一點有雜訊。' },
         { name: '先取平均 → V × 250', run: function () { return a * 250; }, why: '乘除反了：I = V ÷ R。' }] };
       return { goal: '這一筆是 ai' + raw.ch + ' 的資料。', truth: NaN, special: '回 ① 讀 ai0（壓力）或 ai1（電流），或按「用範例資料」。', methods: [] };
+    },
+    tbs: function (raw) {
+      var t = raw.text, b = raw.bytes, G = '目標：找出這一段波形「最高」的那一點（單位是小格，−128～127）。', p = t.indexOf('#'), x, n, hd, data, sv, mx;
+      function maxOf(v) { return v.reduce(function (a, c) { return Math.max(a, c); }, -Infinity); }
+      function sg(v) { return v > 127 ? v - 256 : v; }
+      if (p < 0) return { goal: G, truth: NaN, special: /^(:CURVE )?-?\d+,/.test(t) ? '這一筆是 ASCII 的波形（一串用逗號分開的數字）。這一題練的是二進位：回 ① 送 HEADER OFF、DATA:ENCDG RIBINARY，讀取方式選「讀固定幾個位元組」收 2007 個；或按「用範例資料」。' : '', methods: [] };
+      x = b[p + 1] - 48; n = +t.substr(p + 2, x); hd = p + 2 + x; data = b.slice(hd, hd + n);
+      if (!(x > 0) || data.length < n) return { goal: G, truth: NaN, special: '這一塊不完整：標頭說有 ' + n + ' 個位元組，只收到 ' + data.length + ' 個。多半是用「讀到結尾字元為止」讀，停在剛好等於 0A 的資料上。回 ① 改用「讀固定幾個位元組」。', methods: [] };
+      if (n > 1 && data.every(function (v, i) { return i % 2 === 0 || v === 0; })) return { goal: G, truth: NaN, special: '這一筆是 DATA:WIDTH 2（每點 2 個位元組、低位元組是 0）。這一題用寬度 1：回 ① 送 DATA:WIDTH 1 再收一次，或按「用範例資料」。', methods: [] };
+      sv = data.map(sg); mx = maxOf(sv);
+      return { goal: G, unit: '小格', truth: mx, methods: [
+        { name: '去掉前 ' + hd + ' 個位元組的標頭 → Type Cast 成 I8 陣列 → Array Max & Min 取最大', ok: true, run: function () { return mx; }, why: '標頭「' + t.substr(0, hd) + '」不是資料；RIBINARY 是有號的，用 I8 看。' },
+        { name: '整串（含標頭）Type Cast 成 I8 陣列 → Array Max & Min 取最大', run: function () { return maxOf(b.map(sg)); }, why: '標頭也被當成資料：「' + t.substr(p + 1, 1) + '」這個字元的值是 ' + b[p + 1] + '，比真正的最大值還大。最後的 \\n（10）也混進去了。', trap: '這一筆標頭的字元剛好都比資料小。換成找最小值，或換一個訊號，就會出錯。' },
+        { name: '去掉標頭 → String To Byte Array（U8）→ Array Max & Min 取最大', run: function () { return maxOf(data); }, why: 'U8 沒有負號：負的點（例如 −10，位元組 F6）被讀成 246，最大值變成 200 多。' },
+        { name: '去掉標頭 → Type Cast 成 I16 陣列 → Array Max & Min 取最大', run: function () { var v = [], i, q; for (i = 0; i + 1 < data.length; i += 2) { q = data[i] << 8 | data[i + 1]; v.push(q > 32767 ? q - 65536 : q); } return maxOf(v); }, why: '寬度是 1：I16 把相鄰兩點黏成一個數。' },
+        { name: 'Spreadsheet String To Array（逗號）→ Array Max & Min 取最大', run: function () { return 0; }, why: '二進位資料裡沒有逗號分隔的數字文字，切不出東西。這是 ASCII 的切法。' }] };
     }
   };
   var PM = null;

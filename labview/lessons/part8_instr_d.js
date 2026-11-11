@@ -190,7 +190,7 @@ ask('00 FA 是幾度？',
 <ol><li><b>哪個位元組在前？</b>Modbus 規定高位元組先送。所以是 00FAH，不是 FA00H。</li>
 <li><b>合起來是多少？</b>00FAH ＝ 250。</li>
 <li><b>單位是什麼？</b>位址表寫「單位 0.1 度」。250 × 0.1 ＝ <b>25.0 度</b>。</li></ol>
-<p>在 LabVIEW 裡：把回覆字串用 ${fn('String','Path/Array/String Conversion','String To Byte Array')} 變成 U8 陣列，用 Index Array 取出第 3、第 4 個元素，接到 ${fn('Numeric','Data Manipulation','Join Numbers')}（高位元組接上面那個輸入），得到一個 16 位元的整數。轉成 DBL，除以 10。</p>`),
+<p>在 LabVIEW 裡：把回覆字串用 ${fn('String','String/Array/Path Conversion','String To Byte Array')} 變成 U8 陣列，用 Index Array 取出第 3、第 4 個元素，接到 ${fn('Numeric','Data Manipulation','Join Numbers')}（高位元組接上面那個輸入），得到一個 16 位元的整數。轉成 DBL，除以 10。</p>`),
 ask('溫度如果是零下呢？',
  `<p>零下 1.0 度，設備送的是 FF F6。當成沒有正負號的整數是 65526，除以 10 變成 6552.6 度，明顯不對。</p>
 <p>16 位元的暫存器要表示負數，用的是二補數。所以合成之後要當成<b>有號的 I16</b>：FFF6H 當成 I16 是 −10，除以 10 是 −1.0。</p>
