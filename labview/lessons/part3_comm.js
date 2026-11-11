@@ -260,7 +260,7 @@ const homeTest={name:'L14_Test.vi',view:'split',ratio:1.6,
    return {out:{rs:g.d[200],hs:g.d[202],rc:g.d[210]},frames:{cs:i.home?1:0},vals:{'rd.Words':[g.d[200],g.d[201],g.d[202]]},stop:!!i.stop,msg:c?'寫 D106 = '+c:'讀 D200～D202'};}}
 };
 L.push({id:'L14',order:14,no:'14',part:'和 PLC 通訊',title:'FX_WriteD.vi：讓機台動起來',mins:50,files:['FX_WriteD.vi','練習\\L14_Test.vi'],
-goals:[['學會','寫入確認（ACK/NAK）、用 Select 產生錯誤、在迴圈裡共用 VISA 線。'],['做出','FX_WriteD.vi，以及一個能按 Home、Start 並看步序的小測試程式。'],['用在專案','所有命令（D106、D107、參數、心跳）都用它寫。']],
+goals:[['學會','寫入確認（ACK/NAK）、用 Select 產生錯誤、在迴圈裡共用 VISA 線。'],['做出','FX_WriteD.vi，以及一個能按 Home、Start 並看步序的小測試程式。'],['用在專案','所有命令（D106、D107、參數、心跳）都用它寫。'],['接別台設備','PLC 以外的儀器（電源、電表、天平、溫控器、感測器）怎麼接？到 <a href="#I01">I1 拿到一台沒看過的儀器</a>，從看背板、翻說明書開始練。']],
 check:'L14_Test.vi 按 Home 後 Home Step 跑 10→11→12→13 再回 0；在軟 PLC 放工件、按 Start 後 Right Step 開始跑 20～28、Right Count 增加。',
 body:[
 C.h3('懂','','寫入：送封包，等一個字元'),

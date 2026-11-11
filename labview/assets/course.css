@@ -278,3 +278,32 @@ h3 { font-weight: 800; border-left: 4px solid var(--accent); padding: 2px 0 2px 
 .dt-res{border-left:6px solid var(--accent);padding:4px 0 4px 14px;margin:10px 0}
 .dt-res>b{font-size:20px}
 .dtree .btn{margin:3px 4px 3px 0;text-align:left}
+
+/* 原始回覆：看不見的字元畫成小標記 */
+.rawstr{font-family:var(--mono);font-size:17px;background:var(--code);border:1px solid var(--line);border-radius:4px;padding:2px 8px;white-space:pre-wrap;word-break:break-all}
+.rawstr .cc,.convlab .cc{font-style:normal;font-size:.78em;font-weight:700;color:#fff;background:#b45309;border-radius:3px;padding:0 3px;margin:0 1px}
+.rawstr .cc.sp{background:#6b7280}
+.convlab p{max-width:none}
+.convlab select{font:inherit;padding:5px 8px;max-width:100%;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.convlab .btn{margin:3px 4px 3px 0}
+.convlab .num{font-family:var(--tech);font-size:22px}
+#content .convlab{background:var(--paper);color:var(--ink)}
+/* 程式規劃圖：只畫「什麼在迴圈外、什麼在迴圈裡」 */
+#content .bdflow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:var(--paper);color:var(--ink);overflow-x:auto}
+.bdflow .fb{display:inline-block;border:1px solid var(--line);background:var(--bg);border-radius:4px;padding:6px 10px;font-size:15px;white-space:nowrap}
+.bdflow .fa{font-style:normal;color:var(--mute)}
+.bdflow .fl,.bdflow .fc{display:inline-flex;flex-direction:column;gap:6px;border-radius:6px;padding:8px 10px 10px}
+.bdflow .fl{border:3px solid var(--mute)}
+.bdflow .fc{border:2px dashed var(--accent)}
+.bdflow em{font-style:normal;font-weight:700;font-size:13px;color:var(--mute)}
+.bdflow .fc>em{color:var(--accent)}
+.bdflow .fin{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.bdflow .fsr{font-size:13px;font-weight:700;color:#b45309}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .bdflow .fsr{color:#f0a060}}
+:root[data-theme="dark"] .bdflow .fsr{color:#f0a060}
+
+#content .mblab{background:var(--paper);color:var(--ink)}
+.mblab p,.mblab li{max-width:none}
+.mblab select{font:inherit;padding:5px 8px;max-width:100%;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.mblab .num{font-family:var(--tech);font-size:20px}
+.mblab .btn{margin:3px 4px 3px 0}
