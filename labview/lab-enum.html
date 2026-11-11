@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="1d5b8c0020">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enum 實驗室：Enum、Ring 與 Type Def | LadderLab</title>
+<meta name="description" content="LabVIEW Enum 與 Ring 的動畫實驗室：同一份「運轉模式」選單接到 Case 結構，頁籤顯示文字還是數字；Type Def 新增選項時哪些常數跟著變、Case 什麼時候斷箭頭、Ring 為什麼默默走 Default；Type Def 與 Strict Type Def 的外觀差別；狀態機用字串打錯字的後果。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: start; }
+  @media (max-width: 860px) { .three { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 700px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .lane, .vi { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; background: var(--card); }
+  .lane h3, .vi h4 { margin: 0 0 6px; font-size: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .modes { display: flex; gap: 6px; flex-wrap: wrap; }
+  .modes button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .ctlk { display: inline-flex; align-items: center; gap: 6px; border: 2px solid #1e5bd7; border-radius: 5px; padding: 3px 8px; font: 600 13px system-ui, sans-serif; background: var(--bg); }
+  .ctlk.ring { border-color: #1e5bd7; border-style: dashed; }
+  .ctlk::after { content: "▾"; color: var(--mute); }
+  .wirep { display: flex; align-items: center; gap: 6px; margin: 8px 0; font-size: 12px; color: var(--mute); flex-wrap: wrap; }
+  .wirep i { display: inline-block; width: 30px; height: 4px; background: #1e5bd7; border-radius: 2px; }
+  .cs { border: 4px solid #6b6b6b; border-radius: 6px; background: var(--card); margin-top: 6px; }
+  .cs .sel { display: flex; flex-wrap: wrap; gap: 3px; padding: 4px; background: #ececec; border-bottom: 2px solid #6b6b6b; }
+  .cs .sel span { font: 600 12px ui-monospace, Consolas, monospace; background: #fff; color: #222; border: 1px solid #9ca3af; border-radius: 3px; padding: 1px 6px; transition: background .25s, transform .25s; }
+  .cs .sel span.on { background: #1e6fff; color: #fff; border-color: #1e6fff; transform: translateY(-2px); }
+  .cs .sel span.new { outline: 2px solid #16a34a; }
+  .cs .body { padding: 8px; font-size: 13px; min-height: 34px; }
+  .ind { display: inline-grid; place-items: center; min-width: 56px; height: 30px; border: 3px solid #1e5bd7; border-radius: 5px; font: 700 15px ui-monospace, Consolas, monospace; background: var(--bg); }
+  .arrow { font-size: 18px; } .arrow.broken { color: #9ca3af; text-decoration: line-through; }
+  .ctlcard { border: 2px solid #4b5563; border-radius: 10px; padding: 10px; max-width: 520px; background: var(--card); }
+  .items { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+  .items span { font: 12px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; background: var(--bg); }
+  .items span.new { background: rgba(22, 163, 74, .2); border-color: #16a34a; }
+  .vi.old { border-color: #9ca3af; }
+  .vi .note { font-size: 12px; color: var(--mute); margin: 6px 0 0; }
+  .vi .bad { color: #dc2626; }
+  .inst { border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin: 6px 0; }
+  .fpc { display: inline-flex; flex-direction: column; gap: 3px; border: 2px solid #4b5563; border-radius: 6px; padding: 6px 10px; min-width: 120px; transition: background .4s, width .4s; color: #111; background: #f3f4f6; }
+  .fpc b { font-size: 12px; }
+  .fpc .v { font: 600 13px system-ui, sans-serif; }
+  .fpc .v::after { content: " ▾"; color: #6b7280; }
+  .sm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 10px 0; }
+  .st { min-width: 92px; padding: 10px; text-align: center; border: 3px solid var(--line); border-radius: 12px; font-weight: 700; font-size: 14px; transition: all .3s; }
+  .st.on { border-color: #1e6fff; background: rgba(30, 111, 255, .12); transform: scale(1.06); }
+  .st.def { border-style: dashed; }
+  .st.def.on { border-color: #dc2626; background: rgba(220, 38, 38, .12); }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; overflow-wrap: anywhere; }
+  .fly { padding: 0 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-enum.html" class="here">Enum</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>Enum 實驗室</h1>
+  <p class="why">雙龍門的「運轉模式」有四個選項：手動、自動、原點復歸、急停。做成下拉選單有兩種元件：<b>Enum</b> 和 <b>Ring</b>。看起來一樣，用起來差很多。這裡用動畫比較它們接到 Case 結構、遇到新增選項、當狀態機狀態時的差別。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="er" class="here">Enum vs Ring</button>
+    <button type="button" data-t="add">新增一個選項</button>
+    <button type="button" data-t="strict">Type Def vs Strict</button>
+    <button type="button" data-t="sm">字串 vs Enum 狀態</button>
+  </div>
+  <label class="check small"><input type="checkbox" id="slow"> 慢動作</label>
+
+  <section class="lab-stage" id="t-er">
+    <p class="why">在前面板選一個模式，看同一個選擇接到 Enum 和 Ring 兩邊各發生什麼。兩種元件底下都是整數，差別在「文字算不算型別的一部分」。</p>
+    <div class="row"><span>運轉模式：</span><div class="modes" id="pick"></div></div>
+    <div class="row"><label class="check small"><input type="checkbox" id="ringcustom"> Ring 用自訂值（手動 = 10、自動 = 20、原點復歸 = 30、急停 = 99）</label></div>
+    <div class="two">
+      <div class="lane" id="laneE"></div>
+      <div class="lane" id="laneR"></div>
+    </div>
+    <p class="verdict-line" id="ersay"></p>
+    <div class="callout">Enum 的項目文字跟著線走，所以 Case 頁籤直接寫 "原點復歸"，右鍵還能 Add Case for Every Value 一次補齊每個值。Enum 的值固定是 0、1、2…連續編號。Ring 的文字只是顯示用，線上只有數字，Case 頁籤也只能寫數字；好處是值可以自訂，適合對應硬體代碼（例如 PLC 的模式暫存器 10、20、30、99）。</div>
+  </section>
+
+  <section class="lab-stage" id="t-add" hidden>
+    <p class="why">MachineMode.ctl 是 Enum 的 Type Def。現在要加第五個模式「保養」。三個 VI：GT_Main 用 Type Def 的 Enum 接 Case（四頁，沒有 Default）；GT_Panel 的 Enum 常數是當初複製的，沒連到 Type Def；GT_Old 是舊程式，用 Ring 接 Case（0～3 和 Default），有人在它的 Ring 裡手動加了「保養 = 4」。</p>
+    <div class="ctlcard" id="actl"></div>
+    <div class="row">
+      <button type="button" class="go" id="aadd">在 .ctl 加「保養」並存檔</button>
+      <button type="button" id="aall">GT_Main 的 Case：Add Case for Every Value</button>
+      <button type="button" id="arun">三個 VI 都選「保養」執行</button>
+      <button type="button" id="areset">重設</button>
+    </div>
+    <div class="three" id="avis"></div>
+    <p class="verdict-line" id="asay"></p>
+    <div class="callout">這正是 Enum + Type Def 的價值：加了新值，<b>漏寫的地方在編輯時就斷箭頭</b>，逼你處理。Ring 是數字，數字的 Case 通常靠 Default 接住沒列出的值，新值就默默走 Default，執行時才發現機台沒反應。沒連 Type Def 的 Enum 常數只是舊清單的複本，不會自己長出新選項。</div>
+  </section>
+
+  <section class="lab-stage" id="t-strict" hidden>
+    <p class="why">同一個 .ctl 用在兩個 VI 的前面板。左邊兩個實例連到一般的 <b>Type Def</b>，右邊連到 <b>Strict Type Def</b>。修改 .ctl，或在使用的地方自己改外觀，看哪些會同步。</p>
+    <div class="row">
+      <label>元件 <select id="skind"><option value="enum">Enum</option><option value="ring">Ring</option></select></label>
+      <button type="button" id="scolor">.ctl：把底色改成橘色</button>
+      <button type="button" id="sitem">.ctl：加一個「保養」</button>
+      <button type="button" id="srename">.ctl：「急停」改成「緊急停止」</button>
+    </div>
+    <div class="row">
+      <button type="button" id="slocal">在 GT_Main 的前面板把這個控制項改成藍底</button>
+      <button type="button" id="sreset">重設</button>
+    </div>
+    <div class="two">
+      <div class="lane"><h3>Type Def</h3><div id="sTD"></div></div>
+      <div class="lane"><h3>Strict Type Def</h3><div id="sST"></div></div>
+    </div>
+    <p class="verdict-line" id="ssay"></p>
+    <div class="callout">一般 Type Def 只同步<b>資料型別</b>：Enum 的項目是型別的一部分，所以兩種都會同步；顏色、大小這類外觀不同步，每個地方可以各自調整。Strict Type Def 連<b>外觀</b>也同步，使用的地方不能自己改外觀；Ring 的項目文字不是型別的一部分，只有 Strict 才會跟著 .ctl 更新。</div>
+  </section>
+
+  <section class="lab-stage" id="t-sm" hidden>
+    <p class="why">一個簡單的狀態機：待機 → 原點復歸 → 自動 → 待機…，下一個狀態放在 Shift Register 裡。左邊用字串當狀態，右邊用 Type Def 的 Enum。在字串版本的「待機」頁裡，下一個狀態的常數打錯字會怎樣？</p>
+    <div class="row">
+      <label>字串版本「待機」頁寫的下一個狀態 <select id="typo"><option value="原點復歸">"原點復歸"（正確）</option><option value="原点復歸">"原点復歸"（點打成简体）</option><option value="原點復歸 ">"原點復歸 "（多一個空白）</option></select></label>
+      <button type="button" class="go" id="smrun">▶ 兩邊一起跑</button>
+      <button type="button" id="smstop">停止</button>
+      <button type="button" id="smtry">在 Enum 常數裡打 "原点復歸"</button>
+    </div>
+    <div class="two">
+      <div class="lane"><h3>字串狀態</h3><div class="sm" id="smS"></div><div class="log" id="logS"></div></div>
+      <div class="lane"><h3>Enum（Type Def）狀態</h3><div class="sm" id="smE"></div><div class="log" id="logE"></div></div>
+    </div>
+    <p class="verdict-line" id="smsay"></p>
+    <div class="callout">字串 Case 要有 Default 接住沒列出的字串（字串有無限多種），打錯字的狀態就掉進 Default，程式照跑、不報錯，機台卡在原地，要看 log 才知道。Enum 常數只能從下拉選單選，根本打不出不存在的狀態；Case 頁籤也只能是清單裡的值。這就是為什麼狀態機的狀態用 Type Def 的 Enum。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="equiz" style="margin-top:16px"></section>
+  <div class="anim-layer" id="layer" aria-hidden="true"></div>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-enum.js?v=c3c8be39c6"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "1d5b8c0020" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

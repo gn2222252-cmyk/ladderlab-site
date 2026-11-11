@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="6114fbc50d">
+<meta name="ll-version" content="1d5b8c0020">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
@@ -50,6 +50,7 @@
     { f: 'lab-array.html', n: '陣列', ic: '[ ]', c: '#e8820c', d: '十個常用陣列函式，看元素怎麼搬。', t: ['Index、Insert、Delete、Replace、Subset…', '先預測再執行、隨機挑戰'], l: '第 7 課、C5' },
     { f: 'lab-string.html', n: '字串', ic: 'abc', c: '#c026d3', d: '一格一個字元，位置從 0 算起。', t: ['切、接、找、換九個函式', 'Format／Scan 格式碼對照', 'Normal、\'\\\' Codes、Hex 看控制碼'], l: '第 9 課、C6、F2' },
     { f: 'lab-cluster.html', n: '叢集', ic: '{ }', c: '#9333ea', d: '把資料打包、拆開，錯誤沿著錯誤線往後傳。', t: ['Bundle／Unbundle 與 By Name', 'Type Def 一改全部跟著改', '錯誤叢集怎麼流、Close 為什麼照樣執行'], l: '第 8、11 課、C10、C18' },
+    { f: 'lab-enum.html', n: 'Enum 與 Ring', ic: '▾', c: '#0f766e', d: '同樣是下拉選單：Enum 的文字是型別的一部分，Ring 只是數字。', t: ['接到 Case：頁籤是文字還是數字', '新增選項：Type Def 一起變、Case 少頁就斷箭頭', 'Type Def 與 Strict Type Def', '字串狀態打錯字只會默默走 Default'], l: '第 8 課、C2、C9' },
     { f: 'lab-prop.html', n: '屬性節點', ic: 'P', c: '#be185d', d: '用程式改前面板：顏色、反灰、閃爍，還有會不會觸發事件。', t: ['Visible、Disabled 0/1/2、Blinking、顏色', 'Value、Value (Signaling)、Local Variable：誰會觸發事件', '控制參考傳進 SubVI，一次 Disable 一組按鈕'], l: '第 18 課、C7、C11' },
     { f: 'lab-subvi.html', n: 'SubVI', ic: 'VI', c: '#1d4ed8', d: '接線端怎麼配、必要輸入沒接會怎樣、兩個迴圈同時呼叫誰要等。', t: ['4-2-2-4 接線端：輸入在左、輸出在右、錯誤在下角', 'Required／Recommended／Optional 沒接的差別', '可重入：排隊等待與各自一份記憶'], l: '第 10 課、C7' },
     { f: 'lab-formula.html', n: 'Formula Node', ic: 'f(x)', c: '#a16207', d: '同一個公式：拉線版和文字版並排算，打錯字當場告訴你。', t: ['圖形節點與 Formula Node 對照，一步一步高亮', '語法檢查器：少分號、沒宣告、大小寫', '整數除法、Quotient & Remainder 分組動畫'], l: 'C2、C4' },
@@ -83,7 +84,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "6114fbc50d" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1d5b8c0020" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

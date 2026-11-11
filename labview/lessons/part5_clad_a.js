@@ -132,7 +132,7 @@ const roundFig={view:'split',name:'捨入與溢位',ratio:1.2,
  sim:{live:true,step(i){const x=i.x;let r=Math.round(x);if(Math.abs(x%1)===0.5)r=2*Math.round(x/2);const u2=(i.u+10)&255;return {out:{r,u2,d:3.5,q:'IQ = 3, R = 1'},vals:{x,'cv.out':r,u:i.u,k10:10,'add.out':u2,k7:7,k2:2,'dv.out':3.5}};}}
 };
 L.push({id:'C02',order:102,no:'C2',part:PART,title:'資料型別深入：捨入、溢位、Enum/Ring、Waveform、Timestamp',mins:60,
-goals:[['學會','數值表示法與轉換規則、特殊值（Inf、NaN）、Enum 與 Ring、Type Def 三種、Waveform、Timestamp、Dynamic Data、字串顯示模式、機械動作。'],['考試重點','「這個 Indicator 會顯示什麼」：捨入到偶數、整數溢位繞回、Divide 輸出 DBL、NaN 不等於自己。'],['動畫練習','<a href="lab-numeric.html">數值實驗室</a>：溢位繞回、DBL 轉整數夾住、2.5 捨入成 2，都有動畫。'],['動畫練習','<a href="lab-formula.html#int">Formula Node 實驗室：整數除法</a>：I32 接 Divide 得到小數、Quotient & Remainder 得到整數商和餘數，分組動畫一看就懂。']],
+goals:[['學會','數值表示法與轉換規則、特殊值（Inf、NaN）、Enum 與 Ring、Type Def 三種、Waveform、Timestamp、Dynamic Data、字串顯示模式、機械動作。'],['考試重點','「這個 Indicator 會顯示什麼」：捨入到偶數、整數溢位繞回、Divide 輸出 DBL、NaN 不等於自己。'],['動畫練習','<a href="lab-numeric.html">數值實驗室</a>：溢位繞回、DBL 轉整數夾住、2.5 捨入成 2，都有動畫。'],['動畫練習','<a href="lab-formula.html#int">Formula Node 實驗室：整數除法</a>：I32 接 Divide 得到小數、Quotient & Remainder 得到整數商和餘數，分組動畫一看就懂。'],['動畫練習','<a href="lab-enum.html">Enum 實驗室</a>：Enum 和 Ring 接到 Case 時頁籤的差別、Ring 自訂值、Strict Type Def 連外觀也同步。']],
 check:'不用電腦能算出 To Long Integer(2.5)、U8 的 250+10、整數 7 ÷ 0 用 Quotient & Remainder 的結果。',
 body:[
 C.h3('懂','','數值：最常考的六條規則'),

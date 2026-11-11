@@ -991,6 +991,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-enum.html",
+     "href": "labview/lab-enum.html",
+     "label": "動畫實驗室：Enum、Ring 與 Type Def"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-prop.html",
      "href": "labview/lab-prop.html",
      "label": "動畫實驗室：Property Node 與控制參考"
