@@ -48,3 +48,6 @@ input.scalar { width: 70px; text-align: center; color: inherit; }
 .lab-notes li { margin: 4px 0; }
 .lab-challenge { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
 .lab-challenge h3 { margin: 0 0 4px; font-size: 16px; }
+
+/* 長選項的下拉選單不要把手機版面撐寬 */
+.lab-main select { max-width: 100%; }

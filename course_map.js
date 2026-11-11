@@ -1009,6 +1009,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-project.html",
+     "href": "labview/lab-project.html",
+     "label": "動畫實驗室：專案、Shared Variable、建立執行檔"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-formula.html",
      "href": "labview/lab-formula.html",
      "label": "動畫實驗室：Formula Node 與數學運算"

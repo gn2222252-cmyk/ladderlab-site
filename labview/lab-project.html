@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="144a40eded">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>專案實驗室：Project、Shared Variable、執行檔 | LadderLab</title>
+<meta name="description" content="LabVIEW 專案的動畫實驗室：.lvproj 只是記住路徑的清單，在檔案總管搬檔案後專案就找不到；Virtual Folder 與 Auto-populating Folder 的差別；Global Variable、Single-Process 與 Network-Published Shared Variable 各傳得多遠；用 Build Specifications 建立執行檔、Startup VI、Always Included 與 Run-Time Engine。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .pj { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 60px; align-items: start; margin: 12px 0; }
+  @media (max-width: 700px) { .pj { grid-template-columns: minmax(0, 1fr); gap: 14px; } .pj svg { display: none; } }
+  .pj svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .pj svg path { fill: none; stroke: #60a5fa; stroke-width: 1.5; }
+  .pj svg path.bad { stroke: #dc2626; stroke-dasharray: 5 4; }
+  .tree { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: var(--card); min-width: 0; font-size: 13px; }
+  .tree h3 { margin: 0 0 6px; font-size: 14px; }
+  .ti { display: flex; gap: 6px; align-items: center; padding: 2px 4px; border-radius: 4px; flex-wrap: wrap; transition: background .3s; }
+  .ti .ic { width: 1.4em; text-align: center; flex: none; }
+  .ti small { color: var(--mute); font: 11px ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+  .ti.miss { color: #b91c1c; }
+  .ti.miss .ic::after { content: "⚠"; color: #ca8a04; margin-left: -2px; }
+  .ti.new { background: rgba(22, 163, 74, .18); }
+  .ti.vf .ic { color: #7c3aed; } .ti.af .ic { color: #0e7490; }
+  .d1 { padding-left: 18px; } .d2 { padding-left: 36px; } .d3 { padding-left: 54px; }
+  .pcs { display: grid; grid-template-columns: minmax(0, 1fr) 70px minmax(0, 1fr); gap: 8px; align-items: stretch; margin: 12px 0; }
+  @media (max-width: 700px) { .pcs { grid-template-columns: minmax(0, 1fr); } .net { min-height: 40px; } }
+  .pc { border: 2px solid #4b5563; border-radius: 10px; padding: 8px; background: var(--card); min-width: 0; }
+  .pc h4 { margin: 0 0 6px; font-size: 14px; }
+  .app { border: 1px dashed var(--mute); border-radius: 8px; padding: 6px; margin: 6px 0; }
+  .app b { font-size: 12px; color: var(--mute); display: block; margin-bottom: 4px; }
+  .box { display: inline-flex; align-items: center; gap: 6px; border: 2px solid var(--line); border-radius: 6px; padding: 4px 8px; margin: 3px 0; font-size: 13px; background: var(--bg); flex-wrap: wrap; }
+  .box .v { font: 700 13px ui-monospace, Consolas, monospace; min-width: 30px; text-align: center; }
+  .box.ok { border-color: #16a34a; } .box.no { border-color: #dc2626; opacity: .8; }
+  .box.store { border-color: #b45309; background: rgba(180, 83, 9, .08); }
+  .net { display: grid; place-items: center; border-radius: 8px; background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px) center / 100% 3px no-repeat; font-size: 11px; color: var(--mute); text-align: center; }
+  .form { display: grid; gap: 6px; font-size: 13px; }
+  .form label { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 6px; align-items: center; }
+  @media (max-width: 480px) { .form label { grid-template-columns: minmax(0, 1fr); } }
+  .form input[type=text] { font: 13px ui-monospace, Consolas, monospace; min-width: 0; }
+  .exe { border: 3px solid #1e5bd7; border-radius: 10px; padding: 8px; min-height: 90px; background: var(--card); }
+  .exe .items { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .exe .items span { font: 11px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; background: var(--bg); }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; overflow-wrap: anywhere; }
+  .fly { padding: 0 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-project.html" class="here">專案</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>專案實驗室</h1>
+  <p class="why">13_PLC 這種大程式不會只有一個 VI。這裡看三件事：專案檔 .lvproj 到底存了什麼、資料要傳給另一個程式或另一台電腦時用哪一種變數、最後怎麼包成在沒裝 LabVIEW 的產線電腦上能跑的執行檔。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="pj" class="here">專案是清單</button>
+    <button type="button" data-t="sv">Global 與 Shared Variable</button>
+    <button type="button" data-t="bd">建立執行檔</button>
+  </div>
+  <label class="check small"><input type="checkbox" id="slow"> 慢動作</label>
+
+  <section class="lab-stage" id="t-pj">
+    <p class="why">左邊是 Project Explorer 看到的樣子，右邊是硬碟上真正的資料夾。藍線是專案記住的路徑。專案檔只是一張「清單」，記的是檔案在哪裡，VI 本身還是存在硬碟上各自的位置。</p>
+    <div class="row">
+      <button type="button" id="pmove">在檔案總管把 PLC_ReadWords.vi 搬到 old\</button>
+      <button type="button" id="padd">在檔案總管新增 host\Host_Log.vi</button>
+      <button type="button" id="padd2">在檔案總管新增 driver\PLC_Ping.vi</button>
+    </div>
+    <div class="row">
+      <button type="button" id="pvf">在專案裡新增 Virtual Folder「畫面」</button>
+      <button type="button" id="prm">從專案移除 PLC_WriteWord.vi</button>
+      <button type="button" id="preset">重設</button>
+    </div>
+    <div class="pj" id="pjw"><div class="tree" id="ptree"></div><div class="tree" id="pdisk"></div><svg id="plines" aria-hidden="true"></svg></div>
+    <p class="verdict-line" id="psay"></p>
+    <div class="callout"><b>Virtual Folder</b>（紫色）只存在專案裡，用來分類，硬碟上沒有這個資料夾，裡面的檔案還是在原本的位置。<b>Auto-populating Folder</b>（青色）跟硬碟上的一個資料夾同步，硬碟多了或少了檔案，專案裡也跟著變。想搬檔案又不想讓專案找不到，在 Project Explorer 的 <b>Files</b> 頁籤裡搬，LabVIEW 會一起更新記住的路徑；在檔案總管直接搬，專案還記著舊路徑（本頁用 ⚠ 示意找不到的項目）。</div>
+  </section>
+
+  <section class="lab-stage" id="t-sv" hidden>
+    <p class="why">產線電腦上的通訊 VI 每秒讀一次 PLC 的 D300（右軸位置），想讓其他程式也看得到。選一種變數，按「寫入」，看值傳得到哪裡。</p>
+    <div class="row">
+      <label>變數種類 <select id="svk"><option value="g">Global Variable</option><option value="sp">Shared Variable：Single-Process</option><option value="np">Shared Variable：Network-Published</option></select></label>
+      <button type="button" id="svdep">在 Library 上右鍵 ▸ Deploy</button>
+      <button type="button" class="go" id="svw">▶ GT_Comm.vi 寫入新的 D300</button>
+    </div>
+    <div class="pcs">
+      <div class="pc"><h4>產線電腦 A</h4>
+        <div class="app"><b>GT_Main.exe（一個應用程式）</b><div class="box" id="sw">GT_Comm.vi 寫 <span class="v" id="swv">—</span></div><br><div class="box store" id="sstore"></div><br><div class="box" id="r1">GT_Main.vi 讀 <span class="v" id="r1v">—</span></div></div>
+        <div class="app"><b>Report.exe（同一台電腦上另一個應用程式）</b><div class="box" id="r2">Report.vi 讀 <span class="v" id="r2v">—</span></div></div>
+        <div class="box store" id="sve" hidden>Shared Variable Engine <span class="v" id="svev">—</span></div>
+      </div>
+      <div class="net" id="net">網路</div>
+      <div class="pc"><h4>辦公室電腦 B</h4><div class="app"><b>Monitor.exe</b><div class="box" id="r3">Monitor.vi 讀 <span class="v" id="r3v">—</span></div></div></div>
+    </div>
+    <p class="verdict-line" id="svsay"></p>
+    <div class="callout"><b>Global Variable</b> 是一個只有前面板的特殊 VI（File ▸ New 裡選 Global Variable），只在同一個應用程式裡的 VI 之間共用。<b>Shared Variable</b> 在專案裡建立，放在一個 Library（.lvlib）裡：<b>Single-Process</b> 的範圍和 Global 一樣，只在同一個應用程式；<b>Network-Published</b> 透過 Shared Variable Engine 發佈到網路上，要先 <b>Deploy</b>，同一台電腦的其他程式和別台電腦都讀得到。不管哪一種，多個地方同時寫一樣有競爭問題（見<a href="lab-var.html">變數實驗室</a>），命令類的資料還是用 Queue。</div>
+  </section>
+
+  <section class="lab-stage" id="t-bd" hidden>
+    <p class="why">在 Project Explorer 的 <b>Build Specifications</b> 上右鍵 ▸ New ▸ <b>Application (EXE)</b>，填設定、按 Build。13_PLC 的主程式會用 VI Server 動態載入一個外掛 Host_Plugin_A.vi（方塊圖上沒有直接放它）。</p>
+    <div class="two">
+      <div class="form">
+        <label>Target filename <input type="text" id="bname" value="13_PLC.exe"></label>
+        <label>Destination directory <input type="text" id="bdest" value="D:\13_PLC\builds"></label>
+        <label>Startup VIs <span class="chip" id="bstart" style="font:13px ui-monospace,Consolas,monospace">Host_Main.vi</span></label>
+        <label>Always Included <span><input type="checkbox" id="balw"> Host_Plugin_A.vi</span></label>
+        <div class="row"><button type="button" class="go" id="bbuild">▶ Build</button></div>
+      </div>
+      <div class="exe" id="bexe"><b id="bexen">（還沒建置）</b><div class="items" id="bitems"></div></div>
+    </div>
+    <h3>拿到產線電腦執行</h3>
+    <div class="row">
+      <label>Run-Time Engine <select id="brte"><option value="same">已安裝，和建置用的 LabVIEW 同版本、同位元數</option><option value="old">已安裝，但版本比較舊</option><option value="none">沒有安裝</option></select></label>
+      <label class="check small"><input type="checkbox" id="bvisa" checked> 已安裝 NI-VISA 驅動</label>
+      <button type="button" id="brun">▶ 雙擊 13_PLC.exe</button>
+    </div>
+    <div class="log" id="blog"></div>
+    <p class="verdict-line" id="bsay"></p>
+    <div class="callout"><b>Startup VI</b>：執行檔一打開就執行的 VI。它直接呼叫的 SubVI，Application Builder 會自己找出來一起包。<b>Always Included</b>：方塊圖上看不到、執行時才動態載入的 VI，Builder 找不到，要手動加進來。執行檔只包含你的程式，<b>不包含 LabVIEW 本身</b>：目標電腦要裝和建置版本相同（位元數也要相同）的 <b>LabVIEW Run-Time Engine</b>，用到 VISA、DAQmx 也要裝對應的驅動。可以再建一個 Installer 建置規格，把這些一起包成安裝程式。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="pquiz" style="margin-top:16px"></section>
+  <div class="anim-layer" id="layer" aria-hidden="true"></div>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；專案與建置行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-project.js?v=d7f3c59b6e"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "144a40eded" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
