@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="9bf5761aa5">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
+<meta name="description" content="LabVIEW 動畫實驗室總覽：迴圈、結構、陣列、字串、圖表、變數、DAQ、布林、數值九個互動實驗室，加上 FX 封包練習台。不用安裝 LabVIEW，在瀏覽器裡改輸入、看動畫、先預測再對答案。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin: 16px 0; }
+  .hub a.card { display: block; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--card); color: inherit; text-decoration: none; transition: transform .15s, box-shadow .15s; position: relative; }
+  .hub a.card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, .12); border-color: var(--on); }
+  .hub h2 { margin: 0 0 4px; font-size: 19px; display: flex; align-items: center; gap: 8px; }
+  .hub .ic { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color: #fff; font: 700 15px ui-monospace, Consolas, monospace; flex: none; }
+  .hub p { margin: 6px 0; font-size: 14px; }
+  .hub ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--mute); }
+  .hub .les { font-size: 12px; color: var(--mute); margin-top: 8px; }
+  .hub .seen { position: absolute; right: 12px; top: 12px; font-size: 12px; color: #1f9d3a; font-weight: 700; }
+  .order { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 14px; margin: 8px 0; }
+  .order a { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; text-decoration: none; color: inherit; background: var(--card); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html" class="here">動畫實驗室</a><a href="fxlab.html">封包練習台</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <h1>LabVIEW 動畫實驗室</h1>
+  <p class="lead-text">不用安裝 LabVIEW。每個實驗室挑一個最容易搞混的觀念，讓你自己改輸入、看它一步一步怎麼跑。課程裡每一課的「動畫練習」也會連到這裡。</p>
+  <p class="why">第一次來，建議照這個順序：</p>
+  <div class="order" id="order"></div>
+  <div class="hub" id="hub"></div>
+  <p class="why" id="prog"></p>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關。</p></footer>
+<script>
+(function () {
+  var LABS = [
+    { f: 'lab-numeric.html', n: '數值', ic: '123', c: '#e8820c', d: '整數算到頭會繞回來，浮點數轉整數卻是夾住。', t: ['整數溢位轉盤（U8、I8、U16、I16）', '四種捨入函式的數線', '商與餘數、毫秒換時分秒'], l: '第 3 課、C2' },
+    { f: 'lab-bool.html', n: '布林', ic: 'TF', c: '#1f9d3a', d: '按鈕的六種機械動作，按下去才知道差在哪。', t: ['六種機械動作的即時時間圖', '邏輯閘真值表與位元遮罩', 'Select、In Range and Coerce'], l: '第 3、17 課、C2、C16' },
+    { f: 'lab-loop.html', n: '迴圈', ic: '⟳', c: '#6b6b6b', d: '跑幾圈、輸出什麼，一圈一圈看。', t: ['While 與 For、四種輸出通道', 'Shift Register 有沒有接初始值', 'Wait 與 Wait Until Next ms Multiple'], l: '第 4、5、7 課、C3' },
+    { f: 'lab-struct.html', n: '結構', ic: '?', c: '#1e6fff', d: 'Case 走哪一頁、事件怎麼排隊、狀態機怎麼換狀態。', t: ['Case 選擇器：範圍、Default、捨入、大小寫', 'Event 事件排隊與 Timeout', 'State Machine 洗衣機', 'Sequence 與 Tick Count 計時'], l: '第 6 課、C4、C9、A2' },
+    { f: 'lab-array.html', n: '陣列', ic: '[ ]', c: '#e8820c', d: '十個常用陣列函式，看元素怎麼搬。', t: ['Index、Insert、Delete、Replace、Subset…', '先預測再執行、隨機挑戰'], l: '第 7 課、C5' },
+    { f: 'lab-string.html', n: '字串', ic: 'abc', c: '#c026d3', d: '一格一個字元，位置從 0 算起。', t: ['切、接、找、換九個函式', 'Format／Scan 格式碼對照', 'Normal、\'\\\' Codes、Hex 看控制碼'], l: '第 9 課、C6、F2' },
+    { f: 'lab-graph.html', n: '圖表', ic: '∿', c: '#0f766e', d: 'Chart 會記住舊資料，Graph 每次整張換掉。', t: ['六種資料型別各畫出什麼', 'XY Graph 用兩個陣列畫圓'], l: 'C11、C14' },
+    { f: 'lab-var.html', n: '變數', ic: 'x', c: '#7c3aed', d: '兩個迴圈共用一個變數，資料是怎麼不見的。', t: ['競爭條件：你來當排程器', '一顆 Stop 停兩個迴圈的四種接法', 'FGV 功能型全域變數'], l: '第 16 課、C8' },
+    { f: 'lab-daq.html', n: 'DAQ', ic: 'AI', c: '#dc2626', d: '資料擷取的三個 R：取樣率、解析度、範圍。', t: ['取樣率不夠時的混疊', '解析度與範圍：最小可分辨電壓', 'DAQmx 流程與緩衝區溢位'], l: 'C12' },
+    { f: 'fxlab.html', n: 'FX 封包練習台', ic: 'ENQ', c: '#334155', d: '對一台模擬的 FX PLC 送封包，看它怎麼回。', t: ['讀寫 D 暫存器、ACK／NAK', '10 個任務、封包解碼練習'], l: '第 9、12～14 課' }
+  ];
+  var seen = {}; try { seen = JSON.parse(localStorage.getItem('ll_lv_labs_seen') || '{}'); } catch (e) {}
+  function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+  var hub = document.getElementById('hub'), order = document.getElementById('order'), n = 0;
+  LABS.forEach(function (L, i) {
+    var a = document.createElement('a'); a.className = 'card'; a.href = L.f;
+    a.innerHTML = (seen[L.f] ? '<span class="seen">✔ 去過</span>' : '') + '<h2><span class="ic" style="background:' + L.c + '">' + esc(L.ic) + '</span>' + esc(L.n) + '</h2><p>' + esc(L.d) + '</p><ul>' + L.t.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul><div class="les">對應課程：' + esc(L.l) + '</div>';
+    a.addEventListener('click', function () { seen[L.f] = 1; try { localStorage.setItem('ll_lv_labs_seen', JSON.stringify(seen)); } catch (e) {} });
+    hub.appendChild(a);
+    if (seen[L.f]) n++;
+    var o = document.createElement('a'); o.href = L.f; o.textContent = (i + 1) + '. ' + L.n; order.appendChild(o);
+    if (i < LABS.length - 1) order.appendChild(document.createTextNode('→'));
+  });
+  document.getElementById('prog').textContent = n ? '你已經去過 ' + n + ' / ' + LABS.length + ' 個（只記在這台瀏覽器）。' : '';
+})();
+</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "9bf5761aa5" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

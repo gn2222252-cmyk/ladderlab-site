@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="be1ae61471">
+<meta name="ll-version" content="9bf5761aa5">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>結構實驗室：Case、Event、State Machine、Sequence | LadderLab</title>
@@ -41,10 +41,10 @@
 <body>
 <header class="top">
   <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
-  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-loop.html">迴圈</a><a href="lab-struct.html" class="here">結構</a><a href="lab-array.html">陣列</a><a href="lab-string.html">字串</a><a href="lab-graph.html">圖表</a><a href="lab-var.html">變數</a><a href="lab-daq.html">DAQ</a><a href="lab-bool.html">布林</a><a href="lab-numeric.html">數值</a></nav>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-struct.html" class="here">結構</a></nav>
 </header>
 <main class="lab-main">
-  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
   <h1>結構實驗室</h1>
   <div class="tabs" id="tabs">
     <button type="button" data-t="case" class="here">Case：走哪一頁？</button>
@@ -113,12 +113,13 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；結構行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-struct.js?v=0b442a9727"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "be1ae61471" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "9bf5761aa5" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
