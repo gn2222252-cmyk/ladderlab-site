@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="80099f9f70">
+<meta name="ll-version" content="5191594577">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 練習題 | LadderLab</title>
@@ -68,7 +68,8 @@
 
       <aside class="side">
         <div id="broken" class="conflict" hidden></div>
-        <div class="box"><h3>試跑：輸入</h3><div id="inputs" class="inputs"></div></div>
+        <div class="box"><h3>試跑：輸入</h3><div id="inputs" class="inputs"></div>
+          <label class="check small" id="lockwrap" hidden><input id="lockhold" type="checkbox"> 按一下就保持按住（再按一下放開）：要同時按住兩顆按鈕時用</label></div>
         <div class="box"><h3>輸出</h3><ul id="outputs" class="lamps"></ul></div>
         <div class="box" id="plant-box" hidden><h3>機台</h3><canvas id="plant" width="260" height="170"></canvas>
           <div id="pfaults" class="pfaults"></div></div>
@@ -94,13 +95,13 @@
 <script src="ledit.js?v=d905dd003e"></script>
 <script src="sfc.js?v=254aa66b02"></script>
 <script src="plants.js?v=e003305f64"></script>
-<script src="practice.js?v=3f314ade7b"></script>
+<script src="practice.js?v=b57da1d237"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "80099f9f70" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "5191594577" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -40,6 +40,8 @@ function open(eid) {
     `<button type="button" class="inp ${kind}" data-dev="${dev}" data-kind="${kind}" ${kind === "sensor" ? "disabled" : ""}>` +
     `<i></i><span><b>${dev}</b> ${esc2(label)}</span><small>${{ hold: "按住", toggle: "切換", sensor: "感測器" }[kind]}</small></button>`).join("");
   $("inputs").querySelectorAll(".inp").forEach(wireInput);
+  $("lockwrap").hidden = ex.inputs.filter((x) => x[2] === "hold").length < 2;
+  $("lockhold").checked = false;
   if (ex.latched) {
     $("inputs").insertAdjacentHTML("beforeend", `<button type="button" class="inp power" id="powerbtn"><i></i><span><b>⚡</b> 停電再復電</span><small>電源</small></button>`);
     $("powerbtn").onclick = () => pr.power_cycle();
@@ -101,6 +103,7 @@ $("palette").querySelectorAll("[data-ins]").forEach((b) => b.addEventListener("c
 function compileNow() {
   gutter();
   $("pfaults").querySelectorAll("input").forEach((c) => { c.checked = false; });   // a new run starts without faults
+  $("inputs").querySelectorAll(".inp").forEach((b) => { b._held = false; });        // and with every latched button released
   const out = JSON.parse(pr.compile($("code").value));
   $("errors").innerHTML = out.errors.map((e) => `<li>${e.line ? `第 ${e.line} 行：` : ""}${esc2(e.msg)}</li>`).join("");
   layout = out.rungs;
@@ -114,11 +117,18 @@ function compileNow() {
 }
 $("restart").onclick = () => { compileNow(); $("pfaults").querySelectorAll("input").forEach((c) => { c.checked = false; }); };
 
+$("lockhold").addEventListener("change", () => {       // leaving lock mode releases everything that was latched
+  if (!$("lockhold").checked) $("inputs").querySelectorAll('.inp[data-kind="hold"]').forEach((b) => { if (b._held) { b._held = false; pr.set_input(b.dataset.dev, 0); } });
+});
 function wireInput(b) {
   const dev = b.dataset.dev, kind = b.dataset.kind;
   if (kind === "hold") {
-    const on = (e) => { e.preventDefault(); pr.set_input(dev, 1); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } };
-    const off = () => pr.set_input(dev, 0);
+    /* "lock" mode: a click latches the button, so two hold buttons can be down together with one mouse */
+    const lock = () => $("lockhold").checked;
+    const on = (e) => { e.preventDefault();
+      if (lock()) { b._held = !b._held; pr.set_input(dev, b._held ? 1 : 0); return; }
+      pr.set_input(dev, 1); try { b.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ } };
+    const off = () => { if (!lock()) { b._held = false; pr.set_input(dev, 0); } };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off);
     b.addEventListener("keydown", (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); pr.set_input(dev, 1); } });
     b.addEventListener("keyup", (e) => { if (e.key === " " || e.key === "Enter") pr.set_input(dev, 0); });
