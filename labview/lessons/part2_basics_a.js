@@ -33,7 +33,7 @@ const addr={name:'L02_Address.vi',view:'split',ratio:1.5,
  sim:{live:true,step(i){const m=i.d*2,a=m+4096,b=i.n*2;return {out:{a,b},vals:{d:i.d,n:i.n,c2:2,c4:4096,'mul.out':m,'add.out':a,'mul2.out':b}};}}
 };
 L.push({id:'L02',order:2,no:'2',part:'LabVIEW 基礎',title:'資料流：節點什麼時候執行',mins:40,files:['練習\\L02_Address.vi'],
-goals:[['學會','資料流規則、常數、線的分岔、Highlight Execution。'],['做出','把 D 編號換算成 FX 協定位址：位址 = 4096 + 2 × D。'],['用在專案','第 9 課組封包時，位址就是這樣算的。']],
+goals:[['學會','資料流規則、常數、線的分岔、Highlight Execution。'],['做出','把 D 編號換算成 FX 協定位址：位址 = 4096 + 2 × D。'],['用在專案','第 9 課組封包時，位址就是這樣算的。'],['動畫練習','<a href="lab-flow.html">資料流實驗室</a>：一步一步看小球沿線流動，節點要等所有輸入到齊才執行；平行的兩條路同時跑。']],
 check:'D Number = 100 時 Address = 4296；Words = 2 時 Bytes = 4。',
 body:[
 C.h3('懂','','LabVIEW 不是「由上往下」執行'),
@@ -174,7 +174,7 @@ const blink={name:'L04_Blink.vi',view:'split',ratio:1.4,
  sim:{period:300,step(inp,st,ctx){const i=ctx.i;const r=i%2;return {out:{led:r===0,it:i},vals:{iter:i,k500:500,c2:2,'qr.R':r,'eq.out':r===0,stop:!!inp.stop},stop:!!inp.stop,msg:inp.stop?'按了 STOP：這一圈跑完後迴圈結束':'迴圈第 '+i+' 圈（網頁加快成 0.3 秒一圈）'};},doneMsg:'迴圈結束，VI 停止'}
 };
 L.push({id:'L04',order:4,no:'4',part:'LabVIEW 基礎',title:'While Loop：讓程式一直跑',mins:45,files:['練習\\L04_Blink.vi'],
-goals:[['學會','While Loop、Iteration 端子、Loop Condition、Wait (ms)、Stop 按鈕的機械動作。'],['做出','每 0.5 秒閃一次的燈，按 STOP 才停。'],['用在專案','GT_Main 的 UI 迴圈、通訊迴圈都是 While Loop。'],['動畫練習','<a href="lab-loop.html">迴圈實驗室</a>：自己組一個 While Loop，看停止條件為什麼在每圈最後才檢查、接 False 常數會怎樣；還有 Wait 的時間圖。']],
+goals:[['學會','While Loop、Iteration 端子、Loop Condition、Wait (ms)、Stop 按鈕的機械動作。'],['做出','每 0.5 秒閃一次的燈，按 STOP 才停。'],['用在專案','GT_Main 的 UI 迴圈、通訊迴圈都是 While Loop。'],['動畫練習','<a href="lab-loop.html">迴圈實驗室</a>：自己組一個 While Loop，看停止條件為什麼在每圈最後才檢查、接 False 常數會怎樣；還有 Wait 的時間圖。'],['動畫練習','<a href="lab-flow.html#loop">資料流實驗室：迴圈的邊界</a>：迴圈外的控制元件執行中改值，迴圈裡看不到；輸出通道要迴圈結束才送出。']],
 check:'Run 後燈每 0.5 秒換一次狀態、Iterations 一直加，按 STOP 後程式停止（工具列 Run 箭頭恢復白色）。',
 body:[
 C.h3('懂','','While Loop 的三個零件'),

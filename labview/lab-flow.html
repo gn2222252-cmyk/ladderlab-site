@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="57db78b855">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>資料流實驗室：節點什麼時候執行 | LadderLab</title>
+<meta name="description" content="LabVIEW 資料流的動畫實驗室：資料像小球沿線流動，節點等所有輸入到齊才執行；沒連線的節點平行執行、誰先不一定，總時間取最長的；線分叉是複製一份；While Loop 的輸入通道只在開始前讀一次、輸出通道要迴圈結束才送出。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .row input[type=number] { width: 80px; }
+  .row input[type=range] { width: 150px; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .fp { border: 1px solid var(--line); border-radius: 10px; padding: 4px 10px; background: rgba(128, 128, 128, .05); }
+  .fp h3, .bdh { margin: 6px 0 2px; font-size: 14px; color: var(--mute); font-weight: 600; }
+  .dg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .dg text { font: 15px ui-monospace, Consolas, "Microsoft JhengHei", monospace; fill: var(--ink); }
+  .dg .nd rect, .dg .nd polygon { stroke-width: 2; transition: fill .25s, stroke .25s; }
+  .dg .fn rect { fill: #fff7d6; stroke: #c58b00; }
+  .dg .fn text { fill: #6b4b00; font-weight: 700; }
+  .dg .ctl rect, .dg .ind rect { fill: var(--card); stroke: #e8820c; }
+  .dg .ind rect { stroke-width: 3; }
+  .dg .cst rect { fill: var(--card); stroke: #e8820c; stroke-dasharray: 0; }
+  .dg .nd.part rect { fill: #fde68a; }
+  .dg .nd.run rect { fill: #fbbf24; stroke: #b45309; }
+  .dg .nd.done rect { stroke: #16a34a; }
+  .dg .badge { font-size: 12px; fill: #b45309; font-weight: 700; }
+  .dg .wire { fill: none; stroke: #e8820c; stroke-width: 3; }
+  .dg .wire.done { stroke-width: 4; }
+  .dg .wv { font-size: 13px; fill: #111; font-weight: 700; }
+  .dg .wvbg { fill: #fff; stroke: #e8820c; stroke-width: 1; }
+  .dg .ball { fill: #f59e0b; stroke: #92400e; stroke-width: 2; }
+  .gantt { border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  .gl { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 6px; align-items: center; margin: 6px 0; font-size: 14px; }
+  .gtrack { position: relative; height: 26px; background: rgba(128, 128, 128, .08); border-radius: 4px; overflow: hidden; }
+  .gbar { position: absolute; top: 0; bottom: 0; background: #60a5fa; border-radius: 4px; font: 12px ui-monospace, Consolas, monospace; color: #0b1b3a; display: flex; align-items: center; padding-left: 4px; white-space: nowrap; overflow: hidden; }
+  .gbar.b { background: #fbbf24; } .gbar.c { background: #86efac; }
+  .gcur { position: absolute; top: 0; bottom: 0; width: 2px; background: #dc2626; }
+  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .scn button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .two { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .arrv { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 4px; border: 2px solid #e8820c; border-radius: 6px; min-height: 38px; align-items: center; }
+  .arrv span { min-width: 34px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; background: var(--card); font: 700 14px ui-monospace, Consolas, monospace; padding: 0 3px; }
+  .arrv span.chg { background: #fde68a; border-color: #f59e0b; }
+  .arrv.in span { animation: pop .45s ease-out; }
+  @keyframes pop { from { transform: translateX(-24px); opacity: 0; } }
+  .brgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 700px) { .brgrid { grid-template-columns: minmax(0, 1fr); } }
+  .bx { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .bx h3 { margin: 0 0 6px; font-size: 15px; }
+  .fpgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 8px 0; }
+  .fpgrid > div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--mute); min-width: 0; }
+  .fpgrid b.v { display: block; font: 700 22px ui-monospace, Consolas, monospace; color: var(--ink); transition: background .3s; }
+  .fpgrid b.v.flash { background: #fde68a; }
+  .fpgrid b.v.stale { color: var(--mute); }
+  .fpgrid input[type=range] { width: 100%; }
+  .stopb { padding: 8px 16px; border-radius: 8px; border: 3px solid #555; background: #ddd; color: #222; font-weight: 700; cursor: pointer; }
+  .stopb.on { background: #dc2626; color: #fff; border-color: #7f1d1d; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-flow.html" class="here">資料流</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>資料流實驗室：節點什麼時候執行</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="rule" class="here">資料流規則</button>
+    <button type="button" data-t="par">平行與順序</button>
+    <button type="button" data-t="branch">線分叉＝複製</button>
+    <button type="button" data-t="loop">迴圈的邊界</button>
+  </div>
+
+  <section class="lab-stage" id="t-rule">
+    <p class="why">兩個溫度感測器的讀值相加再乘 0.5 得到平均；下面另一條路把秒數換成毫秒。兩條路之間沒有線。按「一步一步」，每按一下是一拍：要嘛<b>到齊的節點執行</b>，要嘛<b>資料沿線送到下一個節點</b>。注意 Multiply 拿到 0.5 之後還得等 Add 算完。</p>
+    <div class="fp"><h3>前面板</h3><div class="row">
+      <label>溫度1 <input type="number" id="ft1" value="24" step="0.5"></label>
+      <label>溫度2 <input type="number" id="ft2" value="28" step="0.5"></label>
+      <label>秒數 <input type="number" id="fsec" value="3" step="1"></label>
+    </div></div>
+    <div class="row">
+      <button type="button" class="go" id="frun">▶ 執行</button>
+      <button type="button" id="fstep">一步一步</button>
+      <button type="button" id="freset">重來</button>
+      <label class="check small"><input type="checkbox" id="fhl" checked> 💡 Highlight Execution（慢動作、線上顯示值）</label>
+    </div>
+    <div class="bdh">方塊圖</div>
+    <svg class="dg" id="fsvg" viewBox="0 0 560 300" role="img" aria-label="資料流方塊圖"></svg>
+    <p class="verdict-line" id="fsay"></p>
+    <div class="log" id="flog"></div>
+    <div class="callout">LabVIEW 不看節點擺在哪裡，只看線。沒有輸入的東西（控制元件、常數）一開始就有資料，同時出發；函式要等<b>每一個</b>輸入端都收到資料才執行，執行完再把結果<b>同時</b>送上所有輸出線。關掉 Highlight Execution 再按執行：結果一樣，只是快到看不出過程。Highlight Execution 只是讓你看清楚順序的慢動作，正式執行時記得關掉，否則程式會慢很多。</div>
+  </section>
+
+  <section class="lab-stage" id="t-par" hidden>
+    <p class="why">方塊圖上兩個節點之間沒有線，LabVIEW 就可以同時執行它們，誰先開始、誰先結束都不保證。要固定順序，就要用線把它們串起來（常用錯誤線：前一個的 error out 接到下一個的 error in）。選一個情境按執行。</p>
+    <div class="two">
+      <div class="scn" id="pscn"></div>
+      <div style="min-width:0">
+        <div class="row">
+          <button type="button" class="go" id="prun">▶ 執行</button>
+          <button type="button" id="prun10">連續執行 10 次</button>
+          <label id="pplcw">讀 PLC 大約 <input type="range" id="pplc" min="20" max="180" step="10" value="60"> <b id="pplcv"></b></label>
+        </div>
+        <div class="gantt" id="pgantt"></div>
+        <p class="verdict-line" id="psay"></p>
+        <div class="log" id="plog"></div>
+      </div>
+    </div>
+    <div class="callout">在迴圈裡放一個 Wait 100 ms，和讀 PLC 並排（沒有連線）時，一圈的時間是兩者中<b>比較長</b>的那個，不是相加。這也是為什麼 Wait 常拿來當「每圈至少多久」的節拍器：讀 PLC 只要 60 ms，一圈還是 100 ms；讀 PLC 慢到 150 ms，一圈就變 150 ms。<br>順序有關係時（例如「先讀 PLC、再把讀到的值寫進檔案」）一定要有線決定先後；如果寫檔需要讀到的資料，資料線本身就保證了順序。錯誤線還有另一個好處：前面出錯，後面的節點會知道。</div>
+  </section>
+
+  <section class="lab-stage" id="t-branch" hidden>
+    <p class="why">一條線從控制元件出來分成兩條（分叉），上面那條拿去改，下面那條直接接到顯示元件。改上面那份，會不會影響下面那份？</p>
+    <div class="row">
+      <label>陣列控制元件 <input id="barr" value="5, 8, 2, 7" size="14"></label>
+      <label>上面那條做 <select id="bop"><option value="rep">Replace Array Subset：第 0 個換成 99</option><option value="mul">每個元素 × 10</option><option value="rev">Reverse 1D Array</option><option value="del">Delete From Array：刪第 0 個</option></select></label>
+      <button type="button" class="go" id="brun">▶ 執行</button>
+    </div>
+    <svg class="dg" id="bsvg" viewBox="0 0 560 200" role="img" aria-label="線分叉的方塊圖"></svg>
+    <div class="brgrid">
+      <div class="bx"><h3>顯示 A（改過的那條）</h3><div class="arrv" id="bA"></div></div>
+      <div class="bx"><h3>顯示 B（直接接過去）</h3><div class="arrv" id="bB"></div></div>
+    </div>
+    <p class="verdict-line" id="bsay"></p>
+    <div class="callout">線分叉時，每個目的地拿到的都是<b>同一個值的一份</b>（by value）。上面那條怎麼改，下面那條和原本的控制元件都不受影響；數字、字串、陣列、cluster 都一樣。陣列很大時，LabVIEW 會盡量不真的複製（能原地改就原地改），但結果一定和「複製一份再改」相同，所以寫程式時照「各拿一份」來想就對了。<br>例外是<b>參考（refnum）</b>：Queue、VISA 資源、檔案這類線，分叉複製的是「參考」，兩條線指向同一個佇列或同一個 COM 埠，從一條線 Enqueue，另一條線 Dequeue 拿得到。</div>
+  </section>
+
+  <section class="lab-stage" id="t-loop" hidden>
+    <p class="why">這是學生最常卡住的地方。按執行後，<b>一邊跑一邊拉兩個 Gain</b>：外面的 Gain 從迴圈外經過輸入通道接進來，裡面的 Gain 端子放在迴圈裡。再看迴圈外的「結果」顯示元件什麼時候才會變。</p>
+    <div class="fp"><h3>前面板</h3>
+      <div class="fpgrid">
+        <div>外面的 Gain（迴圈外）<b class="v" id="lgo">3</b><input type="range" id="lgos" min="1" max="9" value="3"></div>
+        <div>裡面的 Gain（迴圈內）<b class="v" id="lgi">3</b><input type="range" id="lgis" min="1" max="9" value="3"></div>
+        <div>A ＝ i × 外面的 Gain（迴圈內顯示）<b class="v" id="lA">0</b></div>
+        <div>B ＝ i × 裡面的 Gain（迴圈內顯示）<b class="v" id="lB">0</b></div>
+        <div>結果（迴圈外，接輸出通道）<b class="v stale" id="lR">0</b></div>
+      </div>
+    </div>
+    <div class="row">
+      <button type="button" class="go" id="lrun">▶ 執行</button>
+      <button type="button" class="stopb" id="lstop">STOP</button>
+      <button type="button" id="labort">■ Abort（強制停止）</button>
+      <label class="check small"><input type="checkbox" id="lout"> 把 STOP 按鈕的端子放在迴圈外面</label>
+    </div>
+    <div class="bdh">方塊圖</div>
+    <svg class="dg" id="lsvg" viewBox="0 0 560 250" role="img" aria-label="While Loop 與通道"></svg>
+    <p class="verdict-line" id="lsay"></p>
+    <div class="log" id="llog"></div>
+    <div class="callout">While Loop 也是一個節點，一樣守資料流規則：<b>所有輸入（包括輸入通道）到齊才開始</b>，所以通道的值在第 0 圈之前就讀好了，之後怎麼改前面板都進不來；<b>迴圈整個結束才把輸出通道送出去</b>，所以接在迴圈外的顯示元件在執行中不會動，一直是上次的值。要讓迴圈每圈都讀到最新的值，就把控制元件的端子放進迴圈裡；要在迴圈執行中看到結果，就把顯示元件的端子放進迴圈裡。STOP 按鈕放在迴圈外也是同一個道理：迴圈只讀到開始那一刻的 False，永遠停不下來，只能 Abort；用 Abort 停下時，輸出通道後面的東西根本不會執行。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="qquiz" style="margin-top:16px"></section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-flow.js?v=27ca2a0953"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "57db78b855" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

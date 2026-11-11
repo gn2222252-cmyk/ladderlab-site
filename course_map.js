@@ -1027,6 +1027,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-flow.html",
+     "href": "labview/lab-flow.html",
+     "label": "動畫實驗室：資料流、平行、迴圈邊界"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-numeric.html",
      "href": "labview/lab-numeric.html",
      "label": "動畫實驗室：溢位、捨入、商與餘數"
