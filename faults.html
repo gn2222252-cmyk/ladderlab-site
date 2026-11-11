@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="9e98c95666">
+<meta name="ll-version" content="34016b828c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 故障排除實戰 | LadderLab</title>
@@ -88,8 +88,8 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=3fd99050e7"></script>
-<script src="course_map.js?v=95317ab099"></script>
+<script src="py/bundle.js?v=8216b820bf"></script>
+<script src="course_map.js?v=b2f2e0583f"></script>
 <script src="course.js?v=764fe70243"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script src="ladder.js?v=796bf6d37e"></script>
@@ -100,7 +100,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "9e98c95666" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "34016b828c" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -289,7 +289,7 @@ function qmhSim(d){
    A3：從 QMH 到 Host_Main：四個迴圈
    ====================================================================== */
 L.push({id:'A03',order:33,no:'A3',part:PART,title:'從 QMH 到 Host_Main：為什麼變成 4 個迴圈、資料怎麼流',mins:80,
-goals:[['學會','依「時間尺度」和「資源擁有者」切迴圈；Queue、Notifier、Shift Register 各用在哪；U32 打包命令。'],['看懂','Host_Main 4 個迴圈的責任、週期、在等什麼，以及一顆零件從請求檢測到結果寫回 PLC 的完整路徑。'],['用在','A4～A7 逐一拆每個迴圈；A8 自己規劃架構。']],
+goals:[['學會','依「時間尺度」和「資源擁有者」切迴圈；Queue、Notifier、Shift Register 各用在哪；U32 打包命令。'],['看懂','Host_Main 4 個迴圈的責任、週期、在等什麼，以及一顆零件從請求檢測到結果寫回 PLC 的完整路徑。'],['用在','A4～A7 逐一拆每個迴圈；A8 自己規劃架構。'],['動畫練習','<a href="lab-qmh.html#multi">QMH 架構實驗室：四個迴圈一起跑</a>：按 Start、E-Stop、讀狀態，看寫入佇列、Notifier、MES 佇列的卡片怎麼在 MES、通訊、UI、檢測迴圈之間飛。']],
 check:'能畫出 4 個迴圈和 3 個傳遞工具的圖，並說出：為什麼檢測不能放在通訊迴圈、為什麼通訊迴圈到 UI 用 Notifier 不用 Queue。',
 body:[
 C.h3('懂','','專案怎麼一路演進'),

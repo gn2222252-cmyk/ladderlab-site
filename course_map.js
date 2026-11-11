@@ -1027,6 +1027,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-qmh.html",
+     "href": "labview/lab-qmh.html",
+     "label": "動畫實驗室：QMH 與 Host_Main 多迴圈架構"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-daq.html",
      "href": "labview/lab-daq.html",
      "label": "動畫實驗室：DAQ 取樣率、解析度、緩衝區"

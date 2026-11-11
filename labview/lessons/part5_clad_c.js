@@ -22,7 +22,7 @@ const smFig={name:'State Machine',view:'split',ratio:1.4,
    if(cur==='Init')nx='Wait';else if(cur==='Wait'){if(i.quit)nx='Stop';else if(i.go)nx='Run';}else if(cur==='Run'){st.n++;nx='Wait';}
    st.s=nx;return {out:{st:cur+' → '+nx,n:st.n},frames:{cs:states.indexOf(cur)},stop:cur==='Stop',msg:'目前狀態：'+cur+(cur==='Wait'?'（按 Go 或 Quit）':'')};},doneMsg:'進入 Stop 狀態，迴圈結束'}};
 L.push({id:'C09',order:109,no:'C9',part:PART,title:'設計模式：State Machine、Producer/Consumer、QMH',mins:60,
-goals:[['學會','State Machine、Event-driven State Machine、Producer/Consumer（資料、事件）、Queued Message Handler、Master/Slave、FGV 的用途與比較。'],['考試重點','看需求選模式：「依序且可分支的步驟」→ State Machine；「接收資料不能漏、處理比較慢」→ Producer/Consumer；「UI 不能卡」→ 事件 + Producer/Consumer。'],['動畫練習','<a href="lab-struct.html#sm">結構實驗室：State Machine</a>：洗衣機狀態機一圈一圈跑，開門進暫停；同一圈按兩個按鈕，看哪一個被蓋掉。']],
+goals:[['學會','State Machine、Event-driven State Machine、Producer/Consumer（資料、事件）、Queued Message Handler、Master/Slave、FGV 的用途與比較。'],['考試重點','看需求選模式：「依序且可分支的步驟」→ State Machine；「接收資料不能漏、處理比較慢」→ Producer/Consumer；「UI 不能卡」→ 事件 + Producer/Consumer。'],['動畫練習','<a href="lab-struct.html#sm">結構實驗室：State Machine</a>：洗衣機狀態機一圈一圈跑，開門進暫停；同一圈按兩個按鈕，看哪一個被蓋掉。'],['動畫練習','<a href="lab-qmh.html">QMH 架構實驗室</a>：QMH 和簡單狀態機並排，連按 3 個按鈕，看誰漏掉。']],
 check:'看到題目描述能選出正確的設計模式，並說出 State Machine 的三個零件。',
 body:[
 C.h3('懂','','State Machine（狀態機）'),
