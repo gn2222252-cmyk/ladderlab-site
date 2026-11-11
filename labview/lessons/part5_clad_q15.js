@@ -61,7 +61,7 @@ function q15Lab(d){
 L.push({id:'C13',order:113,no:'C13',part:PART,title:'考題解析：多通道 2D 陣列、自動索引與 Index Array',mins:35,
 goals:[['學會','2D 陣列的「列」和「行」；For Loop 自動索引一圈拿一列；輸出通道「自動索引」和「最後一個值」的差別；Index Array 只接列索引就拿整列；超出範圍回傳空陣列。'],
  ['題目','DAQmx Read（Analog 2D DBL NChan NSamp）讀到多個通道。要拿出第四個通道、每個值乘 2；通道少於 4 個時回傳空陣列。四個選項哪個對？'],
- ['答案','<b>C</b>。下面每一個選項都在 LabVIEW 實際跑過。']],
+ ['答案','<b>C</b>。下面每一個選項都在 LabVIEW 實際跑過。'],['動畫練習','<a href="lab-coderead.html">看圖說答案</a>：再練 31 題程式判讀，迴圈、陣列、Shift Register 都有動畫解說。']],
 check:'能解釋：為什麼 D 在 4 個通道時看起來對、3 個通道時卻錯；為什麼 A、B 迴圈裡的 Index Array 3 拿到的是「第 4 個取樣」而不是「第 4 個通道」。',
 body:[
 C.h3('懂','','這題用到的功能'),

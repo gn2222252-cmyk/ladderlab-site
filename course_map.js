@@ -1087,6 +1087,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-coderead.html",
+     "href": "labview/lab-coderead.html",
+     "label": "動畫實驗室：看圖說答案（CLAD 程式判讀）"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-numeric.html",
      "href": "labview/lab-numeric.html",
      "label": "動畫實驗室：溢位、捨入、商與餘數"

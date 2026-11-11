@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="71eab9e2a6">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>看圖說答案：CLAD 程式判讀 | LadderLab</title>
+<meta name="description" content="CLAD 風格的方塊圖判讀練習：For／While 迴圈與通道、Shift Register、Case、陣列與字串函式、數值轉換、布林比較、錯誤叢集、Local Variable、Sequence。看圖選答案，答完用動畫一步一步播放資料流；測驗模式 10 題計時，錯題自動記下來。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .qhead { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; margin: 6px 0; }
+  .qhead .tag { font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--mute); }
+  .qtext { font-size: 17px; margin: 8px 0; }
+  .dg { width: 100%; max-width: 640px; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: #fbfbf9; }
+  .dg text { font: 12px ui-monospace, Consolas, "Microsoft JhengHei", monospace; fill: #222; }
+  .dg .hl rect, .dg rect.hl { stroke: #f59e0b !important; stroke-width: 4 !important; }
+  .dg .bub rect { fill: #fef08a; stroke: #854d0e; stroke-width: 1; }
+  .dg .bub text { font-weight: 700; font-size: 11px; fill: #111; }
+  .opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0; max-width: 640px; }
+  @media (max-width: 560px) { .opts { grid-template-columns: minmax(0, 1fr); } }
+  .opts button { text-align: left; padding: 10px 12px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: 15px ui-monospace, Consolas, "Microsoft JhengHei", monospace; color: inherit; overflow-wrap: anywhere; }
+  .opts button.pick { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .opts button.right { border-color: #16a34a; box-shadow: 0 0 0 2px #16a34a inset; }
+  .opts button.wrong { border-color: #dc2626; box-shadow: 0 0 0 2px #dc2626 inset; }
+  .anim { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 8px 0; max-width: 640px; }
+  .anim .st { min-height: 2.6em; font-size: 15px; }
+  .timer { font: 700 18px ui-monospace, Consolas, monospace; }
+  .result { font-size: 20px; font-weight: 700; }
+  .wl { padding-left: 20px; } .wl li { margin: 6px 0; }
+  .prog { height: 8px; border-radius: 4px; background: rgba(128, 128, 128, .15); overflow: hidden; max-width: 640px; }
+  .prog i { display: block; height: 100%; background: var(--on); width: 0; transition: width .2s; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-coderead.html" class="here">看圖說答案</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>看圖說答案：CLAD 程式判讀練習</h1>
+  <p class="why">CLAD 考試很多題是「給一張方塊圖，問執行後顯示元件的值」。照資料流一條線一條線追，不要用猜的。線的顏色就是型別：<span style="color:#e8820c">橘色 DBL</span>、<span style="color:#1e5bd7">藍色整數</span>、<span style="color:#16a34a">綠色布林</span>、<span style="color:#db2777">粉紅字串</span>、<span style="color:#a16207">咖啡色錯誤叢集</span>；粗線是陣列。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="prac" class="here">練習模式</button>
+    <button type="button" data-t="exam">測驗模式（10 題計時）</button>
+  </div>
+
+  <section class="lab-stage" id="t-prac">
+    <div class="row">
+      <label>主題 <select id="ptopic"></select></label>
+      <button type="button" id="pprev">◀ 上一題</button>
+      <button type="button" id="pnext">下一題 ▶</button>
+      <button type="button" id="prand">隨機一題</button>
+    </div>
+    <div class="qhead"><b id="pno"></b><span class="tag" id="ptag"></span></div>
+    <svg class="dg" id="psvg" role="img" aria-label="題目的方塊圖"></svg>
+    <p class="qtext" id="pq"></p>
+    <div class="opts" id="popts"></div>
+    <p class="verdict-line" id="psay"></p>
+    <div class="anim" id="panim" hidden>
+      <div class="row" style="margin:0 0 6px">
+        <b>動畫解說</b>
+        <button type="button" class="go" id="aplay">▶ 播放</button>
+        <button type="button" id="aprev">上一步</button>
+        <button type="button" id="anext">下一步</button>
+        <span id="acnt" class="why"></span>
+      </div>
+      <div class="st" id="atxt"></div>
+    </div>
+  </section>
+
+  <section class="lab-stage" id="t-exam" hidden>
+    <div id="xstart">
+      <p>從題庫隨機抽 10 題，每題 4 個選項，選好按「下一題」。全部答完才公布分數和錯題，錯題會記在這台電腦上，之後可以在練習模式選「我錯過的題目」複習。</p>
+      <button type="button" class="go" id="xgo">開始測驗</button>
+      <p class="why" id="xhist"></p>
+    </div>
+    <div id="xrun" hidden>
+      <div class="row"><b id="xno"></b><span class="timer" id="xtime">00:00</span><button type="button" id="xquit">放棄</button></div>
+      <div class="prog"><i id="xbar"></i></div>
+      <svg class="dg" id="xsvg" role="img" aria-label="題目的方塊圖" style="margin-top:8px"></svg>
+      <p class="qtext" id="xq"></p>
+      <div class="opts" id="xopts"></div>
+      <div class="row"><button type="button" class="go" id="xnext" disabled>下一題 ▶</button></div>
+    </div>
+    <div id="xend" hidden>
+      <p class="result" id="xscore"></p>
+      <ol class="wl" id="xwrong"></ol>
+      <div class="row"><button type="button" class="go" id="xagain">再考一次</button></div>
+    </div>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標；CLAD 為 NI 的認證名稱。本站為獨立製作，與 NI 無關；題目為自行設計的練習題，行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-coderead.js?v=5a13c3d933"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "71eab9e2a6" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
