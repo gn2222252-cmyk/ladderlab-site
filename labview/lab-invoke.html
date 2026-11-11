@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="a42d7f6093">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方法節點實驗室：Invoke Node 與 VI Server | LadderLab</title>
+<meta name="description" content="LabVIEW Invoke Node 的動畫實驗室：Property（讀寫特性）和 Invoke（叫它做事）的差別，Reinitialize To Default、Get Image、Export Image；VI Server 類別階層與參考的型別；This VI 加 Controls[] 用 For Loop 一次改整個前面板；Open VI Reference、Control Value Set／Get、Run VI、Variant To Data、Close Reference。">
+<link rel="stylesheet" href="../style.css?v=b1a6cbeb47">
+<link rel="stylesheet" href="lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .fp { background: #d9dde3; color: #1d2430; border: 1px solid #b5bcc7; border-radius: 8px; padding: 12px; display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-start; min-width: 0; }
+  .fp .cap { width: 100%; font-size: 12px; color: #4b5563; margin: -4px 0 0; }
+  .ctl { display: grid; gap: 3px; font-size: 13px; position: relative; transition: opacity .3s, filter .3s, transform .3s; border-radius: 6px; padding: 2px; }
+  .ctl .lb { font-size: 12px; font-weight: 600; }
+  .ctl.dis { opacity: .45; filter: grayscale(1); }
+  .ctl.hl { box-shadow: 0 0 0 3px #f59e0b; background: rgba(245, 158, 11, .2); }
+  .ctl.act { animation: act .7s; }
+  @keyframes act { 0% { transform: scale(1); } 30% { transform: scale(1.08); box-shadow: 0 0 0 4px #1e6fff; } 100% { transform: scale(1); } }
+  .ctl.snap::after { content: "📷"; position: absolute; right: -6px; top: -10px; font-size: 18px; animation: pop .8s forwards; }
+  @keyframes pop { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-14px); } }
+  .nbox { border: 2px solid #6b7280; border-radius: 4px; background: #fff; min-width: 90px; padding: 4px 8px; font: 600 15px ui-monospace, Consolas, monospace; text-align: right; }
+  .nbox.ind { background: #e5e7eb; }
+  .swf { width: 46px; height: 24px; border-radius: 12px; background: #9ca3af; position: relative; border: 2px solid #4b5563; }
+  .swf::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .25s; }
+  .swf.on { background: #22c55e; } .swf.on::after { left: 24px; }
+  .strf { border: 2px solid #6b7280; border-radius: 4px; background: #fff; padding: 4px 8px; min-width: 120px; min-height: 30px; font: 14px system-ui, sans-serif; }
+  .btnf { border: 2px solid #4b5563; border-radius: 6px; background: linear-gradient(#f3f4f6, #cbd5e1); color: #111; padding: 6px 10px; font: 600 13px system-ui, sans-serif; min-width: 70px; text-align: center; }
+  .chart { width: 220px; max-width: 100%; height: 90px; background: #111827; border: 2px solid #6b7280; border-radius: 4px; display: block; }
+  .node { display: inline-grid; border: 2px solid #c58b00; border-radius: 4px; background: #fff7d6; color: #3b2f00; font: 12px ui-monospace, Consolas, monospace; min-width: 180px; max-width: 100%; }
+  .node .nh { background: #f2d67a; padding: 3px 8px; font-weight: 700; }
+  .node .nr { padding: 3px 8px; border-top: 1px solid #e2c46a; overflow-wrap: anywhere; }
+  .node.inv { border-color: #7c3aed; background: #f3e8ff; color: #3b0764; }
+  .node.inv .nh { background: #d8b4fe; }
+  .node.inv .nr { border-color: #c4b5fd; }
+  .node.go { box-shadow: 0 0 0 4px rgba(245, 158, 11, .5); }
+  .refw { display: inline-block; width: 40px; height: 4px; background: #2f6f4f; vertical-align: middle; position: relative; overflow: hidden; }
+  .refw.flow::after { content: ""; position: absolute; top: -3px; left: -10px; width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; animation: run .6s linear; }
+  @keyframes run { to { left: 40px; } }
+  .tree { font-size: 14px; }
+  .tree ul { list-style: none; padding-left: 18px; margin: 2px 0; border-left: 1px dashed var(--line); }
+  .tree > ul { padding-left: 0; border: 0; }
+  .tree button { border: 1px solid var(--line); border-radius: 6px; background: var(--card); padding: 3px 8px; margin: 2px 0; cursor: pointer; font: 13px ui-monospace, Consolas, monospace; color: inherit; }
+  .tree button.path { background: #fde68a; border-color: #a16207; color: #111; }
+  .tree button.sel { background: #1e6fff; border-color: #1e6fff; color: #fff; }
+  .tree .tg { cursor: pointer; display: inline-block; width: 16px; color: var(--mute); user-select: none; }
+  .feat { font-size: 13px; }
+  .feat li { margin: 3px 0; }
+  .feat .lv { font: 11px ui-monospace, Consolas, monospace; color: var(--mute); }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+  .flow .st { border: 2px solid var(--line); border-radius: 8px; padding: 6px 10px; font: 12px ui-monospace, Consolas, monospace; background: var(--card); transition: all .25s; }
+  .flow .st.on { border-color: #f59e0b; background: rgba(245, 158, 11, .2); }
+  .flow .st.done { border-color: #16a34a; }
+  .flow .st.bad { border-color: #dc2626; background: rgba(220, 38, 38, .12); }
+  .mem { display: flex; flex-wrap: wrap; gap: 4px; min-height: 28px; align-items: center; }
+  .rchip { font: 11px ui-monospace, Consolas, monospace; border: 2px solid #2f6f4f; border-radius: 4px; padding: 1px 5px; background: #e7f5ee; color: #14532d; }
+  .rchip.leak { border-color: #dc2626; background: #fee2e2; color: #7f1d1d; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; }
+  .wire2 { display: grid; gap: 6px; }
+  .wire2 .res { font-weight: 700; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-invoke.html" class="here">方法節點</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>方法節點實驗室：叫元件做事、叫別的 VI 做事</h1>
+  <p class="why">屬性節點（Property Node）是讀寫元件的<b>特性</b>，像名詞：數值、顏色、Disabled。方法節點（Invoke Node）是叫元件<b>做一件事</b>，像動詞：恢復預設值、拍一張圖、把圖表存成檔案、執行一個 VI。兩個都要接一條參考（refnum）告訴它「對誰」。屬性節點的用法見 <a href="lab-prop.html">屬性節點實驗室</a>，這裡專講方法和 VI Server。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="verb" class="here">屬性 vs 方法</button>
+    <button type="button" data-t="cls">類別階層</button>
+    <button type="button" data-t="all">This VI 與 Controls[]</button>
+    <button type="button" data-t="srv">VI Server：叫別的 VI</button>
+  </div>
+
+  <section class="lab-stage" id="t-verb">
+    <p class="why">龍門人機的設定頁。選一個元件，再選要用的節點，按執行。看看屬性節點和方法節點各做了什麼。</p>
+    <div class="two">
+      <div class="fp" id="vfp"><p class="cap">GT_Setup.vi 前面板（簡化）</p></div>
+      <div>
+        <div class="row"><label>對誰 <select id="vtgt"></select></label></div>
+        <div class="row"><label>做什麼 <select id="vact"></select></label></div>
+        <div class="row"><span id="vnode"></span></div>
+        <div class="row"><button type="button" class="go" id="vrun">▶ 執行</button><button type="button" id="vedit">隨便改一下前面板的值</button></div>
+        <p class="verdict-line" id="vsay"></p>
+        <div class="log" id="vlog"></div>
+      </div>
+    </div>
+    <div class="callout">分辨的方法：<b>屬性</b>可以讀（從節點右邊出來一個值）或寫（從左邊給一個值），寫完那個特性就變成那樣；<b>方法</b>是一個動作，執行一次做一次，可能要給參數、可能傳回結果。例如 Reinitialize To Default 把元件恢復成「存檔時的預設值」；Get Image 傳回元件長相的影像資料（可以設 Image Depth）；Export Image 不是每個元件都有，是 Waveform Chart、Waveform Graph 這類圖表的方法：把圖表存成圖檔，可以選檔案類型、路徑、要不要隱藏格線、要不要直接覆蓋舊檔（前面板沒有載入時不會產生檔案）。Key Focus 是屬性，不是方法。清除圖表則是寫 <b>History Data</b> 屬性（寫一個空陣列），它是屬性不是方法。</div>
+  </section>
+
+  <section class="lab-stage" id="t-cls" hidden>
+    <p class="why">每一個前面板元件都屬於 VI Server 的某個<b>類別</b>，類別有上下層：下層<b>繼承</b>上層全部的屬性和方法，再加上自己才有的。點樹上的類別，看它能用哪些（顏色表示是哪一層定義的）。</p>
+    <div class="two">
+      <div class="bx tree" id="ctree"></div>
+      <div><h3 id="cname" style="margin:0 0 6px"></h3><ul class="feat" id="cfeat"></ul><p class="why" id="cwhy"></p></div>
+    </div>
+    <div class="bx" style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px">
+      <h3 style="margin:0 0 6px;font-size:15px">接得上嗎？把元件的參考接到 SubVI 的 refnum 輸入</h3>
+      <div class="row"><label>前面板元件 <select id="cref"></select></label><label>SubVI 輸入的型別 <select id="cterm"></select></label></div>
+      <div class="wire2"><span id="cwire"></span><span class="res" id="cres"></span></div>
+    </div>
+    <div class="callout">SubVI 的參考輸入用 <b>Control Refnum</b>（在前面板放一個 Refnum 控制項，右鍵選類別）。選得越上層，能接的元件越多，但只能用上層的屬性；選得越下層，能用的越多，但只有那一類接得上。下層的參考接到上層的輸入可以直接接；反過來要先用 <b>To More Specific Class</b> 轉，型別不對時它會出錯，要接錯誤線處理。</div>
+  </section>
+
+  <section class="lab-stage" id="t-all" hidden>
+    <p class="why"><b>This VI</b> 是「這個 VI 自己」的參考。從它讀 <b>Front Panel</b> 屬性得到前面板的參考，再讀前面板的 <b>Controls[]</b>，就得到前面板上所有控制項、顯示元件參考的陣列。接進 For Loop 自動索引，一個一個處理：不用自己一個一個拉參考。</p>
+    <div class="row">
+      <label>迴圈裡做 <select id="aact"><option value="dis">屬性：Disabled = 2（Disabled and Grayed Out）</option><option value="en">屬性：Disabled = 0（Enabled）</option><option value="def">方法：Reinitialize To Default</option></select></label>
+      <label class="check small"><input type="checkbox" id="askip" checked> 跳過 Label.Text 是 Status 的那一個</label>
+    </div>
+    <div class="row"><button type="button" class="go" id="arun">▶ 執行</button><button type="button" id="areset">重來</button><button type="button" id="aedit">隨便改一下值</button></div>
+    <div class="flow" id="aflow"></div>
+    <div class="fp" id="afp"><p class="cap">GT_Manual.vi 前面板（簡化）</p></div>
+    <p class="verdict-line" id="asay"></p>
+    <div class="log" id="alog"></div>
+    <div class="callout">Controls[] 給的是<b>直接放在面板上</b>的控制項和顯示元件，所以常要先讀 Label.Text 之類的屬性挑掉不想改的。叢集（Cluster）只回傳叢集本身，不會展開成裡面的元素；框線、文字這些裝飾不在 Controls[] 裡（在另一個 Decorations[] 屬性）。陣列裡每個元素的型別是通用的 Control 參考，只能直接用 Control 這一層的屬性和方法（Disabled、Reinitialize To Default 都是）；要改 Numeric 才有的屬性，要先轉成更下層的類別。</div>
+  </section>
+
+  <section class="lab-stage" id="t-srv" hidden>
+    <p class="why">主程式要算「X 軸移動一段距離要多久」，計算寫在另一個 VI（Calc_MoveTime.vi）裡，前面板有 Distance、Speed 兩個輸入和 Time 一個輸出。用 VI Server 從主程式叫它：開參考 → 設輸入 → 執行 → 讀輸出 → 關參考。</p>
+    <div class="row">
+      <label>Distance (mm) <input type="number" id="sd" value="300" style="width:80px"></label>
+      <label>Speed (mm/s) <input type="number" id="ss" value="150" style="width:80px"></label>
+      <label>Variant To Data 的型別 <select id="stype"><option value="dbl">DBL（對）</option><option value="str">String（錯）</option></select></label>
+      <label class="check small"><input type="checkbox" id="sclose" checked> 最後 Close Reference</label>
+    </div>
+    <div class="row"><button type="button" class="go" id="srun">▶ 執行一次</button><button type="button" id="srun10">在迴圈裡連續叫 10 次</button><button type="button" id="sreset">重來</button></div>
+    <div class="flow" id="sflow"></div>
+    <div class="two">
+      <div class="fp" id="sfp"><p class="cap">Calc_MoveTime.vi 前面板（被叫的 VI）</p></div>
+      <div><div class="kv"><span>主程式拿到 Time</span><b id="sout">–</b><span>記憶體裡還開著的參考</span><b id="scnt">0</b></div><div class="mem" id="smem"></div></div>
+    </div>
+    <p class="verdict-line" id="ssay"></p>
+    <div class="log" id="slog"></div>
+    <div class="callout"><b>Open VI Reference</b> 的 vi path 接路徑（或已經在記憶體裡的 VI 名稱），傳回這個 VI 的參考。<b>Control Value ▸ Set</b> 用控制項的名稱（標籤文字）寫值，值的型別是 Variant，任何型別接上去都會自動轉成 Variant。<b>Run VI</b> 用前面板目前的值執行：Wait Until Done 預設是 TRUE，會等它跑完才往下；Auto Dispose Ref 預設是 FALSE，參考要自己關。<b>Control Value ▸ Get</b> 傳回 Variant，要用 <b>Variant To Data</b> 指定型別轉回來，型別不對就出錯（還有 Get All 一次讀全部）。最後 <b>Close Reference</b>：每開一個就關一個。沒關的參考，在開它的 VI 結束之前 LabVIEW 都沒辦法釋放；在迴圈裡開了不關，長時間執行就越積越多。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="iquiz" style="margin-top:16px"></section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-invoke.js?v=52ca67ffdd"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "a42d7f6093" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

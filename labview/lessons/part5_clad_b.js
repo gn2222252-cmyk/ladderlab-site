@@ -132,7 +132,7 @@ C.h3('測','q','小測驗'),
    C7 模組化
    ====================================================================== */
 L.push({id:'C07',order:107,no:'C7',part:PART,title:'模組化：SubVI 進階、Reentrancy、Polymorphic、Express VI',mins:50,
-goals:[['學會','Connector 端子的 Required/Recommended/Optional、未接輸入的預設值、VI Hierarchy、Reentrant 三種設定、Polymorphic VI、Express VI 與 Dynamic Data、Malleable VI。'],['考試重點','未接 Required 端子 VI 會斷；Non-reentrant 的 SubVI 在兩個平行迴圈裡同時呼叫會互相等待。'],['動畫練習','<a href="lab-prop.html#ref">屬性節點實驗室：控制參考</a>：SubVI 裡要用明確的屬性節點，接控制參考才改得到主 VI 的元件。'],['動畫練習','<a href="lab-subvi.html#reent">SubVI 實驗室：可重入</a>：兩個迴圈同時呼叫同一個 SubVI，Non-reentrant 要排隊、計數器共用；Preallocated 各自一份。']],
+goals:[['學會','Connector 端子的 Required/Recommended/Optional、未接輸入的預設值、VI Hierarchy、Reentrant 三種設定、Polymorphic VI、Express VI 與 Dynamic Data、Malleable VI。'],['考試重點','未接 Required 端子 VI 會斷；Non-reentrant 的 SubVI 在兩個平行迴圈裡同時呼叫會互相等待。'],['動畫練習','<a href="lab-prop.html#ref">屬性節點實驗室：控制參考</a>：SubVI 裡要用明確的屬性節點，接控制參考才改得到主 VI 的元件。'],['動畫練習','<a href="lab-subvi.html#reent">SubVI 實驗室：可重入</a>：兩個迴圈同時呼叫同一個 SubVI，Non-reentrant 要排隊、計數器共用；Preallocated 各自一份。'],['動畫練習','<a href="lab-invoke.html#srv">方法節點實驗室：VI Server</a>：Open VI Reference、設值、Run VI、取值、Close Reference，忘了關會怎樣。']],
 check:'能解釋為什麼 FGV 一定要是 Non-reentrant。',
 body:[
 C.h3('懂','','Connector Pane 的端子設定'),

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="16534bb0c9">
+<meta name="ll-version" content="a42d7f6093">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>叢集實驗室：Bundle、Type Def、錯誤叢集 | LadderLab</title>
@@ -71,6 +71,38 @@
   .fly.ok { background: #e5e7eb; border-color: #6b7280; }
   .fly.warn { background: #fed7aa; border-color: #d97706; }
   .fly { padding: 0 6px; }
+  /* 新分頁：陣列與叢集互轉、叢集運算、叢集順序、Tab Control */
+  .subm { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+  .subm button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .cv2 { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin: 12px 0; }
+  @media (max-width: 760px) { .cv2 { grid-template-columns: minmax(0, 1fr); } .cv2 .node { justify-self: center; } }
+  .cv2 .node { width: auto; min-width: 96px; padding: 6px; white-space: pre-line; }
+  .arr2 { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 6px; border: 2px solid #e8820c; border-radius: 6px; min-height: 40px; align-items: center; max-width: 100%; }
+  .arr2.i32 { border-color: #1e5bd7; } .arr2.str { border-color: #d63fa0; } .arr2.clu { border-color: #b0418f; border-style: double; border-width: 3px; }
+  .c2 { min-width: 40px; height: 30px; padding: 0 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); display: inline-grid; place-items: center; font: 600 13px ui-monospace, Consolas, monospace; }
+  .c2.lost { opacity: .3; text-decoration: line-through; }
+  .c2.def { border-style: dashed; color: var(--mute); }
+  .c2.new { outline: 3px solid #16a34a; }
+  .c2.hi { outline: 3px solid #f59e0b; }
+  .cbox { display: inline-flex; flex-wrap: wrap; gap: 3px; border: 3px double #b0418f; border-radius: 6px; padding: 4px; background: rgba(176, 65, 143, .05); align-items: center; }
+  .lbl2 { font-size: 12px; color: var(--mute); display: block; margin-bottom: 3px; }
+  .inrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+  .fpc2 { position: relative; height: 210px; border: 3px double #b0418f; border-radius: 8px; background: #d9dde3; color: #1d2430; max-width: 460px; margin: 8px 0; }
+  .fpc2 .cl { position: absolute; top: -11px; left: 8px; background: var(--card); color: var(--ink); padding: 0 6px; font-size: 13px; font-weight: 700; }
+  .fe { position: absolute; display: grid; gap: 2px; font-size: 12px; transition: left .5s, top .5s; cursor: default; }
+  .fe .box { border: 2px solid #6b7280; border-radius: 4px; background: #fff; padding: 3px 8px; font: 600 13px ui-monospace, Consolas, monospace; min-width: 60px; }
+  .fe .ord { position: absolute; top: -10px; right: -10px; display: flex; gap: 2px; }
+  .fe .ord b { font: 700 11px ui-monospace, Consolas, monospace; padding: 0 4px; border-radius: 3px; background: #111; color: #fff; }
+  .fe .ord i { font: 700 11px ui-monospace, Consolas, monospace; font-style: normal; padding: 0 4px; border-radius: 3px; background: #fff; color: #111; border: 1px solid #111; }
+  .fpc2.reorder .fe { cursor: pointer; }
+  .fpc2.reorder .fe:hover .box { outline: 3px solid #1e6fff; }
+  .tabc { border: 2px solid #6b7280; border-radius: 6px; background: #d9dde3; color: #1d2430; max-width: 460px; }
+  .tabc .th { display: flex; gap: 2px; padding: 4px 4px 0; flex-wrap: wrap; }
+  .tabc .th button { border-radius: 6px 6px 0 0; border: 1px solid #6b7280; border-bottom: 0; background: #c3c9d3; color: #1d2430; padding: 4px 12px; font: 600 13px system-ui, sans-serif; }
+  .tabc .th button.here { background: #eef1f5; }
+  .tabc .tp { background: #eef1f5; border-top: 1px solid #6b7280; padding: 10px; min-height: 90px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .tabc .tp label { display: grid; gap: 2px; font-size: 12px; }
+  .tabc .tp input { width: 90px; }
 </style>
 </head>
 <body>
@@ -81,12 +113,16 @@
 <main class="lab-main">
   <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
   <h1>叢集實驗室</h1>
-  <p class="why">第 8 課做了 GT_Status，第 11 課講了錯誤線。這裡把它們「動」起來：元素怎麼進出叢集、叢集順序改了會出什麼事、Type Def 改一處為什麼全部跟著變，以及錯誤叢集怎麼沿著線一路傳到最後。</p>
+  <p class="why">第 8 課做了 GT_Status，第 11 課講了錯誤線。這裡把它們「動」起來：元素怎麼進出叢集、叢集順序改了會出什麼事、Type Def 改一處為什麼全部跟著變，以及錯誤叢集怎麼沿著線一路傳到最後。後面四個分頁再看陣列和叢集怎麼互轉、叢集怎麼直接做運算、面板位置和叢集順序的差別，以及 Tab Control。</p>
   <div class="tabs" id="tabs">
     <button type="button" data-t="bun" class="here">Bundle／Unbundle</button>
     <button type="button" data-t="td">Type Def</button>
     <button type="button" data-t="err">錯誤叢集的流動</button>
     <button type="button" data-t="mrg">Merge Errors</button>
+    <button type="button" data-t="conv">陣列與叢集互轉</button>
+    <button type="button" data-t="math">叢集運算</button>
+    <button type="button" data-t="ord">叢集順序與面板位置</button>
+    <button type="button" data-t="tabc">Tab Control</button>
   </div>
   <label class="check small"><input type="checkbox" id="slow"> 慢動作</label>
 
@@ -163,19 +199,71 @@
     <div class="callout">Merge Errors 不會把兩個錯誤「加起來」，只挑一個傳出去，其他的就看不到了。所以重要的那條線接在上面。想把錯誤真的丟掉，用 Clear Errors.vi，而且只用在「我知道會錯、也處理好了」的地方，例如斷線後要重連。</div>
   </section>
 
+  <section class="lab-stage" id="t-conv" hidden>
+    <p class="why">陣列是「同型別排一列」、叢集是「綁成一捆」。下面四個函式在兩者之間轉換。選一個，按「執行」看格子怎麼走。</p>
+    <div class="subm" id="cvm">
+      <button type="button" data-m="a2c" class="here">Array To Cluster</button>
+      <button type="button" data-m="c2a">Cluster To Array</button>
+      <button type="button" data-m="bca">Build Cluster Array</button>
+      <button type="button" data-m="ibca">Index &amp; Bundle Cluster Array</button>
+    </div>
+    <p class="fdesc" id="cvdesc"></p>
+    <div class="row" id="cvopt"></div>
+    <div class="cv2"><div id="cvin"></div><div class="node" id="cvnode"></div><div id="cvout"></div></div>
+    <div class="row"><button type="button" class="go" id="cvrun">▶ 執行</button></div>
+    <p class="verdict-line" id="cvsay"></p>
+  </section>
+
+  <section class="lab-stage" id="t-math" hidden>
+    <p class="why">叢集裡都是數值時，可以直接接到 Add、Multiply 這些數值函式，每個元素各算各的。例子：右軸、左軸、Z 軸三個位置綁成一個「位置」叢集，加上一個「補正量」。</p>
+    <div class="row">
+      <label>運算 <select id="mop"><option value="add">Add（+）</option><option value="mul">Multiply（×）</option></select></label>
+      <label>另一個輸入 <select id="mb"><option value="clu">同樣三個 DBL 的叢集</option><option value="sca">一個純量 DBL</option><option value="str">含字串元素的叢集</option><option value="two">只有兩個元素的叢集</option></select></label>
+    </div>
+    <div class="cv2"><div id="mx"></div><div class="node" id="mnode">+</div><div id="mout2"></div></div>
+    <div class="row"><button type="button" class="go" id="mrun2">▶ 執行</button></div>
+    <p class="verdict-line" id="msay2"></p>
+    <div class="callout">叢集接數值函式的條件：元素都是數值（或數值陣列）；兩個叢集相加時，元素的數量要一樣、一個對一個。叢集也可以和一個純量運算，純量會和每個元素各算一次。叢集裡有字串、布林這類不能相加的元素，線就斷了。</div>
+  </section>
+
+  <section class="lab-stage" id="t-ord" hidden>
+    <p class="why">前面板上，叢集裡的元素放在哪裡，和它是第幾個（叢集順序）是兩回事。拖動元素只改位置；要改順序得用叢集邊框右鍵 ▸ <b>Reorder Controls In Cluster…</b>。順序決定 Unbundle 從上到下的輸出、Bundle 從上到下的輸入（接錯的後果在第一個分頁）。</p>
+    <div class="row">
+      <button type="button" id="omove">在面板上把元素換位置</button>
+      <button type="button" id="oreorder">右鍵 ▸ Reorder Controls In Cluster…</button>
+      <button type="button" id="ook" hidden>確認（OK）</button>
+      <button type="button" id="ocancel" hidden>取消</button>
+      <button type="button" id="oreset">還原</button>
+    </div>
+    <p class="why" id="ohint"></p>
+    <div class="fpc2" id="ofp"><span class="cl">機台狀態</span></div>
+    <div class="cv2"><div><span class="lbl2">方塊圖：叢集端子</span><span class="cbox" id="oterm">機台狀態</span></div><div class="node">Unbundle</div><div id="oout"></div></div>
+    <div class="row"><button type="button" class="go" id="orun">▶ Unbundle 執行</button></div>
+    <p class="verdict-line" id="osay"></p>
+  </section>
+
+  <section class="lab-stage" id="t-tabc" hidden>
+    <p class="why">Tab Control 只是把前面板分成幾頁排版。所有頁上的控制項<b>同時存在</b>，方塊圖上每個端子都在，不管現在顯示哪一頁，程式都讀得到。Tab Control 自己也有一個端子，它的值是「目前顯示哪一頁」，型別像 Enum，接到 Case 結構時頁籤就是分頁名稱。</p>
+    <div class="tabc" id="tcw"></div>
+    <div class="row"><button type="button" class="go" id="tcread">▶ 程式讀取所有控制項</button></div>
+    <div class="cv2"><div><span class="lbl2">方塊圖上的端子</span><div id="tcterms"></div></div><div class="node">Case</div><div id="tccase"></div></div>
+    <p class="verdict-line" id="tcsay"></p>
+  </section>
+
   <section class="lab-stage lab-challenge" id="cquiz" style="margin-top:16px"></section>
   <div class="anim-layer" id="layer" aria-hidden="true"></div>
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-cluster.js?v=1b64dc4555"></script>
+<script src="lab-cluster.js?v=15c7d58c6b"></script>
+<script src="lab-cluster2.js?v=c3c038bba9"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "16534bb0c9" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "a42d7f6093" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

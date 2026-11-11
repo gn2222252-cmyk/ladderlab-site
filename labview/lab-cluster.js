@@ -25,10 +25,12 @@
   }
 
   /* ---------- 分頁 ---------- */
-  var TABS = ['bun', 'td', 'err', 'mrg'];
+  /* 後面四個分頁（conv、math、ord、tabc）的程式在 lab-cluster2.js，切分頁時通知它停掉動畫、畫出內容 */
+  var TABS = ['bun', 'td', 'err', 'mrg', 'conv', 'math', 'ord', 'tabc'];
   function show(t) {
     Array.prototype.forEach.call($('tabs').querySelectorAll('button'), function (b) { b.classList.toggle('here', b.dataset.t === t); });
-    TABS.forEach(function (k) { $('t-' + k).hidden = k !== t; });
+    TABS.forEach(function (k) { var s = $('t-' + k); if (s) s.hidden = k !== t; });
+    if (window.ClusterLab2) window.ClusterLab2.onShow(t);
   }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { show(b.dataset.t); history.replaceState(null, '', '#' + b.dataset.t); } });
   if (/^#(bun|td|err|mrg)$/.test(location.hash)) show(location.hash.slice(1));

@@ -90,7 +90,7 @@
   function vStart() { if (!TV.timer) TV.timer = setInterval(function () { vTick(30); }, 30); }
   function vDemo(n) {
     vReset();
-    if (n === 3) { V.pos = zeros(1); V.dir = zeros(1); V.cmd = 'plus'; vlog('（先讓三支缸都伸到前端，伸出命令保持）'); V.ev.push({ at: V.t + 300, fn: function () { vCmd('minus'); } }); V.ev.push({ at: V.t + 800, fn: function () { vCmd('off'); } }); return; }
+    if (n === 3) { V.pos = zeros(1); V.dir = zeros(1); V.cmd = 'plus'; vlog('（先讓五支缸都伸到前端，伸出命令保持）'); V.ev.push({ at: V.t + 300, fn: function () { vCmd('minus'); } }); V.ev.push({ at: V.t + 800, fn: function () { vCmd('off'); } }); return; }
     vCmd('plus');
     V.ev.push({ at: V.t + (n === 1 ? 500 : 1300), fn: function () { vCmd('off'); } });
   }
@@ -399,7 +399,7 @@
     after: function (R, def) {
       var dead = R.dead;
       if (R.alarm) say('s-say', '✖ ' + R.alarm + '：逾時監視發現了，記下異常、輸出全斷。氣缸停在：' + def.cyls.map(function (c) { return c.n + ' ' + R.pos[c.n].toFixed(2); }).join('、') + '。', 'bad');
-      else if (R.k >= 0 && dead && condOf(def, def.steps[R.k]).indexOf(dead) >= 0 && R.stepT > 1500) say('s-say', '✖ 卡在 S' + (20 + R.k) + '：在等 ' + dead + '，可是 ' + dead + ' 壞了。輸出 ' + moveText(def.steps[R.k]) + ' 一直留著。' + (def.key === 'e18' && dead === 'a1' ? 'A+ 一直輸出，本站 A 缸的 5/3 中位封閉型閥不會自己回中位，A 已經跑過 a1 到 a2 了。' : '') + ($('s-to').checked ? '' : '沒有逾時監視，機台就一直停在這裡，也沒有任何燈號告訴你。'), 'bad');
+      else if (R.k >= 0 && dead && condOf(def, def.steps[R.k]).indexOf(dead) >= 0 && R.stepT > 1500) say('s-say', '✖ 卡在 S' + (20 + R.k) + '：在等 ' + dead + '，可是 ' + dead + ' 壞了。輸出 ' + moveText(def.steps[R.k]) + ' 一直留著。' + (def.key === 'e18' && dead === 'a1' ? 'A+ 一直輸出，本站 A 缸的 5/3 中位封閉型閥不會自己回中位，A 已經跑過 a1，正往 a2 走。' : '') + ($('s-to').checked ? '' : '沒有逾時監視，機台就一直停在這裡，也沒有任何燈號告訴你。'), 'bad');
       else if (R.k < 0 && dead && def.cyls.some(function (c) { return c.marks[0][1] === dead; })) say('s-say', dead + ' 是原點感測器：S0 的原點條件永遠不成立，按 ST 根本啟動不了。', 'bad');
       else if (R.done && R.k < 0) say('s-say', dead ? '這一輪沒有用到 ' + dead + '，所以順利跑完。' : '✔ 感測器都正常，一輪跑完。', 'ok');
       else say('s-say', '');
@@ -520,7 +520,7 @@
     },
     // 10. 感測器壞了卡哪一步
     function () {
-      var seq = randSeq(), k = 1 + Math.floor(Math.random() * (seq.length - 1)), t = seq[k], c = t[0].toLowerCase() + (t[1] === '+' ? '1' : '0');
+      var seq = randSeq(), plus = []; for (var pi = 0; pi < seq.length; pi++) if (seq[pi][1] === '+') plus.push(pi); var k = plus[Math.floor(Math.random() * plus.length)], t = seq[k], c = t[0].toLowerCase() + '1';
       var first = -1; for (var i = 0; i < seq.length; i++) { var ti = seq[i], ci = ti[0].toLowerCase() + (ti[1] === '+' ? '1' : '0'); if (ci === c) { first = i; break; } }
       var ans = 'S' + (20 + first) + '（第 ' + (first + 1) + ' 格），' + seq[first] + ' 一直輸出';
       return { q: '動作順序 <b>' + seq.join('　') + '</b>。感測器 <b>' + c + '</b> 壞了（一直 OFF）。按 ST 後步序會卡在哪？', ans: ans, wrong: uniq(ans, ['S20（第 1 格），' + seq[0] + ' 一直輸出', '跑完一輪才停', '不會卡，PLC 會跳過壞掉的感測器', 'S' + (20 + seq.length - 1) + '（最後一格）', 'S' + (21 + first) + '（第 ' + (first + 2) + ' 格）']), ex: '第一個要等 ' + c + ' 的是 ' + seq[first] + ' 那一步。條件永遠不成立，步序停在那裡，輸出也一直留著。' };
