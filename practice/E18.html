@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="719a424243">
+<meta name="ll-version" content="62bc20fb67">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E18 氣壓乙級 PLC 題：變速迴路（08000-1090201）｜PLC 練習題（自動評分）</title>
@@ -31,7 +31,8 @@
 ・急停 EMS（常閉，按下為 OFF）：A 立即停在該位置（5 口 3 位置中封閥），B、C 停在該步驟終點（5/2 雙線圈閥斷電保持閥位，自己走完）；按 ST 無效；PLC 輸出端斷電。
 ・解除急停後：切到復歸模式按復歸鈕，黃燈 0.5 秒 ON／0.5 秒 OFF 閃爍，先 B、C 回原點，再 A 回原點；完成後才能在運轉模式啟動，未復歸按 ST 無效。所有氣壓缸不可爆衝。
 ・停電：恢復供電後要復歸（黃燈閃、先 B、C 再 A），未復歸按 ST 無效。
-I/O 照試題的 PLC I/O 參考配置表：X0 ST、X1 STOP、X2 EMS、X3 復歸／運轉、X4 復歸鈕、X5 手動步進、X6 單一循環、X7 連續循環；Y0～Y5 為 A+、A-、B+、B-、C+、C-。感測器（X10～）、燈號（Y6～Y10）、快速閥（Y11）是本站的練習配置。</div>
+I/O 照試題的 PLC I/O 參考配置表：X0 ST、X1 STOP、X2 EMS、X3 復歸／運轉、X4 復歸鈕、X5 手動步進、X6 單一循環、X7 連續循環；Y0～Y5 為 A+、A-、B+、B-、C+、C-。感測器（X10～）、燈號（Y6～Y10）、快速閥（Y11）是本站的練習配置。
+・機型：這題要用到 X10 以上、Y10、Y11，需要 24 入 16 出（FX3G-40M 或 FX3U 等級，檢定考場也是這種）。學校的 FX3S-20M 只有 X0～X13、Y0～Y7，實機上做不完整，網頁模擬照樣可以練。</div>
 <div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>啟動 ST</td><td>按鈕</td></tr><tr><td>X001</td><td>停止 STOP</td><td>按鈕</td></tr><tr><td>X002</td><td>緊急停止 EMS（常閉）</td><td>開關</td></tr><tr><td>X003</td><td>復歸/運轉（ON＝運轉）</td><td>開關</td></tr><tr><td>X004</td><td>復歸按鈕</td><td>按鈕</td></tr><tr><td>X005</td><td>手動步進</td><td>開關</td></tr><tr><td>X006</td><td>單一循環</td><td>開關</td></tr><tr><td>X007</td><td>連續循環</td><td>開關</td></tr><tr><td>X010</td><td>a0</td><td>感測器</td></tr><tr><td>X011</td><td>a1</td><td>感測器</td></tr><tr><td>X012</td><td>a2</td><td>感測器</td></tr><tr><td>X013</td><td>b0</td><td>感測器</td></tr><tr><td>X014</td><td>b1</td><td>感測器</td></tr><tr><td>X015</td><td>c0</td><td>感測器</td></tr><tr><td>X016</td><td>c1</td><td>感測器</td></tr><tr><td>Y000</td><td>A+</td><td>輸出</td></tr><tr><td>Y001</td><td>A-</td><td>輸出</td></tr><tr><td>Y002</td><td>B+</td><td>輸出</td></tr><tr><td>Y003</td><td>B-</td><td>輸出</td></tr><tr><td>Y004</td><td>C+</td><td>輸出</td></tr><tr><td>Y005</td><td>C-</td><td>輸出</td></tr><tr><td>Y006</td><td>綠燈</td><td>輸出</td></tr><tr><td>Y007</td><td>紅燈</td><td>輸出</td></tr><tr><td>Y010</td><td>黃燈</td><td>輸出</td></tr><tr><td>Y011</td><td>A 快速閥</td><td>輸出</td></tr></tbody></table></div>
 <ul class="rules"><li>安全條件：A+、A- 同時輸出</li><li>安全條件：B+、B- 同時輸出</li><li>安全條件：C+、C- 同時輸出</li></ul>
 <p><a class="btnlink go" href="../practice.html#E18">開始寫程式，自動評分 ›</a></p>
@@ -45,7 +46,7 @@ I/O 照試題的 PLC I/O 參考配置表：X0 ST、X1 STOP、X2 EMS、X3 復歸�
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "719a424243" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "62bc20fb67" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

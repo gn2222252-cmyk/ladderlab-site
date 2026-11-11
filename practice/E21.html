@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="719a424243">
+<meta name="ll-version" content="62bc20fb67">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E21 氣壓乙級 PLC 題：鎖固迴路（08000-1090204）｜PLC 練習題（自動評分）</title>
@@ -26,7 +26,7 @@
 動作順序：A+ → A- → C- 到 c1 → A+ → A- → C- 到 c0 → B+ → B- → C+ 回 c2。
 ・燈號、手動步進、單一循環、連續循環（STOP 做完這一循環）、運轉中切換無效：同 E18。
 ・急停：ST 無效；A、B 停在該步終點，C 就地停止（鎖固）。
-　(1) 在第 7～10 步（C 已到 c0 之後）急停：解除後要切到復歸模式按復歸鈕，黃燈閃爍，B 回 b0 → C 回 c2；未復歸或模式不對，ST 無效。
+　(1) 在第 7～9 步（C 已到 c0 之後）急停：解除後要切到復歸模式按復歸鈕，黃燈閃爍，B 回 b0 → C 回 c2；未復歸或模式不對，ST 無效。
 　(2) 在其他步驟急停：解除後按 ST，接著執行未完成的動作；按復歸鈕無效。</div>
 <div class="table-box"><table class="gtable"><thead><tr><th>元件</th><th>用途</th><th>種類</th></tr></thead><tbody><tr><td>X000</td><td>啟動 ST</td><td>按鈕</td></tr><tr><td>X001</td><td>停止 STOP</td><td>按鈕</td></tr><tr><td>X002</td><td>緊急停止 EMS（常閉）</td><td>開關</td></tr><tr><td>X003</td><td>復歸/運轉（ON＝運轉）</td><td>開關</td></tr><tr><td>X004</td><td>復歸按鈕</td><td>按鈕</td></tr><tr><td>X005</td><td>手動步進</td><td>開關</td></tr><tr><td>X006</td><td>單一循環</td><td>開關</td></tr><tr><td>X007</td><td>連續循環</td><td>開關</td></tr><tr><td>X010</td><td>a0</td><td>感測器</td></tr><tr><td>X011</td><td>a1</td><td>感測器</td></tr><tr><td>X012</td><td>b0</td><td>感測器</td></tr><tr><td>X013</td><td>b1</td><td>感測器</td></tr><tr><td>X014</td><td>c0</td><td>感測器</td></tr><tr><td>X015</td><td>c1</td><td>感測器</td></tr><tr><td>X016</td><td>c2</td><td>感測器</td></tr><tr><td>Y000</td><td>A+</td><td>輸出</td></tr><tr><td>Y001</td><td>A-</td><td>輸出</td></tr><tr><td>Y002</td><td>B+</td><td>輸出</td></tr><tr><td>Y003</td><td>B-</td><td>輸出</td></tr><tr><td>Y004</td><td>C+（往 c2）</td><td>輸出</td></tr><tr><td>Y005</td><td>C-（往 c0）</td><td>輸出</td></tr><tr><td>Y006</td><td>綠燈</td><td>輸出</td></tr><tr><td>Y007</td><td>紅燈</td><td>輸出</td></tr><tr><td>Y010</td><td>黃燈</td><td>輸出</td></tr></tbody></table></div>
 <ul class="rules"><li>安全條件：A+、A- 同時輸出</li><li>安全條件：B+、B- 同時輸出</li><li>安全條件：C+、C- 同時輸出</li></ul>
@@ -41,7 +41,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "719a424243" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "62bc20fb67" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
