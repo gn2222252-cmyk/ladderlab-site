@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="393311ed68">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>迴圈實驗室：While、For、通道、Shift Register | LadderLab</title>
+<meta name="description" content="LabVIEW 迴圈的動畫實驗室：自己組一個 While Loop 或 For Loop，逐圈看資料怎麼流；四種輸出通道、自動索引、Shift Register 初始化與堆疊、Wait 和 Wait Until Next ms Multiple 的時間圖。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .cfg { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px 14px; margin: 8px 0 12px; }
+  .cfg label { display: grid; gap: 3px; font-size: 14px; }
+  .cfg select, .cfg input { font: inherit; padding: 4px 6px; width: 100%; box-sizing: border-box; }
+  .loopbox { position: relative; margin: 14px 0; padding: 26px 56px 30px; border: 6px solid #6b6b6b; border-radius: 6px; background: repeating-linear-gradient(45deg, rgba(128,128,128,.04) 0 8px, transparent 8px 16px); min-height: 150px; }
+  .loopbox.for { border-color: #4a6fa5; }
+  .loopbox .ttl { position: absolute; top: -12px; left: 12px; background: var(--card); padding: 0 6px; font-weight: 700; }
+  .tunnel { position: absolute; top: 70px; width: 18px; height: 18px; border: 2px solid #e8820c; background: var(--card); }
+  .tunnel.in { left: -12px; } .tunnel.out { right: -12px; }
+  .tunnel.idx::after { content: "[ ]"; position: absolute; top: -18px; left: -4px; font-size: 11px; color: #e8820c; }
+  .term-i, .term-n, .term-c { position: absolute; display: grid; place-items: center; font: 700 13px ui-monospace, Consolas, monospace; border: 2px solid #1e5bd7; background: var(--card); }
+  .term-i { left: 8px; bottom: 6px; width: 28px; height: 22px; }
+  .term-n { left: 8px; top: 6px; width: 28px; height: 22px; }
+  .term-c { right: 8px; bottom: 6px; width: 30px; height: 26px; border-color: #1f9d3a; border-radius: 50%; }
+  .term-c.cont { border-radius: 4px; }
+  .bodynode { margin: 0 auto; width: 170px; text-align: center; padding: 10px; border: 2px solid #c58b00; background: #fff7d6; color: #6b4b00; border-radius: 6px; font: 600 14px ui-monospace, Consolas, monospace; }
+  .lbl { position: absolute; font: 11px ui-monospace, Consolas, monospace; color: var(--mute); }
+  .tok { position: absolute; padding: 2px 7px; border-radius: 10px; background: #fde68a; border: 2px solid #f59e0b; font: 700 13px ui-monospace, Consolas, monospace; color: #111; transition: left .45s ease, top .45s ease, opacity .3s; z-index: 2; }
+  .ioarea { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .ioarea { grid-template-columns: 1fr; } }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 180px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+  .log div.new { animation: hl 1s; }
+  @keyframes hl { from { background: rgba(245,158,11,.35); } to { background: transparent; } }
+  .srrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+  .srbox { position: relative; height: 130px; border: 6px solid #4a6fa5; border-radius: 6px; margin: 10px 0; }
+  .sr { position: absolute; width: 26px; height: 22px; border: 2px solid #1e5bd7; background: var(--card); display: grid; place-items: center; font-size: 12px; }
+  .sr.l { left: -16px; } .sr.r { right: -16px; }
+  canvas.wt { width: 100%; height: 220px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg, #fff); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-loop.html" class="here">迴圈實驗室</a><a href="lab-array.html">陣列</a><a href="lab-bool.html">布林</a><a href="lab-numeric.html">數值</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <h1>迴圈實驗室</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="run" class="here">迴圈怎麼跑（自己組）</button>
+    <button type="button" data-t="sr">Shift Register</button>
+    <button type="button" data-t="wait">Wait 與節拍器</button>
+  </div>
+
+  <section class="lab-stage" id="t-run">
+    <p class="why">用下面的選項組一個迴圈，按「一圈一圈跑」看資料怎麼流。勾「先預測」，跑之前先猜會跑幾圈、輸出是什麼。</p>
+    <div class="cfg">
+      <label>迴圈種類 <select id="kind"><option value="while">While Loop</option><option value="for">For Loop</option></select></label>
+      <label id="nw">For 的 N（空白＝沒接） <input id="n" value="5"></label>
+      <label>輸入陣列（空白＝不接） <input id="arr" value="3, 8, 1, 6"></label>
+      <label>輸入通道 <select id="idx"><option value="1">自動索引（一圈拿一個）</option><option value="0">不索引（整個陣列送進去）</option></select></label>
+      <label id="sw">While 的停止條件 <select id="stop">
+        <option value="ge3">i ≥ 3 → Stop if True</option><option value="lt3">i &lt; 3 → Continue if True</option>
+        <option value="ge0">i ≥ 0 → Stop if True（一開始就成立）</option><option value="never">接 False 常數 → Stop if True</option></select></label>
+      <label>迴圈裡做什麼 <select id="op">
+        <option value="x2">x × 2</option><option value="xi">x + i</option><option value="ii">i × i（不用輸入）</option>
+        <option value="sum">累加：Shift Register 加上 x</option><option value="pair">做成陣列 [x, x×10]</option></select></label>
+      <label>輸出通道 <select id="out">
+        <option value="last">Last Value（只留最後一圈）</option><option value="index">Indexing（每圈一個，組成陣列）</option>
+        <option value="concat">Concatenating（每圈的陣列接成一條）</option><option value="cond">Conditional（值 &gt; 10 才收）</option></select></label>
+    </div>
+    <div class="srrow">
+      <button type="button" class="go" id="go">▶ 一圈一圈跑</button>
+      <button type="button" id="fast">⏩ 直接跑完</button>
+      <label class="check small"><input type="checkbox" id="pred"> 先預測</label>
+      <span id="predbox" hidden>跑幾圈 <input id="pn" class="scalar" style="width:60px"> 輸出 <input id="po" style="width:160px" placeholder="例如 6, 16, 2"></span>
+    </div>
+    <div class="loopbox" id="lb"></div>
+    <div class="ioarea">
+      <div><h3>每一圈</h3><div class="log" id="log"></div></div>
+      <div><h3>迴圈結束後</h3><p id="result" class="big"></p><p class="verdict-line" id="verdict"></p><p class="why" id="lesson"></p></div>
+    </div>
+  </section>
+
+  <section class="lab-stage" id="t-sr" hidden>
+    <h2>Shift Register：把這一圈的結果帶到下一圈</h2>
+    <p class="why">右邊的端子在每圈結束時收下結果，下一圈開始時從左邊的端子送出來。左邊有沒有接初始值，差很多：沒接的話，第二次按執行時，它會記得上次結束的值。</p>
+    <div class="srrow">
+      <label>For 迴圈跑 N = <input id="srn" class="scalar" value="4" style="width:60px"></label>
+      <label class="check small"><input type="checkbox" id="srinit" checked> 左邊接初始值 0</label>
+      <button type="button" class="go" id="srrun">▶ 執行 VI（加總 1～N）</button>
+      <button type="button" id="srreset">關掉 VI 重開</button>
+      <span>輸出 <span class="scalar" id="srout">-</span></span>
+    </div>
+    <div class="srbox" id="srbox"></div>
+    <div class="log" id="srlog"></div>
+    <h2>堆疊式 Shift Register：同時看前兩圈</h2>
+    <p class="why">在左邊端子往下拉，多出來的格子存「前前一圈」的值。常用來算移動平均。</p>
+    <div class="srrow"><button type="button" class="go" id="stk">▶ 跑 6 圈（每圈的值是 i × 10）</button></div>
+    <div class="log" id="stklog"></div>
+  </section>
+
+  <section class="lab-stage" id="t-wait" hidden>
+    <h2>Wait (ms) 和 Wait Until Next ms Multiple</h2>
+    <p class="why">迴圈裡的程式每圈要花一些時間（下面隨機 20 ms 到你設定的最慢時間）。<b>Wait (ms)</b> 和程式一起開始等，一圈的時間是「程式時間和等待時間比較長的那個」；<b>Wait Until Next ms Multiple</b> 等到時鐘的下一個整數倍，像節拍器，每圈開始的時間都對齊。</p>
+    <div class="srrow">
+      <label>等待 <input id="wms" class="scalar" value="100" style="width:70px"> ms</label>
+      <label>程式最慢 <input id="wcode" class="scalar" value="150" style="width:70px"> ms</label>
+      <button type="button" class="go" id="wrun">▶ 各跑 6 圈</button>
+    </div>
+    <canvas class="wt" id="wt" width="1000" height="220"></canvas>
+    <p class="why" id="wsum"></p>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；迴圈行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-loop.js?v=611ed0d576"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "393311ed68" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

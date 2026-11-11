@@ -949,6 +949,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-loop.html",
+     "href": "labview/lab-loop.html",
+     "label": "動畫實驗室：While、For、通道、Shift Register"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-array.html",
      "href": "labview/lab-array.html",
      "label": "動畫實驗室：陣列函式"

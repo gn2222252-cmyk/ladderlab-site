@@ -174,7 +174,7 @@ const blink={name:'L04_Blink.vi',view:'split',ratio:1.4,
  sim:{period:300,step(inp,st,ctx){const i=ctx.i;const r=i%2;return {out:{led:r===0,it:i},vals:{iter:i,k500:500,c2:2,'qr.R':r,'eq.out':r===0,stop:!!inp.stop},stop:!!inp.stop,msg:inp.stop?'按了 STOP：這一圈跑完後迴圈結束':'迴圈第 '+i+' 圈（網頁加快成 0.3 秒一圈）'};},doneMsg:'迴圈結束，VI 停止'}
 };
 L.push({id:'L04',order:4,no:'4',part:'LabVIEW 基礎',title:'While Loop：讓程式一直跑',mins:45,files:['練習\\L04_Blink.vi'],
-goals:[['學會','While Loop、Iteration 端子、Loop Condition、Wait (ms)、Stop 按鈕的機械動作。'],['做出','每 0.5 秒閃一次的燈，按 STOP 才停。'],['用在專案','GT_Main 的 UI 迴圈、通訊迴圈都是 While Loop。']],
+goals:[['學會','While Loop、Iteration 端子、Loop Condition、Wait (ms)、Stop 按鈕的機械動作。'],['做出','每 0.5 秒閃一次的燈，按 STOP 才停。'],['用在專案','GT_Main 的 UI 迴圈、通訊迴圈都是 While Loop。'],['動畫練習','<a href="lab-loop.html">迴圈實驗室</a>：自己組一個 While Loop，看停止條件為什麼在每圈最後才檢查、接 False 常數會怎樣；還有 Wait 的時間圖。']],
 check:'Run 後燈每 0.5 秒換一次狀態、Iterations 一直加，按 STOP 後程式停止（工具列 Run 箭頭恢復白色）。',
 body:[
 C.h3('懂','','While Loop 的三個零件'),
@@ -287,7 +287,7 @@ const edge={name:'L05_Edge.vi',view:'split',ratio:1.5,
    return {out:{pulse:e,cnt:st.c},vals:{f:false,'sr.L':prev,'not.out':!prev,btn:b,'and.out':e,z:0,'sr2.L':old,'inc.out':old+1,'sel.out':st.c,stop:!!inp.stop},stop:!!inp.stop,msg:e?'上升邊緣！只亮這一圈':(b?'按鈕一直是 ON，但不是「剛按下」':'按鈕 OFF')};}}
 };
 L.push({id:'L05',order:5,no:'5',part:'LabVIEW 基礎',title:'Shift Register：記住上一圈',mins:50,files:['練習\\L05_Beat.vi','練習\\L05_Edge.vi'],
-goals:[['學會','Shift Register 存值、初始化、Select、上升邊緣偵測。'],['做出','① 1～32767 循環的心跳計數器；② 偵測按鈕「剛按下」的瞬間。'],['用在專案','D240 心跳就是 ①；手動點動「有變化才送」就是 ② 的想法。']],
+goals:[['學會','Shift Register 存值、初始化、Select、上升邊緣偵測。'],['做出','① 1～32767 循環的心跳計數器；② 偵測按鈕「剛按下」的瞬間。'],['用在專案','D240 心跳就是 ①；手動點動「有變化才送」就是 ② 的想法。'],['動畫練習','<a href="lab-loop.html#sr">迴圈實驗室：Shift Register</a>：沒接初始值時，連按兩次執行，看結果怎麼越來越大；也有堆疊式的動畫。']],
 check:'Beat 從 32765 開始跑，經過 32767 後回到 1；Edge Count 只在按鈕從 OFF 變 ON 時加 1。',
 body:[
 C.h3('懂','','迴圈每一圈都是全新的，怎麼記住上一圈？'),

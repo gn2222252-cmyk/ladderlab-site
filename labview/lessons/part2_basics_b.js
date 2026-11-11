@@ -127,7 +127,7 @@ const forvi={name:'L07_ForLoop.vi',view:'split',ratio:1.6,
  sim:{live:true,step(i){const a=[];for(let k=0;k<Math.max(0,Math.min(i.n,32));k++)a.push(((4096+2*(i.start+k))&0xFFFF).toString(16).toUpperCase());return {out:{arr:a},vals:{n:i.n,start:i.start,'to.o':a}};}}
 };
 L.push({id:'L07',order:7,no:'7',part:'LabVIEW 基礎',title:'Array 與 For Loop：一個字拆成 16 個燈',mins:55,files:['練習\\L07_Bits.vi','練習\\L07_D106.vi','練習\\L07_ForLoop.vi'],
-goals:[['學會','陣列控制項、Index Array、Build Array、數字與 Boolean 陣列互轉、For Loop 和自動索引。'],['做出','D230 → 16 顆 X 燈；5 個按鈕 → D106 的值；用 For Loop 算一串位址。'],['用在專案','I/O 監視頁、Start/Stop/Home 命令、讀回資料的解析。'],['動畫練習','<a href="lab-array.html">陣列函式動畫實驗室</a>：Index、Insert、Delete、Build Array 等 10 個常用函式，看元素怎麼搬，先預測再執行。']],
+goals:[['學會','陣列控制項、Index Array、Build Array、數字與 Boolean 陣列互轉、For Loop 和自動索引。'],['做出','D230 → 16 顆 X 燈；5 個按鈕 → D106 的值；用 For Loop 算一串位址。'],['用在專案','I/O 監視頁、Start/Stop/Home 命令、讀回資料的解析。'],['動畫練習','<a href="lab-array.html">陣列函式動畫實驗室</a>：Index、Insert、Delete、Build Array 等 10 個常用函式，看元素怎麼搬，先預測再執行。'],['動畫練習','<a href="lab-loop.html">迴圈實驗室</a>：For Loop 的 N 和自動索引陣列誰說了算？四種輸出通道一圈一圈看。']],
 check:'D230 = 0B54h 時 X2、X4、X6、X10、X11、X13 亮；按 Home 時 D106 Value = 4。',
 body:[
 C.h3('懂','','陣列：同型別的資料排成一列，索引從 0 開始'),

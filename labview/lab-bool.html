@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="5e2b32b8c7">
+<meta name="ll-version" content="393311ed68">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>布林實驗室：按鈕機械動作、邏輯閘、比較 | LadderLab</title>
@@ -48,7 +48,7 @@
 <body>
 <header class="top">
   <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
-  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-array.html">陣列實驗室</a><a href="lab-bool.html" class="here">布林實驗室</a><a href="lab-numeric.html">數值實驗室</a></nav>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-loop.html">迴圈</a><a href="lab-array.html">陣列實驗室</a><a href="lab-bool.html" class="here">布林實驗室</a><a href="lab-numeric.html">數值實驗室</a></nav>
 </header>
 <main class="lab-main">
   <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
@@ -125,7 +125,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "5e2b32b8c7" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "393311ed68" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
