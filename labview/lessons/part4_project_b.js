@@ -8,7 +8,7 @@ LV.F['Strip Path']={g:'📁−',ins:['path'],outs:['stripped path','name'],pal:[
    第 18 課：前面板設計
    ====================================================================== */
 L.push({id:'L18',order:18,no:'18',part:'完整專案',title:'前面板：分頁、機台圖、步序文字',mins:70,files:['GT_Main.vi（完成面板）'],
-goals:[['學會','Tab Control、裝飾元件、對齊與分佈工具、LED 疊在圖上當感測器、Tip Strip、視窗設定。'],['做出','完成品的五頁面板：Main、Manual、Parameters、IO Monitor、Alarm Log。'],['用在專案','操作員看到的就是這個畫面。'],['動畫練習','<a href="lab-prop.html">屬性節點實驗室</a>：用 Property Node 讓按鈕反灰、LED 閃爍；控制參考傳進 SubVI，一次 Disable 整組手動按鈕。'],['動畫練習','<a href="lab-invoke.html">方法節點實驗室</a>：Invoke Node 叫元件做事（恢復預設值、拍圖、匯出圖表），This VI 的 Controls[] 一次處理整個面板。']],
+goals:[['學會','Tab Control、裝飾元件、對齊與分佈工具、LED 疊在圖上當感測器、Tip Strip、視窗設定。'],['做出','完成品的五頁面板：Main、Manual、Parameters、IO Monitor、Alarm Log。'],['用在專案','操作員看到的就是這個畫面。'],['動畫練習','<a href="lab-prop.html">屬性節點實驗室</a>：用 Property Node 讓按鈕反灰、LED 閃爍；控制參考傳進 SubVI，一次 Disable 整組手動按鈕。'],['動畫練習','<a href="lab-invoke.html">方法節點實驗室</a>：Invoke Node 叫元件做事（恢復預設值、拍圖、匯出圖表），This VI 的 Controls[] 一次處理整個面板。'],['動畫練習','<a href="lab-panel.html">人機介面設計工作室</a>：把亂排的雙龍門面板整理好，按「檢查」找出沒對齊、顏色意義錯、停止鈕藏在分頁裡等問題；還有 Control Editor 與 Tab Control 練習。']],
 check:'GT_Main 的面板和下面的完成品預覽一樣分成五頁；Main 頁的機台圖上，龍門在前側／後側時對應的燈會亮。',
 body:[
 C.h3('看','r','目標畫面'),

@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>結構實驗室：Case、Event、State Machine、Sequence | LadderLab</title>
 <meta name="description" content="LabVIEW 結構的動畫實驗室：Case 選擇器走哪一頁（範圍、Default、小數捨入、字串大小寫、Enum）、Event 事件排隊與 Timeout、State Machine 逐圈換狀態、Sequence 與 Tick Count。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -114,14 +114,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；結構行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-struct.js?v=804dc81a64"></script>
+<script src="lab-struct.js?v=40b9acd9c4"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

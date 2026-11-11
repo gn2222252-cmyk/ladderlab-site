@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>時間實驗室：Tick Count、逾時判定、時間戳 | LadderLab</title>
 <meta name="description" content="LabVIEW 時間的動畫實驗室：Tick Count (ms) 是 U32，約 49.7 天繞回一次，跨過繞回點用 U32 相減照樣正確、先轉 DBL 就錯；在迴圈裡用 Shift Register 記開始時間做逾時判定，對照用 Wait 等滿會讓畫面卡住；Format Date/Time String 格式碼即時試。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -25,7 +25,7 @@
   table.cmp { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: fixed; }
   table.cmp th, table.cmp td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
   table.cmp td.num { font: 600 14px ui-monospace, Consolas, monospace; }
-  table.cmp tr.ok td.num { color: #15803d; } table.cmp tr.bad td.num { color: #dc2626; }
+  table.cmp tr.ok td.num { color: var(--lab-green); } table.cmp tr.bad td.num { color: var(--lab-red); }
   .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   @media (max-width: 800px) { .cols { grid-template-columns: minmax(0, 1fr); } }
   .bx { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
@@ -129,14 +129,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-time.js?v=6a722a76fa"></script>
+<script src="lab-time.js?v=40e91ab687"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

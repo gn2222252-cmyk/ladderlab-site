@@ -1075,6 +1075,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-panel.html",
+     "href": "labview/lab-panel.html",
+     "label": "動畫實驗室：人機介面設計工作室"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-subvi.html",
      "href": "labview/lab-subvi.html",
      "label": "動畫實驗室：SubVI 接線端與可重入"

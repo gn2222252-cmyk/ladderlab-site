@@ -6,6 +6,14 @@
 :root { --lab-ok: #157a3c; --lab-bad: #c62828; --lab-hit: #e8a200; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lab-ok: #5fd395; --lab-bad: #ff7f78; } }
 :root[data-theme="dark"] { --lab-ok: #5fd395; --lab-bad: #ff7f78; }
+/* 寫在 js 裡的提示文字色（放在卡片底上）：淺色模式維持原色，深色模式提亮 */
+:root { --lab-red: #dc2626; --lab-orange: #b45309; --lab-green: #15803d; --lab-purple: #c026d3; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lab-red: #ff8a85; --lab-orange: #f0a060; --lab-green: #3cc77a; --lab-purple: #c4a5ff; } }
+:root[data-theme="dark"] { --lab-red: #ff8a85; --lab-orange: #f0a060; --lab-green: #3cc77a; --lab-purple: #c4a5ff; }
+/* 頁面裡的彩色標題、圖例字：淺色模式原色，深色模式提亮 */
+:root { --lab-blue: #1f6feb; --lab-teal: #0e7490; --lab-violet: #7c3aed; --lab-rust: #c2410c; --lab-int: #1e5bd7; --lab-strc: #be185d; --lab-errc: #854d0e; --lab-dblc: #92400e; --lab-boolc: #166534; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lab-blue: var(--on); --lab-teal: #4fc3d9; --lab-violet: #c4a5ff; --lab-rust: #f0a060; --lab-int: #7fa8f0; --lab-strc: #f48fb8; --lab-errc: #e0b04a; --lab-dblc: #f0a060; --lab-boolc: #3cc77a; } }
+:root[data-theme="dark"] { --lab-blue: var(--on); --lab-teal: #4fc3d9; --lab-violet: #c4a5ff; --lab-rust: #f0a060; --lab-int: #7fa8f0; --lab-strc: #f48fb8; --lab-errc: #e0b04a; --lab-dblc: #f0a060; --lab-boolc: #3cc77a; }
 
 /* ---------- 版面 ---------- */
 .lab-main { max-width: 1240px; margin: 0 auto; padding: 16px; }

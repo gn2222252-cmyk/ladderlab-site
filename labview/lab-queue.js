@@ -95,7 +95,7 @@
     var ph = '<h3>生產者迴圈：讀 D0</h3><div class="st">';
     if (!B.obtained) ph += '還沒有佇列，Enqueue 沒東西可放。';
     else if (B.released) ph += p.err;
-    else if (p.st === 'block') ph += '<b style="color:#dc2626">Enqueue 等待中</b>：佇列滿了（' + B.q.length + '/' + B.max + '），迴圈卡在這裡，不會去讀下一筆。<div class="slots">' + chip('#' + p.hold.id, p.hold.v + '℃', 'exit') + '</div>';
+    else if (p.st === 'block') ph += '<b style="color:var(--lab-red)">Enqueue 等待中</b>：佇列滿了（' + B.q.length + '/' + B.max + '），迴圈卡在這裡，不會去讀下一筆。<div class="slots">' + chip('#' + p.hold.id, p.hold.v + '℃', 'exit') + '</div>';
     else if ($('bpmode').value === 'button') ph += '等你按「手動 Enqueue 一筆」。';
     else if (!run) ph += '暫停中（按「開始執行」）。';
     else ph += 'Wait 中，' + Math.max(0, p.due - B.t) + ' ms 後讀下一筆並 Enqueue。';

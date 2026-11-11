@@ -51,7 +51,7 @@
     function pt(v, rr) { var a = off(v) / SPAN * 170 * Math.PI / 180; return [cx + (rr || R) * Math.sin(a), cy - (rr || R) * Math.cos(a)]; }
     var s = '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="none" stroke="var(--line)" stroke-width="10"/>';
     s += '<line x1="' + cx + '" y1="' + (cy - R - 14) + '" x2="' + cx + '" y2="' + (cy - R + 14) + '" stroke="#dc2626" stroke-width="3"/>';
-    s += '<text x="' + (cx + 6) + '" y="16" style="fill:#dc2626">0</text><text x="' + (cx - 6) + '" y="16" text-anchor="end" style="fill:#dc2626">4294967295</text>';
+    s += '<text x="' + (cx + 6) + '" y="16" style="fill:var(--lab-red)">0</text><text x="' + (cx - 6) + '" y="16" text-anchor="end" style="fill:var(--lab-red)">4294967295</text>';
     // 走過的弧
     var steps = 40, d = '';
     for (var i = 0; i <= steps; i++) { var p = pt((r.start + W.e * i / steps) % WRAP); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }

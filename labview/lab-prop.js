@@ -192,7 +192,7 @@
         logV('<b>' + METHOD[m].name + '</b>：值 ' + old + ' → ' + nv + '，<span style="color:var(--on)">產生 Value Change 事件</span>');
         await sleep(700); $('evs').classList.remove('fire');
       } else {
-        logV('<b>' + METHOD[m].name + '</b>：值 ' + old + ' → ' + nv + '，<span style="color:#dc2626">沒有事件</span>，Event 結構繼續等');
+        logV('<b>' + METHOD[m].name + '</b>：值 ' + old + ' → ' + nv + '，<span style="color:var(--lab-red)">沒有事件</span>，Event 結構繼續等');
       }
     } finally { V.busy = false; }
   }

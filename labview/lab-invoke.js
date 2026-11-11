@@ -104,7 +104,7 @@
   function pathOf(c) { var p = []; while (c) { p.unshift(c); c = CLS[c].up; } return p; }
   function kids(c) { return Object.keys(CLS).filter(function (k) { return CLS[k].up === c; }); }
   function isA(sub, sup) { return pathOf(sub).indexOf(sup) >= 0; }
-  var LVCOL = ['#6b7280', '#0e7490', '#7c3aed', '#c2410c'];
+  var LVCOL = ['var(--mute)', 'var(--lab-teal)', 'var(--lab-violet)', 'var(--lab-rust)'];
   function cDraw() {
     var path = pathOf(C.sel);
     function node(c) {
@@ -130,7 +130,7 @@
     $('cwire').innerHTML = '<span class="rchip">' + r[0] + ' 參考</span> <span class="refw' + (ok ? '' : '" style="background:repeating-linear-gradient(90deg,#111 0 5px,transparent 5px 9px)') + '"></span> <span class="rchip">' + t + ' Refnum（SubVI 輸入）</span>';
     $('cres').innerHTML = ok ? (r[0] === t ? '✔ 型別一樣，直接接。' : '✔ 可以直接接：' + r[0] + ' 是 ' + t + ' 的下層，' + t + ' 能用的屬性方法它全都有。在 SubVI 裡只能用 ' + t + ' 那一層的。') :
       up ? '✖ 斷線：' + r[0] + ' 比 ' + t + ' 上層，不保證是 ' + t + '。要先用 To More Specific Class 轉成 ' + t + '，轉不過去會出錯、輸出 Not A Refnum。' : '✖ 斷線：' + r[0] + ' 和 ' + t + ' 是不同分支，' + r[0] + ' 不是一種 ' + t + '。';
-    $('cres').style.color = ok ? '#15803d' : '#dc2626';
+    $('cres').style.color = ok ? 'var(--lab-green)' : 'var(--lab-red)';
     return ok;
   }
   $('cref').onchange = $('cterm').onchange = cWire;

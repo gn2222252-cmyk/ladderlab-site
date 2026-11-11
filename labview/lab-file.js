@@ -71,11 +71,11 @@
   }
   function resBox(html) { $('ores').innerHTML = html; }
   function okRes(kind) {
-    return '<div><span class="refw" id="oref"></span> refnum out（可以拿去寫）</div><div style="margin-top:6px"><span class="ew"></span> error out：<b style="color:#15803d">沒有錯誤</b></div><p class="why">' +
+    return '<div><span class="refw" id="oref"></span> refnum out（可以拿去寫）</div><div style="margin-top:6px"><span class="ew"></span> error out：<b style="color:var(--lab-green)">沒有錯誤</b></div><p class="why">' +
       { open: '檔案打開了，舊資料都在，寫入位置在<b>開頭</b>。直接寫會蓋掉前面的字（第 2 分頁看指標）。', truncate: '檔案被清成 0 個位元組，舊資料不見了。', create: '建立了一個空的新檔。' }[kind] + '</p>';
   }
   function errRes(code, why) {
-    return '<div><span class="refw dead"></span> refnum out：<b>無效</b>（後面的 Write 收到錯誤就不做）</div><div style="margin-top:6px"><span class="ew"></span> error out：<span class="codebig" style="color:#dc2626">' + code + '</span></div><p class="why">' + why + '</p>';
+    return '<div><span class="refw dead"></span> refnum out：<b>無效</b>（後面的 Write 收到錯誤就不做）</div><div style="margin-top:6px"><span class="ew"></span> error out：<span class="codebig" style="color:var(--lab-red)">' + code + '</span></div><p class="why">' + why + '</p>';
   }
   function askDialog(title, msg, okLabel) {
     return new Promise(function (done) {
@@ -189,7 +189,7 @@
         M.mark++; placeMark();
       }
       drawState();
-      logM('<b>Write to Text File</b>「' + shown(text).replace(/\n/g, '') + '」：寫了 ' + text.length + ' 個位元組，位置 ' + start + ' → ' + M.mark + (over ? '，<span style="color:#dc2626">蓋掉 ' + over + ' 個舊字元</span>' : ''));
+      logM('<b>Write to Text File</b>「' + shown(text).replace(/\n/g, '') + '」：寫了 ' + text.length + ' 個位元組，位置 ' + start + ' → ' + M.mark + (over ? '，<span style="color:var(--lab-red)">蓋掉 ' + over + ' 個舊字元</span>' : ''));
       sayM(over ? '蓋掉了 ' + over + ' 個舊字元（紅底）！檔案沒有變長多少，舊資料被新資料覆蓋。' : '全部接在後面（綠底），舊資料都還在。', over ? 'bad' : 'ok');
     } finally { M.busy = false; }
   };

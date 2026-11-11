@@ -87,7 +87,9 @@
     y += 16;
     box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + y + '" width="' + W + '" height="' + y + '" role="img" aria-label="時序圖">' + s + '</svg>';
   }
-  var CP = '#b45309', CL = '#1f6feb';
+  /* 圖表顏色跟著深淺模式（lab.css 的 --lab-orange、--lab-blue） */
+  function cssv(n, d) { try { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || d; } catch (e) { return d; } }
+  var CP = cssv('--lab-orange', '#b45309'), CL = cssv('--lab-blue', '#1f6feb');
 
   var tabs = $('tabs'), cur = 'cmd';
 
@@ -186,7 +188,7 @@
     var h = '<h4>LabVIEW <small>UI 迴圈 → 佇列 → 通訊迴圈</small></h4>';
     h += '<div class="kv">佇列：</div><div class="pks">' + (s.q.length ? s.q.map(function (v) { return '<span class="pk">D106=' + v + '<small>' + cname(v) + '</small></span>'; }).join('') : '<span class="empty">（空的）</span>') + '</div>';
     h += '<div class="kv" style="margin-top:6px">' + (s.pend ? '等 PLC 拿走 D106 = ' + s.pend.v + '（已等 ' + (s.t - s.pend.at) + ' 格）' : conf ? '沒有在等確認' : '課文做法：收到 ACK 就算寫好') + '<br>讀到的 D202 = ' + s.lvD202 + '<br>寫了 ' + s.sent + ' 筆' + (conf ? '　確認 ' + s.ok + ' 筆　逾時 ' + s.to + ' 次' : '') + '</div>';
-    if (s.lvErr) h += '<div class="kv" style="color:#dc2626">' + esc(s.lvErr) + '</div>';
+    if (s.lvErr) h += '<div class="kv" style="color:var(--lab-red)">' + esc(s.lvErr) + '</div>';
     $('clv').innerHTML = h;
     h = '<h4>PLC <small>' + (s.run ? 'RUN：' + ($('cscan').value === '1' ? '每格掃描一次' : '每 5 格掃描一次') : 'STOP：程式不掃描') + '</small></h4><div class="hregs">';
     h += '<span class="reg ' + (s.d106 ? 'hot' : '') + '">' + s.d106 + '<small>D106</small></span><span class="reg ' + (s.d202 ? 'ok' : '') + '">' + s.d202 + '<small>D202 原點步序</small></span></div><div class="hlamps">';
@@ -327,7 +329,7 @@
   function iDraw() {
     var s = TI.s, P = s.P, n = s.ins, run = !!TI.timer;
     var h = '<h4>LabVIEW <small>通訊迴圈 100 ms、檢測迴圈等通知</small></h4>';
-    h += '<div class="kv">通訊迴圈：' + (s.stall > 0 ? '<b style="color:#dc2626">卡住中</b>（還要 ' + (s.stall / 10).toFixed(1) + ' 秒）' : '正常') + '　Notifier #' + s.seq + (s.nt ? '（b0 = ' + s.nt.w.b0 + '）' : '') + '</div>';
+    h += '<div class="kv">通訊迴圈：' + (s.stall > 0 ? '<b style="color:var(--lab-red)">卡住中</b>（還要 ' + (s.stall / 10).toFixed(1) + ' 秒）' : '正常') + '　Notifier #' + s.seq + (s.nt ? '（b0 = ' + s.nt.w.b0 + '）' : '') + '</div>';
     h += '<div class="kv">寫入佇列：</div><div class="pks">' + (s.wq.length ? s.wq.map(function (it) { return '<span class="pk">D' + it.a + '=' + it.v + '</span>'; }).join('') : '<span class="empty">（空的）</span>') + '</div>';
     h += '<div class="kv" style="margin-top:6px">檢測迴圈：' + (n.busy > 0 ? '<b>檢測中</b> ID ' + n.pid + '，還要 ' + (n.busy / 10).toFixed(1) + ' 秒' : '等通知（timeout 500 ms）') + '<br>上一圈 b0（Shift Register）= ' + n.prev + '<br>寫了 ' + s.writes + ' 筆，其中 D511=0 ' + s.w511 + ' 筆</div>';
     $('ilv').innerHTML = h;
@@ -335,7 +337,7 @@
     h += '<span class="reg ' + (P.step === 70 ? 'hot' : P.step === 910 ? 'bad' : '') + '">' + P.step + '<small>D300 ' + (STEPN[P.step] || '') + '</small></span>';
     h += '<span class="reg ' + (P.b0 ? 'hot' : '') + '">' + P.b0 + '<small>D302.b0</small></span><span class="reg">' + P.pid + '<small>D306 ID</small></span>';
     h += '<span class="reg ' + (P.d510 ? 'ok' : '') + '">' + P.d510 + '<small>D510</small></span><span class="reg ' + (P.d511 ? 'ok' : '') + '">' + P.d511 + '<small>D511</small></span></div>';
-    h += '<div class="kv">' + (P.alarm ? '<b style="color:#dc2626">警報 ' + esc(P.alarm) + '</b>' : P.step === 70 ? '等 D511 = 1（已等 ' + (P.inT / 10).toFixed(1) + ' 秒）' : '—') + '</div>';
+    h += '<div class="kv">' + (P.alarm ? '<b style="color:var(--lab-red)">警報 ' + esc(P.alarm) + '</b>' : P.step === 70 ? '等 D511 = 1（已等 ' + (P.inT / 10).toFixed(1) + ' 秒）' : '—') + '</div>';
     var ids = Object.keys(s.count);
     h += '<div class="kv">檢測次數：' + (ids.length ? ids.slice(-4).map(function (k) { return k + '×' + s.count[k]; }).join('　') : '—') + '</div>';
     $('iplc').innerHTML = h; $('iplc').className = 'lane plc' + (P.step === 910 ? ' dead' : '');
@@ -445,7 +447,7 @@
   function hDraw() {
     var s = TH.s, P = s.P, L = s.L, run = !!TH.timer;
     var h = '<h4>LabVIEW <small>通訊迴圈約 200 ms 一圈</small></h4><div class="hlamps"><span><span class="led ' + (L.alive && L.conn ? 'on' : 'err') + '"></span>PLC Connected</span><span>' + (L.alive ? '程式執行中' : '程式已結束（' + L.end + '）') + '</span></div>';
-    h += '<div class="kv">' + (!L.alive ? '—' : L.waiting ? '<b style="color:#b45309">VISA Read 等回應中…</b>（逾時 2 秒）' : L.err ? '下一圈進錯誤頁' : s.t < L.busyUntil && L.mark === '重連' ? 'Wait 1000 ms 後重開' : '寫命令 → 心跳 → 讀狀態') + '</div>';
+    h += '<div class="kv">' + (!L.alive ? '—' : L.waiting ? '<b style="color:var(--lab-orange)">VISA Read 等回應中…</b>（逾時 2 秒）' : L.err ? '下一圈進錯誤頁' : s.t < L.busyUntil && L.mark === '重連' ? 'Wait 1000 ms 後重開' : '寫命令 → 心跳 → 讀狀態') + '</div>';
     h += '<div class="kv">心跳計數 ' + L.hb + '　上次寫 D240：' + (L.lastHb < 0 ? '—' : ((s.t - L.lastHb) / 10).toFixed(1) + ' 秒前') + '</div>';
     h += '<div class="kv">佇列：</div><div class="pks">' + (L.q.length ? L.q.map(function (it) { return '<span class="pk">D' + it.a + '=' + it.v + '</span>'; }).join('') : '<span class="empty">（空的）</span>') + '</div>';
     h += '<div class="kv">重連時丟掉的命令：' + L.flushed + ' 筆</div>';

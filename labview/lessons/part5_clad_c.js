@@ -109,7 +109,7 @@ function chartDemo(d){
   },50);
 }
 L.push({id:'C11',order:111,no:'C11',part:PART,title:'Chart、Graph 與使用者介面',mins:50,
-goals:[['學會','Waveform Chart 與 Graph 的差別、Chart 的更新模式與歷史長度、各種 Graph 接受的資料、多條曲線、常用 UI 技巧。'],['考試重點','Chart 一次加一個（或一段）點並保留歷史；Graph 每次重畫整個陣列；XY Graph 要 X、Y 兩個陣列。'],['動畫練習','<a href="lab-graph.html">圖表實驗室</a>：同一筆資料同時送給 Chart 和 Graph，看純量、1D、2D、Bundle、Waveform 各畫出什麼；<a href="lab-graph.html#xy">XY Graph 畫圓</a>。'],['動畫練習','<a href="lab-prop.html#val">屬性節點實驗室：Value 與事件</a>：Local Variable、Value、Value (Signaling) 哪一種會觸發 Value Change。'],['動畫練習','<a href="lab-wave.html#wf">波形實驗室：Waveform</a>：改 dt 時 Graph 的 X 軸跟著變，Y 一個數字都沒變。'],['動畫練習','<a href="lab-invoke.html#cls">方法節點實驗室：類別階層</a>：控制參考接得上哪一種 Refnum 輸入、什麼時候要 To More Specific Class。']],
+goals:[['學會','Waveform Chart 與 Graph 的差別、Chart 的更新模式與歷史長度、各種 Graph 接受的資料、多條曲線、常用 UI 技巧。'],['考試重點','Chart 一次加一個（或一段）點並保留歷史；Graph 每次重畫整個陣列；XY Graph 要 X、Y 兩個陣列。'],['動畫練習','<a href="lab-graph.html">圖表實驗室</a>：同一筆資料同時送給 Chart 和 Graph，看純量、1D、2D、Bundle、Waveform 各畫出什麼；<a href="lab-graph.html#xy">XY Graph 畫圓</a>。'],['動畫練習','<a href="lab-prop.html#val">屬性節點實驗室：Value 與事件</a>：Local Variable、Value、Value (Signaling) 哪一種會觸發 Value Change。'],['動畫練習','<a href="lab-wave.html#wf">波形實驗室：Waveform</a>：改 dt 時 Graph 的 X 軸跟著變，Y 一個數字都沒變。'],['動畫練習','<a href="lab-invoke.html#cls">方法節點實驗室：類別階層</a>：控制參考接得上哪一種 Refnum 輸入、什麼時候要 To More Specific Class。'],['動畫練習','<a href="lab-panel.html">人機介面設計工作室</a>：Label 與 Caption、上色與透明、Control Editor 的 Customize Mode、Tab Control 的值，18 種題型隨機練。']],
 check:'能說出 Waveform Graph、XY Graph、Waveform Chart 各接什麼資料。',
 body:[
 C.h3('懂','','Chart 和 Graph 的差別'),

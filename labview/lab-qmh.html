@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QMH 架構實驗室：訊息怎麼在迴圈之間跑 | LadderLab</title>
 <meta name="description" content="LabVIEW QMH 與多迴圈架構的動畫實驗室：Event 結構把按鈕變成訊息排進佇列、訊息處理迴圈逐一處理並送訊息給自己；13_PLC Host_Main 的 UI、通訊、檢測、MES 四個迴圈怎麼用 Queue 和 Notifier 傳訊息；按 Exit 之後各迴圈依序停止、最後才 Release 的結束順序。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -88,7 +88,7 @@
   .bx.plc { border: 3px solid #b45309; }
   .bx.hx { border: 2px solid var(--line); }
   .bx.flash { box-shadow: 0 0 0 3px rgba(124, 58, 237, .45); }
-  .bx.ui h4 { color: #b45309; } .bx.cm h4 { color: #1f6feb; } .bx.ins h4 { color: #7c3aed; } .bx.mes h4 { color: #0b8a5f; }
+  .bx.ui h4 { color: var(--lab-orange); } .bx.cm h4 { color: var(--lab-blue); } .bx.ins h4 { color: var(--lab-violet); } .bx.mes h4 { color: var(--lab-green); }
   .bx.ui { grid-area: ui; } .bx.wq { grid-area: wq; } .bx.cm { grid-area: cm; } .bx.ins { grid-area: ins; } .bx.nt { grid-area: nt; } .bx.plc { grid-area: plc; } .bx.mq { grid-area: mq; } .bx.mes { grid-area: mes; } .bx.hx { grid-area: hx; }
   .stopb { padding: 7px 14px; border-radius: 8px; border: 3px solid #555; background: #ddd; color: #222; font-weight: 700; cursor: pointer; }
   .stopb.on { background: #dc2626; color: #fff; border-color: #7f1d1d; }
@@ -217,14 +217,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。13_PLC 的迴圈與位址以本站第六部分課文為準，模擬的時間只是示意。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-qmh.js?v=79fc8d9e25"></script>
+<script src="lab-qmh.js?v=54acb8a441"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

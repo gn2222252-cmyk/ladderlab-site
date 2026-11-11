@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>叢集實驗室：Bundle、Type Def、錯誤叢集 | LadderLab</title>
 <meta name="description" content="LabVIEW Cluster 的動畫實驗室：看元素飛進、飛出叢集，叢集順序改了 Unbundle 為什麼會接錯；Type Def 改一處全部更新；錯誤叢集沿著錯誤線傳遞、Close 照樣執行、警告與 Merge Errors、Clear Errors。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -255,7 +255,7 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-cluster.js?v=15c7d58c6b"></script>
+<script src="lab-cluster.js?v=f4db443664"></script>
 <script src="lab-cluster2.js?v=c3c038bba9"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
@@ -263,7 +263,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

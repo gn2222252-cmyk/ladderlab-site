@@ -233,7 +233,7 @@
       rh += '<div class="cond"><span class="' + (done && (r.why === 'count' || r.why === 'both') ? 'hit' : '') + '">① byte count：' + (done ? r.got.length : n) + ' / ' + o.count + '</span>' +
         '<span class="' + (done && (r.why === 'term' || r.why === 'both') ? 'hit' : '') + '">② 終止字元 ' + (o.ten ? nm(o.term) + (termSeen ? ' ✓' : '') : '（關）') + '</span>' +
         '<span class="' + (done && r.why === 'timeout' ? 'miss' : '') + '">③ timeout ' + o.tmo + ' ms</span></div>';
-      if (done) rh += '<div class="lbl">read buffer（' + r.got.length + ' 個）' + (r.err ? '　<b style="color:#dc2626">error ' + r.err + '（逾時）</b>' : '') + '</div><div class="slots">' + (r.got.length ? r.got.map(function (x) { return chip(x.c, null, 'got' + (Math.abs(r.t - t) < 1e-9 ? ' in' : '')); }).join('') : empty()) + '</div>';
+      if (done) rh += '<div class="lbl">read buffer（' + r.got.length + ' 個）' + (r.err ? '　<b style="color:var(--lab-red)">error ' + r.err + '（逾時）</b>' : '') + '</div><div class="slots">' + (r.got.length ? r.got.map(function (x) { return chip(x.c, null, 'got' + (Math.abs(r.t - t) < 1e-9 ? ' in' : '')); }).join('') : empty()) + '</div>';
       rh += '</div>';
     });
     $('rreads').innerHTML = rh;

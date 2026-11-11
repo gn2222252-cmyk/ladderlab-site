@@ -77,7 +77,7 @@
     var w = $('cinwrap'), t = cs.type;
     if (t === 'int') w.innerHTML = '<label>值 <input class="scalar" id="cin" type="number" step="1" value="' + esc(cs.val) + '" style="width:80px"></label> <button type="button" id="cdec">−1</button><button type="button" id="cinc">+1</button>';
     else if (t === 'dbl') w.innerHTML = '<label>值 <input class="scalar dbl" id="cin" value="' + esc(cs.val) + '" style="width:90px"></label> <span class="why">試 2.5、3.5、6.4、9.5</span>';
-    else if (t === 'str') w.innerHTML = '<label>值 <input class="scalar" id="cin" value="' + esc(cs.val) + '" style="width:110px;color:#c026d3"></label> <label class="check small"><input type="checkbox" id="cci"' + (cs.ci ? ' checked' : '') + '> Case Insensitive Match</label>';
+    else if (t === 'str') w.innerHTML = '<label>值 <input class="scalar" id="cin" value="' + esc(cs.val) + '" style="width:110px;color:var(--lab-purple)"></label> <label class="check small"><input type="checkbox" id="cci"' + (cs.ci ? ' checked' : '') + '> Case Insensitive Match</label>';
     else if (t === 'enum') {
       var vals = ENUM_VALS.concat(cs.pause ? ['Pause'] : []);
       w.innerHTML = '<label>值 <select id="cin">' + vals.map(function (v) { return '<option' + (v === cs.val ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></label> <label class="check small"><input type="checkbox" id="cpause"' + (cs.pause ? ' checked' : '') + '> 在 Type Def 新增一個值 Pause（Case 還沒改）</label>';
@@ -98,7 +98,7 @@
       d.appendChild(el('span', 'act', esc(c.act)));
       box.appendChild(d);
     });
-    $('cwhy').innerHTML = (r.broken ? '<b style="color:#dc2626">✖ </b>' : '▶ ') + esc(r.why);
+    $('cwhy').innerHTML = (r.broken ? '<b style="color:var(--lab-red)">✖ </b>' : '▶ ') + esc(r.why);
     $('cwhy').style.color = r.broken ? '#dc2626' : '';
   }
   $('ctype').onchange = function () {
@@ -215,7 +215,7 @@
   function smlog(s) { var l = $('smlog'); l.insertBefore(el('div', '', s), l.firstChild); }
   function smDraw() {
     Array.prototype.forEach.call(smd.querySelectorAll('.st'), function (d) { d.classList.toggle('on', d.dataset.s === sm.st); });
-    srBox.innerHTML = '迴圈第 <b>' + sm.i + '</b> 圈　Shift Register 裡的狀態：<span class="scalar" style="color:var(--on)">' + sm.st + '</span>' + (sm.left ? '　這個狀態還剩 ' + sm.left + ' 圈' : '') + '　門：' + (sm.door ? '<b style="color:#dc2626">開</b>' : '關');
+    srBox.innerHTML = '迴圈第 <b>' + sm.i + '</b> 圈　Shift Register 裡的狀態：<span class="scalar" style="color:var(--on)">' + sm.st + '</span>' + (sm.left ? '　這個狀態還剩 ' + sm.left + ' 圈' : '') + '　門：' + (sm.door ? '<b style="color:var(--lab-red)">開</b>' : '關');
   }
   /* 每一圈：執行 Case[st]，回傳下一個狀態 */
   function caseRun(st) {
@@ -244,7 +244,7 @@
     if (nx !== cur && DUR[nx] && cur !== 'Pause') sm.left = DUR[nx];
     if (nx === 'Pause' || cur === 'Pause' && nx !== 'Pause') { /* 保留剩餘圈數 */ }
     if (!DUR[nx] && nx !== 'Pause') sm.left = 0;
-    var lost = sm.startBtn && sm.stopBtn ? '　<b style="color:#dc2626">（同一圈按了開始和 Stop，Idle 頁先判斷 Stop，「開始」被蓋掉）</b>' : '';
+    var lost = sm.startBtn && sm.stopBtn ? '　<b style="color:var(--lab-red)">（同一圈按了開始和 Stop，Idle 頁先判斷 Stop，「開始」被蓋掉）</b>' : '';
     if (cur === 'Idle') { sm.startBtn = false; sm.stopBtn = false; }
     smlog('第 ' + sm.i + ' 圈 Case[<b>' + cur + '</b>]：' + r[1] + ' → 下一圈 ' + nx + lost);
     sm.st = nx; smDraw();

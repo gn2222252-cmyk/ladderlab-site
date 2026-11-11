@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>屬性節點實驗室：Property Node 與控制參考 | LadderLab</title>
 <meta name="description" content="LabVIEW Property Node 的動畫實驗室：用屬性節點改前面板元件的 Value、Visible、Disabled、Blinking、顏色，讀和寫的方向；Value、Value (Signaling)、Local Variable 寫值時 Value Change 事件會不會觸發；把控制參考傳進 SubVI 一次反灰一整組按鈕，隱含與明確屬性節點的差別。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -168,14 +168,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；屬性與事件行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-prop.js?v=a5f7df64e4"></script>
+<script src="lab-prop.js?v=adb9e906ad"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>交握實驗室：命令、回應、上升緣、逾時 | LadderLab</title>
 <meta name="description" content="PLC 與 LabVIEW 上位機交握的動畫實驗室：D106 脈衝命令怎麼算送達、寫太快與 PLC 沒清的後果；13_PLC 檢測交握的 b0、D510、D511 時序與上升緣；D240 心跳兩邊互相看門狗，斷線時誰先發現、各自進哪個安全狀態。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -29,8 +29,8 @@
   .lane { border: 3px solid; border-radius: 10px; padding: 8px 10px; min-width: 0; background: var(--card); font-size: 14px; }
   .lane h4 { margin: 0 0 6px; font-size: 15px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .lane h4 small { font-weight: 400; color: var(--mute); font-size: 12px; }
-  .lane.hlv { border-color: #1f6feb; } .lane.hlv h4 { color: #1f6feb; }
-  .lane.plc { border-color: #b45309; } .lane.plc h4 { color: #b45309; }
+  .lane.hlv { border-color: #1f6feb; } .lane.hlv h4 { color: var(--lab-blue); }
+  .lane.plc { border-color: #b45309; } .lane.plc h4 { color: var(--lab-orange); }
   .lane.dead { opacity: .55; border-style: dashed; }
   .hregs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
   .reg { display: inline-flex; flex-direction: column; align-items: center; min-width: 58px; border: 2px solid var(--line); border-radius: 6px; padding: 2px 6px; font: 700 15px ui-monospace, Consolas, monospace; }
@@ -175,14 +175,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。位址與 PLC 行為以本站課文與雙龍門 PLC 程式為準，動畫裡沒有標出處的時間只是示意。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-handshake.js?v=ddabc1f152"></script>
+<script src="lab-handshake.js?v=b88f197c80"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

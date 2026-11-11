@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="8845cfdd03">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人機介面設計工作室：讓前面板好看又好用 | LadderLab</title>
+<meta name="description" content="LabVIEW 前面板設計的互動工作室：用龍門機台的操作面板練排版、上色工具與吸管、Label 與 Caption；設計檢查給對齊、大小、顏色意義、對比、擁擠的建議；Control Editor 換 True／False 外觀存成自訂元件；Tab Control 分頁排版。">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
+<style>
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+  .lab-stage h3.sub { font-size: 16px; margin: 14px 0 6px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tools button.here { background: var(--onbg); border-color: var(--on); box-shadow: inset 0 -3px 0 var(--on); font-weight: 700; }
+  .ed { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 12px; align-items: start; }
+  @media (max-width: 900px) { .ed { grid-template-columns: minmax(0, 1fr); } }
+  .insp { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: var(--card); font-size: 14px; min-width: 0; }
+  .insp h4 { margin: 0 0 6px; font-size: 15px; }
+  .insp input[type=text] { width: 100%; max-width: 100%; box-sizing: border-box; font: 14px system-ui, sans-serif; padding: 3px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--card); color: var(--ink); }
+  .insp .grid2 { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; align-items: center; }
+  .sw { display: flex; flex-wrap: wrap; gap: 3px; }
+  .sw button { width: 24px; height: 24px; padding: 0; border: 1px solid #555; border-radius: 3px; }
+  .sw button.t { background: repeating-conic-gradient(#ccc 0 25%, #fff 0 50%) 50% / 10px 10px; font: 700 12px system-ui; color: #111; }
+  .cbox { display: inline-flex; gap: 6px; align-items: center; }
+  .cbox i { display: inline-block; width: 22px; height: 22px; border: 2px solid #555; border-radius: 3px; vertical-align: middle; }
+  .cbox i.tr { background: repeating-conic-gradient(#ccc 0 25%, #fff 0 50%) 50% / 10px 10px; }
+  .cbox button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on); }
+  .nudge { display: grid; grid-template-columns: repeat(3, 34px); gap: 3px; }
+  .nudge button { padding: 4px 0; }
+
+  /* 虛擬前面板 800 × 480，依寬度縮放 */
+  .pv-wrap { position: relative; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: #c9ced6; touch-action: none; }
+  .pv { position: absolute; left: 0; top: 0; width: 800px; height: 480px; transform-origin: 0 0; background-image: linear-gradient(rgba(0,0,0,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px); background-size: 12px 12px; font-family: system-ui, "Microsoft JhengHei", sans-serif; color: #1d2430; }
+  .pv .el { position: absolute; box-sizing: border-box; }
+  .pv .el.sel { outline: 2px dashed #1e6fff; outline-offset: 3px; }
+  .pv .el.bad { outline: 3px solid #c62828; outline-offset: 3px; }
+  .pv .face { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; border-radius: 4px; font-weight: 700; font-size: 15px; }
+  .pv .btn .face { border: 2px solid rgba(0,0,0,.35); box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
+  .pv .btn.on .face { box-shadow: inset 0 3px 0 rgba(0,0,0,.25); }
+  .pv .led .face { border-radius: 50%; border: 2px solid #333; }
+  .pv .num .face, .pv .str .face { border: 2px solid #8a94a6; border-radius: 3px; place-items: center end; padding: 0 8px; font: 600 16px ui-monospace, Consolas, monospace; }
+  .pv .str .face { place-items: center start; font-family: system-ui, "Microsoft JhengHei", sans-serif; }
+  .pv .chart .face { border: 2px solid #8a94a6; border-radius: 3px; place-items: stretch; }
+  .pv .face img { width: 100%; height: 100%; object-fit: contain; }
+  .pv .cap { position: absolute; left: 0; bottom: 100%; margin-bottom: 2px; font-size: 13px; white-space: nowrap; line-height: 1.25; }
+  .pv .tabc { position: absolute; box-sizing: border-box; border: 2px solid #8a94a6; border-radius: 3px; }
+  .pv .tabc .pages { position: absolute; left: -2px; bottom: 100%; display: flex; gap: 2px; }
+  .pv .tabc .pages span { border: 2px solid #8a94a6; border-bottom: 0; border-radius: 4px 4px 0 0; padding: 2px 12px; font-size: 13px; background: #d9dee6; cursor: pointer; }
+  .pv .tabc .pages span.on { background: inherit; font-weight: 700; }
+  .pv .rh { position: absolute; right: -7px; bottom: -7px; width: 12px; height: 12px; background: #1e6fff; border: 2px solid #fff; border-radius: 2px; cursor: nwse-resize; }
+
+  .issues { list-style: none; padding: 0; margin: 8px 0; }
+  .issues li { border-left: 4px solid var(--line); padding: 4px 8px; margin: 4px 0; background: var(--card); cursor: pointer; }
+  .issues li.bad { border-color: #c62828; }
+  .issues li.warn { border-color: #b26a00; }
+  .issues li.ok { border-color: #127a3e; cursor: default; }
+
+  .cewin { border: 2px solid #8a94a6; border-radius: 4px; background: var(--card); }
+  .cewin .tb { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 4px 8px; border-bottom: 1px solid var(--line); background: var(--onbg); font-size: 13px; }
+  .cewin .body { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 12px; padding: 10px; }
+  @media (max-width: 640px) { .cewin .body { grid-template-columns: minmax(0, 1fr); } }
+  .cewin .prev { width: 160px; height: 70px; position: relative; }
+  .imgs { display: flex; flex-wrap: wrap; gap: 4px; }
+  .imgs button { width: 52px; height: 40px; padding: 2px; }
+  .imgs img { width: 100%; height: 100%; object-fit: contain; }
+  .lib { list-style: none; padding: 0; margin: 6px 0; }
+  .lib li { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; margin: 3px 0; }
+  .terms { display: flex; flex-wrap: wrap; gap: 6px; }
+  .terms span { border: 2px solid #8a94a6; border-radius: 3px; padding: 2px 8px; font: 12px ui-monospace, Consolas, monospace; background: var(--card); }
+  .terms span.hid { border-style: dashed; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-panel.html" class="here">人機介面</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>人機介面設計工作室：讓前面板好看又好用</h1>
+  <p class="why">這是雙龍門機台的操作面板（簡化成 800 × 480）。一開始故意排得有點亂：先在 ① 自己整理，再到 ② 按「檢查」看建議。改過的版面會存在這個瀏覽器。用程式改顏色、反灰在 <a href="lab-prop.html">屬性節點實驗室</a>，這一頁只談編輯時怎麼設計。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="edit" class="here">① 前面板編輯器</button>
+    <button type="button" data-t="check">② 設計檢查</button>
+    <button type="button" data-t="ce">③ Control Editor</button>
+    <button type="button" data-t="tab">④ Tab Control</button>
+    <button type="button" data-t="quiz">⑤ 猜一猜</button>
+  </div>
+
+  <!-- ================= 1 ================= -->
+  <section class="lab-stage" id="t-edit">
+    <div class="row">
+      <span class="small">工具（Tools 選盤）：</span>
+      <div class="tools" id="tools">
+        <button type="button" data-tool="pos" class="here">定位 Position/Size/Select</button>
+        <button type="button" data-tool="op">操作 Operate Value</button>
+        <button type="button" data-tool="set">上色 Set Color</button>
+        <button type="button" data-tool="get">吸管 Get Color</button>
+      </div>
+    </div>
+    <div class="row" id="colorrow">
+      <span class="cbox">目前顏色：<button type="button" id="cfg" class="here">前景 <i id="cfgi"></i></button><button type="button" id="cbg">背景 <i id="cbgi"></i></button></span>
+      <div class="sw" id="sw"></div>
+      <label class="small">自訂 <input type="color" id="cpick" value="#1e6fff"></label>
+    </div>
+    <div class="ed">
+      <div style="min-width:0">
+        <div class="pv-wrap" id="pv-edit"></div>
+        <div class="row">
+          <button type="button" id="al-left">左邊對齊</button>
+          <button type="button" id="al-top">上緣對齊</button>
+          <button type="button" id="rs-same">等寬等高</button>
+          <span class="why">（按住 Shift 點選可以選好幾個；對應 LabVIEW 工具列的 Align Objects、Resize Objects）</span>
+        </div>
+        <div class="row">
+          <button type="button" id="ld-messy">回到亂的版本</button>
+          <button type="button" id="ld-clean">載入整理好的範例</button>
+        </div>
+      </div>
+      <div class="insp" id="insp"></div>
+    </div>
+    <p class="verdict-line" id="e-say"></p>
+    <div class="callout"><b>幾個操作</b>：<b>Label</b> 是物件的名稱，前面板和方塊圖都看得到，執行中不能改；方塊圖、Event 結構、Local Variable 都用它認元件。<b>Caption</b> 是前面板上顯示的文字，方塊圖上不會出現，給操作員看的文字放這裡；執行中也可以用屬性節點改它。在元件上按右鍵 ▸ Visible Items 可以分別勾選 Label、Caption。上色工具點元件就上色；上色工具按住 Ctrl（Mac 用 Option 或 Command、Linux 用 Alt）會暫時變成吸管（Get Color），先吸一個元件的顏色，放開再點另一個元件，顏色就複製過去。顏色選盤右上角的 <b>T</b> 是透明；只想讓邊框透明，按住 F 再點 T。布林元件的 True、False 兩個狀態各有自己的顏色：先用操作工具把它切到要改的狀態，再上色。前面板背景（Pane）的顏色或圖片，講義的做法是在前面板捲軸上按右鍵 ▸ Properties ▸ Background。</div>
+  </section>
+
+  <!-- ================= 2 ================= -->
+  <section class="lab-stage" id="t-check" hidden>
+    <p class="why">檢查只看幾條有把握的通則：對齊、同類元件一樣大、顏色意義（紅＝停止／異常、綠＝運轉）、文字對比、重要按鈕的位置、有沒有重疊或太擠、Label 和 Caption 有沒有重複。點一條建議，面板上會把相關的元件框起來。</p>
+    <div class="row"><button type="button" class="go" id="docheck">檢查</button><span class="kv" id="chk-sum"></span></div>
+    <div class="pv-wrap" id="pv-check"></div>
+    <ul class="issues" id="issues"></ul>
+    <div class="callout">對照本站的「控制盤」設計系統：運轉、啟動用綠（<code>#127a3e</code>），停止、異常用紅（<code>#c62828</code>），注意用琥珀（<code>#b26a00</code>），一般操作用中性灰；顏色只當輔助，按鈕上還是要有文字，色弱的人才分得出來。文字對比照 WCAG 的建議，一般文字至少 4.5 : 1。重疊和「太擠」用 8 px 當門檻，是本頁自己訂的。</div>
+  </section>
+
+  <!-- ================= 3 ================= -->
+  <section class="lab-stage" id="t-ce" hidden>
+    <p class="why">LabVIEW 的做法：在按鈕上按右鍵 ▸ Advanced ▸ Customize…，開出 Control Editor。工具列的扳手按鈕切到 <b>Customize Mode</b> 才能選到元件裡的零件；在零件上按右鍵 ▸ Import from File at Same Size… 換成自己的圖片（剪貼簿裡有圖時，也可以用 Import Picture from Clipboard）；做完選 File ▸ Apply Changes 套回原本的元件，或另存成 .ctl 自訂元件。下面模擬這個流程。</p>
+    <div class="row">
+      <label>要改的按鈕 <select id="ce-el"></select></label>
+    </div>
+    <div class="cewin" id="cewin"></div>
+    <h3 class="sub">自訂元件庫（.ctl）</h3>
+    <p class="why">存成 .ctl 之後，在 Controls 選盤用 Select a Control… 選這個檔案，就能放到別的前面板。工具列的 Control Type 下拉選單決定它是 Control、Type Def. 還是 Strict Type Def.。三種都存成 .ctl，差別只在用到它的地方和這個檔案怎麼連結：Control 放上去之後就沒有連結；Type Def. 只同步資料型別，Strict Type Def. 連外觀一起同步，詳細比較在 <a href="lab-enum.html#strict">Enum 實驗室：Type Def vs Strict</a>。</p>
+    <ul class="lib" id="lib"></ul>
+  </section>
+
+  <!-- ================= 4 ================= -->
+  <section class="lab-stage" id="t-tab" hidden>
+    <p class="why">Tab Control 把畫面分成幾頁，讓自動、手動、異常紀錄各有一頁，不用全部擠在一起。點上面的頁籤切換；選一個元件，再選它要放在哪一頁。Tab Control 只是前面板上的容器：不管現在顯示哪一頁，每一頁上的控制項都在，方塊圖上所有端子都在，值照樣讀寫得到（虛線框的是目前畫面上看不到的元件，不是「沒在執行」）。Tab Control 自己的值是 Enum 類的，代表目前顯示哪一頁。這件事的完整動畫在 <a href="lab-cluster.html#tabc">叢集實驗室：Tab Control</a>。</p>
+    <div class="ed">
+      <div style="min-width:0"><div class="pv-wrap" id="pv-tab"></div></div>
+      <div class="insp" id="tabinsp"></div>
+    </div>
+    <h3 class="sub">方塊圖上的端子（用 Label 顯示）</h3>
+    <div class="terms" id="terms"></div>
+    <div class="callout">在 Tab Control 上按右鍵可以 Add Page After、Add Page Before、Duplicate Page、Remove Page；右鍵 ▸ Advanced 裡有 Allow Multiple Colors，讓每一頁有自己的顏色。<b>停止、急停這類按鈕不要放進某一頁</b>：切到別頁就看不到，要放在 Tab Control 外面，每一頁都看得到的位置。</div>
+  </section>
+
+  <!-- ================= 5 ================= -->
+  <section class="lab-stage" id="t-quiz" hidden>
+    <p class="why">題目隨機產生，選項順序也會打亂。答錯會看到解說，按「下一題」換一題。</p>
+    <div class="lab-challenge" id="pquiz"></div>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；操作名稱以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-panel.js?v=890e9b9815"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

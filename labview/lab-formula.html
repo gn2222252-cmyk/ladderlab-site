@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Formula Node 實驗室：把公式寫成文字 | LadderLab</title>
 <meta name="description" content="LabVIEW Formula Node 的動畫實驗室：同一個公式用圖形節點拉線和寫在 Formula Node 裡並排對照（脈波換算位置、溫度補償、量測判定、梯形速度）；語法檢查器提示少分號、變數沒宣告、大小寫不一致；整數相除、Quotient & Remainder 與取餘數。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -52,7 +52,7 @@
   .msgs li { margin: 4px 0; padding: 6px 8px; border-radius: 6px; }
   .msgs li.e { background: rgba(220, 38, 38, .12); color: #b91c1c; }
   .msgs li.w { background: rgba(217, 119, 6, .14); color: #92400e; }
-  .msgs li.ok { background: rgba(22, 163, 74, .14); color: #15803d; }
+  .msgs li.ok { background: rgba(22, 163, 74, .14); color: var(--lab-green); }
   .runarrow { display: inline-block; font-size: 22px; vertical-align: middle; }
   .runarrow.broken { color: #9ca3af; text-decoration: line-through; }
   .kv { font: 14px ui-monospace, Consolas, monospace; }
@@ -65,7 +65,7 @@
   .cmp > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
   .cmp h4 { margin: 0 0 6px; font-size: 14px; }
   .tag { display: inline-block; font: 11px ui-monospace, Consolas, monospace; border-radius: 4px; padding: 0 5px; color: #fff; }
-  .tag.dbl { background: #e8820c; } .tag.i32 { background: #1e5bd7; }
+  .tag.dbl { background: #e8820c; color: #18212a; } .tag.i32 { background: #1e5bd7; }
 </style>
 </head>
 <body>
@@ -145,7 +145,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

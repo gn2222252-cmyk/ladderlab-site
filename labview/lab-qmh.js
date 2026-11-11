@@ -480,8 +480,8 @@
       if (!u.alive) h += u.err;
       else if (u.leaving) h += u.msg || 'Exit Status：Stopping...';
       else h += '讀前面板按鈕 → 要寫 PLC 就 Enqueue；等通知更新畫面。';
-      h += '</div><div class="kv">畫面：步序 ' + (lw ? lw.step + ' ' + (STEPN[lw.step] || '') : '—') + '　OK ' + (lw ? lw.ok : 0) + '　NG ' + (lw ? lw.ng : 0) + (lw && lw.alarm ? '<br><span style="color:#dc2626">警報：' + esc(lw.alarm) + '</span>' : '') +
-        '<br>Notifier：' + (!u.alive ? '—' : u.to ? '<span style="color:#b45309">逾時，顯示舊值</span>' : '有新資料') + '　第 ' + u.n + ' 圈</div>';
+      h += '</div><div class="kv">畫面：步序 ' + (lw ? lw.step + ' ' + (STEPN[lw.step] || '') : '—') + '　OK ' + (lw ? lw.ok : 0) + '　NG ' + (lw ? lw.ng : 0) + (lw && lw.alarm ? '<br><span style="color:var(--lab-red)">警報：' + esc(lw.alarm) + '</span>' : '') +
+        '<br>Notifier：' + (!u.alive ? '—' : u.to ? '<span style="color:var(--lab-orange)">逾時，顯示舊值</span>' : '有新資料') + '　第 ' + u.n + ' 圈</div>';
       bx.ui.innerHTML = h; bx.ui.className = BASE.ui + (!u.alive ? ' end' : run ? ' run' : '');
       // 寫入佇列
       h = '<h4>寫入佇列 <small>U32 = 位址×65536＋值</small></h4><div class="cards">';
@@ -508,7 +508,7 @@
       h += '</div><small class="why">通訊迴圈每圈送一次（21 個字），新的蓋掉舊的；UI 和檢測迴圈都收得到同一筆。</small>';
       bx.nt.innerHTML = h; bx.nt.className = BASE.nt + (S.ntAlive ? '' : ' dead');
       // PLC
-      h = '<h4 style="color:#b45309">PLC <small>自己一直在掃描</small></h4><div class="kv">D300 步序 = <b>' + P.step + ' ' + (STEPN[P.step] || '') + '</b><br>警報：' + (P.alarm ? '<b style="color:#dc2626">' + esc(P.alarm) + '</b>' : '無') +
+      h = '<h4 style="color:var(--lab-orange)">PLC <small>自己一直在掃描</small></h4><div class="kv">D300 步序 = <b>' + P.step + ' ' + (STEPN[P.step] || '') + '</b><br>警報：' + (P.alarm ? '<b style="color:var(--lab-red)">' + esc(P.alarm) + '</b>' : '無') +
         '<br>b0 請求檢測 = ' + P.b0 + '　D306 = ' + P.pid + '<br>D510 = ' + P.d510 + '　D511 = ' + P.d511 + '<br>D520 = ' + P.d520 + '（' + (P.beatT / 10).toFixed(1) + ' 秒沒變）<br>D530 = ' + P.d530 + '　D550 = ' + P.d550 + '　OK ' + P.ok + ' / NG ' + P.ng + '</div>';
       bx.plc.innerHTML = h;
       // MES 佇列

@@ -35,7 +35,7 @@
     else if (L.pc === 1) { L.tmp++; L.pc = 2; log('rlog', n + '：加 1，手上是 ' + L.tmp + '（x 還是 ' + rc.x + '）'); }
     else {
       var over = rc.x >= L.tmp; if (over) rc.lost++;
-      log('rlog', n + '：把 ' + L.tmp + ' 寫回 x' + (over ? '　<b style="color:#dc2626">← x 本來已經是 ' + rc.x + '，被舊資料蓋掉，掉了一筆！</b>' : ''));
+      log('rlog', n + '：把 ' + L.tmp + ' 寫回 x' + (over ? '　<b style="color:var(--lab-red)">← x 本來已經是 ' + rc.x + '，被舊資料蓋掉，掉了一筆！</b>' : ''));
       rc.x = L.tmp; L.pc = 0; L.i++; bump();
     }
     rDraw();

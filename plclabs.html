@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 動畫實驗室總覽 | LadderLab</title>
 <meta name="description" content="三菱 FX3S PLC 的動畫實驗室總覽：掃描週期、輸入輸出接線、計時器與計數器、步進 STL、數值指令、自保持與互鎖、氣壓缸。不用接實機，在瀏覽器裡一個掃描一個掃描看。">
 <link rel="stylesheet" href="style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="labview/lab.css?v=5af91f3571">
+<link rel="stylesheet" href="labview/lab.css?v=c9f186c025">
 <style>
   .hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin: 16px 0; }
   .hub a.card { display: block; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--card); color: inherit; text-decoration: none; transition: transform .15s, box-shadow .15s; position: relative; }
@@ -70,7 +70,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

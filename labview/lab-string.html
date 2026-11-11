@@ -1,23 +1,23 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>字串實驗室：切、接、找、換、格式碼、看不見的字元 | LadderLab</title>
 <meta name="description" content="LabVIEW 字串函式的動畫實驗室：String Subset、Replace Substring、Search and Replace、Match Pattern、Spreadsheet String To Array 逐字元顯示位置；Format Into String 與 Scan From String 格式碼對照；Normal、'\' Codes、Hex 三種顯示模式看見 CR、LF、ENQ。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
   .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
-  .str { color: #c026d3; font-family: ui-monospace, Consolas, monospace; }
+  .str { color: var(--lab-purple); font-family: ui-monospace, Consolas, monospace; }
   input.str { border: 2px solid #e879f9; border-radius: 6px; padding: 4px 8px; background: var(--card); font-size: 15px; min-width: 60px; }
   .chars { display: flex; flex-wrap: wrap; gap: 2px; margin: 6px 0 10px; min-height: 48px; }
   .ch { width: 26px; text-align: center; }
-  .ch b { display: grid; place-items: center; height: 30px; border: 1px solid #e879f9; border-radius: 4px; font: 600 15px ui-monospace, Consolas, monospace; color: #a21caf; background: var(--card); transition: background .3s, transform .3s, opacity .3s; }
+  .ch b { display: grid; place-items: center; height: 30px; border: 1px solid #e879f9; border-radius: 4px; font: 600 15px ui-monospace, Consolas, monospace; color: var(--lab-purple); background: var(--card); transition: background .3s, transform .3s, opacity .3s; }
   .ch small { font: 10px ui-monospace, Consolas, monospace; color: var(--mute); }
   .ch.hit b { background: #fde68a; transform: translateY(-3px); color: #18212a; }
   .ch.new b { background: #bbf7d0; color: #18212a; }
@@ -122,7 +122,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

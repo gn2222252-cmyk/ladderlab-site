@@ -143,7 +143,7 @@ const BANK2=[
 /* ===== 環境與除錯 ===== */
  {topic:T.env,q:'切換前面板和方塊圖的快捷鍵？',o:['Ctrl+E','Ctrl+B','Ctrl+H','Ctrl+T'],a:0,ex:'Ctrl+H Context Help、Ctrl+B 移除斷線、Ctrl+T 並排、Ctrl+U 整理方塊圖。'},
  {topic:T.env,q:'Ctrl+B 的功能？',o:['移除所有斷掉的線','編譯','加斷點','開 Context Help'],a:0,ex:'Remove Broken Wires。'},
- {topic:T.env,q:'Quick Drop 的預設快捷鍵？',o:['Ctrl+Space','Ctrl+Q','Ctrl+D','Shift+Space'],a:0,ex:'輸入函式名稱直接放置。'},
+ {topic:T.env,q:'Quick Drop 的預設快捷鍵？',o:['Ctrl+Space','Ctrl+Q','Ctrl+D','Shift+Space'],a:0,ex:'輸入函式名稱直接放置。英文版預設 Ctrl+Space；中文版 Windows 是 Ctrl+Shift+Space，可在 Options 改。'},
  {topic:T.env,q:'在線上放 Breakpoint，程式會在什麼時候暫停？',o:['資料通過這條線之後','VI 開始時','VI 結束時','永遠不會'],a:0,ex:'放在節點上則在該節點執行前暫停。'},
  {topic:T.env,q:'Conditional Probe 的用途？',o:['線上的值符合條件（例如 > 100）時才暫停','讓 Probe 變快','只顯示 Boolean','清除錯誤'],a:0,ex:'適合迴圈跑很多圈才出錯的情況。'},
  {topic:T.env,q:'Diagram Disable Structure 中 Disabled 頁的程式碼？',o:['不會執行，也不會被編譯（壞掉也不影響 Run）','會執行但不顯示','只執行一次','會慢速執行'],a:0,ex:'用來暫時停用一段程式除錯。'},

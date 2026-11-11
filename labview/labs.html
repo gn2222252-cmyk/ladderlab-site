@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
 <meta name="description" content="LabVIEW 動畫實驗室總覽：迴圈、結構、陣列、字串、叢集、圖表、變數、佇列、DAQ、VISA 序列通訊、檔案 I/O、布林、數值等互動實驗室，加上 FX 封包練習台。不用安裝 LabVIEW，在瀏覽器裡改輸入、看動畫、先預測再對答案。">
 <link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="lab.css?v=5af91f3571">
+<link rel="stylesheet" href="lab.css?v=c9f186c025">
 <style>
   .hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin: 16px 0; }
   .hub a.card { display: block; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--card); color: inherit; text-decoration: none; transition: transform .15s, box-shadow .15s; position: relative; }
@@ -17,7 +17,7 @@
   .hub p { margin: 6px 0; font-size: 14px; }
   .hub ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--mute); }
   .hub .les { font-size: 12px; color: var(--mute); margin-top: 8px; }
-  .hub .seen { position: absolute; right: 12px; top: 12px; font-size: 12px; color: #1f9d3a; font-weight: 700; }
+  .hub .seen { position: absolute; right: 12px; top: 12px; font-size: 12px; color: var(--go-text, var(--lab-green, #0f6a32)); font-weight: 700; }
   .order { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 14px; margin: 8px 0; }
   .order a { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; text-decoration: none; color: inherit; background: var(--card); }
 </style>
@@ -56,6 +56,7 @@
     { f: 'lab-enum.html', n: 'Enum 與 Ring', ic: '▾', c: '#0f766e', d: '同樣是下拉選單：Enum 的文字是型別的一部分，Ring 只是數字。', t: ['接到 Case：頁籤是文字還是數字', '新增選項：Type Def 一起變、Case 少頁就斷箭頭', 'Type Def 與 Strict Type Def', '字串狀態打錯字只會默默走 Default'], l: '第 8 課、C2、C9' },
     { f: 'lab-prop.html', n: '屬性節點', ic: 'P', c: '#be185d', d: '用程式改前面板：顏色、反灰、閃爍，還有會不會觸發事件。', t: ['Visible、Disabled 0/1/2、Blinking、顏色', 'Value、Value (Signaling)、Local Variable：誰會觸發事件', '控制參考傳進 SubVI，一次 Disable 一組按鈕'], l: '第 18 課、C7、C11' },
     { f: 'lab-invoke.html', n: '方法節點與 VI Server', ic: 'M', c: '#9d174d', d: '屬性是「改它的特性」，方法是「叫它做一件事」；還能叫別的 VI 跑起來。', t: ['Reinitialize To Default、Get Image、Export Image', '類別階層：子類別繼承父類別的屬性和方法', 'This VI 的 Controls[] 逐一處理', 'Open VI Reference → Set → Run → Get → Close'], l: '第 18 課、C7、C11' },
+    { f: 'lab-panel.html', n: '人機介面設計工作室', ic: 'UI', c: '#0e7490', d: '親手排一個雙龍門操作面板：拖曳、上色、對齊，按「檢查」看哪裡不像好用的面板。', t: ['前面板編輯：移動、拉大小、上色、吸管、透明 T', '設計檢查：對齊、大小、顏色意義、對比、停止鈕位置', 'Control Editor：換外觀、Type Def. 與 Strict Type Def.', 'Tab Control：每一頁的控制項都在、值都讀得到'], l: '第 18 課、C11' },
     { f: 'lab-subvi.html', n: 'SubVI', ic: 'VI', c: '#1d4ed8', d: '接線端怎麼配、必要輸入沒接會怎樣、兩個迴圈同時呼叫誰要等。', t: ['4-2-2-4 接線端：輸入在左、輸出在右、錯誤在下角', 'Required／Recommended／Optional 沒接的差別', '可重入：排隊等待與各自一份記憶'], l: '第 10 課、C7' },
     { f: 'lab-project.html', n: '專案與執行檔', ic: 'EXE', c: '#374151', d: '.lvproj 只是清單；Shared Variable 跨電腦要 Deploy；執行檔要裝同版 Run-Time Engine。', t: ['專案樹和硬碟資料夾的關係、Virtual 與 Auto-populating Folder', 'Global、Single-Process、Network-Published 誰讀得到', 'Build Specifications：Startup VI、Always Included、Run-Time Engine'], l: '第 1 課、C1、C8、A1' },
     { f: 'lab-formula.html', n: 'Formula Node', ic: 'f(x)', c: '#a16207', d: '同一個公式：拉線版和文字版並排算，打錯字當場告訴你。', t: ['圖形節點與 Formula Node 對照，一步一步高亮', '語法檢查器：少分號、沒宣告、大小寫', '整數除法、Quotient & Remainder 分組動畫'], l: 'C2、C4' },
@@ -90,7 +91,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

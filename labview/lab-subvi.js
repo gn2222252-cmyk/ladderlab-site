@@ -133,7 +133,7 @@
   function rBroken() { return INS.filter(function (x) { return x.set === 'req' && !x.wired; }); }
   function arrowSVG(ok) {
     return ok ? '<svg viewBox="0 0 34 26"><path d="M2 4 L28 13 L2 22 Z" fill="#fff" stroke="#111" stroke-width="2"/></svg>可以執行'
-      : '<svg viewBox="0 0 34 26"><path d="M2 4 L14 8 L11 13 L14 18 L2 22 Z M18 9 L28 13 L18 17 L21 13 Z" fill="#9ca3af" stroke="#111" stroke-width="2"/></svg><span style="color:#dc2626">執行箭頭斷了</span>';
+      : '<svg viewBox="0 0 34 26"><path d="M2 4 L14 8 L11 13 L14 18 L2 22 Z M18 9 L28 13 L18 17 L21 13 Z" fill="#9ca3af" stroke="#111" stroke-width="2"/></svg><span style="color:var(--lab-red)">執行箭頭斷了</span>';
   }
   function rDraw(use) {
     var br = rBroken();

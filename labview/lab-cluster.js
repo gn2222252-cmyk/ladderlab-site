@@ -227,7 +227,7 @@
       var behind = !tdSame(v.def, T.ctl);
       h += '<div class="vi' + (behind ? ' behind' : '') + '" id="tdv' + i + '"><h4>' + esc(v.name) + '</h4><div class="why" style="margin:0 0 6px">' + (v.td ? '<b class="tri">◤</b>連到 Type Def' : '一般叢集（自己的複本）') + '</div>' +
         '<div class="clu"><span class="cl">' + (v.td ? '◤ ' : '') + '機台狀態</span>' + defRows(v.def, 'tdv' + i + '-', hide && hide[i] != null ? hide[i] : null) + '</div>' +
-        (behind ? '<p class="why" style="color:#dc2626">還是舊的定義（' + v.def.length + ' 個元素）</p><button type="button" data-fix="' + i + '">手動改這個 VI</button>' : '') + '</div>';
+        (behind ? '<p class="why" style="color:var(--lab-red)">還是舊的定義（' + v.def.length + ' 個元素）</p><button type="button" data-fix="' + i + '">手動改這個 VI</button>' : '') + '</div>';
     });
     $('tdvis').innerHTML = h;
   }

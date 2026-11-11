@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1cf5bb246f">
+<meta name="ll-version" content="8845cfdd03">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>故障排除解謎：看燈、看監看，找出哪裡壞 | LadderLab</title>
 <meta name="description" content="PLC 故障排除的解謎練習：輸送帶、氣缸、自動門出狀況，用 RUN／STOP、IN 燈、OUT 燈、程式監看、感測器燈、量電壓一步一步查，每查一次花一點時間，最後判斷是感測器、線路、COM、程式還是負載的問題，並和最快的檢查順序比較。">
 <link rel="stylesheet" href="style.css?v=2cdca2fdbd">
-<link rel="stylesheet" href="labview/lab.css?v=5af91f3571">
+<link rel="stylesheet" href="labview/lab.css?v=c9f186c025">
 <style>
   .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
@@ -86,7 +86,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8845cfdd03" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
