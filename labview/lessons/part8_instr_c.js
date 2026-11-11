@@ -124,6 +124,7 @@ ask('走網路時，資源名稱有兩種寫法。差在哪裡？',
  `<p><code>TCPIP0::192.168.1.20::INSTR</code>：VISA 把它當成儀器，一筆訊息到哪裡結束由通訊協定處理，你不用管結尾字元。</p>
 <p><code>TCPIP0::192.168.1.20::5025::SOCKET</code>：直接連到 5025 這個埠。這種連線只是一條「位元組的水管」，沒有「一筆」的概念。這時候你必須自己把 termination char 打開並設成換行，Read 才知道讀到哪裡停，不然又是等到逾時。</p>
 <p>在哪裡開：對紫色的 VISA 線按右鍵，Create ▸ Property Node，選 Message Based Settings 底下的 Termination Character Enable（寫入 True）和 Termination Character（寫入 10）。序列埠不用這樣做，是因為 VISA Configure Serial Port 已經替你設了。</p>
+<p>這個陷阱有一個很好認的樣子。我們用 NI-VISA 連課程的軟儀器實際試過：SOCKET 剛打開時，Termination Character 本來就是 10，但 Enable 是 False，逾時是 2000 ms。這時候讀，Read 會等滿 2 秒才回來，<b>回來的字串是完整的，error out 卻是逾時</b>。打開 Enable 之後，同一條命令幾十毫秒就回來，沒有錯誤。所以只要看到「資料明明有、卻每次都逾時、而且每次都剛好等滿逾時」，先查這一格。</p>
 <p>又回到接入單上最容易漏的那一格：一筆資料到哪裡結束。</p>`),
 C.table(['接入單上的事','電源供應器','數位電表','所以程式哪裡不同'],[
  ['通訊參數','9600、8、None、1','沒有（USB、網路不用設）','不需要 VISA Configure Serial Port'],

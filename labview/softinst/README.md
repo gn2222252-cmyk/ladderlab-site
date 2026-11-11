@@ -93,6 +93,11 @@ VISA Read 只有兩種方法知道該停了：
 序列埠用 VISA Configure Serial Port 時，第 2 種已經替你打開。
 SOCKET 沒有人替你開，所以 Read 會一直等，等到逾時。資料其實早就到了。
 
+用 NI-VISA 實際連過這幾台軟儀器：SOCKET 剛打開時 Termination Character 本來就是 10，
+但 Termination Character Enable 是 False，逾時是 2000 ms。這時候讀，Read 等滿 2 秒才回來，
+回來的字串是完整的，error out 卻是逾時（-1073807339）。打開 Enable 之後，幾十毫秒就回來。
+看到「資料明明有、每次都剛好等滿逾時」，就是這一格沒開。
+
 做法：對紫色的 VISA 線按右鍵，Create ▸ Property Node，選 Message Based Settings 底下的兩項。
 
 | 屬性 | 寫入 |
