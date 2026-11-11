@@ -109,7 +109,7 @@
         return { inmark: function (i) { return v.s[i] === v.dl ? 'hit' : v.s[i] === '\n' || v.s[i] === '\r' ? 'new' : ''; }, outs: [['array（' + rows.length + ' 列 × ' + w + ' 欄）', t, 'table']],
           say: (w === 1 && rows[0][0].length > 1 && v.s.length > 3 ? '只切出 1 欄：分隔符號可能選錯了（預設是 Tab，不是逗號）。' : '黃色是分隔符號、綠色是換行。') + (bad ? '有 ' + bad + ' 格轉不成數字或是缺的，變成 0。有文字的資料要用 %s 轉成字串陣列。' : '') };
       },
-      notes: ['delimiter 預設是 Tab。讀 CSV 檔要自己接逗號。', '輸出是什麼型別，由 array type 輸入決定：接 2D DBL 常數就輸出 2D DBL；這裡用 format 示意。', '反方向是 Array To Spreadsheet String，預設格式 %.3f。'] }
+      notes: ['delimiter 預設是 Tab。讀 CSV 檔要自己接逗號。', '輸出是什麼型別，由 array type 輸入決定：接 2D DBL 常數就輸出 2D DBL；這裡用 format 示意。', '反方向是 Array To Spreadsheet String。'] }
   ];
 
   var cur = F[0], vals = {};

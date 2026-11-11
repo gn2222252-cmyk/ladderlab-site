@@ -174,6 +174,7 @@
   var FUNCS = { sin: 1, cos: 1, tan: 1, sqrt: 1, abs: 1, exp: 1, floor: 1, ceil: 1, pow: 2, max: 2, min: 2 };
   var KW = { 'if': 1, 'else': 1, 'for': 1, 'while': 1 };
   var BROKEN = '執行箭頭會斷掉，VI 不能執行；按斷掉的箭頭，Error List 會指出這個 Formula Node 有錯。';
+  var MAYBE = '這個寫法本模擬器沒有實作。LabVIEW 的 Formula Node 語法比這裡多（例如 ?:、**、do…while），不一定會斷線，請以實機為準。';
   function Err(line, msg, kind) { this.line = line; this.msg = msg; this.kind = kind || 'e'; }
   function lex(src) {
     var toks = [], i = 0, line = 1, OPS = ['++', '--', '+=', '-=', '*=', '/=', '==', '!=', '<=', '>=', '&&', '||'];
@@ -190,7 +191,7 @@
       var two = src.substr(i, 2);
       if (OPS.indexOf(two) >= 0) { toks.push({ t: 'op', v: two, line: line }); i += 2; continue; }
       if ('+-*/%<>=!(){};,'.indexOf(c) >= 0) { toks.push({ t: 'op', v: c, line: line }); i++; continue; }
-      throw new Err(line, '看不懂的符號「' + c + '」。' + BROKEN);
+      throw new Err(line, '看不懂的符號「' + c + '」。' + MAYBE);
     }
     toks.push({ t: 'eof', v: '', line: line });
     return toks;
@@ -240,7 +241,7 @@
     }
     function simple() {
       var t = next();
-      if (t.t !== 'id' || KW[t.v]) throw new Err(t.line, '這裡應該是「變數 = 算式」，看不懂「' + t.v + '」。' + BROKEN);
+      if (t.t !== 'id' || KW[t.v]) throw new Err(t.line, t.v === 'else' ? 'else 前面沒有對應的 if。' + BROKEN : '這裡應該是「變數 = 算式」，看不懂「' + t.v + '」。' + (KW[t.v] ? MAYBE : BROKEN));
       var o = peek();
       if (o.t === 'op' && (o.v === '++' || o.v === '--')) { next(); return { k: 'inc', n: t.v, op: o.v, line: t.line }; }
       if (o.t === 'op' && ['=', '+=', '-=', '*=', '/='].indexOf(o.v) >= 0) { next(); return { k: 'set', n: t.v, op: o.v, e: expr(), line: t.line }; }
@@ -270,7 +271,7 @@
         return { k: 'var', n: t.v, line: t.line };
       }
       if (t.t === 'op' && t.v === '(') { var e = expr(); expect(')', '少了右括號 )。' + BROKEN); return e; }
-      throw new Err(t.line, t.t === 'eof' ? '算式沒寫完就結束了。' + BROKEN : '算式裡看不懂「' + t.v + '」。' + BROKEN);
+      throw new Err(t.line, t.t === 'eof' ? '算式沒寫完就結束了。' + BROKEN : '算式裡看不懂「' + t.v + '」。' + MAYBE);
     }
     var mul = bin(unary, ['*', '/', '%']), add = bin(mul, ['+', '-']), rel = bin(add, ['<', '<=', '>', '>=']), eq = bin(rel, ['==', '!=']), and = bin(eq, ['&&']), or = bin(and, ['||']);
     function expr() { return or(); }

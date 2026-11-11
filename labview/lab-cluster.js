@@ -301,7 +301,7 @@
     NODES.forEach(function (n) {
       if (n.opt && !clear) return;
       var inE = e, st;
-      if (n.end) { steps.push({ id: n.id, ran: true, out: e, why: e.status ? '有錯誤 → 跳出對話框' : (e.code ? '收到警告（status False）。遇到警告是否跳視窗依 LabVIEW 版本和設定而定，本頁不畫' : '沒有錯誤，什麼都不顯示') }); return; }
+      if (n.end) { steps.push({ id: n.id, ran: true, out: e, why: e.status ? '有錯誤 → 跳出對話框' : (e.code ? '收到警告（status False）。type of dialog 預設 1 只顯示錯誤，選 3 或 4 才連警告一起顯示，本頁不畫' : '沒有錯誤，什麼都不顯示') }); return; }
       if (n.opt) { e = noErr(); st = { ran: true, why: inE.status || inE.code ? '把錯誤清掉，後面看到的是「沒有錯誤」' : '本來就沒有錯誤，輸出還是沒有錯誤' }; }
       else if (inE.status && !n.always) st = { ran: false, why: '收到錯誤 → 不執行，原封不動往後傳' };
       else {
@@ -358,7 +358,7 @@
         $('dlgok').onclick = function () { $('dlg').innerHTML = ''; };
         logE('Simple Error Handler 預設會跳出對話框，按 OK 之後程式才繼續。');
       } else if (last.code) {
-        logE('最後是警告：警告不會讓後面的節點跳過，前面每個節點都照常執行了。Simple Error Handler 遇到警告是否跳視窗，依 LabVIEW 版本和設定而定，本頁只畫出錯誤的對話框。');
+        logE('最後是警告：警告不會讓後面的節點跳過，前面每個節點都照常執行了。Simple Error Handler 的 type of dialog 預設是 1（OK message），只顯示錯誤；要連警告一起顯示，選 3（OK message + warnings）或 4。本頁只畫出錯誤的對話框。');
       } else logE('一路都沒有錯誤。');
     } finally { E.busy = false; }
   }

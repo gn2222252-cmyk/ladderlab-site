@@ -279,7 +279,7 @@ C.h3('測','q','小測驗'),
  {q:'Array To Spreadsheet String 的 delimiter 沒接，存成 data.csv 用 Excel 打開會怎樣？',o:['每一列的數字擠在 A 欄，因為預設分隔是 Tab 不是逗號','自動用逗號','執行時出錯'],a:0,ex:'delimiter 預設是 Tab。CSV（Comma-Separated Values）要逗號。'},
  {q:'0.02997 用 %#.3p 輸出是什麼？',o:['29.97m','29.970m','0.030','2.997E-2'],a:0,ex:'%p 換成 m（千分之一）是 29.970m，# 把多餘的 0 去掉 → 29.97m。'},
  {q:'Write to Text File 寫完沒接 Close File 會怎樣？',o:['檔案可能一直被 LabVIEW 佔用，Excel 打不開或內容不完整','不會怎樣，LabVIEW 會馬上自動關','錯誤 7'],a:0,ex:'開了就要關。VI 結束時 LabVIEW 最後會回收，但在迴圈或長時間執行的程式裡，沒關的檔案會一直累積。'},
- {q:'每次執行都要一份全新的檔案，operation 選哪個？',o:['replace or create','open or create','open','create'],a:0,ex:'open or create 會從開頭蓋寫，舊檔比較長時尾巴會留著；create 遇到已存在的檔案會出錯 8。'}
+ {q:'每次執行都要一份全新的檔案，operation 選哪個？',o:['replace or create','open or create','open','create'],a:0,ex:'open or create 會從開頭蓋寫，舊檔比較長時尾巴會留著；create 遇到已存在的檔案會出錯 10（重複路徑）。'}
 ]}
 ]});
 
@@ -446,7 +446,7 @@ C.h3('測','q','小測驗'),
    F5：高階 vs 低階、選盤導覽、錯誤碼
    ====================================================================== */
 L.push({id:'F04',order:25,no:'F5',part:PART,title:'File I/O 選盤導覽：高階、低階怎麼選，常見錯誤碼',mins:30,
-goals:[['學會','File I/O 選盤上每個圖示的用途；什麼時候用一行搞定的高階 VI、什麼時候用開寫關；看到錯誤 7、8、43 知道原因。'],['之後','異常紀錄（第 20 課）用的是高階的 Write Delimited Spreadsheet；量測迴圈用低階。'],['動畫練習','<a href="lab-file.html">檔案 I/O 實驗室</a>：6 種 operation × 檔案在不在，哪些會清空、哪些出錯 7、10、43。']],
+goals:[['學會','File I/O 選盤上每個圖示的用途；什麼時候用一行搞定的高階 VI、什麼時候用開寫關；看到錯誤 7、8、10、43 知道原因。'],['之後','異常紀錄（第 20 課）用的是高階的 Write Delimited Spreadsheet；量測迴圈用低階。'],['動畫練習','<a href="lab-file.html">檔案 I/O 實驗室</a>：6 種 operation × 檔案在不在，哪些會清空、哪些出錯 7、10、43。']],
 check:'能說出 Write Delimited Spreadsheet.vi 和「開、寫、關」各適合什麼情況，以及檔案被 Excel 開著時寫入會出現哪個錯誤。',
 body:[
 C.h3('懂','','File I/O 選盤（Functions ▸ Programming ▸ File I/O）'),
@@ -472,7 +472,8 @@ C.table(['情況','用','原因'],[
 C.h3('懂','','常見錯誤碼'),
 C.table(['錯誤碼','什麼時候出現','怎麼辦'],[
  ['7','檔案或資料夾不存在（operation = open、路徑打錯、資料夾沒建）','先確認路徑；資料夾用 Create Folder 建，或用 open or create'],
- ['8','沒有權限：檔案正被 Excel 開著、唯讀、或 create 遇到已存在的檔案','關掉 Excel 再執行；換 operation'],
+ ['10','重複路徑：operation 選 create，但檔案已經存在','改用 replace or create，或先檢查檔案在不在'],
+ ['8','沒有權限：檔案正被 Excel 開著、唯讀','關掉 Excel 再執行；換 operation'],
  ['43','使用者在檔案對話框按了取消','用 cancelled 輸出判斷，取消時不要寫'],
  ['1430','路徑是空的或格式不對','檢查路徑控制項有沒有值']]),
 tip('對照課堂畫面：','選盤上看到的「Write Text File」「Read Text File」，放到方塊圖上的函式名稱是 Write to Text File、Read from Text File，是同一個東西。'),

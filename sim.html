@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="e5caeb26ad">
+<meta name="ll-version" content="7ca1d7a54c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 模擬器：畫梯形圖、SFC，接上機構跑 | LadderLab</title>
@@ -63,7 +63,7 @@
     <h2>怎麼用</h2>
     <ol>
       <li><b>先只模擬電路</b>：預設是「只模擬電路」，每一個 X 都是可以切換的輸入，每一個 Y 是輸出燈，沒有預設任何用途；有幾點照右邊選的 PLC 機型（預設是學校的 FX3S-20M：X0～X13、Y0～Y7）。例如畫常開 X1 接線圈 Y1，點 X1 讓它 ON，Y1 就亮。程式用到的 M、T、C、D、S 會自動列在「元件監看」。</li>
-      <li><b>軟 PLC</b>：右上角是模擬的 FX3S。F4 等於把程式寫入 PLC，面板上 IN／OUT 燈跟著亮。RUN／STOP 開關撥到 STOP，輸出全部 OFF，沒有停電保持的 M、T、C 清除，D 和 S 保留原值；撥回 RUN 不再清除任何東西，重新開始掃描，第一次掃描 M8002 會 ON（FX3 程式手冊 2.6.2 節）。程式改了沒轉換，上面會出現黃色提醒，PLC 還在跑舊的程式。程式有錯時不會寫入，ERR 燈亮。</li>
+      <li><b>軟 PLC</b>：右上角是模擬的 FX3S。F4 等於把程式寫入 PLC，面板上 IN／OUT 燈跟著亮。RUN／STOP 開關撥到 STOP，輸出全部 OFF，M、T、C 裡沒有停電保持的會清成 0，D 和 S 保留原值；撥回 RUN 不再清除任何東西，重新開始掃描，第一次掃描 M8002 會 ON（FX3 程式手冊 2.6.2 節）。所以用「LD M8002、SET S0」的程式，中途 STOP 再 RUN 會讓 S0 和原本作用中的步同時 ON，這是真的 PLC 也會發生的事。程式改了沒轉換，上面會出現黃色提醒，PLC 還在跑舊的程式。程式有錯時不會寫入，ERR 燈亮。</li>
       <li><b>組裝台（自己組機構）</b>：在「只模擬電路」下面。從零件列把紅綠黃燈、蜂鳴器、馬達、氣缸、輸送帶、鐵捲門、水槽、加熱器、七段顯示器、按鈕、急停、切換開關拖到組裝台，零件可以隨便擺。再從上方 FX3S 的端子拉線到零件的端子：Y（橘）接裝置的線圈，例如輸送帶的「馬達」、「推料」，鐵捲門的「上升」、「下降」，水槽的「進水」、「排水」；X（藍）接感測器和按鈕，例如氣缸前限／後限、輸送帶末端光電、金屬感測器、推料位、推到底、鐵捲門上下限、高低液位、溫度開關。按住端子拖到另一頭放開，或點一下端子再點另一頭，就接上一條線；點一下線就拆掉。七段顯示器接 BCD 起點，會自動佔連續 4 個 Y。通電的線會亮起來。PLC 輸出驅動裝置，裝置的感測器再回到 X，就像真的接線。另外有供料器、夾爪取放、吸盤取放和料盒。零件下方的灰色方塊是<b>物料口</b>：從「出口／放料」拉到另一個零件的「入口／取料」，工件就照這個方向送過去；輸送帶出口連到夾爪取料、夾爪放料再連回輸送帶入口，工件會一直循環。取放機構下降時橫移會撞機，程式要做互鎖。還有塔燈（紅黃綠＋蜂鳴器）、雙動氣缸（伸出、縮回兩個線圈，都 OFF 保持最後閥位，氣缸會走到底）、三層電梯、分度盤（每轉 90° 定位）、指撥開關（BCD 佔 4 個 X）。「範例機構」有十組現成的零件、接線和程式：輸送帶警示、金屬分料計數、鐵捲門互鎖、水槽自動補水、加熱器控溫、輸送帶＋夾爪循環輸送、供料器→輸送帶→吸盤→料盒、分度盤加工站、三層電梯、指撥設定數量（要加裝擴充板）。</li>
       <li><b>X、Y 不夠用</b>：在右邊「軟 PLC」選機型（FX3S、FX3G、FX3U 各種點數），或加裝 I/O 擴充板（FX3S、FX3G 只能裝一片，程式用 M8112～M8117）、FX2N 擴充模組（FX3G、FX3U）。擴充的端子會出現在組裝台的端子排上。程式用到這台 PLC 沒有的端子，上面會出現黃色提醒。</li>
       <li><b>需要時再接機構（選用）</b>：上面的選單可以接氣缸、輸送帶分料、步進馬達滑台、紅綠燈、三層電梯、機械手臂、儲槽液位。接機構時，X、Y 會照那台機構的接線，每台都有範例程式和可以製造的故障。</li>
@@ -83,7 +83,7 @@
 </main>
 <footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-<script src="py/bundle.js?v=de1b5f3c89"></script>
+<script src="py/bundle.js?v=81ce5d39e6"></script>
 <script src="course_map.js?v=cd22f4420f"></script>
 <script src="course.js?v=764fe70243"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
@@ -100,7 +100,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "e5caeb26ad" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "7ca1d7a54c" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

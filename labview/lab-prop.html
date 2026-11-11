@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="e5caeb26ad">
+<meta name="ll-version" content="7ca1d7a54c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>屬性節點實驗室：Property Node 與控制參考 | LadderLab</title>
@@ -133,7 +133,7 @@
       <div><span>Local Variable</span><i id="r1"></i></div>
       <div><span>Property Node Value</span><i id="r2"></i></div>
     </div>
-    <div class="callout">Value Change 事件只由<b>使用者在前面板操作</b>或<b>寫 Value (Signaling) 屬性</b>產生。Local Variable、Property Node 的 Value、寫 Indicator 端子都不會產生事件。要「用程式改值、又要事件那一頁跟著跑」，才用 Value (Signaling)；平常只是更新顯示，用端子最好。</div>
+    <div class="callout">Value Change 事件只由<b>使用者在前面板操作</b>或<b>寫 Value (Signaling) 屬性</b>產生。寫 Value (Signaling) 時，就算寫進去的值和原本一樣也會產生事件；只想在值真的改變時觸發，就先比較再寫。Local Variable、Property Node 的 Value、寫 Indicator 端子都不會產生事件。要「用程式改值、又要事件那一頁跟著跑」，才用 Value (Signaling)；平常只是更新顯示，用端子最好。</div>
   </section>
 
   <section class="lab-stage" id="t-ref" hidden>
@@ -175,7 +175,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "e5caeb26ad" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "7ca1d7a54c" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

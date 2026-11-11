@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="e5caeb26ad">
+<meta name="ll-version" content="7ca1d7a54c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>1.1 PLC 長什麼樣：FX3S 的輸入和輸出｜PLC 互動課程</title>
@@ -27,7 +27,7 @@
 以學校常見的 FX3S-20MT/ES 為例：12 點輸入 X0～X7、X10～X13，8 點輸出 Y0～Y7。X、Y 的編號是八進位，所以沒有 X8、X9。
 每個輸入、輸出端子旁邊都有一顆指示燈，亮就是 ON。這是現場除錯第一個看的地方：按了按鈕 X 燈不亮，是線路的問題，跟程式無關。</div>
 <p><a class="btnlink go" href="../learn.html#0">開始互動版：看示範、自己按、慢動作看掃描 ›</a></p>
-<div class="table-box"><table class="gtable"><thead><tr><th>FX3S 面板上的東西</th><th>接什麼／做什麼</th></tr></thead><tbody><tr><td>電源端子 L、N</td><td>ES 型接 AC100～240V；DS 型是 DC24V 供電</td></tr><tr><td>24V、0V</td><td>PLC 內建的直流 24V，給感測器和按鈕用</td></tr><tr><td>S/S</td><td>輸入的共點。接 24V 是漏型（配 NPN 感測器），接 0V 是源型（配 PNP 感測器）</td></tr><tr><td>X0～X13</td><td>輸入。八進位：X7 的下一點是 X10</td></tr><tr><td>COM、Y0～Y7</td><td>輸出。MT 是電晶體輸出（只接直流、反應快、可以送脈波）；MR 是繼電器輸出（交直流都行、比較慢、接點有壽命）。COM 分組看端子排上的標示</td></tr><tr><td>RUN／STOP 開關</td><td>STOP 時程式不執行、輸出全部 OFF，沒有停電保持的 M、T、C 清除（D、S 保留）；寫入程式通常先切 STOP</td></tr><tr><td>USB 埠</td><td>接電腦，用 GX Works2 寫入程式和監看</td></tr><tr><td>IN／OUT 指示燈</td><td>每一點一顆，亮＝ON。先看燈，再看程式</td></tr></tbody></table></div>
+<div class="table-box"><table class="gtable"><thead><tr><th>FX3S 面板上的東西</th><th>接什麼／做什麼</th></tr></thead><tbody><tr><td>電源端子 L、N</td><td>ES 型接 AC100～240V；DS 型是 DC24V 供電</td></tr><tr><td>24V、0V</td><td>PLC 內建的直流 24V，給感測器和按鈕用</td></tr><tr><td>S/S</td><td>輸入的共點。接 24V 是漏型（配 NPN 感測器），接 0V 是源型（配 PNP 感測器）</td></tr><tr><td>X0～X13</td><td>輸入。八進位：X7 的下一點是 X10</td></tr><tr><td>COM、Y0～Y7</td><td>輸出。MT 是電晶體輸出（只接直流、反應快、可以送脈波）；MR 是繼電器輸出（交直流都行、比較慢、接點有壽命）。COM 分組看端子排上的標示</td></tr><tr><td>RUN／STOP 開關</td><td>STOP 時程式不執行、輸出全部 OFF，M、T、C 裡沒有停電保持的清成 0（D、S 保留）；寫入程式通常先切 STOP</td></tr><tr><td>USB 埠</td><td>接電腦，用 GX Works2 寫入程式和監看</td></tr><tr><td>IN／OUT 指示燈</td><td>每一點一顆，亮＝ON。先看燈，再看程式</td></tr></tbody></table></div>
 <div class="notes">型號怎麼讀：FX3S-20MT/ES
 20＝輸入加輸出共 20 點；M＝主機；T＝電晶體輸出（R＝繼電器）；ES＝交流電源（DS＝直流電源）。
 MT/ES 是漏型電晶體輸出：負載一端接 +24V，另一端接 Y，COM 接 0V。MT/ESS 是源型，接法相反。
@@ -50,7 +50,7 @@ OUT Y001</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "e5caeb26ad" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "7ca1d7a54c" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

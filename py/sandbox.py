@@ -7,6 +7,7 @@ import re
 
 from practice_bridge import Practice
 from exercises import SCAN
+from plc_engine import FX3S_LATCHED
 from ladder_view import bit, word
 from plants import faults_of
 
@@ -135,6 +136,7 @@ class Sandbox(Practice):
         their values. STOP -> RUN clears nothing; M8002 is ON again for the first scan."""
         on = bool(on)
         if self.rig and on != self.running:
+            self.rig.ex.setdefault("latched", FX3S_LATCHED)
             if on:
                 self.rig.stop_to_run()
             else:
