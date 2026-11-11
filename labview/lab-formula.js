@@ -174,7 +174,7 @@
   var FUNCS = { sin: 1, cos: 1, tan: 1, sqrt: 1, abs: 1, exp: 1, floor: 1, ceil: 1, pow: 2, max: 2, min: 2 };
   var KW = { 'if': 1, 'else': 1, 'for': 1, 'while': 1 };
   var BROKEN = '執行箭頭會斷掉，VI 不能執行；按斷掉的箭頭，Error List 會指出這個 Formula Node 有錯。';
-  var MAYBE = '這個寫法本模擬器沒有實作。LabVIEW 的 Formula Node 語法比這裡多（例如 ?:、**、do…while），不一定會斷線，請以實機為準。';
+  var MAYBE = '這個寫法本模擬器沒有實作。LabVIEW 的 Formula Node 其實支援更多語法：條件運算 ?:、do…while、break／continue、switch、次方 **、十六進位 0x10 都可以用；本頁只模擬一小部分，請以實機為準。';
   function Err(line, msg, kind) { this.line = line; this.msg = msg; this.kind = kind || 'e'; }
   function lex(src) {
     var toks = [], i = 0, line = 1, OPS = ['++', '--', '+=', '-=', '*=', '/=', '==', '!=', '<=', '>=', '&&', '||'];
@@ -191,7 +191,7 @@
       var two = src.substr(i, 2);
       if (OPS.indexOf(two) >= 0) { toks.push({ t: 'op', v: two, line: line }); i += 2; continue; }
       if ('+-*/%<>=!(){};,'.indexOf(c) >= 0) { toks.push({ t: 'op', v: c, line: line }); i++; continue; }
-      throw new Err(line, '看不懂的符號「' + c + '」。' + MAYBE);
+      throw new Err(line, c === '^' ? 'LabVIEW 的 Formula Node 裡 ^ 是位元 XOR，不是次方；次方要寫 **（例如 x ** 2）。本模擬器沒有實作 ^ 和 **。' : '看不懂的符號「' + c + '」。' + MAYBE);
     }
     toks.push({ t: 'eof', v: '', line: line });
     return toks;
