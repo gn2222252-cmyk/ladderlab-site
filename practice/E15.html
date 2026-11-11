@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="abee741a07">
+<meta name="ll-version" content="056a9b8f7f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E15 自動門（防夾安全）｜PLC 練習題（自動評分）</title>
@@ -39,7 +39,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "abee741a07" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "056a9b8f7f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
