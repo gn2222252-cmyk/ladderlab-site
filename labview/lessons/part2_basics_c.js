@@ -75,7 +75,7 @@ const frameVI={name:'L09_Frame.vi',view:'bd',
   return {out:{body,ss,fr:'\x02'+be+ss},vals:{d:i.d,n:i.n,k2:2,k4:4096,'mul.out':2*i.d,'add.out':a,'mul2.out':b,kf:'0%04X%02X','fmt.resulting string':body,ketx:'\x03','cat.concatenated string':be,'sba.unsigned byte array':bytes,'sum.sum':s,kw:2,'hex.hex integer string':ss,kstx:'\x02','cat2.concatenated string':'\x02'+be+ss}};}}
 };
 L.push({id:'L09',order:9,no:'9',part:'LabVIEW 基礎',title:'字串：親手組出 FX 封包',mins:60,files:['練習\\L09_Frame.vi'],
-goals:[['學會','Format Into String、十六進位字串、Hex Display 常數、Concatenate、String To Byte Array、校驗和。'],['做出','輸入 D 和字數，產生「讀 D」的完整封包。'],['用在專案','第 10 課把它變成 FX_ReadFrame.vi，第 13 課送給 PLC。'],['網頁練習','組好的封包可以先送進 <a href="fxlab.html">FX 封包練習台</a> 的模擬 PLC，看它回什麼。']],
+goals:[['學會','Format Into String、十六進位字串、Hex Display 常數、Concatenate、String To Byte Array、校驗和。'],['做出','輸入 D 和字數，產生「讀 D」的完整封包。'],['用在專案','第 10 課把它變成 FX_ReadFrame.vi，第 13 課送給 PLC。'],['網頁練習','組好的封包可以先送進 <a href="fxlab.html">FX 封包練習台</a> 的模擬 PLC，看它回什麼。'],['動畫練習','<a href="lab-string.html">字串實驗室</a>：String Subset、Concatenate、Replace 一格一格看位置；<a href="lab-string.html#fmt">格式碼</a>試 %02X、%04X；<a href="lab-string.html#disp">看不見的字元</a>看 ENQ、CR、LF。']],
 check:'D = 100、Words = 1 時，Frame 是 &lt;STX&gt;010C802&lt;ETX&gt;71（共 11 個字元）。',
 body:[
 C.h3('懂','','FX 編程協定：整個封包都是文字'),

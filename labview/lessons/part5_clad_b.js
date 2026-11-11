@@ -80,7 +80,7 @@ const fileFig={name:'正確的寫檔迴圈',bd:{w:700,h:200,structs:[{id:'wl',k:
   {id:'w3',from:'oc.refnum out',to:'wr.file',t:'clu',noval:true},{id:'w4',from:'oc.error out',to:'wr.error in',t:'err'},
   {id:'w5',from:'wr.refnum out',to:'cl.refnum',t:'clu'},{id:'w6',from:'wr.error out',to:'cl.error in',t:'err'},{id:'w7',from:'cl.error out',to:'seh',t:'err'}]}};
 L.push({id:'C06',order:106,no:'C6',part:PART,title:'字串與檔案 I/O：格式、檔案種類、路徑',mins:70,
-goals:[['學會','字串函式與格式代碼、高階與低階檔案函式、Text/Binary/TDMS/設定檔的選擇、路徑函式、EXE 裡的路徑。'],['考試重點','迴圈裡反覆開關檔很慢、Open/Create/Replace 的 operation、TDMS 的階層、Format Into String 的格式。']],
+goals:[['學會','字串函式與格式代碼、高階與低階檔案函式、Text/Binary/TDMS/設定檔的選擇、路徑函式、EXE 裡的路徑。'],['考試重點','迴圈裡反覆開關檔很慢、Open/Create/Replace 的 operation、TDMS 的階層、Format Into String 的格式。'],['動畫練習','<a href="lab-string.html">字串實驗室</a>：Search and Replace 的 replace all?、Match Pattern 的 offset past match、Spreadsheet String To Array 的分隔符號；<a href="lab-string.html#fmt">Format／Scan 格式碼對照</a>。']],
 check:'能說出「把資料一直寫進檔案」的正確架構：迴圈外開檔、迴圈內寫、迴圈外關檔。',
 body:[
 C.h3('懂','','字串函式與格式代碼'),

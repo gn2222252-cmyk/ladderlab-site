@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="c7477b5890">
+<meta name="ll-version" content="bba1f6ae64">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -18,6 +18,8 @@
   <a href="lab-loop.html" style="margin-left:10px;font-weight:700">動畫實驗室：迴圈</a>
   <a href="lab-struct.html" style="margin-left:6px;font-weight:700">結構</a>
   <a href="lab-array.html" style="margin-left:6px;font-weight:700">陣列</a>
+  <a href="lab-string.html" style="margin-left:6px;font-weight:700">字串</a>
+  <a href="lab-graph.html" style="margin-left:6px;font-weight:700">圖表</a>
   <a href="lab-bool.html" style="margin-left:6px;font-weight:700">布林</a>
   <a href="lab-numeric.html" style="margin-left:6px;font-weight:700">數值</a>
   <span style="margin-left:10px;color:#5b6576">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
@@ -33,18 +35,18 @@
 <script src="lessons/part1_start.js?v=326a186882"></script>
 <script src="lessons/part2_basics_a.js?v=4a435f2e1e"></script>
 <script src="lessons/part2_basics_b.js?v=267760eb09"></script>
-<script src="lessons/part2_basics_c.js?v=ec8bbf5f3c"></script>
+<script src="lessons/part2_basics_c.js?v=db97b4f380"></script>
 <script src="lessons/part3_comm.js?v=7dd0607855"></script>
 <script src="lessons/part4_project_a.js?v=abd20fc42b"></script>
 <script src="lessons/part4_project_b.js?v=53c40236f2"></script>
-<script src="lessons/part7_fileio.js?v=916ff7b232"></script>
+<script src="lessons/part7_fileio.js?v=4603ad8236"></script>
 <script src="lessons/part6_arch_a.js?v=7ec785054d"></script>
 <script src="lessons/part6_arch_b.js?v=ec8af2ef96"></script>
 <script src="lessons/part5_clad_a.js?v=3626686527"></script>
-<script src="lessons/part5_clad_b.js?v=4c9a61f2d7"></script>
-<script src="lessons/part5_clad_c.js?v=b15829a524"></script>
+<script src="lessons/part5_clad_b.js?v=c3d58e47c0"></script>
+<script src="lessons/part5_clad_c.js?v=a39d7fbc24"></script>
 <script src="lessons/part5_clad_q15.js?v=6a354bac22"></script>
-<script src="lessons/part5_clad_q17.js?v=dbd94c0c33"></script>
+<script src="lessons/part5_clad_q17.js?v=b4f5c87411"></script>
 <script src="lessons/part5_clad_q18.js?v=43fc281111"></script>
 <script src="lessons/part5_clad_qthr.js?v=210cb91fdc"></script>
 <script src="lessons/part5_clad_qfile.js?v=8f0e097eb5"></script>
@@ -56,7 +58,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "c7477b5890" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "bba1f6ae64" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

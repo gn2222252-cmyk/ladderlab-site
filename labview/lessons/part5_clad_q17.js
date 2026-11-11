@@ -37,7 +37,7 @@ function graphLab(d){
 L.push({id:'C14',order:114,no:'C14',part:PART,title:'考題解析：Waveform Graph 畫兩條線（Build Array、Replace、Insert）',mins:35,
 goals:[['題目','Waveform Graph 上有兩條線：Plot 0 是 5 個週期、Plot 1 是 1 個週期，橫軸 0～1000。哪個 VI 會產生這個輸出？'],
  ['答案','<b>B</b>（Build Array）。<b>D</b>（Replace Array Subset）在 LabVIEW 實測產生的陣列和 B 完全相同，也會畫出這張圖；A、C 不會。'],
- ['學會','Waveform Graph 收 1D 畫一條、收 2D 每列畫一條；Build Array 疊列、Replace Array Subset 換列、Insert Into Array 插列的差別。']],
+ ['學會','Waveform Graph 收 1D 畫一條、收 2D 每列畫一條；Build Array 疊列、Replace Array Subset 換列、Insert Into Array 插列的差別。'],['動畫練習','<a href="lab-graph.html">圖表實驗室</a>：選「2D 陣列」，看 Graph 每一列一條線、Chart 每一欄一條線，再勾 Transpose 比較。']],
 check:'能說出 A 為什麼只有一條線、C 為什麼會多出 0 的線；能自己用 Build Array 做出兩條線的 Waveform Graph。',
 body:[
 C.h3('懂','','這題用到的功能'),

@@ -967,6 +967,18 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-string.html",
+     "href": "labview/lab-string.html",
+     "label": "動畫實驗室：字串函式、格式碼、顯示模式"
+    },
+    {
+     "k": "G",
+     "id": "labview/lab-graph.html",
+     "href": "labview/lab-graph.html",
+     "label": "動畫實驗室：Chart、Graph、XY Graph"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-bool.html",
      "href": "labview/lab-bool.html",
      "label": "動畫實驗室：按鈕機械動作、邏輯閘、比較"

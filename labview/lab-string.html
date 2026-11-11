@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="bba1f6ae64">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>字串實驗室：切、接、找、換、格式碼、看不見的字元 | LadderLab</title>
+<meta name="description" content="LabVIEW 字串函式的動畫實驗室：String Subset、Replace Substring、Search and Replace、Match Pattern、Spreadsheet String To Array 逐字元顯示位置；Format Into String 與 Scan From String 格式碼對照；Normal、'\' Codes、Hex 三種顯示模式看見 CR、LF、ENQ。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .str { color: #c026d3; font-family: ui-monospace, Consolas, monospace; }
+  input.str { border: 2px solid #e879f9; border-radius: 6px; padding: 4px 8px; background: var(--card); font-size: 15px; min-width: 60px; }
+  .chars { display: flex; flex-wrap: wrap; gap: 2px; margin: 6px 0 10px; min-height: 48px; }
+  .ch { width: 26px; text-align: center; }
+  .ch b { display: grid; place-items: center; height: 30px; border: 1px solid #e879f9; border-radius: 4px; font: 600 15px ui-monospace, Consolas, monospace; color: #a21caf; background: var(--card); transition: background .3s, transform .3s, opacity .3s; }
+  .ch small { font: 10px ui-monospace, Consolas, monospace; color: var(--mute); }
+  .ch.hit b { background: #fde68a; transform: translateY(-3px); }
+  .ch.new b { background: #bbf7d0; }
+  .ch.dim b { opacity: .35; }
+  .ch.sp b { color: #bbb; }
+  .ch.ctl b { background: #fee2e2; color: #b91c1c; font-size: 10px; }
+  .outrow { margin: 8px 0; }
+  .outrow > span.k { display: inline-block; min-width: 150px; color: var(--mute); font-size: 13px; }
+  .seg { display: inline-block; padding: 2px 5px; margin: 1px; border-radius: 5px; font: 600 16px ui-monospace, Consolas, monospace; white-space: pre; }
+  .seg.lit { background: transparent; color: var(--mute); }
+  .c0 { background: #dbeafe; color: #1e40af; } .c1 { background: #fef3c7; color: #92400e; } .c2 { background: #dcfce7; color: #166534; } .c3 { background: #fce7f3; color: #9d174d; }
+  .presets button { margin: 2px; font-family: ui-monospace, Consolas, monospace; }
+  table.t2 { border-collapse: collapse; margin: 6px 0; }
+  table.t2 td { border: 1px solid var(--line); padding: 3px 10px; font-family: ui-monospace, Consolas, monospace; text-align: right; }
+  .modes { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; align-items: center; }
+  .modes .v { font: 15px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; white-space: pre-wrap; word-break: break-all; min-height: 20px; background: var(--card); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-loop.html">迴圈</a><a href="lab-struct.html">結構</a><a href="lab-array.html">陣列</a><a href="lab-string.html" class="here">字串</a><a href="lab-graph.html">圖表</a><a href="lab-bool.html">布林</a><a href="lab-numeric.html">數值</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <h1>字串實驗室</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="fn" class="here">切、接、找、換</button>
+    <button type="button" data-t="fmt">格式碼：數字 ⇄ 字串</button>
+    <button type="button" data-t="disp">看不見的字元</button>
+  </div>
+
+  <section id="t-fn">
+    <div class="lab-grid">
+      <nav class="lab-list" id="fnlist" aria-label="函式"></nav>
+      <section class="lab-stage">
+        <h2 id="fname"></h2>
+        <p class="fdesc" id="fdesc"></p>
+        <div id="inputs"></div>
+        <h3>輸入字串（每一格是一個字元，下面的數字是位置，從 0 開始）</h3>
+        <div class="chars" id="inchars"></div>
+        <h3>輸出</h3>
+        <div id="outs"></div>
+        <p class="verdict-line" id="say"></p>
+        <div class="lab-notes" id="notes"></div>
+      </section>
+    </div>
+  </section>
+
+  <section class="lab-stage" id="t-fmt" hidden>
+    <h2>Format Into String：把數字塞進字串</h2>
+    <p class="why">格式字串裡每一個 % 開頭的碼，依序吃掉一個輸入，其他字照抄。顏色相同的就是同一組。</p>
+    <div class="row">
+      <label>format string <input class="str" id="ffmt" style="width:230px"></label>
+      <label>輸入 1 <input class="scalar dbl" id="fa" style="width:90px"></label>
+      <label>輸入 2 <input class="scalar dbl" id="fb" style="width:90px"></label>
+      <label>輸入 3 <input class="str" id="fc" style="width:90px"></label>
+    </div>
+    <div class="presets" id="fpre"></div>
+    <div class="outrow"><span class="k">格式字串</span><span id="fsegs"></span></div>
+    <div class="outrow"><span class="k">resulting string</span><span id="fout"></span></div>
+    <p class="verdict-line" id="fsay"></p>
+    <table class="t2" id="fcodes"></table>
+
+    <h2>Scan From String：反過來，從字串拿出數字</h2>
+    <p class="why">同一套格式碼，方向相反。儀器或 PLC 回傳的文字，用它一次拆成幾個數值。格式和字串對不上時會出錯誤 85。</p>
+    <div class="row">
+      <label>input string <input class="str" id="sin" style="width:230px" value="T=25.6C, RH=61%"></label>
+      <label>format string <input class="str" id="sfmt" style="width:200px" value="T=%fC, RH=%d%%"></label>
+    </div>
+    <div class="outrow"><span class="k">輸出</span><span id="sout"></span></div>
+    <p class="verdict-line" id="ssay"></p>
+  </section>
+
+  <section class="lab-stage" id="t-disp" hidden>
+    <h2>同一個字串，四種看法</h2>
+    <p class="why">字串裡可以有看不見的字元：換行（CR、LF）、Tab，還有通訊用的控制碼（ENQ、STX、ETX）。右鍵字串控制 ▸ 選顯示模式，就能看見它們。下面用 '\' Codes 寫法輸入：<code>\r</code> <code>\n</code> <code>\t</code> <code>\s</code>（空格）<code>\\</code>，或 <code>\05</code> 這種兩位十六進位。</p>
+    <div class="row"><label>'\' Codes 輸入 <input class="str" id="din" style="width:340px"></label></div>
+    <div class="presets" id="dpre"></div>
+    <div class="chars" id="dchars"></div>
+    <div class="modes">
+      <span>Normal Display</span><div class="v str" id="dnorm"></div>
+      <span>'\' Codes Display</span><div class="v str" id="dcode"></div>
+      <span>Hex Display</span><div class="v str" id="dhex"></div>
+      <span>Password Display</span><div class="v str" id="dpw"></div>
+      <span>String Length</span><div class="v" id="dlen"></div>
+    </div>
+    <div class="callout" id="dtip"></div>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-string.js?v=8922d5f4c0"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "bba1f6ae64" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

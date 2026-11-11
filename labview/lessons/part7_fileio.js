@@ -289,7 +289,7 @@ C.h3('測','q','小測驗'),
 L.push({id:'F05',order:22.5,no:'F2',part:PART,title:'格式碼完整教學：數字、字串都變成你要的樣子',mins:50,
 goals:[['學會','格式碼的四個部分（旗標、寬度、精度、型別）；數字的 f、e、p、d、x、b；字串的 %s、對齊、截斷；%% 和 \\ 碼；Scan From String 反過來讀。'],
  ['為什麼','Array To Spreadsheet String、Format Into String、Scan From String、Spreadsheet String To Array、Format Date/Time String 都用同一套格式碼，學一次到處用。'],
- ['保證','這課每一張表、下面的實驗室，都是拿 LabVIEW 2026 實際執行的結果（304 筆）逐字核對過的。']],
+ ['保證','這課每一張表、下面的實驗室，都是拿 LabVIEW 2026 實際執行的結果（304 筆）逐字核對過的。'],['動畫練習','<a href="lab-string.html#fmt">字串實驗室：格式碼</a>：改格式字串，馬上看到每個 % 碼吃掉哪個輸入、輸出哪一段；也能反過來用 Scan From String 拆字串。']],
 check:'不看表能寫出：數字 3.14159 → "   3.14"（%7.2f）、整數 255 → "00FF"（%04X）、字串 OK → "OK        |"（%-10s|）。',
 body:[
 C.h3('懂','','格式碼長什麼樣'),

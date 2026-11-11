@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="bba1f6ae64">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>圖表實驗室：Chart、Graph、XY Graph 接什麼畫什麼 | LadderLab</title>
+<meta name="description" content="LabVIEW 圖表的動畫實驗室：Waveform Chart 會記住舊資料、Waveform Graph 每次整張換掉；純量、1D、2D 陣列、Bundle、Waveform 各自畫出什麼；XY Graph 用兩個陣列畫圓。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
+  .panel { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--card); }
+  .panel h3 { margin: 0 0 6px; }
+  canvas.g { width: 100%; height: 240px; background: #0b0f14; border-radius: 6px; display: block; }
+  .dt button { margin: 2px; }
+  .dt button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .data { font: 14px ui-monospace, Consolas, monospace; border: 1px dashed var(--line); border-radius: 8px; padding: 8px; margin: 8px 0; white-space: pre-wrap; }
+  .broken { color: #dc2626; font-weight: 700; }
+  .legend span { display: inline-block; margin-right: 12px; font-size: 13px; }
+  .legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 4px; }
+  .arrs { font: 13px ui-monospace, Consolas, monospace; overflow-x: auto; white-space: nowrap; }
+  .arrs b { color: var(--mute); display: inline-block; width: 24px; }
+  .arrs span { display: inline-block; min-width: 46px; padding: 2px 4px; border: 1px solid var(--line); text-align: right; }
+  .arrs span.cur { background: #fde68a; color: #222; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-loop.html">迴圈</a><a href="lab-struct.html">結構</a><a href="lab-array.html">陣列</a><a href="lab-string.html">字串</a><a href="lab-graph.html" class="here">圖表</a><a href="lab-bool.html">布林</a><a href="lab-numeric.html">數值</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <h1>圖表實驗室</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="type" class="here">Chart 和 Graph：接什麼，畫什麼</button>
+    <button type="button" data-t="xy">XY Graph：用兩個陣列畫圖</button>
+  </div>
+
+  <section class="lab-stage" id="t-type">
+    <p class="why">同一筆資料同時送給 Waveform Chart 和 Waveform Graph。<b>Chart 會記住以前的點，新資料接在後面</b>；<b>Graph 不記，每次收到整包資料就整張重畫</b>。選一種資料型別，按「送一次」，多按幾次看差別。</p>
+    <div class="dt row" id="dts"></div>
+    <div class="row">
+      <button type="button" class="go" id="send">▶ 送一次（執行一次）</button>
+      <label class="check small"><input type="checkbox" id="auto"> 放進 While Loop，每 0.4 秒送一次</label>
+      <label class="check small" id="trw"><input type="checkbox" id="tr"> 右鍵 ▸ Transpose Array</label>
+      <span id="wfc"><label>x0／t0 <input class="scalar" id="x0" value="10" style="width:56px"></label> <label>dx／dt <input class="scalar" id="dx" value="0.5" style="width:56px"></label></span>
+      <button type="button" id="clr">右鍵 Chart ▸ Clear Chart</button>
+    </div>
+    <div class="data" id="data"></div>
+    <div class="two">
+      <div class="panel"><h3>Waveform Chart</h3><canvas class="g" id="cc" width="560" height="240"></canvas><p class="verdict-line" id="csay"></p></div>
+      <div class="panel"><h3>Waveform Graph</h3><canvas class="g" id="cg" width="560" height="240"></canvas><p class="verdict-line" id="gsay"></p></div>
+    </div>
+    <div class="callout">Chart 的歷史長度預設 1024 點（右鍵 ▸ Chart History Length 可改），滿了就丟掉最舊的。VI 停止再執行，Chart 上的舊資料還在，要自己 Clear 或用 Property Node 的 History Data 寫入空陣列。Chart 的三種更新模式（Strip、Scope、Sweep）動畫在 <a href="index.html#C11">CLAD 第 11 課</a>。</div>
+  </section>
+
+  <section class="lab-stage" id="t-xy" hidden>
+    <p class="why">Waveform Graph 的 X 軸永遠是「等間隔」（0、1、2… 或 x0＋i×dx）。要畫圓、畫軌跡這種 X 會來回跑的圖，就要 XY Graph：把 <b>X 陣列和 Y 陣列用 Bundle 包成一個叢集</b>，同一個索引的 X[i]、Y[i] 配成一點，再依序連線。</p>
+    <div class="row">
+      <label>形狀 <select id="shape"><option value="circle">圓：x=cos θ、y=sin θ</option><option value="spiral">螺旋：半徑慢慢變大</option><option value="liss">利薩茹：x=sin 3θ、y=sin 2θ</option><option value="gantry">龍門軌跡：走矩形</option></select></label>
+      <label>點數 N <input type="range" id="np" min="3" max="72" value="12" style="width:180px"></label> <b id="npv"></b>
+      <label class="check small"><input type="checkbox" id="close"> 迴圈多跑一圈（N＋1 點）</label>
+      <button type="button" class="go" id="xyrun">▶ 一點一點畫</button>
+    </div>
+    <div class="two">
+      <div class="panel"><h3>XY Graph（接 Bundle(X, Y)）</h3><canvas class="g" id="cxy" width="560" height="300" style="height:300px"></canvas></div>
+      <div class="panel"><h3>同樣的 Y 陣列接到 Waveform Graph</h3><canvas class="g" id="cwy" width="560" height="300" style="height:300px"></canvas></div>
+    </div>
+    <div class="arrs" id="arrs"></div>
+    <p class="verdict-line" id="xysay"></p>
+    <div class="callout">XY Graph 接受兩種資料：① <b>叢集（X 陣列, Y 陣列）</b>，就是上面這種；② <b>「點」的陣列</b>，每個元素是一個 (x, y) 叢集。畫多條線時，把每條線的叢集再用 Build Array 組成陣列。X 和 Y 陣列長度不一樣時，只畫到短的那個為止。</div>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；圖表行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-graph.js?v=7eb20dde8e"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "bba1f6ae64" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
