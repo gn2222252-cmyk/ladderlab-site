@@ -179,6 +179,8 @@ class Gpd(Instrument):
         self.err = ""
         self.R = [10.0, 47.0]         # 接在輸出上的負載（歐姆）
         self.baud = 9600              # 只影響 STATUS? 的最後兩個位元；TCP 沒有鮑率
+        self.track = 0                # 0 獨立、1 串聯、2 並聯
+        self.beep = 0
 
     def new_session(self):
         return LineBuffer("any", self.clock.now)
@@ -249,8 +251,10 @@ class Gpd(Instrument):
             self.out = False
             return
         if s == "STATUS?":
+            # 手冊：bit2–3 追蹤模式（01 獨立、11 串聯、10 並聯），bit4 Beep，bit5 輸出
             b = self.BAUDS.index(self.baud)
-            return say(("0" if self._cc(0) else "1") + ("0" if self._cc(1) else "1") + "10" + "0"
+            return say(("0" if self._cc(0) else "1") + ("0" if self._cc(1) else "1")
+                       + ["01", "11", "10"][self.track] + str(self.beep)
                        + ("1" if self.out else "0") + str(b & 1) + str(b >> 1))
         if s == "ERR?":
             msg, self.err = self.err or "No Error.", ""
@@ -259,7 +263,15 @@ class Gpd(Instrument):
         if m:
             self.baud = self.BAUDS[int(m.group(1))]
             return
-        if re.fullmatch(r"BEEP[01]|TRACK[012]|LOCAL|RCL[1-4]|SAV[1-4]", s):
+        m = re.fullmatch(r"TRACK([012])", s)
+        if m:
+            self.track = int(m.group(1))   # 只改 STATUS?，兩個通道的連動沒有模擬
+            return
+        m = re.fullmatch(r"BEEP([01])", s)
+        if m:
+            self.beep = int(m.group(1))
+            return
+        if re.fullmatch(r"LOCAL|RCL[1-4]|SAV[1-4]", s):
             return
         if s == "HELP?":
             return say("ISET VSET IOUT VOUT TRACK BEEP OUT STATUS *IDN RCL SAV ERR BAUD LOCAL")

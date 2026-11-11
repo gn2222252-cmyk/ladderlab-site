@@ -114,7 +114,7 @@
 
   /* 1) GW Instek GPD-3303S */
   function makeGpd(ctx) {
-    var st = { v: [5, 5], i: [1, 1], out: false, err: '', R: [10, 47] };
+    var st = { v: [5, 5], i: [1, 1], out: false, err: '', R: [10, 47], track: 0, beep: 0 };
     function meas(ch) {
       if (!st.out) return [0, 0];
       var V = st.v[ch], I = V / st.R[ch];
@@ -140,10 +140,12 @@
       if ((m = /^([VI])OUT([12])\?$/.exec(s))) { val = meas(+m[2] - 1); return say(m[1] === 'V' ? val[0].toFixed(3) + 'V' : val[1].toFixed(3) + 'A'); }
       if (s === 'OUT1') { st.out = true; return; }
       if (s === 'OUT0') { st.out = false; return; }
-      if (s === 'STATUS?') { val = BAUDS.indexOf(ctx.devBaud()); return say((cc(0) ? '0' : '1') + (cc(1) ? '0' : '1') + '10' + '0' + (st.out ? '1' : '0') + (val & 1) + (val >> 1)); }
+      if (s === 'STATUS?') { val = BAUDS.indexOf(ctx.devBaud()); return say((cc(0) ? '0' : '1') + (cc(1) ? '0' : '1') + ['01', '11', '10'][st.track] + st.beep + (st.out ? '1' : '0') + (val & 1) + (val >> 1)); }
       if (s === 'ERR?') { val = st.err || 'No Error.'; st.err = ''; return say(val); }
       if ((m = /^BAUD([012])$/.exec(s))) { ctx.setBaud(BAUDS[+m[1]]); return; }
-      if (/^(BEEP[01]|TRACK[012]|LOCAL|RCL[1-4]|SAV[1-4])$/.test(s)) return;
+      if ((m = /^TRACK([012])$/.exec(s))) { st.track = +m[1]; return; }      // 0 獨立、1 串聯、2 並聯：只改 STATUS? 的 bit2–3，兩個通道的連動沒有模擬
+      if ((m = /^BEEP([01])$/.exec(s))) { st.beep = +m[1]; return; }
+      if (/^(LOCAL|RCL[1-4]|SAV[1-4])$/.test(s)) return;
       if (s === 'HELP?') return say('ISET VSET IOUT VOUT TRACK BEEP OUT STATUS *IDN RCL SAV ERR BAUD LOCAL');
       if (/^(OUT|BEEP|TRACK|BAUD|RCL|SAV)$/.test(s)) { st.err = 'Missing parameter'; return; }
       st.err = 'Undefined header';
@@ -170,6 +172,7 @@
       if (!s) return;
       sp = s.search(/\s/); hdr = (sp < 0 ? s : s.slice(0, sp)).toUpperCase(); arg = sp < 0 ? '' : s.slice(sp + 1).trim();
       q = /\?$/.test(hdr); if (q) hdr = hdr.slice(0, -1);
+      hdr = hdr.replace(/^:/, '');      // 開頭的冒號是「從根開始」：:READ? 和 READ? 一樣
       if (hdr === '*IDN' && q) return say('Keysight Technologies,34461A,MY53200000,A.02.08-02.37-02.08-00.49-01-01');
       if (hdr === '*RST' && !q) { st.func = 'VOLT'; st.nplc = 10; return; }
       if (hdr === '*CLS' && !q) { st.errs = []; return; }
@@ -322,17 +325,17 @@
   var INSTRUMENTS = [
     { id: 'gpd', name: 'GPD-3303S 電源供應器', brand: 'GW Instek 固緯', kind: 'serial', iface: 'USB 虛擬 COM（電腦上看到的是一個序列埠）',
       defaults: { baud: 9600, bits: 8, parity: 'N', stop: 1, term: '\n' }, replyTerm: '\r\n', bauds: [9600, 57600, 115200], manual: { title: 'GPD-X303S Series User Manual（遠端控制章節）', url: 'https://www.gwinstek.com' }, verified: false, make: makeGpd,
-      checked: ['只有 USB（虛擬 COM）；鮑率 9600／57600／115200 可選，8-N-1，無流量控制', '設定類命令以 LF 結尾、查詢以 CR 結尾；不分大小寫；命令 15 字元內', '命令表與範圍 0～32.000 V、0～3.200 A', '*IDN? 的格式；STATUS? 回 8 個 0／1；ERR? 的錯誤訊息', '最短回應時間 10 ms'],
-      unverified: ['沒加結尾字元的半截命令，儀器會留多久（這裡模擬成 1 秒沒有下文就丟掉）', '出廠鮑率（手冊沒寫，這裡模擬成 9600）', '回覆帶不帶單位、回覆的結尾字元（手冊沒寫，這裡模擬成「5.000V\\r\\n」）', '沒有錯誤時 ERR? 的回覆文字', 'STATUS? 第 6、7 位元和鮑率的對應'],
+      checked: ['只有 USB（虛擬 COM）；鮑率 9600／57600／115200 可選，8-N-1，無流量控制', '設定類命令以 LF 結尾、查詢以 CR 結尾；不分大小寫；命令 15 字元內', '命令表與範圍 0～32.000 V、0～3.200 A', '*IDN? 的格式；ERR? 的錯誤訊息', 'STATUS? 回 8 個位元（手冊 p.50）：bit2–3 是追蹤模式（01 獨立、11 串聯、10 並聯），bit4 是 Beep', '最短回應時間 10 ms'],
+      unverified: ['沒加結尾字元的半截命令，儀器會留多久（這裡模擬成 1 秒沒有下文就丟掉）', '出廠鮑率（手冊沒寫，這裡模擬成 9600）', '回覆帶不帶單位、回覆的結尾字元（手冊沒寫，這裡模擬成「5.000V\\r\\n」）', '沒有錯誤時 ERR? 的回覆文字', 'STATUS? 第 6、7 位元和鮑率的對應', 'STATUS? 的 8 個位元用什麼形式回（手冊只寫 8 bits；這裡模擬成 8 個 0／1 字元，bit0 排最前面）', '設定類命令有沒有回覆（這裡模擬成沒有）', '輸出關著時 VOUT1? 回什麼（這裡模擬成 0）', 'Beep 的出廠值（這裡模擬成關）', 'TRACK0／1／2 對應獨立／串聯／並聯；串聯、並聯時兩個通道的連動沒有模擬，只有 STATUS? 會變'],
       card: { how: '一問一答，文字（ASCII）。命令後面要有結尾字元。', simNote: NOTE_SIM,
-        cmds: [['*IDN?', '問它是誰'], ['VSET1:5.0', '設定 CH1 電壓（沒有回覆）'], ['VSET1?', '問設定值'], ['ISET1:1.0', '設定 CH1 電流上限'], ['VOUT1?／IOUT1?', '問實際輸出的電壓／電流'], ['OUT1／OUT0', '輸出開／關（沒有通道號）'], ['STATUS?', '8 個 0／1 的狀態'], ['ERR?', '問最後一個錯誤']],
-        notes: ['鮑率有三種可選，出廠是哪一種手冊沒寫：到面板看，或連上後用 STATUS? 確認。', '設定類命令沒有回覆；想確認就再問一次（VSET1?）。', '輸出關著時 VOUT1? 會是 0。'] },
+        cmds: [['*IDN?', '問它是誰'], ['VSET1:5.0', '設定 CH1 電壓'], ['VSET1?', '問設定值'], ['ISET1:1.0', '設定 CH1 電流上限'], ['VOUT1?／IOUT1?', '問實際輸出的電壓／電流'], ['OUT1／OUT0', '輸出開／關（沒有通道號）'], ['STATUS?', '8 個位元的狀態（這裡模擬成 8 個 0／1 字元）'], ['ERR?', '問最後一個錯誤']],
+        notes: ['鮑率有三種可選，出廠是哪一種手冊沒寫：到面板看，或連上後用 STATUS? 確認。', '（模擬）設定類命令在這裡沒有回覆，手冊沒寫實機會不會回。想確認有沒有設進去，就再問一次（VSET1?）。', '（模擬）輸出關著時，這裡的 VOUT1? 回 0。實機請自己收一筆來看。'] },
       presets: ['*IDN?', 'VSET1:5.0', 'VSET1?', 'OUT1', 'VOUT1?', 'IOUT1?', 'STATUS?', 'ERR?'],
       actions: [['CH1 負載換成 2 Ω', function (i) { i.setLoad(1, 2); }], ['CH1 負載換回 10 Ω', function (i) { i.setLoad(1, 10); }]], demo: ['OUT1\n', 'VOUT1?\n'] },
     { id: 'dmm', name: '34461A 數位電表', brand: 'Keysight', kind: 'usbtmc', ifaces: ['usbtmc', 'tcp'], iface: 'USB（USBTMC）或網路線（LAN socket）', host: '192.168.1.60', port: 5025, resource: 'USB0::0x2A8D::0x1301::MY53200000::INSTR',
       defaults: { term: '\n' }, replyTerm: '\n', manual: { title: 'Keysight Truevolt Series Operating and Service Guide（SCPI 命令）', url: 'https://www.keysight.com' }, verified: false, make: makeDmm,
       checked: ['*IDN? 回四欄：廠牌,型號,序號,韌體版本', '讀數是科學記號字串，例如 +8.54530000E+01；過載回 9.9E37', 'SYST:ERR? 沒有錯誤回 +0,"No error"；佇列最多 20 筆、先進先出、讀了就清', 'LAN：5025 是 SCPI Socket，5024 是 Telnet'],
-      unverified: ['沒加結尾字元的半截命令，儀器會留多久（這裡模擬成 1 秒沒有下文就丟掉）', '回覆的結尾字元（手冊沒寫，這裡模擬成 \\n）', 'USB 資源名稱裡的編號', '量測要花多久（這裡用 NPLC÷60 秒×2＋20 ms 示意）', '讀數的雜訊大小', '-222、-109 這幾個錯誤碼出現的時機', '用 USB 時沒送查詢就去讀，實機可能會多記一筆 -420 Query UNTERMINATED（這裡預設不模擬）'],
+      unverified: ['沒加結尾字元的半截命令，儀器會留多久（這裡模擬成 1 秒沒有下文就丟掉）', '回覆的結尾字元（手冊沒寫，這裡模擬成 \\n）', 'USB 資源名稱裡的編號', '量測要花多久（這裡用 NPLC÷60 秒×2＋20 ms 示意）', '讀數的雜訊大小', '-222、-109 這幾個錯誤碼出現的時機', '用 USB 時沒送查詢就去讀，實機可能會多記一筆 -420 Query UNTERMINATED（這裡預設不模擬）', 'NPLC 接不接受 MIN／MAX／DEF（這裡只收數字 0.02、0.2、1、10、100，其他回 -222）', '錯誤佇列超過 20 筆時的行為（這裡直接丟掉新的；實機可能把最後一筆換成佇列溢位的錯誤）'],
       card: { how: 'SCPI：一問一答，文字。USB 和網路的命令完全一樣，只有「怎麼連」不同。', simNote: '回覆的結尾字元手冊沒寫：自己收一筆，用「看不見的字元」那一列確認。',
         cmds: [['*IDN?', '問它是誰'], ['MEAS:VOLT:DC?', '量一次直流電壓'], ['CONF:VOLT:DC', '設定成量直流電壓（沒有回覆）'], ['VOLT:DC:NPLC 100', '積分時間（越大越準、越慢）'], ['READ?', '照目前設定量一次'], ['SYST:ERR?', '問錯誤佇列'], ['*RST', '回到預設'], ['*OPC?', '做完了回 1']],
         notes: ['下錯命令時儀器不會主動講，要問 SYST:ERR? 才知道。', '走網路時埠號是 5025（5024 是給人用的 Telnet，會多出提示字元），而且要先連線。', '讀數超過量程會回 9.9E37，不是錯誤訊息。'] },
@@ -344,13 +347,13 @@
       unverified: ['沒加結尾字元的半截命令，儀器會留多久（這裡模擬成 1 秒沒有下文就丟掉）', 'Stream 模式每秒幾筆（這裡用 10 筆；手冊建議 20 筆／秒時鮑率 4800 以上）', '秤量上限（這裡用 220 g）', '多久算穩定（示意）', '下錯命令時的回應（這裡模擬成不回應）'],
       card: { how: '出廠設定下它不會自己送：要按天平上的 PRINT，或送 Q 命令。改成 Stream 模式才會一直送。',
         cmds: [['（一筆資料）', '標頭,數值 單位 CR LF，共 15 字元＋結尾字元'], ['ST／US／OL', '標頭：穩定／還在晃／超載'], ['Q', '立刻要一筆'], ['S', '穩定時要一筆'], ['SIR／C', '開始連續送／取消'], ['R 或 Z', '歸零']],
-        notes: ['出廠的通訊參數是 2400、7、E、1，不是常見的 9600-8-N-1。', '接上去什麼都收不到，先看輸出模式：Key 模式本來就不會自己送。', 'Stream 模式沒有人讀的時候，資料會在電腦的緩衝區裡越積越多。'] },
+        notes: ['出廠的通訊參數是 2400、7、E、1，不是常見的 9600-8-N-1。', '接上去什麼都收不到，先看輸出模式：Key 模式本來就不會自己送。', '（通用知識，不是這本說明書寫的）儀器一直送、電腦沒有人讀的時候，資料會在電腦的緩衝區裡越積越多，下一次讀到的是最舊的那一筆。'] },
       presets: ['Q', 'S', 'SIR', 'C', 'Z'], actions: [['按天平上的 PRINT', function (i) { i.print(); }], ['放上零件（50 g）', function (i) { i.put(50); }], ['換成 123.45 g 的零件', function (i) { i.put(123.45); }], ['放上 300 g（超過秤量）', function (i) { i.put(300); }], ['拿走零件', function (i) { i.remove(); }]], demo: ['Q\r\n'] },
     { id: 'dtb', name: 'DTB 溫度控制器', brand: 'Delta 台達', kind: 'serial', iface: 'RS-485（兩條線），Modbus ASCII 或 RTU', binary: true, bauds: [2400, 4800, 9600, 19200, 38400],
       defaults: { baud: 9600, bits: 7, parity: 'E', stop: 1, term: '\r\n' }, replyTerm: '\r\n', devOpts: [['ascii', 'Modbus ASCII，9600-7-E-1，站號 1', { mode: 'ascii' }], ['rtu', 'Modbus RTU，9600-8-E-1，站號 1', { mode: 'rtu', bits: 8, parity: 'E' }]],
       manual: { title: '台達 DTB 系列 Instruction Sheet：RS-485 通訊', url: 'https://www.deltaww.com' }, verified: false, make: makeDtb,
       checked: ['鮑率 2400～38400；不支援 7N1、8O2、8E2；Modbus ASCII 或 RTU', '功能碼 03H 讀（最多 8 個字）、06H 寫 1 個字、02H 讀位元、05H 寫位元', '1000H＝PV（單位 0.1）、1001H＝SV、0810H＝通訊寫入許可（預設 0 禁止）、0814H＝RUN／STOP', 'PV 的錯誤值：8002H 初始中、8003H 感測器未接、8004H 輸入錯誤', 'RTU 範例：讀 1000H 起 2 個字是 01 03 10 00 00 02 C0 CB'],
-      unverified: ['沒加結尾字元的半截命令，儀器會留多久（這裡模擬成 1 秒沒有下文就丟掉）', '出廠站號、鮑率、格式（查不到，這裡模擬成站號 1、9600、7-E-1、ASCII）', '通訊寫入被禁止時寫 SV 的回應（這裡模擬成例外碼 02）', '非法位址、數值超出範圍回的例外碼', 'SV 可設定的範圍（這裡用 −20.0～500.0）', '溫度上升的快慢（示意）'],
+      unverified: ['沒加結尾字元的半截命令，儀器會留多久（這裡模擬成 1 秒沒有下文就丟掉）', '出廠站號、鮑率、格式（查不到，這裡模擬成站號 1、9600、7-E-1、ASCII）', '通訊寫入被禁止時寫 SV 的回應（這裡模擬成例外碼 02）', '非法位址、數值超出範圍回的例外碼', 'SV 可設定的範圍（這裡用 −20.0～500.0）', '溫度上升的快慢（示意）', '1002H 以後的暫存器（這裡只模擬 1000H、1001H，讀其他位址回例外碼 02；實機還有別的暫存器）'],
       card: { how: 'Modbus：一問一答。數值是整數，單位 0.1 度（250 代表 25.0）。', simNote: '出廠的站號、鮑率、格式查不到：到面板把目前的通訊設定讀出來，電腦這邊照著設。',
         cmds: [['功能碼 03', '讀暫存器（一次最多 8 個字）'], ['功能碼 06', '寫一個暫存器'], ['功能碼 05', '寫一個位元（FF00＝1、0000＝0）'], ['1000H', '目前溫度 PV'], ['1001H', '設定溫度 SV'], ['0810H（位元）', '通訊寫入許可，預設 0：要先寫成 1 才能改 SV'], ['ASCII 模式', '「:」開頭，十六進位文字，LRC，CR LF 結尾'], ['RTU 模式', '直接送位元組，最後兩個是 CRC（低位元組在前）']],
         notes: ['站號不對、檢查碼不對：它完全不回應，只會等到逾時。', 'PV 讀到 8003H 不是 3276.3 度，是「感測器沒接」。', '儀器面板上選 ASCII 還是 RTU，電腦這邊就要跟著設。'] },
@@ -396,7 +399,7 @@
   function Session(def, cfg) {
     var self = this, k;
     cfg = cfg || {};
-    this.id = def.id; this.def = def; this.now = 0; this.rx = []; this.log = []; this.events = []; this.closed = false; this.overrun = 0; this.lineErrors = { parity: 0, framing: 0, baud: 0 };
+    this.id = def.id; this.def = def; this.now = 0; this.rx = []; this.log = []; this.events = []; this.closed = false; this.overrun = 0; this.lineErrors = { parity: 0, framing: 0, baud: 0, device: 0 };      // 前三個是電腦這邊收的時候看到的；device 是儀器那邊收到切錯的（真的電腦看不到）
     this.kind = cfg.iface && def.ifaces && def.ifaces.indexOf(cfg.iface) >= 0 ? cfg.iface : def.kind;
     this.cfg = { timeoutMs: 2000 }; for (k in def.defaults) this.cfg[k] = def.defaults[k]; for (k in cfg) if (k !== 'device' && k !== 'seed') this.cfg[k] = cfg[k];
     this.devFmt = { baud: def.defaults.baud, bits: def.defaults.bits, parity: def.defaults.parity, stop: def.defaults.stop }; this.devCfg = cfg.device || {};
@@ -455,8 +458,8 @@
     this._note('tx', b);
     if (this.kind === 'serial') {
       this.now += b.length * charMs(pc);
-      if (!baudOk(pc.baud, dv.baud)) { if (this.dev.garbage) this.dev.garbage(); return { ok: true, n: b.length }; }
-      got = b.map(function (v) { var r = reframe(v, pc, dv); if (r.perr || r.ferr) bad = true; return r.byte; });
+      if (!baudOk(pc.baud, dv.baud)) { this.lineErrors.device += b.length; if (this.dev.garbage) this.dev.garbage(); return { ok: true, n: b.length }; }
+      got = b.map(function (v) { var r = reframe(v, pc, dv); if (r.perr || r.ferr) { bad = true; self.lineErrors.device++; } return r.byte; });
       if (bad) { if (self.dev.garbage) self.dev.garbage(); return { ok: true, n: b.length }; }
       b = got;
     }
@@ -528,7 +531,12 @@
       s = open('gpd', { baud: 115200 }); r = s.query('*IDN?', { timeoutMs: 500 }); ok('gpd：鮑率設錯 → 收不到', r.timedOut && !r.bytes.length, r.bytes);
       s = open('gpd'); s.write('BAUD0\n'); r = s.query('*IDN?', { timeoutMs: 500 }); s.setCfg({ baud: 115200 }); r2 = s.query('*IDN?'); ok('gpd：BAUD 命令改了鮑率，電腦也要跟著改', r.timedOut && /GPD/.test(r2.text), [r.text, r2.text]);
       s = open('gpd', { bits: 7, parity: 'E' }); r = s.query('*IDN?', { timeoutMs: 500 }); ok('gpd：7-E-1 對 8-N-1 → 命令變亂碼、沒有回覆', r.timedOut, r.text);
+      s = open('gpd'); r = s.query('STATUS?'); ok('gpd：STATUS? 預設是獨立模式（bit2–3 = 01）、Beep 關', r.text === '11010001\r\n', r.text);
+      s.write('TRACK1\n'); s.write('BEEP1\n'); r = s.query('STATUS?'); ok('gpd：TRACK1、BEEP1 之後 STATUS? 跟著變（串聯 11、Beep 1）', r.text === '11111001\r\n', r.text);
+      s.write('TRACK2\n'); s.write('BEEP0\n'); r = s.query('STATUS?'); r2 = s.query('ERR?'); ok('gpd：TRACK2 是並聯（10），而且不算錯誤', r.text === '11100001\r\n' && /No Error/.test(r2.text), [r.text, r2.text]);
       // ---- dmm
+      s = open('dmm'); s.write('VOLT:DC:NPLC 1;:READ?\n'); r = s.read(); r2 = s.query(':SYST:ERR?'); ok('dmm：開頭的冒號照 SCPI 處理（;:READ? 不是錯誤）', !r.timedOut && /E[+-]\d\d\n$/.test(r.text) && /^\+0,/.test(r2.text), [r.text, r2.text]);
+      s = open('dmm', { iface: 'tcp' }); s.connect(); r = s.query(':READ?'); ok('dmm：socket 也一樣', !r.timedOut && /E[+-]\d\d\n$/.test(r.text), r.text);
       s = open('dmm'); r = s.query('*IDN?'); ok('dmm：*IDN? 四欄', r.text.trim().split(',').length === 4 && /34461A/.test(r.text), r.text);
       r = s.query('MEAS:VOLT:DC?'); ok('dmm：讀數是科學記號加換行', /^[+-]\d\.\d{8}E[+-]\d\d\n$/.test(r.text), r.text);
       ok('dmm：讀數約 5 V', Math.abs(fract(r.text) - 4.9987) < 0.001, r.text);
@@ -632,7 +640,7 @@
     '.isim-term button{border:1px solid var(--line,#c9d0cf);background:var(--card,var(--paper,#fff));border-radius:6px;padding:5px 10px;cursor:pointer}.isim-term button:disabled,.isim-term select:disabled,.isim-term input:disabled{opacity:.5;cursor:default}' +
     '.isim-term button.isim-pri{background:var(--go-solid,#17803f);border-color:var(--go-solid,#17803f);color:#fff;font-weight:700}.isim-in{flex:1 1 180px}' +
     '.isim-pre button{font-family:ui-monospace,Consolas,monospace;font-size:13px;padding:2px 8px;border-radius:4px}.isim-cap{font-size:12px;color:var(--mute,#56606b)}' +
-    '.isim-badge{font:600 12px ui-monospace,Consolas,monospace;border:1px solid var(--line,#c9d0cf);border-radius:4px;padding:1px 6px}.isim-badge.hot{border-color:#b26a00;color:var(--warn,#a86400)}' +
+    '.isim-badge{font:600 12px ui-monospace,Consolas,monospace;border:1px solid var(--line,#c9d0cf);border-radius:4px;padding:1px 6px}.isim-badge.hot{border-color:#b26a00;color:var(--warn,#a86400)}.isim-badge[hidden],.isim-cap[hidden]{display:none}.isim-term button[aria-disabled=true]{opacity:.6;cursor:progress}' +
     '.isim-out{border:1px solid var(--line,#c9d0cf);border-radius:6px;padding:8px;margin:6px 0;min-height:46px}.isim-msg{font-weight:700;margin:0 0 4px;padding-left:8px;border-left:4px solid var(--line,#c9d0cf)}.isim-msg.bad{color:var(--lab-bad,var(--stop-text,var(--bad,#b71c1c)));border-left-color:currentColor}.isim-msg.ok{border-left-color:var(--go,var(--accent2,#17803f))}' +
     '.isim-views{display:grid;gap:4px}.isim-v{display:grid;grid-template-columns:118px minmax(0,1fr);gap:8px;align-items:start}@media(max-width:520px){.isim-v{grid-template-columns:minmax(0,1fr);gap:0}}' +
     '.isim-vl{font-size:12px;color:var(--mute,#56606b);padding-top:3px}.isim-plain,.isim-marks,.isim-hex{margin:0;font:14px/1.5 ui-monospace,Consolas,monospace;background:var(--bg,#eceeeb);border-radius:4px;padding:3px 6px;overflow-wrap:anywhere;white-space:pre-wrap;min-height:1.6em;max-height:180px;overflow:auto;border:0;max-width:100%}' +
@@ -661,7 +669,7 @@
 
   function terminal(container, opts) {
     css(); opts = opts || {};
-    var def = defOf(opts.inst), cfg = {}, k, ses, api = {}, lastReal = Date.now(), timer = null, devOpt = 0;
+    var def = defOf(opts.inst), cfg = {}, k, ses, api = {}, lastReal = Date.now(), timer = null, devOpt = 0, connecting = 0, gen = 0;
     if (!def) { container.textContent = 'InstSim：沒有這台儀器 ' + opts.inst; return null; }
     for (k in (opts.cfg || {})) cfg[k] = opts.cfg[k];
     function q(sel) { return container.querySelector(sel); }
@@ -670,11 +678,13 @@
     function mk() {
       var c = {}, d; for (k in cfg) c[k] = cfg[k];
       if (def.devOpts) { d = def.devOpts[devOpt]; c.device = Object.assign({}, c.device || {}, d[2]); }
-      delete c._dev; ses = open(def.id, c); api.session = ses; lastReal = Date.now();
+      delete c._dev; ses = open(def.id, c); api.session = ses; lastReal = Date.now(); gen++; clearTimeout(connecting); connecting = 0;
     }
     function presets() { var p = opts.presets || (typeof def.presets === 'function' ? def.presets(def.devOpts ? def.devOpts[devOpt][2] : {}) : def.presets) || []; return p.map(function (x) { return typeof x === 'string' ? { label: x, text: x } : x; }); }
+    /* 整塊重畫之前記下焦點在哪一個控制項，畫完還給它（不然鍵盤使用者會掉回頁面最上面） */
+    function focusKey() { var a = D.activeElement, ks = ['a', 'c', 'r', 'o', 'd', 'p', 'act'], i; if (!a || !container.contains(a)) return null; for (i = 0; i < ks.length; i++) if (a.dataset[ks[i]] != null) return '[data-' + ks[i] + '="' + a.dataset[ks[i]] + '"]'; return '[data-o="in"]'; }
     function build() {
-      var c = ses.cfg, h = '<div class="isim-term">', P = { N: '無 None', E: '偶 Even', O: '奇 Odd' };
+      var c = ses.cfg, h = '<div class="isim-term">', P = { N: '無 None', E: '偶 Even', O: '奇 Odd' }, keep = focusKey(), busy = connecting ? ' disabled' : '';
       if (ses.kind === 'daq') {
         h += '<div class="isim-row"><b>' + esc(def.brand + ' ' + def.name) + '</b><span class="isim-cap">像 NI MAX 的 Test Panel：選通道、點數、取樣率，按讀取。</span></div>' +
           '<div class="isim-row"><label>通道 <select data-d="ch">' + def.channels.map(function (x, i) { return '<option value="' + i + '">' + x[0] + '：' + esc(x[1]) + '</option>'; }).join('') + '</select></label>' +
@@ -683,26 +693,39 @@
       } else {
         h += '<div class="isim-row"><b>' + esc(def.brand + ' ' + def.name) + '</b>';
         if (ses.kind === 'serial') h += '<label>鮑率 ' + sel('baud', [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200], c.baud) + '</label><label>資料位元 ' + sel('bits', [7, 8], c.bits) + '</label><label>同位 ' + sel('parity', ['N', 'E', 'O'], c.parity, function (v) { return P[v]; }) + '</label><label>停止位元 ' + sel('stop', [1, 2], c.stop) + '</label>';
-        else if (ses.kind === 'tcp') h += '<label>IP <input type="text" data-c="host" size="14" value="' + esc(c.host || def.host) + '"' + (opts.lockCfg ? ' disabled' : '') + '></label><label>埠 <input type="text" data-c="port" size="5" value="' + esc(c.port || def.port) + '"' + (opts.lockCfg ? ' disabled' : '') + '></label><button type="button" data-a="conn">' + (ses.connected ? '中斷連線' : '連線') + '</button><span class="isim-badge' + (ses.connected ? '' : ' hot') + '">' + (ses.connected ? '已連線' : '未連線') + '</span>';
+        else if (ses.kind === 'tcp') h += '<label>IP <input type="text" data-c="host" size="14" value="' + esc(cfg.host || c.host || def.host) + '"' + (opts.lockCfg ? ' disabled' : '') + '></label><label>埠 <input type="text" data-c="port" size="5" value="' + esc(cfg.port || c.port || def.port) + '"' + (opts.lockCfg ? ' disabled' : '') + '></label><button type="button" data-a="conn"' + (connecting ? ' aria-disabled="true"' : '') + '>' + (connecting ? '連線中…' : ses.connected ? '中斷連線' : '連線') + '</button><span class="isim-badge' + (ses.connected && !connecting ? '' : ' hot') + '" data-o="link" role="status">' + (connecting ? '連線中…' : ses.connected ? '已連線' : '未連線') + '</span>';
         else h += '<span class="isim-cap">VISA 資源：' + esc(def.resource) + '（USB 插上就有，不用設鮑率）</span>';
         h += '</div>';
+        if (opts.cfgNote) h += '<div class="isim-cap">' + esc(opts.cfgNote) + '</div>';
         if (def.ifaces && !opts.lockCfg) h += '<div class="isim-row"><label>怎麼接 <select data-a="iface">' + def.ifaces.map(function (f) { return '<option value="' + f + '"' + (f === ses.kind ? ' selected' : '') + '>' + (f === 'usbtmc' ? 'USB（USBTMC）' : '網路線（LAN socket，埠 ' + def.port + '）') + '</option>'; }).join('') + '</select></label></div>';
         if (def.devOpts) h += '<div class="isim-row"><label>儀器面板上的設定 <select data-a="devopt"' + (opts.lockCfg ? ' disabled' : '') + '>' + def.devOpts.map(function (d, i) { return '<option value="' + i + '"' + (i === devOpt ? ' selected' : '') + '>' + esc(d[1]) + '</option>'; }).join('') + '</select></label><span class="isim-cap">這是儀器那一邊；上面那排是電腦這一邊，要自己設成一樣。</span></div>';
         h += '<div class="isim-row"><label>結尾字元 <select data-c="term">' + [['', '無'], ['\n', '\\n（LF）'], ['\r', '\\r（CR）'], ['\r\n', '\\r\\n（CR LF）']].map(function (t) { return '<option value="' + esc(JSON.stringify(t[0])) + '"' + (t[0] === (c.term || '') ? ' selected' : '') + '>' + t[1] + '</option>'; }).join('') + '</select></label>' +
           '<label>讀取方式 <select data-r="mode"><option value="term">讀到結尾字元為止</option><option value="count">讀固定幾個位元組</option><option value="wait"' + (isBin() ? ' selected' : '') + '>等一段時間，再把緩衝區全部讀出來</option></select></label>' +
           '<label>位元組數 <input type="text" data-r="count" size="4" value="7"></label><label>逾時／等待 <select data-r="to"><option>100</option><option>500</option><option selected>2000</option><option>5000</option><option>10000</option></select> ms</label>' +
-          '<span class="isim-badge" data-o="bap">緩衝區 0</span></div>';
+          '<span class="isim-badge" data-o="bap">緩衝區 0</span>' + (ses.kind === 'serial' ? '<span class="isim-badge" data-o="lerr">線路錯誤 0</span><span class="isim-badge hot" data-o="derr" hidden></span>' : '') + '</div>' +
+          (ses.kind === 'serial' ? '<div class="isim-cap" data-o="lnote" role="status" hidden></div>' : '');
         if (def.actions) h += '<div class="isim-row isim-pre"><span class="isim-cap">儀器旁邊：</span>' + def.actions.map(function (a, i) { return '<button type="button" data-act="' + i + '">' + esc(a[0]) + '</button>'; }).join('') + '</div>';
         h += '<div class="isim-row"><input class="isim-in" type="text" data-o="in" aria-label="要送出的內容" placeholder="' + (def.binary ? '輸入要送的內容' : '輸入命令，例如 *IDN?') + '" autocomplete="off" spellcheck="false">' +
           (opts.showHex === false ? '' : '<label><input type="checkbox" data-o="hexin"' + (isBin() ? ' checked' : '') + '> 輸入的是十六進位</label>') + '</div>' +
-          '<div class="isim-row"><button type="button" class="isim-pri" data-a="query">送出並讀回覆</button><button type="button" data-a="write">只送出</button><button type="button" data-a="read">只讀</button><button type="button" data-a="flush">清緩衝區</button>' +
+          '<div class="isim-row"><button type="button" class="isim-pri" data-a="query"' + busy + '>送出並讀回覆</button><button type="button" data-a="write"' + busy + '>只送出</button><button type="button" data-a="read"' + busy + '>只讀</button><button type="button" data-a="flush"' + busy + '>清緩衝區</button>' +
           (def.binary && opts.showHex !== false ? '<button type="button" data-a="chk">' + (def.kind === 'tcp' ? '幫我加 MBAP 標頭' : '幫我加檢查碼') + '</button>' : '') + '</div>';
         var ps = presets(); if (ps.length) h += '<div class="isim-row isim-pre"><span class="isim-cap">點一下帶入：</span>' + ps.map(function (p, i) { return '<button type="button" data-p="' + i + '" title="' + esc(p.hex || p.text) + '">' + esc(p.label) + '</button>'; }).join('') + '</div>';
       }
       h += '<div class="isim-out" data-o="out" aria-live="polite"><span class="isim-cap">還沒有收到任何東西。</span></div><div class="isim-cap">紀錄（虛擬時間，最新的在上面）</div><div class="isim-log" data-o="log"></div></div>';
       container.innerHTML = h; drawLog(); bap();
+      if (keep) { var el = q(keep) || q('[data-o="in"]'); if (el && !el.disabled) el.focus(); }
     }
-    function bap() { var e = q('[data-o="bap"]'); if (!e || ses.kind === 'daq') return; var n = ses.connected || ses.kind !== 'tcp' ? ses.bytesAtPort() : 0; e.textContent = '緩衝區 ' + n + ' 個位元組' + (ses.overrun ? '（已經滿了，掉了 ' + ses.overrun + '）' : ''); e.className = 'isim-badge' + (n > 100 ? ' hot' : ''); }
+    function bap() { var e = q('[data-o="bap"]'); if (!e || ses.kind === 'daq') return; var n = ses.connected || ses.kind !== 'tcp' ? ses.bytesAtPort() : 0; e.textContent = '緩衝區 ' + n + ' 個位元組' + (ses.overrun ? '（已經滿了，掉了 ' + ses.overrun + '）' : ''); e.className = 'isim-badge' + (n > 100 ? ' hot' : ''); lineBadge(); }
+    /* 線路錯誤：電腦這邊收到、同位或框架對不上的次數（真的序列埠也會回報）。儀器那邊切錯的次數真的電腦看不到，這裡偷看給學生對照。 */
+    function lineBadge() {
+      var le = q('[data-o="lerr"]'), de = q('[data-o="derr"]'), ln = q('[data-o="lnote"]'), L = ses.lineErrors, pcN = L.baud + L.parity + L.framing, t = '';
+      if (!le) return;
+      le.textContent = '線路錯誤 ' + pcN; le.className = 'isim-badge' + (pcN ? ' hot' : '');
+      de.hidden = !L.device; de.textContent = '儀器那邊切錯 ' + L.device;
+      if (pcN) t += '線路錯誤：有位元組送到電腦了，但同位或框架對不上，被切錯了。';
+      if (L.device) t += '儀器那邊切錯：你送的位元組到了，但儀器照它自己的設定切出來是錯的，所以它看不懂。（真的電腦看不到這個數字，是模擬器偷看的。）';
+      if (ln.textContent !== t) ln.textContent = t; ln.hidden = !t;
+    }
     function drawLog() {
       var e = q('[data-o="log"]'); if (!e) return;
       e.innerHTML = ses.log.slice(-60).reverse().map(function (l) {
@@ -733,6 +756,13 @@
       return r;
     }
     function doWrite() { var b = payload(), w; if (!b) return null; wall(); w = ses.write(b); lastReal = Date.now(); if (!w.ok) { out('<p class="isim-msg bad">' + esc(w.error) + '</p>'); drawLog(); return null; } out('<p class="isim-msg">送出 ' + b.length + ' 個位元組。</p>' + viewsHtml(b)); drawLog(); bap(); return w; }
+    function doConnect(host, port) { var r = ses.connect({ host: host, port: port }); lastReal = Date.now(); build(); out(r.ok ? '<p class="isim-msg ok">已連線 ' + esc(host + ':' + port) + '。現在可以送了。</p>' : '<p class="isim-msg bad">' + esc(r.error) + '</p>'); return r; }
+    function startConnect() {      // 真的連線要一點時間：這段期間顯示「連線中…」，送出鈕先停用
+      var host = q('[data-c="host"]').value.trim(), port = q('[data-c="port"]').value.trim(), g = gen, good = host === def.host && +port === def.port;
+      cfg.host = host; cfg.port = port;
+      connecting = setTimeout(function () { if (g !== gen) return; connecting = 0; doConnect(host, port); }, good ? 700 : 1500);
+      build(); out('<p class="isim-msg">連線中…（等 ' + esc(host + ':' + port) + ' 回應）</p>');
+    }
     function onClick(ev) {
       var b = ev.target.closest('button'); if (!b) return;
       var a = b.dataset.a, p, inp = q('[data-o="in"]');
@@ -742,7 +772,7 @@
       else if (a === 'write') doWrite();
       else if (a === 'read') { wall(); doRead(); }
       else if (a === 'flush') { wall(); var n = ses.connected || ses.kind !== 'tcp' ? ses.flush() : 0; out('<p class="isim-msg">清掉緩衝區裡的 ' + n + ' 個位元組。</p>'); drawLog(); bap(); }
-      else if (a === 'conn') { if (ses.connected) ses.disconnect(); else { var r = ses.connect({ host: q('[data-c="host"]').value.trim(), port: q('[data-c="port"]').value.trim() }); if (!r.ok) { build(); out('<p class="isim-msg bad">' + esc(r.error) + '</p>'); return; } } build(); }
+      else if (a === 'conn') { if (connecting) return; if (ses.connected) { ses.disconnect(); build(); } else startConnect(); }
       else if (a === 'chk') { var by = parseHex(inp.value); if (def.binary && !isBin()) { by = parseHex(inp.value.replace(/^:/, '')); if (by) { inp.value = ':' + by.concat([lrc(by)]).map(h2).join(''); if (q('[data-o="hexin"]')) q('[data-o="hexin"]').checked = false; } } else if (by) inp.value = hex(def.kind === 'tcp' ? mbap(1, 1, by) : rtuFrame(by)); else out('<p class="isim-msg bad">先輸入不含檢查碼的位元組，例如 01 03 10 00 00 01' + (def.kind === 'tcp' ? '（Modbus TCP 沒有檢查碼，這個按鈕會幫功能碼之後的內容加上 MBAP 標頭，例如輸入 03 00 00 00 08）' : '') + '。</p>'); }
       else if (a === 'daq') {
         var ch = +q('[data-d="ch"]').value, n2 = +q('[data-d="n"]').value, rate = +q('[data-d="rate"]').value, v = ses.read(ch, n2, rate), mean, mn, mx, pts = '', i, W = 300;
@@ -757,12 +787,12 @@
     }
     function onChange(ev) {
       var t = ev.target, c = t.dataset.c, a = t.dataset.a;
-      if (c) { var v = c === 'term' ? JSON.parse(t.value) : (c === 'parity' || c === 'host') ? t.value : +t.value; cfg[c] = v; if (c !== 'host' && c !== 'port') { wall(); ses.setCfg((function () { var o = {}; o[c] = v; return o; })()); ses._note('info', [], '電腦這邊改設定：' + c + ' = ' + JSON.stringify(v)); drawLog(); } }
+      if (c) { var v = c === 'term' ? JSON.parse(t.value) : (c === 'parity' || c === 'host') ? t.value : +t.value; cfg[c] = v; if (c !== 'host' && c !== 'port') { wall(); ses.setCfg((function () { var o = {}; o[c] = v; return o; })()); ses._note('info', [], '電腦這邊改設定：' + c + ' = ' + JSON.stringify(v)); if (c !== 'term') ses.lineErrors = { parity: 0, framing: 0, baud: 0, device: 0 }; drawLog(); bap(); } }
       else if (a === 'iface') { cfg.iface = t.value; mk(); build(); }
       else if (a === 'devopt') { devOpt = +t.value; mk(); build(); }
     }
     container.addEventListener('click', onClick); container.addEventListener('change', onChange);
-    container.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.o === 'in') { ev.preventDefault(); if (doWrite()) doRead(); } });
+    container.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.o === 'in') { ev.preventDefault(); if (!connecting && doWrite()) doRead(); } });
     mk(); build();
     timer = setInterval(function () { if (!D.body.contains(container)) { clearInterval(timer); return; } if (container.offsetParent === null || D.hidden) { lastReal = Date.now(); return; } wall(); bap(); }, 500);
     api.send = function (text, o) { q('[data-o="in"]').value = text; if (q('[data-o="hexin"]')) q('[data-o="hexin"]').checked = !!(o && o.hex); return doWrite() ? doRead() : null; };
@@ -770,7 +800,8 @@
     api.setRead = function (mode, to, count) { q('[data-r="mode"]').value = mode; if (to) q('[data-r="to"]').value = String(to); if (count) q('[data-r="count"]').value = String(count); };
     api.setCfg = function (c) { for (var kk in c) { cfg[kk] = c[kk]; } ses.setCfg(c); build(); };
     api.rebuild = function () { mk(); build(); };
-    api.destroy = function () { clearInterval(timer); container.removeEventListener('click', onClick); container.removeEventListener('change', onChange); container.innerHTML = ''; };
+    api.connect = function (host, port) { gen++; clearTimeout(connecting); connecting = 0; return doConnect(host || cfg.host || ses.cfg.host || def.host, port || cfg.port || ses.cfg.port || def.port); };      // 給程式用：不等，直接連
+    api.destroy = function () { clearInterval(timer); clearTimeout(connecting); connecting = 0; gen++; container.removeEventListener('click', onClick); container.removeEventListener('change', onChange); container.innerHTML = ''; };
     return api;
   }
 

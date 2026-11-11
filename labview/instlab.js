@@ -11,9 +11,22 @@
   function num(v, unit) { if (typeof v !== 'number' || !isFinite(v)) return String(v); var s = Math.abs(v) >= 1e6 ? v.toExponential(3) : String(Math.round(v * 10000) / 10000); return s + (unit ? ' ' + unit : ''); }
   function avg(v) { return v.reduce(function (x, y) { return x + y; }, 0) / v.length; }
   function same(a, b) { return typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b)); }
+  /* 挑選列只在第一次畫按鈕；之後只換「選中」的標記。整塊重畫的話，鍵盤焦點會掉回頁面最上面。 */
   function pickRow(box, curId, onPick, items) {
-    $(box).innerHTML = items.map(function (d) { return '<button type="button" data-id="' + d.id + '" class="' + (d.id === curId ? 'here' : '') + '">' + esc(d.name) + '<small>' + esc(d.sub) + '</small></button>'; }).join('');
-    $(box).onclick = function (e) { var b = e.target.closest('button'); if (b) onPick(b.dataset.id); };
+    var el = $(box);
+    if (el.dataset.n !== String(items.length)) {
+      el.innerHTML = items.map(function (d) { return '<button type="button" data-id="' + d.id + '">' + esc(d.name) + '<small>' + esc(d.sub) + '</small></button>'; }).join('');
+      el.dataset.n = String(items.length);
+      el.onclick = function (e) { var b = e.target.closest('button'); if (b) onPick(b.dataset.id); };
+    }
+    [].forEach.call(el.querySelectorAll('button'), function (b) {
+      var on = b.dataset.id === curId, br, er;
+      b.classList.toggle('here', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (on && el.scrollWidth > el.clientWidth) {      // 手機是單列橫向捲動：把選中的那一顆捲進來
+        br = b.getBoundingClientRect(); er = el.getBoundingClientRect();
+        if (br.width && (br.left < er.left || br.right > er.right - 36)) el.scrollLeft += br.left - er.left - 8;
+      }
+    });
   }
   var INST_ITEMS = LIST.map(function (d) { return { id: d.id, name: d.name, sub: d.brand + '｜' + (d.kind === 'serial' ? '序列埠' : d.kind === 'tcp' ? '網路' : d.kind === 'usbtmc' ? 'USB／網路' : '類比訊號') }; });
 
@@ -48,12 +61,19 @@
     if (d.kind === 'usbtmc') return 'USB：插上就有，不用設鮑率。網路：IP ' + d.host + '（示意）、埠 ' + d.port + '。';
     return '差動接法、±10 V（本頁的設定）';
   }
+  var PC_NOTE = '這是電腦這邊常見的預設，不是儀器的設定';
+  function pcDefaults(d) {      // 終端機一開始的樣子（GENERIC）
+    if (d.kind === 'daq') return '';
+    if (d.kind === 'serial') return GENERIC.baud + '-' + GENERIC.bits + '-' + GENERIC.parity + '-' + GENERIC.stop + '、結尾字元 ' + vis(GENERIC.term) + '。' + PC_NOTE + '：要照上一行自己改。';
+    return '結尾字元 ' + vis(GENERIC.term) + '。' + PC_NOTE + '。';
+  }
+  function noteHtml(n) { var m = /^（(模擬|通用知識[^）]*)）(.*)$/.exec(n); return m ? '<span class="il-tag">' + esc(m[1]) + '</span>' + esc(m[2]) : esc(n); }
   function drawCard() {
-    var d = def(cur), c = d.card, h = '<h3>說明書摘要卡：' + esc(d.brand + ' ' + d.name) + '</h3>';
-    h += '<dl class="il-kv"><dt>介面</dt><dd>' + esc(d.iface) + '</dd><dt>' + (d.kind === 'daq' ? '設定' : '通訊設定') + '</dt><dd>' + esc(fmtDefaults(d)) + '</dd><dt>怎麼對話</dt><dd>' + esc(c.how) + '</dd></dl>';
+    var d = def(cur), c = d.card, pc = pcDefaults(d), h = '<h3>說明書摘要卡：' + esc(d.brand + ' ' + d.name) + '</h3>';
+    h += '<dl class="il-kv"><dt>介面</dt><dd>' + esc(d.iface) + '</dd><dt>' + (d.kind === 'daq' ? '設定' : '儀器的設定') + '</dt><dd>' + esc(fmtDefaults(d)) + '</dd>' + (pc ? '<dt>終端機的預設值</dt><dd>' + esc(pc) + '</dd>' : '') + '<dt>怎麼對話</dt><dd>' + esc(c.how) + '</dd></dl>';
     if (c.simNote) h += '<div class="il-sim">' + esc(c.simNote) + '</div>';
     h += '<div><table class="il-cmds"><tbody>' + c.cmds.map(function (x) { return '<tr><td>' + esc(x[0]) + '</td><td>' + esc(x[1]) + '</td></tr>'; }).join('') + '</tbody></table></div>';
-    h += '<ul>' + c.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+    h += '<ul>' + c.notes.map(function (n) { return '<li>' + noteHtml(n) + '</li>'; }).join('') + '</ul>';
     h += '<details><summary>哪些對過說明書、哪些是模擬的</summary><p class="il-why"><b>對過說明書</b></p><ul>' + d.checked.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul><p class="il-why"><b>說明書沒寫或查不到，這裡是模擬值（實機請自己看）</b></p><ul>' + d.unverified.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></details>';
     h += '<p class="il-why">來源：' + esc(d.manual.title) + '　<a href="' + esc(d.manual.url) + '" rel="noopener">原廠網站</a></p>';
     $('card').innerHTML = h;
@@ -71,7 +91,7 @@
   function pick(id) {
     cur = id; if (term) term.destroy();
     pickRow('pick', cur, pick, INST_ITEMS); drawCard(); drawTasks();
-    term = IS.terminal($('term'), { inst: id, cfg: GENERIC, onReply: onReply });
+    term = IS.terminal($('term'), { inst: id, cfg: GENERIC, onReply: onReply, cfgNote: def(id).kind === 'serial' ? '上面這一排' + PC_NOTE.slice(2) + '。' : '' });
     return term;
   }
 
@@ -228,19 +248,33 @@
     return '結論：' + ['VISA（序列埠）', 'VISA（USB 資源）', s.data === 2 ? 'TCP 函式（或 Modbus 函式庫）' : 'VISA 的 TCPIP 資源，或 TCP 函式'][s.link] + '；資料是' + ['文字，用字串函式切', '位元組，要算檢查碼、用陣列函式取位元組', '位元組，前 7 個是標頭，用陣列函式取位元組'][s.data] + '；' + (s.who ? '它會自己送，程式要一直讀，而且先清掉舊資料。' : '一問一答，送完命令再讀。');
   }
   function drawFlow() {
-    pickRow('fpick', fcur, function (id) { fcur = id; F = null; drawFlow(); }, SC);
+    pickRow('fpick', fcur, function (id) { fcur = id; F = null; flowSay(''); drawFlow(); }, SC);
     var s = SC.filter(function (x) { return x.id === fcur; })[0], h, i;
     if (!F) F = { steps: flowSteps(s), i: 0, wrong: -1, miss: 0 };
     h = '<div class="il-clue"><b>你看到的</b>：' + esc(s.clue) + '<blockquote>說明書：' + esc(s.quote) + '</blockquote></div>';
     for (i = 0; i <= F.i && i < F.steps.length; i++) {
       var st = F.steps[i], done = i < F.i;
       h += '<div class="il-step' + (done ? ' done' : '') + '"><b>' + esc(st.q) + '</b><div class="il-m">' + st.opts.map(function (o, k) { return '<button type="button" data-k="' + k + '"' + (done ? ' disabled' : '') + ' class="' + (done && k === st.a ? 'ok' : !done && k === F.wrong ? 'no' : '') + '">' + esc(o) + '</button>'; }).join('') + '</div>' +
-        (done ? '<p class="il-why">為什麼：' + esc(st.why) + '</p>' : F.wrong >= 0 ? '<p class="verdict-line bad">再看一次上面的線索和說明書那一句。</p>' : '') + '</div>';
+        (done ? '<p class="il-why">為什麼：' + esc(st.why) + '</p>' : '') + '</div>';
     }
-    if (F.i >= F.steps.length) h += '<div class="il-end"><b>' + esc(flowEnd(s)) + '</b><p class="il-why">' + (F.miss ? '這一台你選錯了 ' + F.miss + ' 次。' : '每一步都第一次就選對。') + '換一台再走一次，看哪些線索決定了答案。</p></div>';
+    if (F.i >= F.steps.length) h += '<div class="il-end" tabindex="-1"><b>' + esc(flowEnd(s)) + '</b><p class="il-why">' + (F.miss ? '這一台你選錯了 ' + F.miss + ' 次。' : '每一步都第一次就選對。') + '換一台再走一次，看哪些線索決定了答案。</p></div>';
     $('flow').innerHTML = h;
   }
-  function flowAnswer(k) { if (!F || F.i >= F.steps.length) return null; var ok = k === F.steps[F.i].a; if (ok) { F.i++; F.wrong = -1; } else { F.wrong = k; F.miss++; } drawFlow(); return ok; }
+  function flowSay(html, cls) { var e = $('flow-say'); e.innerHTML = html || ''; e.className = 'verdict-line' + (cls ? ' ' + cls : ''); }
+  function flowAnswer(k) {
+    if (!F || F.i >= F.steps.length) return null;
+    var box = $('flow'), st = F.steps[F.i], ok = k === st.a, had = box.contains(document.activeElement), end, el;
+    if (ok) { F.i++; F.wrong = -1; } else { F.wrong = k; F.miss++; }
+    drawFlow(); end = F.i >= F.steps.length;
+    /* 結果區（aria-live）：看得到的只有一句；原因和下一題另外唸給螢幕閱讀器，畫面上已經寫在步驟裡了 */
+    if (ok) flowSay('✔ 對。<span class="il-sr">' + esc(st.why) + (end ? ' ' + esc(flowEnd(SC.filter(function (x) { return x.id === fcur; })[0])) : ' 下一題：' + esc(F.steps[F.i].q)) + '</span>' + (end ? '這一台走完了。' : ''), 'ok');
+    else flowSay('✖ 不是這個。再看一次上面的線索和說明書那一句。', 'bad');
+    if (had) {      // 整塊重畫了：答對把焦點放到下一步的第一個選項（走完就放到結論），答錯還給同一顆
+      el = ok ? (end ? box.querySelector('.il-end') : box.querySelector('.il-step:not(.done) button')) : box.querySelectorAll('.il-step:not(.done) button')[k];
+      if (el) el.focus();
+    }
+    return ok;
+  }
   $('flow').onclick = function (e) { var b = e.target.closest('button[data-k]'); if (b && !b.disabled) flowAnswer(+b.dataset.k); };
 
   /* ====================================================================== 分頁 */
@@ -257,7 +291,7 @@
 
   window.InstLab = { show: show, pick: pick, term: function () { return term; }, last: function () { return LAST; }, done: function () { return DONE; },
     parse: { pick: function (id) { pcur = id; PRAW[id] = sampleFor(id); PSRC[id] = '範例資料。'; drawParse(); return PM; }, set: function (id, raw) { pcur = id; PRAW[id] = raw; PSRC[id] = ''; drawParse(); return PM; }, choose: choose, cur: function () { return PM; }, defs: PARSE, sampleFor: sampleFor },
-    flow: { pick: function (id) { fcur = id; F = null; drawFlow(); return F; }, answer: flowAnswer, state: function () { return F; }, scenarios: SC, steps: flowSteps } };
+    flow: { pick: function (id) { fcur = id; F = null; flowSay(''); drawFlow(); return F; }, answer: flowAnswer, state: function () { return F; }, scenarios: SC, steps: flowSteps } };
 })();
 
 /* ---------- 猜一猜 ---------- */

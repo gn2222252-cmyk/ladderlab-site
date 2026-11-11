@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="df1f875d6c">
+<meta name="ll-version" content="3535c9e637">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>儀器練習台：新儀器先講到話，再寫程式 | LadderLab</title>
@@ -14,6 +14,15 @@
   .il-pick button { text-align: left; border: 1px solid var(--line); border-radius: 6px; background: var(--card); padding: 6px 10px; cursor: pointer; font: inherit; color: inherit; }
   .il-pick button small { display: block; color: var(--mute); font-size: 12px; }
   .il-pick button.here { border-color: var(--on); box-shadow: inset 4px 0 0 var(--on); background: var(--onbg); font-weight: 700; }
+  /* 手機：七顆按鈕堆起來會把終端機擠到第二屏，改成單列橫向捲動，右緣淡出表示後面還有 */
+  @media (max-width: 640px) {
+    .il-pick { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: thin; padding: 3px 40px 6px 3px;
+      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); }
+    .il-pick button { flex: 0 0 auto; scroll-snap-align: start; white-space: nowrap; }
+  }
+  .il-tag { display: inline-block; font-size: 12px; line-height: 1.5; border: 1px solid var(--amber, #e8a200); border-radius: 4px; padding: 0 5px; margin-right: 6px; white-space: nowrap; }
+  .il-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+  .il-end:focus { outline: 2px solid var(--on); outline-offset: 2px; }
   .il-two { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 14px; align-items: start; }
   @media (max-width: 900px) { .il-two { grid-template-columns: minmax(0, 1fr); } }
   .il-card { border: 1px solid var(--line); border-radius: 6px; background: var(--card); padding: 0 0 8px; min-width: 0; }
@@ -65,7 +74,7 @@
 
   <section class="lab-stage" id="t-talk">
     <p class="why">選一台儀器，先讀左邊的「說明書摘要卡」，再到右邊的終端機自己試。終端機一開始是電腦常見的預設值（序列埠 9600-8-N-1），<b>不會自動幫你設成對的</b>：要照說明書改。</p>
-    <div class="il-pick" id="pick"></div>
+    <div class="il-pick" id="pick" role="group" aria-label="選一台儀器"></div>
     <div class="il-two">
       <div class="il-card" id="card"></div>
       <div style="min-width:0">
@@ -89,19 +98,20 @@
 
   <section class="lab-stage" id="t-parse" hidden>
     <p class="why">講到話之後，手上是一串<b>原始資料</b>。先看清楚它長什麼樣子（有沒有單位、結尾字元、標頭、是文字還是位元組），再決定怎麼切。選一種切法，看它對這一筆資料會算出什麼。</p>
-    <div class="il-pick" id="ppick"></div>
+    <div class="il-pick" id="ppick" role="group" aria-label="選一台儀器"></div>
     <div class="il-row"><button type="button" id="p-sample">用範例資料</button><span class="il-why" id="p-src"></span></div>
     <div id="p-raw"></div>
     <p><b id="p-goal"></b></p>
     <div class="il-m" id="p-m"></div>
-    <p class="verdict-line" id="p-say"></p>
+    <p class="verdict-line" id="p-say" aria-live="polite"></p>
     <div class="callout">切法只對「這一種長相」有效，所以順序一定是：先收一筆真的、看原始資料，再選函式。說明書常常沒寫回覆帶不帶單位、結尾是什麼，這一頁的模擬回覆也只是其中一種可能；換一台實機，先回 ① 的做法再收一次。</div>
   </section>
 
   <section class="lab-stage" id="t-flow" hidden>
     <p class="why">LabVIEW 接儀器的函式有好幾組（VISA、DAQmx、TCP…）。用哪一組，看的是線索：接頭長什麼樣子、說明書怎麼寫。選一台設備，一步一步回答。</p>
-    <div class="il-pick" id="fpick"></div>
+    <div class="il-pick" id="fpick" role="group" aria-label="選一台設備"></div>
     <div id="flow"></div>
+    <p class="verdict-line" id="flow-say" aria-live="polite"></p>
   </section>
 
   <section class="lab-stage" id="t-quiz" hidden>
@@ -111,15 +121,15 @@
 </main>
 <footer><p>LabVIEW、NI-VISA、NI-DAQmx 為 NI 之商標；其他廠牌與型號為各公司之商標。本站為獨立製作，與各廠商無關。儀器是模擬的：標示「模擬」的回覆以原廠說明書與實機為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="assets/instsim.js?v=7698d5ec58"></script>
-<script src="instlab.js?v=642b697079"></script>
+<script src="assets/instsim.js?v=f6abe1dbed"></script>
+<script src="instlab.js?v=9465db0545"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "df1f875d6c" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "3535c9e637" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
