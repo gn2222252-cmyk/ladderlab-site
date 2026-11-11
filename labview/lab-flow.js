@@ -26,6 +26,8 @@
   function show(t) {
     Array.prototype.forEach.call(tabs.querySelectorAll('button'), function (b) { b.classList.toggle('here', b.dataset.t === t); });
     ['rule', 'par', 'branch', 'loop'].forEach(function (k) { $('t-' + k).hidden = k !== t; });
+    if (t !== 'loop' && typeof L !== 'undefined' && L && L.run && L.timer) { clearInterval(L.timer); L.timer = null; L.paused = true; }
+    else if (t === 'loop' && typeof L !== 'undefined' && L && L.paused) { L.paused = false; L.timer = setInterval(lTick, 600); }
   }
   tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { show(b.dataset.t); history.replaceState(null, '', '#' + b.dataset.t); } });
 
@@ -78,7 +80,9 @@
     F.flash = {};
     if (F.pend.length) {
       var toks = F.pend; F.pend = []; F.beat++;
+      var me = F;
       var fin = function () {
+        if (F !== me) return;
         toks.forEach(function (t) { var w = WIRES[t.w]; F.st[w[1]].got[w[2]] = t.v; F.wv[t.w] = t.v; });
         log('flog', '第 ' + F.beat + ' 拍：資料沿線送達 → ' + toks.map(function (t) { var w = WIRES[t.w], d = NB[w[1]]; return fmt(t.v) + ' 到 ' + (d.name || d.lab) + (d.nin > 1 ? ' 的第 ' + (w[2] + 1) + ' 個輸入' : ''); }).join('、'));
         var waiting = NODES.filter(function (n) { var s = F.st[n.id]; if (s.done || n.nin < 2) return false; var c = s.got.filter(function (x) { return x !== undefined; }).length; return c > 0 && c < n.nin; });
@@ -129,7 +133,8 @@
     if (F.done || F.beat) fReset();
     if (!$('fhl').checked) { var k = 0; while (fBeat(true) && k++ < 50); return; }
     F.running = true; fDraw();
-    (function go() { fBeat(false, function () { if (!F.done) F.timer = setTimeout(go, 250); else { F.running = false; fDraw(); } }); })();
+    var me = F;
+    (function go() { if (F !== me) return; fBeat(false, function () { if (F !== me) return; if (!F.done) F.timer = setTimeout(go, 250); else { F.running = false; fDraw(); } }); })();
   }
   $('frun').onclick = fRun;
   $('fstep').onclick = function () { if (!F.running) fBeat(false); };
@@ -325,6 +330,7 @@
   function lStopBtn() {
     if ($('lout').checked && L.run) { L.stopPressedOut = true; L.stop = true; log('llog', '按了 STOP，但迴圈裡讀的是通道，看不到。'); say('lsay', 'STOP 按了，可是迴圈讀的是通道裡開始時的 ' + (L.stopTun ? 'True' : 'False') + '，停不下來。只能按 Abort。', 'bad'); lDraw(); return; }
     L.stop = true; lDraw();
+    if (!L.run) say('lsay', 'VI 還沒執行，STOP 的值先被記住了；按「執行」後第一次讀到的就是 True，迴圈跑完 1 圈就停。');
   }
   function lAbort() {
     if (!L.run) return;
@@ -366,7 +372,7 @@
     },
     function () {
       var w = p1([50, 100, 200]), t = p1([30, 80, 150, 250]);
-      return { q: '迴圈裡放 Wait ' + w + ' ms，旁邊是讀 PLC（約 ' + t + ' ms），兩者<b>沒有連線</b>。一圈大約多久？', ans: Math.max(w, t) + ' ms', wrong: [(w + t) + ' ms', Math.min(w, t) + ' ms', w + ' ms（Wait 說了算）', t + ' ms（讀 PLC 說了算）', Math.abs(w - t) + ' ms'], ex: '兩者平行執行，迴圈要等裡面每個節點都做完才進下一圈，所以一圈是比較長的那個：' + Math.max(w, t) + ' ms。' };
+      return { q: '迴圈裡放 Wait ' + w + ' ms，旁邊是讀 PLC（約 ' + t + ' ms），兩者<b>沒有連線</b>。一圈大約多久？', ans: Math.max(w, t) + ' ms', wrong: [(w + t) + ' ms', Math.min(w, t) + ' ms', Math.abs(w - t) + ' ms', (w > t ? t + ' ms（讀 PLC 說了算）' : w + ' ms（Wait 說了算）'), '0 ms（兩個同時做完就不用等）'], ex: '兩者平行執行，迴圈要等裡面每個節點都做完才進下一圈，所以一圈是比較長的那個：' + Math.max(w, t) + ' ms。' };
     },
     function () {
       var a = p1([30, 60, 90]), b = p1([20, 40, 50]);
