@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="0dffa13609">
+<meta name="ll-version" content="e14972f5f4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>結構實驗室：Case、Event、State Machine、Sequence | LadderLab</title>
@@ -121,7 +121,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "0dffa13609" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "e14972f5f4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

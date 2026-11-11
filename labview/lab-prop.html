@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="0dffa13609">
+<meta name="ll-version" content="e14972f5f4">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>屬性節點實驗室：Property Node 與控制參考 | LadderLab</title>
@@ -126,7 +126,7 @@
       </div>
     </div>
     <h3>誰比較快？（定性比較）</h3>
-    <p class="why">同一個值寫 1000 次。端子最直接；Local Variable 會多一份資料複本；Property Node 每次都要切到 UI 執行緒去改前面板，最慢。下面色條只表示<b>先後順序</b>，長度不是實際倍數，差多少依電腦和程式而定。</p>
+    <p class="why">同一個值寫 1000 次。端子最直接；Local Variable 可能多一份資料複本；Property Node 每次都要切到 UI 執行緒去改前面板，最慢。下面色條只表示<b>先後順序</b>，長度不是實際倍數，差多少依電腦和程式而定。</p>
     <div class="row"><button type="button" class="go" id="race">▶ 比一比</button></div>
     <div class="race" id="racebox">
       <div><span>端子（Indicator）</span><i id="r0"></i></div>
@@ -168,14 +168,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；屬性與事件行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-prop.js?v=fb7f3b26bc"></script>
+<script src="lab-prop.js?v=c44290c4b7"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "0dffa13609" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "e14972f5f4" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

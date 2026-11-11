@@ -170,7 +170,7 @@
     local: { name: 'Local Variable', fires: false },
     value: { name: 'Property Node：Value', fires: false },
     sig: { name: 'Property Node：Value (Signaling)', fires: true },
-    term: { name: '寫 Indicator 端子', fires: false }
+    term: { name: '寫另一個顯示元件的端子', fires: false }
   };
   function firesEvent(m) { return !!METHOD[m].fires; }
   var V = { value: 100, busy: false, n: 0 };
@@ -202,7 +202,7 @@
     writeVal(b.dataset.m, n, b);
   });
   $('fp2').addEventListener('click', function (e) { var ud = e.target.dataset.ud; if (ud) writeVal('user', V.value + 10 * ud); });
-  $('fp2').addEventListener('change', function (e) { if (e.target.id === 'v-f') { var n = Number(e.target.value); writeVal('user', isFinite(n) ? n : 0); } });
+  $('fp2').addEventListener('change', function (e) { if (e.target.id === 'v-f') { if (V.busy) { e.target.value = V.value; return; } var n = Number(e.target.value); writeVal('user', isFinite(n) ? n : 0); } });
   renderFp2();
   $('race').onclick = function () {
     var T = [0.7, 1.4, 3.2];
@@ -272,7 +272,7 @@
         ex: 'Disabled：0 Enabled、1 Disabled（看起來正常但按不動）、2 Disabled and Grayed Out。要藏起來是 Visible。' };
     },
     function () {
-      var m = pickOne(['local', 'value', 'sig', 'user', 'term']), f = firesEvent(m);
+      var m = pickOne(['local', 'value', 'sig', 'user']), f = firesEvent(m);
       var ans = f ? '會，Value Change 那一頁執行一次' : '不會，Event 結構繼續等';
       return { q: '用<b>' + METHOD[m].name + '</b>改「速度設定」的值，Event 結構裡「速度設定：Value Change」那一頁會執行嗎？', ans: ans, wrong: ['會，Value Change 那一頁執行一次', '不會，Event 結構繼續等', '會執行兩次', 'VI 會斷掉，不能這樣寫'].filter(function (x) { return x !== ans; }),
         ex: 'Value Change 只由使用者在前面板操作，或寫 Value (Signaling) 屬性產生。Local Variable、Value 屬性、寫端子都不會。' };
@@ -283,7 +283,7 @@
     function () {
       var slow = Math.random() < .6;
       return { q: '同一個值要在迴圈裡寫很多次，下面哪一種<b>' + (slow ? '最慢' : '最快') + '</b>？', ans: slow ? 'Property Node 的 Value' : '直接寫 Indicator 端子', wrong: (slow ? ['直接寫 Indicator 端子'] : ['Property Node 的 Value']).concat(['Local Variable', '三種一樣快', 'Global Variable 一定最快']),
-        ex: '端子最直接；Local Variable 多一份資料複本；Property Node 每次都要切到 UI 執行緒，最慢。只要更新顯示，用端子就好。' };
+        ex: '端子最直接；Local Variable 可能多一份資料複本；Property Node 每次都要切到 UI 執行緒，最慢。只要更新顯示，用端子就好。' };
     },
     function () {
       var w = pickOne(['Visible', '顏色', 'Disabled']);
@@ -296,7 +296,7 @@
       ]);
     },
     function () {
-      return { q: '一個屬性節點往下拉長，放了 Value、BG Color、Blinking 三個屬性（都是寫）。執行順序是？', ans: '由上往下，一個一個做', wrong: ['由下往上', '三個同時', '每次執行順序都不一定'], ex: '同一個屬性節點的多個屬性由上往下依序執行。順序重要時（例如先改值再顯示），就照這個排。' };
+      return { q: '一個屬性節點往下拉長，放了 Value、Visible、Blinking 三個屬性（都是寫）。執行順序是？', ans: '由上往下，一個一個做', wrong: ['由下往上', '三個同時', '每次執行順序都不一定'], ex: '同一個屬性節點的多個屬性由上往下依序執行。順序重要時（例如先改值再顯示），就照這個排。' };
     },
     function () {
       return pickOne([

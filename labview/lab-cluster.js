@@ -453,10 +453,10 @@
       var cand = map.filter(function (p) { return !p.ok; }); var p = pickOne(cand.length && Math.random() < 0.8 ? cand : map);
       var want = EL[p.want].name, other = EL[pickOne(WIRED.filter(function (x) { return x !== p.want && x !== p.got; }))].name;
       var OK = '照樣顯示「' + want + '」', BROKEN = '線斷掉（型別不符），VI 不能執行';
-      function WRONG(n) { return '變成顯示「' + n + '」的值，不會有任何提醒'; }
+      function WRONG(n) { return '變成顯示「' + n + '」的值，方塊圖上什麼記號都沒有'; }
       function WRONGC(n) { return '變成顯示「' + n + '」的值，只多一個強制轉換點，不會斷線'; }
       var gotN = EL[p.got].name, ans = byName ? OK : p.broken ? BROKEN : p.ok ? OK : p.coerce ? WRONGC(gotN) : WRONG(gotN);
-      var wrong = [OK, BROKEN, WRONG(p.ok || byName ? other : gotN), WRONGC(p.ok || byName ? other : gotN), WRONG(other), '自動照名字重新接好'].filter(function (x) { return x !== ans; });
+      var wrong = [OK, BROKEN, p.coerce && !byName ? WRONGC(other) : WRONG(p.ok || byName ? other : gotN), WRONGC(p.ok || byName ? other : gotN), WRONG(other), '自動照名字重新接好'].filter(function (x) { return x !== ans; });
       return { q: '「機台狀態」原本的叢集順序是 右軸位置、左軸位置、速度、運轉中、異常碼，用 <b>' + (byName ? 'Unbundle By Name' : 'Unbundle') + '</b> 接好 5 個顯示元件。之後在 .ctl ' + r.say + '，原本接到「' + want + ' 顯示」的那條線會？', ans: ans, wrong: wrong,
         ex: byName ? 'By Name 用名字取，叢集順序怎麼改都不受影響。' : 'Unbundle 照叢集順序輸出，線接在端子位置上。第 ' + p.k + ' 個端子現在送出的是「' + EL[p.got].name + '」' + (p.broken ? '，數值和布林、字串之間接不起來，所以斷線。' : p.ok ? '，剛好沒變。' : p.coerce ? '，DBL 和 I32 都是數值，只多一個強制轉換點，VI 照跑但值接錯了' + (EL[p.want].t === 'i32' ? '（還會捨入成整數）' : '') + '。' : '，型別一樣，所以默默接錯。') };
     },
