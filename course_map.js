@@ -29,6 +29,12 @@ window.COURSE = {
      "label": "FX3S 實機與接線：每條線接在哪"
     },
     {
+     "k": "G",
+     "id": "lab-sink.html",
+     "href": "lab-sink.html",
+     "label": "動畫實驗室：漏型、源型、輸出 COM、急停常閉，看電流怎麼流"
+    },
+    {
      "k": "L",
      "id": "1",
      "href": "learn.html#1",
@@ -184,6 +190,12 @@ window.COURSE = {
      "id": "E9",
      "href": "practice.html#E9",
      "label": "練習 E9 雙手啟動按鈕（安全）"
+    },
+    {
+     "k": "G",
+     "id": "lab-scan.html",
+     "href": "lab-scan.html",
+     "label": "動畫實驗室：掃描週期、慢一圈、雙線圈、太短的輸入"
     },
     {
      "k": "G",
@@ -521,6 +533,12 @@ window.COURSE = {
      "no": "4.11",
      "label": "通用嗎？換廠牌怎麼辦",
      "goal": "知道 STL 是三菱專用，換廠牌時用步序暫存器寫同一件事。"
+    },
+    {
+     "k": "G",
+     "id": "lab-stl.html",
+     "href": "lab-stl.html",
+     "label": "動畫實驗室：步進一步一步看（換步那一圈、並行合流、停電）"
     },
     {
      "k": "G",

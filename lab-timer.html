@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="d58ffa3912">
+<meta name="ll-version" content="6addbb7f53">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>計時器與計數器實驗室：FX3S 一個掃描一個掃描看 | LadderLab</title>
@@ -70,7 +70,7 @@
     <div class="stats" id="tst"></div>
     <canvas class="tl" id="ttl" aria-label="時間軸"></canvas>
     <p class="verdict-line" id="tsay"></p>
-    <div class="callout">FX3S 的計時器（課程 A2）：T0～T31 是 100 ms；T32～T62 平常 100 ms，M8028 ON 時變 10 ms；T63～T127 是 1 ms。所以同樣寫 K30，T0 是 3 秒、T63 只有 0.03 秒。一般計時器的線圈一斷電，現在值立刻歸零，下次從 0 重新數。</div>
+    <div class="callout">FX3S 的計時器（課程 A2）：T0～T31 是 100 ms；T32～T62 平常 100 ms，M8028 ON 時變 10 ms；T63～T127 是 1 ms。所以同樣寫 K30，T0 是 3 秒、T63 只有 0.03 秒。一般計時器的線圈一斷電，現在值立刻歸零，下次從 0 重新數。（M8028 是實機的行為；本站「練習題」和「模擬器」的 PLC 沒有模擬 M8028，T32～T62 一律當 100 ms。）</div>
   </section>
 
   <section class="lab-stage" id="t-a" hidden>
@@ -130,7 +130,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "d58ffa3912" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "6addbb7f53" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

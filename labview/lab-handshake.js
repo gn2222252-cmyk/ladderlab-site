@@ -130,7 +130,10 @@
         else { s.noeff++; clog('　M100 → M6 有脈衝，可是' + why.join('、') + ' → M16 不成立，<b>不會啟動</b>。D106 照樣被清 0'); }
       }
       if (v & 2) { if (s.running) { s.stopReq = true; clog('　M101 → M7 → 循環停止：做完這一趟才停'); } else clog('　M101 → M7：沒在自動運轉，Stop 沒事做'); }
-      if (v & 8) clog('　M103 → M8：異常復歸（現在沒有異常）');
+      if (v & 8) {
+        if (!s.homed && s.s0 && s.d202 === 0) { s.s0 = false; s.d202 = 10; s.homeT = 0; clog('　M103 → M8：沒有異常；而且<b>還沒原點（M20 OFF）</b> → M14 = M8・M20 不成立的那一支成立 → 原點復歸開始，D202 = 10（PLC 程式 P2：M14 = M8 且未原點，或 M9）'); }
+        else clog('　M103 → M8：異常復歸（現在沒有異常）' + (s.homed ? '；已經原點（M20 ON），所以不會再啟動原點復歸' : ''));
+      }
       if (v & 16) clog('　M104：計數清除');
     }
     if (s.d202 > 0 && ++s.homeT >= 3) {

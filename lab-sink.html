@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="6addbb7f53">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>輸入輸出接線實驗室：電流從哪裡流 | LadderLab</title>
+<meta name="description" content="FX3S 接線的動畫實驗室：S/S 接 24V 或 0V、配 NPN 或 PNP 感測器，看電流怎麼流、輸入燈亮不亮；電晶體漏型輸出的電流路徑、COM 接錯、COM4 四點合計 0.8 A；急停接常閉、程式用常開接點，按下和斷線時 X 怎麼變。">
+<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="labview/lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select, .row input { max-width: 100%; min-width: 0; }
+  .sch { width: 100%; max-width: 680px; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  .sch text { fill: var(--ink); font: 12px system-ui, "Microsoft JhengHei", sans-serif; }
+  .sch .t { font: 700 12px ui-monospace, Consolas, monospace; }
+  .sch .m { font-size: 10.5px; fill: var(--mute); }
+  .sch .p24 { stroke: #e02020; stroke-width: 3; fill: none; }
+  .sch .p0 { stroke: #1e6fff; stroke-width: 3; fill: none; }
+  .sch .w { stroke: var(--ink); stroke-width: 2; fill: none; }
+  .sch .wr { stroke: #e02020; stroke-width: 2; fill: none; }
+  .sch .wb { stroke: #1e6fff; stroke-width: 2; fill: none; }
+  .sch .wbr { stroke: #8a4b12; stroke-width: 2; fill: none; }
+  .sch .dim { stroke-dasharray: 4 4; opacity: .55; }
+  .sch .box { stroke: var(--ink); stroke-width: 2; fill: var(--bg); }
+  .sch .lamp { fill: #374151; stroke: var(--ink); }
+  .sch .lamp.on { fill: #f59e0b; filter: drop-shadow(0 0 6px #f59e0b); }
+  .sch .ld { fill: var(--bg); stroke: var(--ink); stroke-width: 2; }
+  .sch .ld.on { fill: rgba(22, 163, 74, .3); stroke: #16a34a; }
+  .sch .dot { fill: #facc15; stroke: #92400e; stroke-width: 1; }
+  .sch .cut { stroke: #dc2626; stroke-width: 3; }
+  .sch .bad { fill: #dc2626; font-weight: 700; }
+  .hold { user-select: none; touch-action: none; min-width: 120px; }
+  .hold.on { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 10px 0; }
+  .stats div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+  .stats b { display: block; font: 700 18px ui-monospace, Consolas, monospace; }
+  .stats .warn { border-color: #dc2626; background: rgba(220, 38, 38, .1); }
+  .ylist { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; margin: 8px 0; }
+  .ylist label { display: flex; gap: 6px; align-items: center; font-size: 13px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px; flex-wrap: wrap; }
+  .ylist input[type=number] { width: 64px; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  @media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .pane { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .pane h3 { margin: 0 0 6px; font-size: 15px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="path.html">課程</a> · 輸入輸出接線實驗室</p>
+  <h1>輸入輸出接線實驗室</h1>
+  <p class="why"><a href="wiring.html">接線頁</a>一步一步教了 FX3S-20MT/ES 的端子怎麼接。這裡改成電路圖，自己換接法、按按鈕，黃色小點是電流，看它流不流得過去。配錯的時候，看電流卡在哪裡。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="in" class="here">輸入：漏型與源型</button>
+    <button type="button" data-t="out">輸出：電晶體漏型</button>
+    <button type="button" data-t="nc">急停接常閉</button>
+  </div>
+
+  <section class="lab-stage" id="t-in">
+    <div class="row">
+      <label>S/S 接 <select id="iss"><option value="24">24V（漏型輸入）</option><option value="0">0V（源型輸入）</option></select></label>
+      <label>X0 接 <select id="idev"><option value="b0">按鈕，另一端接 0V</option><option value="b24">按鈕，另一端接 24V</option><option value="npn">NPN 三線式感測器</option><option value="pnp">PNP 三線式感測器</option></select></label>
+      <button type="button" class="hold" id="ipress">按住：按下／感測到</button>
+    </div>
+    <svg class="sch" id="isch" viewBox="0 0 640 300" role="img" aria-label="輸入接線圖"></svg>
+    <p class="verdict-line" id="isay"></p>
+    <div class="callout">口訣（接線頁）：<b>漏型＝S/S 接 24V，X 被拉到 0V 才 ON，配 NPN；源型＝S/S 接 0V，X 被送進 24V 才 ON，配 PNP。</b>S/S 只有一個，整台只能選一種，NPN 和 PNP 不能混用。三線式感測器：棕＝24V、藍＝0V、黑＝訊號接 X。FX3S 的輸入響應時間約 10 ms，比這更短的訊號，一般輸入可能抓不到。</div>
+  </section>
+
+  <section class="lab-stage" id="t-out" hidden>
+    <p class="why">FX3S-20MT/ES 是電晶體<b>漏型</b>輸出：負載一端接外部電源的 ＋24V，另一端接 Y，COM 接 0V。Y ON 時，PLC 裡的電晶體把 Y 接通到 COM，電流從 ＋24V → 負載 → Y → COM → 0V。Y0～Y3 各有自己的 COM0～COM3，Y4～Y7 共用 COM4。</p>
+    <div class="row">
+      <label>COM0 接 <select id="ocom0"><option value="0">0V（正確）</option><option value="24">＋24V（接錯）</option></select></label>
+      <label>COM4 接 <select id="ocom4"><option value="0">0V（正確）</option><option value="24">＋24V（接錯）</option></select></label>
+    </div>
+    <div class="ylist" id="oys"></div>
+    <svg class="sch" id="osch" viewBox="0 0 640 330" role="img" aria-label="輸出接線圖"></svg>
+    <div class="stats" id="ost"></div>
+    <p class="verdict-line" id="osay"></p>
+    <div class="callout">規格（FX3S 硬體手冊，接線頁也有）：電晶體輸出<b>每點最大 0.5 A</b>；Y0～Y3 各自一個 COM（每個 COM 0.5 A）；<b>Y4～Y7 共用 COM4，四點合計只能 0.8 A</b>。接線頁的例子：四個電磁閥同時 ON、每個約 0.2 A，就要算進去。負載電流以元件型錄為準，上面每一點的電流可以自己改。馬達、大電磁閥不能直接接 Y，要用 Y 推繼電器或接觸器。</div>
+  </section>
+
+  <section class="lab-stage" id="t-nc" hidden>
+    <p class="why">課程 A9「現場常閉 ≠ 程式常閉」：急停接<b>常閉</b>按鈕，平常有電，X13 是 ON，程式用<b>常開</b>接點 LD X13。左邊是正確接法，右邊是常見的錯誤：接常開按鈕、程式用常閉接點 LDI X13。兩邊都是漏型輸入（S/S 接 24V）。</p>
+    <div class="row">
+      <button type="button" class="hold" id="npress">按住：按下急停</button>
+      <label class="check small"><input type="checkbox" id="ncut"> 急停那條線斷了</label>
+    </div>
+    <div class="two">
+      <div class="pane"><h3>正確：常閉按鈕＋LD X13</h3><svg class="sch" id="nschA" viewBox="0 0 640 300"></svg></div>
+      <div class="pane"><h3>錯誤：常開按鈕＋LDI X13</h3><svg class="sch" id="nschB" viewBox="0 0 640 300"></svg></div>
+    </div>
+    <p class="verdict-line" id="nsay"></p>
+    <div class="callout">接常閉的好處：按下急停和<b>電線斷掉</b>都讓 X13 變 OFF，機器都會停。接常開的話，平常一樣能用，但線斷了按急停也沒反應。接常閉進 PLC 還不夠：急停一定要再用硬體（安全繼電器、接觸器）直接切斷馬達和電磁閥的動力，PLC 只負責讀狀態、清步序（<a href="safety.html">急停、安全迴路</a>）。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="squiz" style="margin-top:16px"></section>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。實際接線以 FX3S 硬體手冊與元件型錄為準。</p></footer>
+<script src="config.js?v=eca98dd0d9"></script>
+<script src="common.js?v=26e7d4e9ea"></script>
+<script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-sink.js?v=eb21ec34ab"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "6addbb7f53" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

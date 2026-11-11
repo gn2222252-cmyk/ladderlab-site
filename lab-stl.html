@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="6addbb7f53">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>步進實驗室：STL 一步一步看狀態怎麼換 | LadderLab</title>
+<meta name="description" content="三菱 FX 步進（STL）的動畫實驗室：SFC 圖、STL 梯形圖和時間軸一起看。單一流程換步、OUT 和 SET 的差別；換步那一圈前後兩步同時作用、相鄰步共用計時器出什麼事；並行分支與合流；FX3S 停電保持的步和 M8002 SET S0 的陷阱。">
+<link rel="stylesheet" href="style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="labview/lab.css?v=0d769919de">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .row select { max-width: 100%; min-width: 0; }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 12px; align-items: start; }
+  @media (max-width: 860px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+  .bx { border: 1px solid var(--line); border-radius: 10px; padding: 8px; min-width: 0; }
+  .bx h3 { margin: 0 0 6px; font-size: 14px; color: var(--mute); }
+  .sfc { width: 100%; max-width: 380px; height: auto; display: block; margin: 0 auto; }
+  .sfc text { font: 12px ui-monospace, Consolas, "Microsoft JhengHei", monospace; fill: var(--ink); }
+  .sfc .stp rect { fill: var(--card); stroke: #6b7280; stroke-width: 2; transition: fill .2s; }
+  .sfc .stp.init rect.o { fill: none; stroke: #6b7280; stroke-width: 1.5; }
+  .sfc .stp.on rect.i { fill: #fde047; stroke: #a16207; stroke-width: 3; }
+  .sfc .stp.on text { fill: #111; font-weight: 700; }
+  .sfc .ln { stroke: #6b7280; stroke-width: 2; fill: none; }
+  .sfc .tr { stroke: #111; stroke-width: 3; }
+  .sfc .tl { font-size: 11px; fill: var(--mute); }
+  .sfc .dbl { stroke: #111; stroke-width: 2; }
+  .lad { font: 13px ui-monospace, Consolas, monospace; max-height: 380px; overflow: auto; }
+  .lad .stl { margin: 6px 0 2px; padding: 3px 8px; border-left: 6px solid #6b7280; background: rgba(128, 128, 128, .1); font-weight: 700; }
+  .lad .stl.on { border-color: #ca8a04; background: rgba(250, 204, 21, .35); }
+  .lad .stl.off1 { border-color: #dc2626; background: rgba(220, 38, 38, .12); }
+  .lad .rg { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; padding: 2px 4px 2px 14px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .lad .rg.dim { opacity: .45; }
+  .lad .ct, .lad .cl { display: inline-block; padding: 1px 5px; border: 1.5px solid #6b7280; border-radius: 3px; white-space: nowrap; }
+  .lad .cl { border-radius: 10px; }
+  .lad .ct.on { background: #bbf7d0; border-color: #16a34a; }
+  .lad .cl.on { background: #fde047; border-color: #a16207; }
+  .lad .wr { color: var(--mute); }
+  .lad .ret { margin: 6px 0; font-weight: 700; }
+  .io { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+  .io button.inb { min-width: 64px; }
+  .io button.inb.on { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .lamp2 { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; }
+  .lamp2 i { width: 14px; height: 14px; border-radius: 50%; background: #4b5563; border: 1px solid #111; }
+  .lamp2.on i { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  .tl { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .tl text { font: 11px ui-monospace, Consolas, monospace; fill: var(--ink); }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; }
+  table.scans { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  table.scans th:last-child, table.scans td:last-child { width: 30%; }
+  table.scans th, table.scans td { border: 1px solid var(--line); padding: 4px 6px; text-align: center; overflow-wrap: anywhere; }
+  table.scans td.on { background: rgba(250, 204, 21, .45); font-weight: 700; }
+  table.scans td.off1 { background: rgba(220, 38, 38, .15); }
+  table.scans td.y1 { background: rgba(239, 68, 68, .25); font-weight: 700; }
+  .scanwrap { overflow-x: auto; max-width: 100%; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="path.html">課程</a> · 步進動畫實驗室</p>
+  <h1>步進實驗室：一步一步看狀態怎麼換</h1>
+  <p class="why">左邊是 SFC 流程圖（黃色＝作用中的步），右邊是對應的 STL 梯形圖（黃色的 STL 段＝這一圈有執行、紅色＝剛離開的步「斷電執行一次」），下面是時間軸。這頁的模擬照本站模擬器的步進規則（依三菱 FX3 程式手冊第 35 章）。</p>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="flow" class="here">單一流程</button>
+    <button type="button" data-t="scan">換步的那一圈</button>
+    <button type="button" data-t="par">並行與合流</button>
+    <button type="button" data-t="pwr">停電與 M8002</button>
+  </div>
+
+  <section class="lab-stage" id="t-flow">
+    <p class="why">輸送帶蓋章：待機按 X0 啟動 → S20 輸送帶走（OUT Y0），等工件到位 X1 → S21 推桿伸出（<b>SET</b> Y1），計時 1 秒 → S22 蓋章（OUT Y2），等蓋章完成 X2 → 回 S0。推桿要在待機時按 X3 才收回（RST Y1）。注意離開步之後 OUT 和 SET 的差別。</p>
+    <div class="row"><button type="button" class="go" id="frun">▶ 執行</button><button type="button" id="fstep">一掃描</button><button type="button" id="freset">重來（重新上電）</button><span class="kv">掃描 <b id="fscan">0</b>　時間 <b id="ftime">0.0</b> s（一掃描算 100 ms）</span></div>
+    <div class="io" id="fio"></div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="bx"><h3>SFC</h3><svg class="sfc" id="fsfc" role="img" aria-label="SFC 流程圖"></svg></div>
+      <div class="bx"><h3>STL 梯形圖</h3><div class="lad" id="flad"></div></div>
+    </div>
+    <div class="bx" style="margin-top:10px"><h3>時間軸（最近 80 個掃描）</h3><svg class="tl" id="ftl" role="img" aria-label="時間軸"></svg></div>
+    <p class="verdict-line" id="fsay"></p>
+    <div class="log" id="flog"></div>
+  </section>
+
+  <section class="lab-stage" id="t-scan" hidden>
+    <p class="why">按「一掃描」一圈一圈走，下面的表每一列是一個掃描結束時的狀態。看換步那一圈：前一步先執行、SET 下一步，下一步在同一圈也執行，所以這一圈<b>前後兩步同時作用</b>；下一圈前一步「斷電執行一次」，它的 OUT 才變 OFF。再換成「相鄰兩步共用 T0」的程式看看。</p>
+    <div class="row">
+      <label>程式 <select id="sprog"><option value="ok">① 正常：S20 用 T0、S21 用 T1</option><option value="fwd">② 錯：相鄰的 S20、S21 都用 T0</option><option value="e12">③ 錯：兩步輪流（E12 那種），都用 T0</option></select></label>
+    </div>
+    <div class="row"><button type="button" class="go" id="sstep">一掃描</button><button type="button" id="sstep5">五掃描</button><button type="button" id="sx0">按 X0（下一掃描生效）</button><button type="button" id="sreset">重來</button><span class="kv">計時器 K3 ＝ 0.3 秒 ＝ 3 個掃描</span></div>
+    <div class="grid2">
+      <div class="bx"><h3>SFC</h3><svg class="sfc" id="ssfc" role="img" aria-label="SFC 流程圖"></svg></div>
+      <div class="bx"><h3>STL 梯形圖（這一圈）</h3><div class="lad" id="slad"></div></div>
+    </div>
+    <div class="bx" style="margin-top:10px"><h3>每個掃描結束時</h3><div class="scanwrap"><table class="scans" id="stab"></table></div></div>
+    <p class="verdict-line" id="ssay"></p>
+    <div class="callout">課文的兩句話在這裡都看得到：「換步的那一圈，前後兩步會同時作用」，所以不能同時 ON 的輸出（例如上升和下降）要另外加互鎖；「相鄰的兩步不能用同一個計時器」：轉移那一圈計時器線圈不會斷，現在值不歸零，下一步一進來可能已經數完。② 的結果是 S21 一進來就跳走；③ 在本站模擬器裡步序卡住、兩個燈一直同時亮。實機出錯的樣子不一定和模擬器一樣，但兩種都是錯的寫法：相鄰步請用不同的計時器。</div>
+  </section>
+
+  <section class="lab-stage" id="t-par" hidden>
+    <p class="why">兩座龍門同時動：S0 按 X0 後 <b>SET S20、SET S30</b> 同時開兩條流程。A 邊（S20 下降 1.5 秒 → S21 夾取 1 秒 → 等待步 S22），B 邊（S30 移動 4 秒 → 等待步 S31）。合流寫成 <b>STL S22、STL S31</b> 連在一起，兩步都作用才執行 SET S40；換步時兩步一起關掉。</p>
+    <div class="row"><button type="button" class="go" id="prun">▶ 執行</button><button type="button" id="pstep">一掃描</button><button type="button" id="preset">重來</button><span class="kv">掃描 <b id="pscan">0</b>　時間 <b id="ptime">0.0</b> s</span></div>
+    <div class="io" id="pio"></div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="bx"><h3>SFC</h3><svg class="sfc" id="psfc" role="img" aria-label="並行分支 SFC"></svg></div>
+      <div class="bx"><h3>STL 梯形圖</h3><div class="lad" id="plad"></div></div>
+    </div>
+    <div class="bx" style="margin-top:10px"><h3>時間軸</h3><svg class="tl" id="ptl" role="img" aria-label="時間軸"></svg></div>
+    <p class="verdict-line" id="psay"></p>
+    <div class="log" id="plog"></div>
+  </section>
+
+  <section class="lab-stage" id="t-pwr" hidden>
+    <p class="why">FX3S 的狀態元件：<b>S0～S127 停電保持</b>（S0～S9 是初始步，也保持），<b>S128～S255 一般</b>。先跑到 S21，再按「停電 → 復電」，看復電後哪些步作用。換不同的開機寫法和步號比較。</p>
+    <div class="row">
+      <label>開機那一圈 <select id="wm"><option value="bad">LD M8002 → SET S0（只寫這樣）</option><option value="ani">LD M8002 → ANI S20 ANI S21 ANI S22 → SET S0</option><option value="zrst">LD M8002 → ZRST S0 S127 → SET S0（從頭來）</option></select></label>
+      <label>一般步的編號 <select id="wn"><option value="20">S20～S22（停電保持）</option><option value="140">S140～S142（一般）</option></select></label>
+    </div>
+    <div class="row"><button type="button" class="go" id="wrun">▶ 執行</button><button type="button" id="wpow">⚡ 停電 → 復電</button><button type="button" id="wreset">重來（清除全部）</button><span class="kv">掃描 <b id="wscan">0</b></span></div>
+    <div class="io" id="wio"></div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="bx"><h3>SFC</h3><svg class="sfc" id="wsfc" role="img" aria-label="SFC 流程圖"></svg></div>
+      <div class="bx"><h3>STL 梯形圖</h3><div class="lad" id="wlad"></div></div>
+    </div>
+    <p class="verdict-line" id="wsay"></p>
+    <div class="log" id="wlog"></div>
+    <div class="callout">復電後的第一圈 M8002 會 ON 一次，這一圈決定「接著做」還是「從頭來」。只寫 M8002 SET S0 的程式放到 FX3S 上，停電前在 S21，復電後 S21 還在，S0 又被 SET，就變成<b>兩步同時作用</b>。要接著做，就在 SET S0 前面加「沒有任何步在作用」的條件；要從頭來，就先 ZRST 清掉所有步再 SET S0。檢定題的停電要求每題不同，照題目寫。M8002 是 STOP→RUN 的第一圈，不只停電復電，寫入程式後切 RUN 也會 ON 一次。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="squiz" style="margin-top:16px"></section>
+</main>
+<footer><p><a href="privacy.html">隱私權政策與使用條款</a>　MELSEC、GX Works 為三菱電機株式會社之商標。本站為獨立開發，與三菱電機無關。</p></footer>
+<script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-stl.js?v=7ab255ef77"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "6addbb7f53" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
