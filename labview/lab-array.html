@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>陣列函式動畫實驗室：看元素怎麼搬 | LadderLab</title>
 <meta name="description" content="LabVIEW 陣列函式的動畫實驗室：Array Size、Index Array、Search、Max & Min、Insert、Delete、Replace Subset、Sort、Build Array、Array Subset 這 10 個常用函式，自己改輸入、看元素怎麼移動，先預測再執行。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 </head>
 <body>
 <header class="top">
@@ -66,7 +66,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

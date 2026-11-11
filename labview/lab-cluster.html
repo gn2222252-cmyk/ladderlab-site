@@ -1,19 +1,19 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>叢集實驗室：Bundle、Type Def、錯誤叢集 | LadderLab</title>
 <meta name="description" content="LabVIEW Cluster 的動畫實驗室：看元素飛進、飛出叢集，叢集順序改了 Unbundle 為什麼會接錯；Type Def 改一處全部更新；錯誤叢集沿著錯誤線傳遞、Close 照樣執行、警告與 Merge Errors、Clear Errors。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
-  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
-  .modes button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .modes button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .cstage { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 14px; align-items: center; margin: 14px 0; }
   @media (max-width: 760px) { .cstage { grid-template-columns: minmax(0, 1fr); justify-items: stretch; } .cstage .node { justify-self: center; } }
   .cstage .node { width: auto; min-width: 84px; height: auto; min-height: 64px; padding: 6px 8px; white-space: pre-line; }
@@ -47,7 +47,7 @@
   .en b { display: block; font-size: 14px; }
   .en select { font-size: 12px; margin-top: 4px; max-width: 130px; }
   .en .stt { display: block; font-size: 12px; color: var(--mute); min-height: 1.3em; }
-  .en.on { border-color: #1e6fff; transform: translateY(-3px); box-shadow: 0 6px 14px rgba(30, 111, 255, .3); }
+  .en.on { border-color: var(--on); transform: translateY(-3px); box-shadow: 0 6px 14px color-mix(in srgb, var(--on) 30%, transparent); }
   .en.ran { border-color: #16a34a; } .en.skip { opacity: .55; border-style: dashed; } .en.eerr { border-color: #dc2626; background: rgba(220, 38, 38, .12); } .en.warn { border-color: #d97706; background: rgba(217, 119, 6, .12); }
   .en.clr { border-color: #6b7280; }
   .ecl { display: inline-grid; grid-template-columns: auto auto; gap: 2px 10px; border: 3px double #b59a00; border-radius: 6px; padding: 8px 10px; font: 13px ui-monospace, Consolas, monospace; background: rgba(181, 154, 0, .06); max-width: 100%; }
@@ -67,13 +67,13 @@
   .min { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
   .min .chip { min-width: 120px; text-align: center; }
   .chip.win { box-shadow: 0 0 0 3px #16a34a; }
-  .fly.ferr { background: #fecaca; border-color: #dc2626; }
-  .fly.ok { background: #e5e7eb; border-color: #6b7280; }
-  .fly.warn { background: #fed7aa; border-color: #d97706; }
+  .fly.ferr { background: #fecaca; border-color: #dc2626; color: #18212a; }
+  .fly.ok { background: #e5e7eb; border-color: #6b7280; color: #18212a; }
+  .fly.warn { background: #fed7aa; border-color: #d97706; color: #18212a; }
   .fly { padding: 0 6px; }
   /* 新分頁：陣列與叢集互轉、叢集運算、叢集順序、Tab Control */
   .subm { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
-  .subm button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .subm button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .cv2 { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin: 12px 0; }
   @media (max-width: 760px) { .cv2 { grid-template-columns: minmax(0, 1fr); } .cv2 .node { justify-self: center; } }
   .cv2 .node { width: auto; min-width: 96px; padding: 6px; white-space: pre-line; }
@@ -90,17 +90,17 @@
   .fpc2 { position: relative; height: 210px; border: 3px double #b0418f; border-radius: 8px; background: #d9dde3; color: #1d2430; max-width: 460px; margin: 8px 0; }
   .fpc2 .cl { position: absolute; top: -11px; left: 8px; background: var(--card); color: var(--ink); padding: 0 6px; font-size: 13px; font-weight: 700; }
   .fe { position: absolute; display: grid; gap: 2px; font-size: 12px; transition: left .5s, top .5s; cursor: default; }
-  .fe .box { border: 2px solid #6b7280; border-radius: 4px; background: #fff; padding: 3px 8px; font: 600 13px ui-monospace, Consolas, monospace; min-width: 60px; }
+  .fe .box { border: 2px solid #6b7280; border-radius: 4px; background: #fff; padding: 3px 8px; font: 600 13px ui-monospace, Consolas, monospace; min-width: 60px; color: #18212a; }
   .fe .ord { position: absolute; top: -10px; right: -10px; display: flex; gap: 2px; }
   .fe .ord b { font: 700 11px ui-monospace, Consolas, monospace; padding: 0 4px; border-radius: 3px; background: #111; color: #fff; }
   .fe .ord i { font: 700 11px ui-monospace, Consolas, monospace; font-style: normal; padding: 0 4px; border-radius: 3px; background: #fff; color: #111; border: 1px solid #111; }
   .fpc2.reorder .fe { cursor: pointer; }
-  .fpc2.reorder .fe:hover .box { outline: 3px solid #1e6fff; }
+  .fpc2.reorder .fe:hover .box { outline: 3px solid var(--on); }
   .tabc { border: 2px solid #6b7280; border-radius: 6px; background: #d9dde3; color: #1d2430; max-width: 460px; }
   .tabc .th { display: flex; gap: 2px; padding: 4px 4px 0; flex-wrap: wrap; }
   .tabc .th button { border-radius: 6px 6px 0 0; border: 1px solid #6b7280; border-bottom: 0; background: #c3c9d3; color: #1d2430; padding: 4px 12px; font: 600 13px system-ui, sans-serif; }
-  .tabc .th button.here { background: #eef1f5; }
-  .tabc .tp { background: #eef1f5; border-top: 1px solid #6b7280; padding: 10px; min-height: 90px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .tabc .th button.here { background: #eef1f5; color: #18212a; }
+  .tabc .tp { background: #eef1f5; border-top: 1px solid #6b7280; padding: 10px; min-height: 90px; display: flex; gap: 12px; flex-wrap: wrap; color: #18212a; }
   .tabc .tp label { display: grid; gap: 2px; font-size: 12px; }
   .tabc .tp input { width: 90px; }
 </style>
@@ -263,7 +263,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

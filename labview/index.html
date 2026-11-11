@@ -1,22 +1,22 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
 <meta name="description" content="22 堂互動 LabVIEW 課，從資料流、While Loop、Case 到 VISA 通訊，自己寫出讀寫三菱 FX PLC 的上位機；另有架構拆解 9 課與 CLAD 證照 13 課、201 題原創題庫模擬考。">
-<link rel="stylesheet" href="assets/course.css?v=b62e9c1c19">
-<link rel="stylesheet" href="assets/lv.css?v=878411a539">
+<link rel="stylesheet" href="assets/course.css?v=7e51c4ac58">
+<link rel="stylesheet" href="assets/lv.css?v=91713bc023">
 <style>@media (max-width:900px){.ll-banner{padding-top:56px!important}}</style>
 </head>
 <body>
-<div class="ll-banner" style="background:#eef4ff;border-bottom:1px solid #c9d8f5;padding:8px 14px;font-size:14px;line-height:1.6">
-  <a href="../index.html" style="font-weight:700;color:#1e6fff;text-decoration:none">← LadderLab 梯圖實驗室</a>
+<div class="ll-banner">
+  <a class="home" href="../index.html">← LadderLab 梯圖實驗室</a>
   <a href="../path.html" style="margin-left:10px">學習路徑</a>
   <a href="fxlab.html" style="margin-left:10px;font-weight:700">FX 封包練習台（網頁版模擬 PLC）</a>
-  <a href="labs.html" style="margin-left:10px;font-weight:700">動畫實驗室（26 個）</a>
-  <span style="margin-left:10px;color:#5b6576">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
+  <a href="labs.html" style="margin-left:10px;font-weight:700">動畫實驗室（28 個）</a>
+  <span class="fine">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
 </div>
 <button id="menuBtn" class="btn">☰ 課程目錄</button>
 <div id="app">
@@ -24,7 +24,7 @@
   <main id="main"><div id="content"></div></main>
 </div>
 <script src="assets/lvdraw.js?v=fe4083103b"></script>
-<script src="assets/course.js?v=a5189578fb"></script>
+<script src="assets/course.js?v=a4d410b27b"></script>
 <script src="assets/lvfmt.js?v=174413c716"></script>
 <script src="lessons/part1_start.js?v=326a186882"></script>
 <script src="lessons/part2_basics_a.js?v=4debd6fd89"></script>
@@ -52,7 +52,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

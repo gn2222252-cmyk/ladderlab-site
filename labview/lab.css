@@ -25,6 +25,8 @@
 /* 實驗台：白卡、細框、左側一條色條，不浮起 */
 .lab-stage { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--on); border-radius: 6px; padding: 16px; min-width: 0; }
 .lab-stage.lab-challenge { border-left-color: var(--rail); }
+.plc .lab-stage { border-left-color: var(--go); }
+.plc .lab-stage.lab-challenge { border-left-color: var(--rail); }
 .lab-head { display: flex; gap: 14px; align-items: center; }
 .lab-head h2 { margin: 0 0 4px; font-size: 20px; }
 .fdesc { margin: 0; color: var(--mute); }
@@ -43,7 +45,17 @@
 .lab-main .tabs button:hover { color: var(--ink); background: var(--onbg); }
 .lab-main .tabs button.here { color: var(--ink); background: var(--card); border-color: var(--line); box-shadow: inset 0 -3px 0 var(--on); }
 .lab-main .tabs button:focus-visible { outline-offset: -3px; }
-@media (max-width: 560px) { .lab-main .tabs button { padding: 7px 10px 8px; font-size: 14px; } }
+/* 手機：頁籤排成一行橫向捲動，右邊淡出提示後面還有；捲到最後時右側留白讓最後一個頁籤完整露出 */
+@media (max-width: 560px) {
+  .lab-main .tabs {
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity; scroll-padding-inline: 4px; scrollbar-width: thin;
+    padding-right: 36px;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+  }
+  .lab-main .tabs button { flex: none; white-space: nowrap; scroll-snap-align: start; margin-bottom: 0; padding: 7px 11px 8px; font-size: 14px; }
+}
 
 /* ---------- LabVIEW 函式節點（黃色圖示，保留 LabVIEW 的樣子） ---------- */
 .node { flex: none; width: 64px; height: 64px; border: 2px solid #b07c00; border-radius: 4px; background: #fff3c4; display: grid; place-items: center; font: 700 12px/1.15 var(--f-tech); color: #5a3f00; text-align: center; letter-spacing: .01em; box-shadow: inset 0 -3px 0 rgba(176, 124, 0, .22); }
@@ -75,7 +87,7 @@ input.scalar { width: 70px; text-align: center; color: var(--ink); }
 /* ---------- 動畫：飛過去的元素 ---------- */
 .anim-layer { position: fixed; inset: 0; pointer-events: none; z-index: 80; }
 .fly { position: fixed; display: grid; place-items: center; border-radius: 3px; font: 700 15px var(--f-tech); background: #fde68a; border: 2px solid #d99a00; color: #111; box-shadow: 0 3px 10px rgba(0, 0, 0, .18); transition-property: left, top, opacity, transform; transition-timing-function: cubic-bezier(.4, .1, .2, 1); }
-.fly.new { background: #bbf7d0; border-color: #16a34a; }
+.fly.new { background: #bbf7d0; border-color: #16a34a; color: #18212a; }
 
 /* ---------- 預測、結果、說明 ---------- */
 .pred input { width: 220px; max-width: 100%; font: 16px var(--f-tech); }
@@ -94,3 +106,4 @@ input.scalar { width: 70px; text-align: center; color: var(--ink); }
 
 /* 長選項的下拉選單不要把手機版面撐寬 */
 .lab-main select { max-width: 100%; }
+.lab-main .row label { max-width: 100%; min-width: 0; }

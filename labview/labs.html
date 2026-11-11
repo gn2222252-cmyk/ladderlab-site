@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
 <meta name="description" content="LabVIEW 動畫實驗室總覽：迴圈、結構、陣列、字串、叢集、圖表、變數、佇列、DAQ、VISA 序列通訊、檔案 I/O、布林、數值等互動實驗室，加上 FX 封包練習台。不用安裝 LabVIEW，在瀏覽器裡改輸入、看動畫、先預測再對答案。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .hub { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin: 16px 0; }
   .hub a.card { display: block; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--card); color: inherit; text-decoration: none; transition: transform .15s, box-shadow .15s; position: relative; }
@@ -41,16 +41,16 @@
 <script>
 (function () {
   var LABS = [
-    { f: 'lab-numeric.html', n: '數值', ic: '123', c: '#e8820c', d: '整數算到頭會繞回來，浮點數轉整數卻是夾住。', t: ['整數溢位轉盤（U8、I8、U16、I16）', '四種捨入函式的數線', '商與餘數、毫秒換時分秒'], l: '第 3 課、C2' },
-    { f: 'lab-bool.html', n: '布林', ic: 'TF', c: '#1f9d3a', d: '按鈕的六種機械動作，按下去才知道差在哪。', t: ['六種機械動作的即時時間圖', '邏輯閘真值表與位元遮罩', 'Select、In Range and Coerce'], l: '第 3、17 課、C2、C16' },
+    { f: 'lab-numeric.html', n: '數值', ic: '123', c: '#b45309', d: '整數算到頭會繞回來，浮點數轉整數卻是夾住。', t: ['整數溢位轉盤（U8、I8、U16、I16）', '四種捨入函式的數線', '商與餘數、毫秒換時分秒'], l: '第 3 課、C2' },
+    { f: 'lab-bool.html', n: '布林', ic: 'TF', c: '#15803d', d: '按鈕的六種機械動作，按下去才知道差在哪。', t: ['六種機械動作的即時時間圖', '邏輯閘真值表與位元遮罩', 'Select、In Range and Coerce'], l: '第 3、17 課、C2、C16' },
     { f: 'lab-flow.html', n: '資料流', ic: '→', c: '#0369a1', d: '節點等輸入到齊才執行；沒連線就不保證先後。', t: ['小球沿線流動、節點等到齊才執行', '平行與順序：沒連線不保證誰先', '線分叉就是複製一份', '迴圈的輸入、輸出通道什麼時候讀、什麼時候送'], l: '第 2、4 課、C1、C3' },
     { f: 'lab-debug.html', n: '除錯工具', ic: '🐞', c: '#b91c1c', d: '斷掉的箭頭、Probe、中斷點、單步執行：照著線一條一條找出第一個錯的值。', t: ['Error List：點錯誤跳到出錯的節點', 'Probe＋Breakpoint＋Step Into／Over／Out', '迴圈除錯：Highlight Execution、Conditional Probe'], l: '第 2、21 課、C1' },
     { f: 'lab-coderead.html', n: '看圖說答案', ic: '?=', c: '#1e40af', d: 'CLAD 最常考的題型：看方塊圖，說出顯示元件的值。答完播放資料流動畫解說。', t: ['31 題，涵蓋迴圈、Shift Register、Case、陣列、字串、錯誤叢集等 10 個主題', '練習模式：逐題作答、動畫解說', '測驗模式：10 題計時、錯題清單'], l: 'C1、C13 起的考題解析' },
     { f: 'clad-map.html', n: 'CLAD 考試地圖', ic: 'CLAD', c: '#0a57a4', d: '官方四大主題與比例、每個考點連到對應的實驗室；15 種題型特訓與弱點建議。', t: ['考試規則：40 題、1 小時、70% 及格', '四大主題 10／25／50／15%，勾選已掌握', '15 種題型的解題心法與原創新題'], l: 'C1 起的 CLAD 課程' },
     { f: 'lab-loop.html', n: '迴圈', ic: '⟳', c: '#6b6b6b', d: '跑幾圈、輸出什麼，一圈一圈看。', t: ['While 與 For、四種輸出通道', 'Shift Register 有沒有接初始值', 'Wait 與 Wait Until Next ms Multiple'], l: '第 4、5、7 課、C3' },
     { f: 'lab-time.html', n: '時間', ic: 'ms', c: '#0e7490', d: 'Tick Count 量間隔、時間戳記幾點幾分；逾時判定不要用長 Wait。', t: ['Tick Count 是 U32，跨過繞回點照樣能相減', '看門狗：心跳 3 秒沒變就判斷斷線', '時間戳與 Format Date/Time String 格式碼'], l: '第 5、19 課、C3、F3' },
-    { f: 'lab-struct.html', n: '結構', ic: '?', c: '#1e6fff', d: 'Case 走哪一頁、事件怎麼排隊、狀態機怎麼換狀態。', t: ['Case 選擇器：範圍、Default、捨入、大小寫', 'Event 事件排隊與 Timeout', 'State Machine 洗衣機', 'Sequence 與 Tick Count 計時'], l: '第 6 課、C4、C9、A2' },
-    { f: 'lab-array.html', n: '陣列', ic: '[ ]', c: '#e8820c', d: '十個常用陣列函式，看元素怎麼搬。', t: ['Index、Insert、Delete、Replace、Subset…', '先預測再執行、隨機挑戰'], l: '第 7 課、C5' },
+    { f: 'lab-struct.html', n: '結構', ic: '?', c: '#0a57a4', d: 'Case 走哪一頁、事件怎麼排隊、狀態機怎麼換狀態。', t: ['Case 選擇器：範圍、Default、捨入、大小寫', 'Event 事件排隊與 Timeout', 'State Machine 洗衣機', 'Sequence 與 Tick Count 計時'], l: '第 6 課、C4、C9、A2' },
+    { f: 'lab-array.html', n: '陣列', ic: '[ ]', c: '#b45309', d: '十個常用陣列函式，看元素怎麼搬。', t: ['Index、Insert、Delete、Replace、Subset…', '先預測再執行、隨機挑戰'], l: '第 7 課、C5' },
     { f: 'lab-string.html', n: '字串', ic: 'abc', c: '#c026d3', d: '一格一個字元，位置從 0 算起。', t: ['切、接、找、換九個函式', 'Format／Scan 格式碼對照', 'Normal、\'\\\' Codes、Hex 看控制碼'], l: '第 9 課、C6、F2' },
     { f: 'lab-cluster.html', n: '叢集', ic: '{ }', c: '#9333ea', d: '把資料打包、拆開，錯誤沿著錯誤線往後傳。', t: ['Bundle／Unbundle 與 By Name', 'Type Def 一改全部跟著改', '錯誤叢集怎麼流、Close 為什麼照樣執行'], l: '第 8、11 課、C10、C18' },
     { f: 'lab-enum.html', n: 'Enum 與 Ring', ic: '▾', c: '#0f766e', d: '同樣是下拉選單：Enum 的文字是型別的一部分，Ring 只是數字。', t: ['接到 Case：頁籤是文字還是數字', '新增選項：Type Def 一起變、Case 少頁就斷箭頭', 'Type Def 與 Strict Type Def', '字串狀態打錯字只會默默走 Default'], l: '第 8 課、C2、C9' },
@@ -61,7 +61,7 @@
     { f: 'lab-formula.html', n: 'Formula Node', ic: 'f(x)', c: '#a16207', d: '同一個公式：拉線版和文字版並排算，打錯字當場告訴你。', t: ['圖形節點與 Formula Node 對照，一步一步高亮', '語法檢查器：少分號、沒宣告、大小寫', '整數除法、Quotient & Remainder 分組動畫'], l: 'C2、C4' },
     { f: 'lab-graph.html', n: '圖表', ic: '∿', c: '#0f766e', d: 'Chart 會記住舊資料，Graph 每次整張換掉。', t: ['六種資料型別各畫出什麼', 'XY Graph 用兩個陣列畫圓'], l: 'C11、C14' },
     { f: 'lab-var.html', n: '變數', ic: 'x', c: '#7c3aed', d: '兩個迴圈共用一個變數，資料是怎麼不見的。', t: ['競爭條件：你來當排程器', '一顆 Stop 停兩個迴圈的四種接法', 'FGV 功能型全域變數'], l: '第 16 課、C8' },
-    { f: 'lab-queue.html', n: '佇列', ic: 'Q', c: '#0891b2', d: '迴圈之間傳資料：一筆都不能少用 Queue，只要最新用 Notifier。', t: ['生產者、佇列、消費者三欄動畫', 'Queue、Notifier、Local Variable 比一比', 'Producer/Consumer 怎麼關才不掉資料'], l: '第 16 課、C8、A2' },
+    { f: 'lab-queue.html', n: '佇列', ic: 'Q', c: '#0e7490', d: '迴圈之間傳資料：一筆都不能少用 Queue，只要最新用 Notifier。', t: ['生產者、佇列、消費者三欄動畫', 'Queue、Notifier、Local Variable 比一比', 'Producer/Consumer 怎麼關才不掉資料'], l: '第 16 課、C8、A2' },
     { f: 'lab-qmh.html', n: 'QMH 多迴圈架構', ic: 'MSG', c: '#7e22ce', d: '訊息卡片在迴圈之間飛：13_PLC 的 Host_Main 怎麼分工、怎麼結束。', t: ['QMH：連按也不漏、送給自己的訊息排到尾端', 'MES、通訊、UI、檢測四個迴圈一起跑', '結束順序：先送完、再停、最後才 Release'], l: 'A2、A3、A6、A7、C9' },
     { f: 'lab-handshake.html', n: 'PLC 交握', ic: '⇄', c: '#c2410c', d: 'PLC 和上位機怎麼「確認對方收到了」：命令脈衝、檢測交握、心跳逾時。', t: ['D106 命令：寫太快被蓋掉、PLC 在 STOP 不清 0', '檢測交握：上升緣只檢測一次，位準會重複', '心跳 D240：拔線後誰先發現、各自怎麼安全停'], l: '第 17、19 課、A4、A5' },
     { f: 'lab-daq.html', n: 'DAQ', ic: 'AI', c: '#dc2626', d: '資料擷取的三個 R：取樣率、解析度、範圍。', t: ['取樣率不夠時的混疊', '解析度與範圍：最小可分辨電壓', 'DAQmx 流程與緩衝區溢位'], l: 'C12' },
@@ -90,7 +90,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

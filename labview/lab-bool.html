@@ -1,26 +1,26 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>布林實驗室：按鈕機械動作、邏輯閘、比較 | LadderLab</title>
 <meta name="description" content="LabVIEW 布林與比較的動畫實驗室：六種按鈕機械動作即時畫出時間圖、邏輯閘真值表與位元遮罩、Select 與 In Range and Coerce 數線。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
-  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .mech { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 18px; align-items: start; }
   @media (max-width: 900px) { .mech { grid-template-columns: 1fr; } }
   .mlist button { display: block; width: 100%; text-align: left; margin: 3px 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
   .mlist button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
   .mlist small { display: block; color: var(--mute); font-size: 12px; }
-  .bigbtn { width: 150px; height: 64px; border-radius: 12px; border: 3px solid #555; background: #ddd; font: 700 18px inherit; cursor: pointer; user-select: none; touch-action: none; transition: transform .05s; }
-  .bigbtn.down { transform: translateY(2px); background: #bbb; }
+  .bigbtn { width: 150px; height: 64px; border-radius: 12px; border: 3px solid #555; background: #ddd; font: 700 18px inherit; cursor: pointer; user-select: none; touch-action: none; transition: transform .05s; color: #18212a; }
+  .bigbtn.down { transform: translateY(2px); background: #bbb; color: #18212a; }
   .led { display: inline-block; width: 34px; height: 34px; border-radius: 50%; background: #2b3a2b; border: 3px solid #555; vertical-align: middle; transition: background .1s; }
-  .led.on { background: #3ee66b; box-shadow: 0 0 14px #3ee66b; }
+  .led.on { background: #3ee66b; box-shadow: 0 0 14px #3ee66b; color: #18212a; }
   .mrow { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   canvas.tl { width: 100%; height: 190px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg, #fff); }
   .gates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
@@ -38,11 +38,11 @@
   .bits span.flash { background: #fde68a; color: #18212a; }
   .nline { position: relative; height: 70px; margin: 18px 6px; }
   .nline .axis { position: absolute; left: 0; right: 0; top: 34px; height: 3px; background: var(--mute); }
-  .nline .band { position: absolute; top: 28px; height: 15px; background: rgba(30, 111, 255, .25); border-radius: 4px; }
+  .nline .band { position: absolute; top: 28px; height: 15px; background: color-mix(in srgb, var(--on) 25%, transparent); border-radius: 4px; }
   .nline .pt { position: absolute; top: 18px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: #e8820c; transition: left .6s cubic-bezier(.4, .1, .2, 1); }
   .nline .pt.ghost { background: transparent; border: 2px dashed #e8820c; }
   .nline .tick { position: absolute; top: 42px; font: 11px ui-monospace, Consolas, monospace; color: var(--mute); transform: translateX(-50%); }
-  .nline .lim { position: absolute; top: 22px; width: 3px; height: 27px; background: #1e6fff; }
+  .nline .lim { position: absolute; top: 22px; width: 3px; height: 27px; background: var(--on); }
 </style>
 </head>
 <body>
@@ -119,14 +119,14 @@
   </section>
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
-<script src="lab-bool.js?v=f6f99b7ec2"></script>
+<script src="lab-bool.js?v=d3d85de59e"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

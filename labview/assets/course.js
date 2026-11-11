@@ -88,7 +88,7 @@ function show(id){
 
 function block(c,b){
   if(typeof b==='string'){const d=document.createElement('div');d.innerHTML=b;while(d.firstChild)c.appendChild(d.firstChild);return;}
-  if(b.lv){const w=LV.widget(c,b.lv);widgets.push(w);if(b.cap){const p=document.createElement('div');p.className='cap';p.style.cssText='font-size:13px;color:#5c6577;margin:-6px 0 12px';p.innerHTML=b.cap;c.appendChild(p);}return;}
+  if(b.lv){const w=LV.widget(c,b.lv);widgets.push(w);if(b.cap){const p=document.createElement('div');p.className='cap';p.style.cssText='font-size:13px;color:var(--mute);margin:-6px 0 12px';p.innerHTML=b.cap;c.appendChild(p);}return;}
   if(b.steps){stepper(c,b.steps);return;}
   if(b.quiz){b.quiz.forEach(q=>quiz(c,q));return;}
   if(b.todo){const ul=document.createElement('ul');ul.className='todo';b.todo.forEach((t,i)=>{const li=document.createElement('li');li.innerHTML=t;const k=location.hash+'#'+i+t.length;if(prog[k])li.classList.add('ok');li.onclick=()=>{li.classList.toggle('ok');prog[k]=li.classList.contains('ok');save(prog);};ul.appendChild(li);});c.appendChild(ul);return;}

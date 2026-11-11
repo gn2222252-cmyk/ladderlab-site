@@ -189,7 +189,7 @@
         V.n++;
         $('evs').classList.add('fire');
         $('evb').innerHTML = '第 ' + V.n + ' 次執行這一頁：OldVal = ' + old + '，NewVal = ' + nv;
-        logV('<b>' + METHOD[m].name + '</b>：值 ' + old + ' → ' + nv + '，<span style="color:#1e6fff">產生 Value Change 事件</span>');
+        logV('<b>' + METHOD[m].name + '</b>：值 ' + old + ' → ' + nv + '，<span style="color:var(--on)">產生 Value Change 事件</span>');
         await sleep(700); $('evs').classList.remove('fire');
       } else {
         logV('<b>' + METHOD[m].name + '</b>：值 ' + old + ' → ' + nv + '，<span style="color:#dc2626">沒有事件</span>，Event 結構繼續等');
@@ -237,7 +237,7 @@
       }
       for (i = 0; i < BTN.length; i++) {
         $('fi').textContent = i; $('xpr').classList.add('on');
-        $('refin').children[i].style.outline = '2px solid #1e6fff';
+        $('refin').children[i].style.outline = '2px solid var(--on)';
         await fly($('xpnn'), $('rb' + i), 'Disabled ← ' + v);
         R.dis[i] = v; renderFp3();
         $('refin').children[i].style.outline = ''; $('xpr').classList.remove('on');

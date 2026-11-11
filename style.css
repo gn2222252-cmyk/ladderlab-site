@@ -899,3 +899,47 @@ footer { border-top: 1px solid var(--line); background: var(--card); }
   .top { flex-wrap: wrap; row-gap: 6px; }
   .topnav { order: 3; flex: 1 1 100%; flex-wrap: wrap; justify-content: flex-start; overflow: visible; gap: 2px 4px; }
 }
+
+/* 第20輪 */
+/* 實心色塊（上面放白字）與文字色分開：深色模式的 --on/--go/--stop 是給線條與字用的亮色，放白字不夠 */
+:root { --on-solid: #0a57a4; --go-solid: #17803f; --stop-solid: #c62828; --stop-text: #b71c1c; --go-text: #0f6a32; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --on-solid: #1d5fa8; --go-solid: #1b7f48; --stop-solid: #b8302c; --stop-text: #ff8a85; --go-text: #3cc77a; }
+}
+:root[data-theme="dark"] { --on-solid: #1d5fa8; --go-solid: #1b7f48; --stop-solid: #b8302c; --stop-text: #ff8a85; --go-text: #3cc77a; }
+
+/* 目前所在的分頁：像控制面板上被選中的頁籤 */
+.toc a.here, .view-tabs button.here, .compare-tabs button.here, .sim-tabs button.here, .sim-modes .here,
+.sfc-step.on .sfc-box { background: var(--on-solid); border-color: var(--on-solid); color: #fff; }
+.qz-opts .right { background: var(--go-solid); border-color: var(--go-solid); color: #fff; }
+.qz-opts .wrong { background: var(--stop-solid); border-color: var(--stop-solid); color: #fff; }
+
+/* 文字用的紅綠：淺色加深、深色提亮，落在淺藍或盤體灰底也讀得清 */
+.status .alarm, .status b.alarm, .rules, .errors, .err, .sfc-lrow.warn, .mock-row b.bad,
+.verdict.bad, .results li.bad b, .dmsg.bad { color: var(--stop-text); }
+.verdict.good, .results li.good b, .dmsg.good, .sfc-tr.ready .sfc-cond, .wl-done, .sumgrid b.good, .report .good { color: var(--go-text); }
+.path-items li.ok a { color: var(--go-text); border-color: var(--go-text); }
+.lamp { background: var(--belt); color: var(--ink); }
+.lamp.on { color: #5a3d00; }
+
+/* 章號：和首頁一樣做成銘牌 */
+.ch-no { border-radius: 3px; background: var(--plate); color: var(--plate-ink); font-family: var(--f-tech); font-size: 17px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.ch-no.side { background: var(--amber); color: #1c2228; }
+
+/* 卡片：全站一種圓角，不用浮起陰影 */
+.loading, .scene-card, .panel, .ladder-card, .plan, .wait, .guide-bar, .box, .notes, .course-cta, .task, .editor-card,
+.practice-box, .decide-a, .compare, .ticket, .method, .diag, .feat, .wl, .report, .challenge, .stage-card, .quiz-box,
+.explain-list, .cbar, .chapter, .lesson-goal, .recap, .ch-intro, .home-map a, .who a, .fx-wrap, .k-card, .kb-bench,
+.conflict, .toc { border-radius: 6px; }
+.guide-bar { box-shadow: none; border-color: var(--line); }
+.le-dlg { box-shadow: 0 0 0 1px var(--rail); }
+.kb-pi { border-radius: 4px; }
+
+/* 手機頂列：導覽排成一行，放不下時可橫滑，右緣淡出提示還有 */
+@media (max-width: 560px) {
+  .topnav { flex-wrap: nowrap; justify-content: space-between; gap: 0; overflow-x: auto;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 18px), transparent); }
+  .topnav a { padding: 6px 5px; font-size: 13.5px; flex: none; }
+  .top { padding-bottom: 12px; }
+}
+@media (min-width: 400px) and (max-width: 560px) { .topnav { -webkit-mask-image: none; mask-image: none; } }

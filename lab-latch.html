@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>自保持與互鎖實驗室：停止優先、常閉停止鈕、正反轉 | LadderLab</title>
 <meta name="description" content="FX3S 自保持與互鎖的動畫實驗室：啟動放開仍保持；停止優先與啟動優先兩種寫法同時按兩顆鈕的差別，SET／RST 的先後；停止鈕現場接常閉時程式要用 AND；馬達正反轉的輸出互鎖、按鈕互鎖，沒有互鎖時兩個輸出同時 ON 的危險。">
-<link rel="stylesheet" href="style.css?v=140b24f618">
-<link rel="stylesheet" href="labview/lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="labview/lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -26,11 +26,11 @@
   .ld text { fill: var(--ink); font: 12px ui-monospace, Consolas, monospace; }
   .ld .il { fill: var(--mute); font-size: 11px; }
   .hold { user-select: none; touch-action: none; min-width: 96px; }
-  .hold.on { background: #1e6fff; color: #fff; border-color: #1e6fff; }
+  .hold.on { background: var(--on); color: var(--card); border-color: var(--on); }
   .tl { width: 100%; height: 150px; display: block; background: #0b0f14; border-radius: 8px; margin-top: 8px; }
   .mach { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
   .motor { width: 64px; height: 64px; border-radius: 50%; border: 4px solid var(--line); display: grid; place-items: center; font: 700 22px system-ui; position: relative; }
-  .motor.f { border-color: #16a34a; } .motor.r { border-color: #1e6fff; }
+  .motor.f { border-color: #16a34a; } .motor.r { border-color: var(--on); }
   .motor.f span { animation: spin 1s linear infinite; display: inline-block; }
   .motor.r span { animation: spin 1s linear infinite reverse; display: inline-block; }
   .motor.short { border-color: #dc2626; animation: shake .15s linear infinite; }
@@ -46,7 +46,7 @@
   .mxw { overflow-x: auto; }
 </style>
 </head>
-<body>
+<body class="plc">
 <header class="top">
   <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
   <nav class="topnav"><a href="path.html">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
@@ -114,13 +114,13 @@
 <script src="config.js?v=eca98dd0d9"></script>
 <script src="common.js?v=26e7d4e9ea"></script>
 <script src="labview/lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-latch.js?v=141cb0d270"></script>
+<script src="lab-latch.js?v=85a3b99a89"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

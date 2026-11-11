@@ -215,7 +215,7 @@
   function smlog(s) { var l = $('smlog'); l.insertBefore(el('div', '', s), l.firstChild); }
   function smDraw() {
     Array.prototype.forEach.call(smd.querySelectorAll('.st'), function (d) { d.classList.toggle('on', d.dataset.s === sm.st); });
-    srBox.innerHTML = '迴圈第 <b>' + sm.i + '</b> 圈　Shift Register 裡的狀態：<span class="scalar" style="color:#2563eb">' + sm.st + '</span>' + (sm.left ? '　這個狀態還剩 ' + sm.left + ' 圈' : '') + '　門：' + (sm.door ? '<b style="color:#dc2626">開</b>' : '關');
+    srBox.innerHTML = '迴圈第 <b>' + sm.i + '</b> 圈　Shift Register 裡的狀態：<span class="scalar" style="color:var(--on)">' + sm.st + '</span>' + (sm.left ? '　這個狀態還剩 ' + sm.left + ' 圈' : '') + '　門：' + (sm.door ? '<b style="color:#dc2626">開</b>' : '關');
   }
   /* 每一圈：執行 Case[st]，回傳下一個狀態 */
   function caseRun(st) {

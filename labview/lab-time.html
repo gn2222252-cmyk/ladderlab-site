@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>時間實驗室：Tick Count、逾時判定、時間戳 | LadderLab</title>
 <meta name="description" content="LabVIEW 時間的動畫實驗室：Tick Count (ms) 是 U32，約 49.7 天繞回一次，跨過繞回點用 U32 相減照樣正確、先轉 DBL 就錯；在迴圈裡用 Shift Register 記開始時間做逾時判定，對照用 Wait 等滿會讓畫面卡住；Format Date/Time String 格式碼即時試。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
-  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .lab-stage button:disabled { opacity: .45; cursor: default; }
   .row { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
@@ -129,14 +129,14 @@
 </main>
 <footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
 <script src="lab-quiz.js?v=3c80f55f3a"></script>
-<script src="lab-time.js?v=93688eb40f"></script>
+<script src="lab-time.js?v=6a722a76fa"></script>
 <script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

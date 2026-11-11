@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>波形實驗室：Waveform、統計與移動平均 | LadderLab</title>
 <meta name="description" content="LabVIEW 波形資料的動畫實驗室：Waveform 的 t0、dt、Y 三個元素怎麼組合拆開，改 dt 時 Graph 的時間軸怎麼變；對帶雜訊的馬達電流、振動、溫度訊號即時算 Mean、標準差、RMS、最大最小與峰對峰值；移動平均讓雜訊變小但訊號變慢。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
-  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .row input[type=range] { width: 160px; max-width: 100%; }
@@ -124,7 +124,7 @@ Waveform</div>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

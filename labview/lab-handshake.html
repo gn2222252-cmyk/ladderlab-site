@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>交握實驗室：命令、回應、上升緣、逾時 | LadderLab</title>
 <meta name="description" content="PLC 與 LabVIEW 上位機交握的動畫實驗室：D106 脈衝命令怎麼算送達、寫太快與 PLC 沒清的後果；13_PLC 檢測交握的 b0、D510、D511 時序與上升緣；D240 心跳兩邊互相看門狗，斷線時誰先發現、各自進哪個安全狀態。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
-  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .lab-stage button:disabled { opacity: .45; cursor: default; }
@@ -45,9 +45,9 @@
   .led.err { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
   .pk { display: inline-flex; flex-direction: column; align-items: flex-start; max-width: 100%; border-radius: 6px; padding: 2px 8px; font: 700 13px ui-monospace, Consolas, monospace; background: #dbeafe; border: 2px solid #1f6feb; color: #111; line-height: 1.25; overflow-wrap: anywhere; }
   .pk small { font-size: 11px; font-weight: 400; }
-  .pk.rd { background: #fef3c7; border-color: #b45309; }
-  .pk.bad { background: #fecaca; border-color: #dc2626; }
-  .pk.lost { background: #e5e7eb; border-color: #9ca3af; text-decoration: line-through; opacity: .65; }
+  .pk.rd { background: #fef3c7; border-color: #b45309; color: #18212a; }
+  .pk.bad { background: #fecaca; border-color: #dc2626; color: #18212a; }
+  .pk.lost { background: #e5e7eb; border-color: #9ca3af; text-decoration: line-through; opacity: .65; color: #18212a; }
   .pks { display: flex; flex-wrap: wrap; gap: 4px; min-height: 26px; align-items: flex-start; }
   .mfly { position: absolute; z-index: 5; pointer-events: none; box-shadow: 0 4px 14px rgba(0, 0, 0, .25); white-space: nowrap; max-width: none; }
 
@@ -182,7 +182,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

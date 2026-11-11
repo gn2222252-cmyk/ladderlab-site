@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E5 延時啟動｜PLC 練習題（自動評分）</title>
@@ -11,7 +11,7 @@
 <meta property="og:description" content="開關 X0 打開後 3 秒，Y0 才亮（例如：送風機先轉 3 秒，再點火）。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://gn2222252-cmyk.github.io/ladderlab-site/practice/E5.html">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
 
 </head>
 <body class="static">
@@ -37,7 +37,7 @@ X0 關掉時 Y0 立刻熄，下次打開重新計時。</div>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

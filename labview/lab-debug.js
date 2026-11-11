@@ -59,12 +59,12 @@
     { name: '④ Case 少了 Default', bad: function () {
         return nd('e-', 's', 20, 90, 60, 28, 'ter', '步序') + '<g class="nd" id="e-case" data-n="case"><rect x="150" y="30" width="300" height="150" fill="none" stroke="#6b6b6b" stroke-width="6"/></g>' +
           '<rect x="255" y="20" width="90" height="22" fill="#ececec" stroke="#6b6b6b"/><text x="300" y="36" text-anchor="middle" style="fill:#222">1 ▾</text>' +
-          '<rect x="142" y="94" width="16" height="20" fill="#fff" stroke="#1e5bd7" stroke-width="2"/><text x="150" y="109" text-anchor="middle" style="font-size:12px">?</text>' + wire('M80 104 H142', 'i32') +
+          '<rect x="142" y="94" width="16" height="20" style="fill:var(--card)" stroke="#1e5bd7" stroke-width="2"/><text x="150" y="109" text-anchor="middle" style="font-size:12px">?</text>' + wire('M80 104 H142', 'i32') +
           '<text x="300" y="100" text-anchor="middle">這個 Case 只有 0、1 兩頁</text><text x="300" y="124" text-anchor="middle" style="font-size:12px">（步序可能是 2、3、−1…）</text>';
       }, good: function () {
         return nd('e-', 's', 20, 90, 60, 28, 'ter', '步序') + '<g class="nd" id="e-case" data-n="case"><rect x="150" y="30" width="300" height="150" fill="none" stroke="#6b6b6b" stroke-width="6"/></g>' +
           '<rect x="240" y="20" width="120" height="22" fill="#ececec" stroke="#6b6b6b"/><text x="300" y="36" text-anchor="middle" style="fill:#222">1, Default ▾</text>' +
-          '<rect x="142" y="94" width="16" height="20" fill="#fff" stroke="#1e5bd7" stroke-width="2"/><text x="150" y="109" text-anchor="middle" style="font-size:12px">?</text>' + wire('M80 104 H142', 'i32') +
+          '<rect x="142" y="94" width="16" height="20" style="fill:var(--card)" stroke="#1e5bd7" stroke-width="2"/><text x="150" y="109" text-anchor="middle" style="font-size:12px">?</text>' + wire('M80 104 H142', 'i32') +
           '<text x="300" y="100" text-anchor="middle">頁：0、1、Default</text><text x="300" y="124" text-anchor="middle" style="font-size:12px">（沒對到的值都走 Default）</text>';
       },
       errs: [{ n: 'case', msg: 'Case 結構：選擇器的值沒有全部處理到', why: '整數選擇器可能是任何整數，只列 0、1 兩頁不夠。加一頁 Default（例如把其中一頁設成 Default，或新增一頁）。' }],

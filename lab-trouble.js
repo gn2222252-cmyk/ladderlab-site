@@ -228,8 +228,8 @@
   function findingHTML(k, sc, o) {
     var lb = function (d) { return label(sc, d); };
     if (k === 'run') return o.run === 'RUN' ? 'RUN／STOP 開關在 <b>RUN</b>。' : 'RUN／STOP 開關在 <b>STOP</b>：程式不執行，輸出全部 OFF。';
-    if (k === 'in') return '按著的狀態下：' + ledHTML(o.X, lb);
-    if (k === 'out') return ledHTML(o.out, lb, true);
+    if (k === 'in') return '按著的狀態下：' + ledHTML(o.X, lb) + '<small class="why">IN 燈由輸入端驅動光耦合器，與 RUN／STOP 無關。</small>';
+    if (k === 'out') return ledHTML(o.out, lb, true) + '<small class="why">OUT 燈亮只代表 PLC 內部在驅動輸出（電晶體輸出是光耦合器、繼電器輸出是繼電器線圈），輸出端是否真的導通，要先 STOP、用周邊裝置強制輸出 ON／OFF，再量測外部接線（FX3S 硬體手冊 §14.7.1）。</small>';
     if (k === 'mon') {
       if (o.run === 'STOP') return 'GX Works2 顯示 PLC 是 STOP，程式沒有在執行。';
       return o.rungs.map(function (r) { return '<div class="rung">' + r.parts.map(function (p) { return p.coil ? '<span class="cl' + (p.on ? ' on' : '') + '">( ' + p.coil + ' )</span>' : '<span class="ct' + (p.pass ? ' on' : '') + '">' + (/I$/.test(p.op) ? '┤/' : '┤') + p.d + '├</span>'; }).join('<span>─</span>') + '</div>'; }).join('') + '<small class="why">綠色＝這個接點現在導通；黃色＝線圈 ON。</small>';
@@ -251,7 +251,7 @@
     return o;
   }
   var WHY = {
-    stop: 'RUN／STOP 開關在 STOP：程式不執行、輸出全部 OFF，IN 燈照樣會亮。這是一秒就能排除的項目，所以永遠第一個看。',
+    stop: 'RUN／STOP 開關在 STOP：程式不執行、輸出全部 OFF，IN 燈照樣會亮（IN 燈由輸入端驅動光耦合器，與 RUN／STOP 無關）。這是一秒就能排除的項目，所以永遠第一個看。',
     ss: '每一個 X 燈都不亮，連平常就該亮的急停（常閉）也不亮：不是某一路線斷，而是全部輸入的共點 S/S 沒接（漏型接法 S/S 要接 24V）。',
     logic: 'X 燈都正常、PLC 在 RUN，Y 燈卻不亮：電已經進來了，是程式條件不成立。監看就看得到是哪一個接點擋住。',
     com: 'OUT 燈亮、負載兩端 0V，而且同一個 COM4 的另一個輸出（Y5）也一起不動、負載電源有 24V：COM4 沒接（漏型電晶體輸出 COM 要接 0V）。FX3S-20MT/ES 的 Y0～Y3 各有自己的 COM，Y4～Y7 共用 COM4，所以 COM4 一掉，Y4～Y7 全部不動。',
@@ -259,7 +259,7 @@
     wire_in: '該亮的 X 燈不亮，但其他輸入正常、PLC 在 RUN：訊號沒進到這一點，是這一路的按鈕接點或線（用這些檢查分不出是按鈕還是線），跟程式無關。',
     sensor_bad: '感測器自己的燈也不亮，量感測器電源有 24V：感測器有電卻偵測不到，感測器壞了（或位置、感測距離不對）。',
     sensor_pwr: '感測器自己的燈不亮，量棕－藍是 0V：感測器沒有電，是電源線的問題。',
-    out_burn: 'OUT 燈亮、負載兩端 0V，但同一個 COM 的另一個輸出（Y5）正常：COM 和負載電源都沒問題，是這一點輸出沒有導通。',
+    out_burn: 'OUT 燈亮、負載兩端 0V，但同一個 COM 的另一個輸出（Y5）正常：COM 和負載電源都沒問題，是這一點輸出沒有導通。OUT 燈亮只代表 PLC 內部在驅動輸出（光耦合器／繼電器線圈），不代表輸出端真的導通，所以輸出元件壞了燈仍可能亮；要確認就先 STOP、用周邊裝置強制輸出 ON／OFF，再量測外部接線（FX3S 硬體手冊 §14.7.1）。',
     load_bad: 'OUT 燈亮、負載兩端也量得到 24V，東西卻不動：PLC 和配線都送到了，問題在負載本身（線圈、馬達、機構）。'
   };
   function submit() {

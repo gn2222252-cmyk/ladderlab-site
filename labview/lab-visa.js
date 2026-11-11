@@ -121,7 +121,7 @@
     // 位元格子
     f.forEach(function (x, i) {
       var a = X(t0 + i * Ts), b = X(t0 + (i + 1) * Ts), on = i === A.bit;
-      var col = x.lab === '起' ? 'rgba(220,38,38,.10)' : x.lab === 'P' ? 'rgba(124,58,237,.12)' : x.lab === '停' ? 'rgba(22,163,74,.12)' : 'rgba(30,111,255,.07)';
+      var col = x.lab === '起' ? 'rgba(220,38,38,.10)' : x.lab === 'P' ? 'rgba(124,58,237,.12)' : x.lab === '停' ? 'rgba(22,163,74,.12)' : 'color-mix(in srgb, var(--on) 7%, transparent)';
       g += '<rect x="' + a + '" y="30" width="' + (b - a) + '" height="100" fill="' + (on ? 'rgba(245,158,11,.35)' : col) + '" stroke="#9ca3af" stroke-width=".5"/>';
       g += '<text x="' + (a + b) / 2 + '" y="22" text-anchor="middle">' + x.lab + '</text>';
       g += '<text x="' + (a + b) / 2 + '" y="148" text-anchor="middle" class="mu">' + (i <= A.bit || A.bit < 0 ? x.b : '') + '</text>';
@@ -131,7 +131,7 @@
     pts.push([X(ws), HI]);
     for (var i = 0; i < lim; i++) { var a = X(t0 + i * Ts), b = X(t0 + (i + 1) * Ts), yy = y(f[i].b); pts.push([a, pts[pts.length - 1][1]]); pts.push([a, yy]); pts.push([b, yy]); }
     if (lim === nb) pts.push([X(we), HI]);
-    g += '<polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1]; }).join(' ') + '" fill="none" stroke="#1e6fff" stroke-width="3"/>';
+    g += '<polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1]; }).join(' ') + '" fill="none" style="stroke:var(--on)" stroke-width="3"/>';
     g += '<text x="2" y="' + (HI + 4) + '" class="mu">1</text><text x="2" y="' + (LO + 4) + '" class="mu">0</text>';
     // 接收端取樣點
     if (A.bit < 0) R.rx.forEach(function (x) { x.smp.forEach(function (p) { if (p.t >= ws && p.t <= we) g += '<circle cx="' + X(p.t).toFixed(1) + '" cy="' + y(p.b) + '" r="5" fill="' + (p.bad ? '#dc2626' : '#16a34a') + '" stroke="#fff" stroke-width="1.5"><title>接收端取樣 ' + p.lab + ' = ' + p.b + '</title></circle>'; }); });

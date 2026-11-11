@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>氣壓乙級、工業配線乙級 PLC 術科練習：線上模擬與自動評分 | LadderLab</title>
 <meta name="description" content="技術士技能檢定氣壓乙級（08000）、工業配線乙級（01300）PLC 試題的程式練習：手動步進、單一循環、連續循環、急停、復歸、停電，在瀏覽器的三支氣壓缸模擬上自動評分。">
-<link rel="stylesheet" href="style.css?v=140b24f618">
+<link rel="stylesheet" href="style.css?v=2cdca2fdbd">
 </head>
 <body class="static">
 <header class="top">
@@ -170,7 +170,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

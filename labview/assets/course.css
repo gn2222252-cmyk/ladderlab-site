@@ -167,3 +167,82 @@ li{margin:3px 0}
 #side .part{text-transform:none;letter-spacing:.02em;font-weight:700;color:#9aa8b8}
 :focus-visible{outline:3px solid #e8a200;outline-offset:2px;border-radius:4px}
 h1,h2,h3{letter-spacing:-.01em}
+
+/* 第20輪 */
+/* 頂端橫幅 */
+.ll-banner{background:var(--paper);border-bottom:1px solid var(--line);padding:8px 14px;font-size:14px;line-height:1.6}
+.ll-banner a.home{font-weight:700;text-decoration:none;color:var(--accent)}
+.ll-banner .fine{margin-left:10px;color:var(--mute)}
+/* 舊色對齊新設計：白字標籤都要 4.5:1 */
+:root{--accent2:#17803f;--pri:#0a57a4}
+h3 .tag{background:#0a57a4} h3 .tag.b{background:#17803f} h3 .tag.q{background:#b45309} h3 .tag.r{background:#6d28d9} h3 .tag.x{background:#be185d}
+#side a.ls .no{color:#a9b6c6}
+#side a.ls.on{background:#26364f;border-left-color:#e8a200}
+#side .prog i,.todo li.ok:before{background:#17803f;border-color:#17803f}
+.btn.pri{background:var(--pri);border-color:var(--pri)}
+.goal>div,.fig,.quiz,.donebar,.stepper{border-radius:6px}
+.exam .exbar{box-shadow:none}
+.donebar,.exam .exbar{background:var(--paper)}
+.todo li:before{background:var(--paper)}
+
+/* 深色模式：課文、側欄、卡片跟著全站變暗；VI 視窗與圖仍是亮底，像貼在面板上的圖紙 */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15191d;--paper:#1d2329;--ink:#e8ebe7;--mute:#9ba5ae;--line:#333c45;
+  --accent:#6aa7ea;--accent2:#1b7f48;--warn:#f0a060;--bad:#ff8a85;--hl:#4a3f10;
+  --side:#0d1013;--code:#262d35;--pri:#1d5fa8}}
+:root[data-theme="dark"]{
+  --bg:#15191d;--paper:#1d2329;--ink:#e8ebe7;--mute:#9ba5ae;--line:#333c45;
+  --accent:#6aa7ea;--accent2:#1b7f48;--warn:#f0a060;--bad:#ff8a85;--hl:#4a3f10;
+  --side:#0d1013;--code:#262d35;--pri:#1d5fa8}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) kbd{background:var(--code);border-color:#4a535d;color:var(--ink)}
+  :root:not([data-theme="light"]) .note{background:#17283d;border-color:#2c4a6e}
+  :root:not([data-theme="light"]) .tip{background:#14291d;border-color:#265238}
+  :root:not([data-theme="light"]) .warn{background:#2e2014;border-color:#6a4422}
+  :root:not([data-theme="light"]) .why{background:#241b36;border-color:#4a3a6e}
+  :root:not([data-theme="light"]) table.t th,:root:not([data-theme="light"]) .t.xls th{background:var(--code)}
+  :root:not([data-theme="light"]) .stepper .bar{background:#232a31}
+  :root:not([data-theme="light"]) .stepper .dots i{background:#333c45;color:#c9d0cf}
+  :root:not([data-theme="light"]) .stepper .dots i.on{background:#1d5fa8;color:#fff}
+  :root:not([data-theme="light"]) .stepper .dots i.seen{background:#2f4f78;color:#fff}
+  :root:not([data-theme="light"]) .quiz label.right{background:#14291d;border-color:#3cc77a}
+  :root:not([data-theme="light"]) .quiz label.wrong{background:#35191a;border-color:#f0605d}
+  :root:not([data-theme="light"]) .quiz .ex,:root:not([data-theme="light"]) .exam .topicbar{background:var(--code)}
+  :root:not([data-theme="light"]) .exam .clock{color:#f0a060}
+  :root:not([data-theme="light"]) .ws,:root:not([data-theme="light"]) .t .sp{color:#f0a060}
+  :root:not([data-theme="light"]) .fig,:root:not([data-theme="light"]) .stepper .stage,:root:not([data-theme="light"]) .quiz .qfig{background:#f4f5f2;color:#18212a}
+  :root:not([data-theme="light"]) .fig .cap{color:#56606b}
+  :root:not([data-theme="light"]) .quiz .qfig pre{background:#e9ecef;color:#18212a}
+  :root:not([data-theme="light"]) .lvwin,:root:not([data-theme="light"]) .frame span,:root:not([data-theme="light"]) .ssout,
+  :root:not([data-theme="light"]) .fmtres,:root:not([data-theme="light"]) .fmtanat,:root:not([data-theme="light"]) .fmtkey span,
+  :root:not([data-theme="light"]) .q15 tr.hot td,:root:not([data-theme="light"]) .q15 tr.hot th,
+  :root:not([data-theme="light"]) .q18 tr.hot td,:root:not([data-theme="light"]) .q18 tr.hot th{color:#18212a}
+  :root:not([data-theme="light"]) .frame span small{color:#56606b}
+  :root:not([data-theme="light"]) .pal{background:#2e2a14;border-color:#6b5d20;color:#f3e7b0}
+  :root:not([data-theme="light"]) .pal span+span:before{color:#c8b46a}
+}
+  :root[data-theme="dark"] kbd{background:var(--code);border-color:#4a535d;color:var(--ink)}
+  :root[data-theme="dark"] .note{background:#17283d;border-color:#2c4a6e}
+  :root[data-theme="dark"] .tip{background:#14291d;border-color:#265238}
+  :root[data-theme="dark"] .warn{background:#2e2014;border-color:#6a4422}
+  :root[data-theme="dark"] .why{background:#241b36;border-color:#4a3a6e}
+  :root[data-theme="dark"] table.t th,:root[data-theme="dark"] .t.xls th{background:var(--code)}
+  :root[data-theme="dark"] .stepper .bar{background:#232a31}
+  :root[data-theme="dark"] .stepper .dots i{background:#333c45;color:#c9d0cf}
+  :root[data-theme="dark"] .stepper .dots i.on{background:#1d5fa8;color:#fff}
+  :root[data-theme="dark"] .stepper .dots i.seen{background:#2f4f78;color:#fff}
+  :root[data-theme="dark"] .quiz label.right{background:#14291d;border-color:#3cc77a}
+  :root[data-theme="dark"] .quiz label.wrong{background:#35191a;border-color:#f0605d}
+  :root[data-theme="dark"] .quiz .ex,:root[data-theme="dark"] .exam .topicbar{background:var(--code)}
+  :root[data-theme="dark"] .exam .clock{color:#f0a060}
+  :root[data-theme="dark"] .ws,:root[data-theme="dark"] .t .sp{color:#f0a060}
+  :root[data-theme="dark"] .fig,:root[data-theme="dark"] .stepper .stage,:root[data-theme="dark"] .quiz .qfig{background:#f4f5f2;color:#18212a}
+  :root[data-theme="dark"] .fig .cap{color:#56606b}
+  :root[data-theme="dark"] .quiz .qfig pre{background:#e9ecef;color:#18212a}
+  :root[data-theme="dark"] .lvwin,:root[data-theme="dark"] .frame span,:root[data-theme="dark"] .ssout,
+  :root[data-theme="dark"] .fmtres,:root[data-theme="dark"] .fmtanat,:root[data-theme="dark"] .fmtkey span,
+  :root[data-theme="dark"] .q15 tr.hot td,:root[data-theme="dark"] .q15 tr.hot th,
+  :root[data-theme="dark"] .q18 tr.hot td,:root[data-theme="dark"] .q18 tr.hot th{color:#18212a}
+  :root[data-theme="dark"] .frame span small{color:#56606b}
+  :root[data-theme="dark"] .pal{background:#2e2a14;border-color:#6b5d20;color:#f3e7b0}
+  :root[data-theme="dark"] .pal span+span:before{color:#c8b46a}

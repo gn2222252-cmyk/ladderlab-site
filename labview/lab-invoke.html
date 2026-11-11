@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>方法節點實驗室：Invoke Node 與 VI Server | LadderLab</title>
 <meta name="description" content="LabVIEW Invoke Node 的動畫實驗室：Property（讀寫特性）和 Invoke（叫它做事）的差別，Reinitialize To Default、Get Image、Export Image；VI Server 類別階層與參考的型別；This VI 加 Controls[] 用 For Loop 一次改整個前面板；Open VI Reference、Control Value Set／Get、Run VI、Variant To Data、Close Reference。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
-  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .lab-stage button:disabled { opacity: .45; cursor: default; }
   .row { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
@@ -25,22 +25,22 @@
   .ctl.dis { opacity: .45; filter: grayscale(1); }
   .ctl.hl { box-shadow: 0 0 0 3px #f59e0b; background: rgba(245, 158, 11, .2); }
   .ctl.act { animation: act .7s; }
-  @keyframes act { 0% { transform: scale(1); } 30% { transform: scale(1.08); box-shadow: 0 0 0 4px #1e6fff; } 100% { transform: scale(1); } }
+  @keyframes act { 0% { transform: scale(1); } 30% { transform: scale(1.08); box-shadow: 0 0 0 4px var(--on); } 100% { transform: scale(1); } }
   .ctl.snap::after { content: "📷"; position: absolute; right: -6px; top: -10px; font-size: 18px; animation: pop .8s forwards; }
   @keyframes pop { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-14px); } }
-  .nbox { border: 2px solid #6b7280; border-radius: 4px; background: #fff; min-width: 90px; padding: 4px 8px; font: 600 15px ui-monospace, Consolas, monospace; text-align: right; }
-  .nbox.ind { background: #e5e7eb; }
+  .nbox { border: 2px solid #6b7280; border-radius: 4px; background: #fff; min-width: 90px; padding: 4px 8px; font: 600 15px ui-monospace, Consolas, monospace; text-align: right; color: #18212a; }
+  .nbox.ind { background: #e5e7eb; color: #18212a; }
   .swf { width: 46px; height: 24px; border-radius: 12px; background: #9ca3af; position: relative; border: 2px solid #4b5563; }
-  .swf::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .25s; }
+  .swf::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .25s; color: #18212a; }
   .swf.on { background: #22c55e; } .swf.on::after { left: 24px; }
-  .strf { border: 2px solid #6b7280; border-radius: 4px; background: #fff; padding: 4px 8px; min-width: 120px; min-height: 30px; font: 14px system-ui, sans-serif; }
+  .strf { border: 2px solid #6b7280; border-radius: 4px; background: #fff; padding: 4px 8px; min-width: 120px; min-height: 30px; font: 14px system-ui, sans-serif; color: #18212a; }
   .btnf { border: 2px solid #4b5563; border-radius: 6px; background: linear-gradient(#f3f4f6, #cbd5e1); color: #111; padding: 6px 10px; font: 600 13px system-ui, sans-serif; min-width: 70px; text-align: center; }
   .chart { width: 220px; max-width: 100%; height: 90px; background: #111827; border: 2px solid #6b7280; border-radius: 4px; display: block; }
   .node { display: inline-grid; border: 2px solid #c58b00; border-radius: 4px; background: #fff7d6; color: #3b2f00; font: 12px ui-monospace, Consolas, monospace; min-width: 180px; max-width: 100%; }
-  .node .nh { background: #f2d67a; padding: 3px 8px; font-weight: 700; }
+  .node .nh { background: #f2d67a; padding: 3px 8px; font-weight: 700; color: #18212a; }
   .node .nr { padding: 3px 8px; border-top: 1px solid #e2c46a; overflow-wrap: anywhere; }
   .node.inv { border-color: #7c3aed; background: #f3e8ff; color: #3b0764; }
-  .node.inv .nh { background: #d8b4fe; }
+  .node.inv .nh { background: #d8b4fe; color: #18212a; }
   .node.inv .nr { border-color: #c4b5fd; }
   .node.go { box-shadow: 0 0 0 4px rgba(245, 158, 11, .5); }
   .refw { display: inline-block; width: 40px; height: 4px; background: #2f6f4f; vertical-align: middle; position: relative; overflow: hidden; }
@@ -51,7 +51,7 @@
   .tree > ul { padding-left: 0; border: 0; }
   .tree button { border: 1px solid var(--line); border-radius: 6px; background: var(--card); padding: 3px 8px; margin: 2px 0; cursor: pointer; font: 13px ui-monospace, Consolas, monospace; color: inherit; }
   .tree button.path { background: #fde68a; border-color: #a16207; color: #111; }
-  .tree button.sel { background: #1e6fff; border-color: #1e6fff; color: #fff; }
+  .tree button.sel { background: var(--on); border-color: var(--on); color: var(--card); }
   .tree .tg { cursor: pointer; display: inline-block; width: 16px; color: var(--mute); user-select: none; }
   .feat { font-size: 13px; }
   .feat li { margin: 3px 0; }
@@ -160,7 +160,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SubVI 實驗室：接線端、必要輸入、可重入 | LadderLab</title>
 <meta name="description" content="LabVIEW SubVI 的動畫實驗室：自己把控制元件指定到 Connector Pane 的格子上，看圖示長出接腳並檢查配置慣例；Required、Recommended、Optional 沒接線時會怎樣；兩個平行迴圈呼叫同一個 SubVI，不可重入要排隊、Preallocated clone 各自執行，計數器的差別。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
-  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .lab-stage button:disabled { opacity: .45; cursor: default; }
   .row { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; max-width: 100%; min-width: 0; }
@@ -55,7 +55,7 @@
   .gtrack { position: relative; height: 30px; background: rgba(128, 128, 128, .08); border-radius: 4px; overflow: hidden; }
   .gbar { position: absolute; top: 0; bottom: 0; border-radius: 4px; font: 12px ui-monospace, Consolas, monospace; color: #0b1b3a; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
   .gbar.run { background: #60a5fa; border: 1px solid #1e40af; }
-  .gbar.run.b { background: #fbbf24; border-color: #92400e; }
+  .gbar.run.b { background: #fbbf24; border-color: #92400e; color: #18212a; }
   .gbar.wait { background: repeating-linear-gradient(45deg, rgba(220, 38, 38, .25) 0 6px, transparent 6px 12px); border: 1px dashed #dc2626; color: #991b1b; }
   .gcur { position: absolute; top: 0; bottom: 0; width: 2px; background: #dc2626; }
   .mem { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0; }
@@ -139,7 +139,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

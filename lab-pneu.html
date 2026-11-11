@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>氣壓缸實驗室：電磁閥與位移－時間圖 | LadderLab</title>
 <meta name="description" content="氣壓缸與電磁閥的動畫實驗室：單線圈、5/2 雙線圈、5/3 中位封閉／加壓／排氣型在同一個操作與急停下怎麼動；輸入動作順序自動畫位移－時間圖並跑 STL 步序；感測器一直 OFF 時卡在哪一步。">
-<link rel="stylesheet" href="style.css?v=140b24f618">
-<link rel="stylesheet" href="labview/lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="labview/lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -40,7 +40,7 @@
   .pn-mark.dead i { background: #4b5563; outline: 2px solid #dc2626; }
   .coils { display: inline-flex; gap: 6px; font: 12px ui-monospace, Consolas, monospace; }
   .coil { border: 2px solid var(--line); border-radius: 5px; padding: 0 5px; }
-  .coil.on { border-color: #1e6fff; background: rgba(30, 111, 255, .2); font-weight: 700; }
+  .coil.on { border-color: var(--on); background: var(--onbg); font-weight: 700; }
 
   .pn-two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; align-items: start; }
   @media (max-width: 760px) { .pn-two { grid-template-columns: minmax(0, 1fr); } }
@@ -57,7 +57,7 @@
   .err { color: #dc2626; font-weight: 700; }
 </style>
 </head>
-<body>
+<body class="plc">
 <header class="top">
   <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
   <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
@@ -171,7 +171,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

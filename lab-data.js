@@ -143,9 +143,9 @@
     $('zsv').textContent = v;
     var X = function (t) { return 20 + Math.max(0, Math.min(100, t)) * 3.8; }, h = '';
     h += '<line x1="20" y1="40" x2="400" y2="40" stroke="var(--mute)" stroke-width="2"/>';
-    h += '<rect x="20" y="30" width="' + (X(lo) - 20) + '" height="20" fill="rgba(59,130,246,.15)"/><rect x="' + X(lo) + '" y="30" width="' + (X(hi) - X(lo)) + '" height="20" fill="rgba(34,197,94,.25)"/><rect x="' + X(hi) + '" y="30" width="' + (400 - X(hi)) + '" height="20" fill="rgba(239,68,68,.15)"/>';
+    h += '<rect x="20" y="30" width="' + (X(lo) - 20) + '" height="20" style="fill:var(--onbg)"/><rect x="' + X(lo) + '" y="30" width="' + (X(hi) - X(lo)) + '" height="20" fill="rgba(34,197,94,.25)"/><rect x="' + X(hi) + '" y="30" width="' + (400 - X(hi)) + '" height="20" fill="rgba(239,68,68,.15)"/>';
     [0, 25, 50, 75, 100].forEach(function (t) { h += '<line x1="' + X(t) + '" y1="44" x2="' + X(t) + '" y2="50" stroke="var(--mute)"/><text x="' + X(t) + '" y="64" text-anchor="middle">' + t + '</text>'; });
-    h += '<text x="' + X(lo) + '" y="24" text-anchor="middle" style="fill:#2563eb">下限 ' + lo + '</text><text x="' + X(hi) + '" y="24" text-anchor="middle" style="fill:#dc2626">上限 ' + hi + '</text>';
+    h += '<text x="' + X(lo) + '" y="24" text-anchor="middle" style="fill:var(--on)">下限 ' + lo + '</text><text x="' + X(hi) + '" y="24" text-anchor="middle" style="fill:#dc2626">上限 ' + hi + '</text>';
     h += '<path d="M' + X(v) + ' 52 l-7 12 h14 z" fill="#f59e0b" stroke="#92400e"/><text x="' + X(v) + '" y="78" text-anchor="middle" style="font-weight:700">' + v + '</text>';
     $('zline').innerHTML = h;
     $('zm').innerHTML = lamp('', Z[0], 'M20　低於下限') + lamp('', Z[1], 'M21　下限～上限（含兩端）') + lamp('', Z[2], 'M22　高於上限');

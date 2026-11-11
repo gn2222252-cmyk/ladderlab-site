@@ -97,7 +97,7 @@
       g.stroke();
     });
     hist.filter((p) => "read" in p).forEach((p) => {
-      g.fillStyle = p.read ? "#1e6fff" : "rgba(128,128,128,.45)";
+      g.fillStyle = p.read ? (getComputedStyle(document.documentElement).getPropertyValue("--on").trim() || "#0a57a4") : "rgba(128,128,128,.45)";
       g.beginPath(); g.arc(x(p.t), 150, p.read ? 6 : 3, 0, 7); g.fill();
     });
     g.fillStyle = "rgba(128,128,128,.6)"; g.font = "11px sans-serif";

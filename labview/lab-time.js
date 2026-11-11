@@ -57,7 +57,7 @@
     for (var i = 0; i <= steps; i++) { var p = pt((r.start + W.e * i / steps) % WRAP); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }
     if (W.e > 0) s += '<path d="' + d + '" fill="none" stroke="#f59e0b" stroke-width="10" stroke-linecap="round"/>';
     var ps = pt(r.start), pn = pt(r.now);
-    s += '<circle cx="' + ps[0] + '" cy="' + ps[1] + '" r="8" fill="#1e5bd7"/><circle cx="' + pn[0] + '" cy="' + pn[1] + '" r="8" fill="#e8820c" stroke="#7c2d12" stroke-width="2"/>';
+    s += '<circle cx="' + ps[0] + '" cy="' + ps[1] + '" r="8" style="fill:var(--on)"/><circle cx="' + pn[0] + '" cy="' + pn[1] + '" r="8" fill="#e8820c" stroke="#7c2d12" stroke-width="2"/>';
     s += '<text x="' + cx + '" y="' + (cy - 6) + '" text-anchor="middle">藍＝開始</text><text x="' + cx + '" y="' + (cy + 12) + '" text-anchor="middle">橘＝現在</text>';
     s += '<text x="' + cx + '" y="' + (cy + 34) + '" text-anchor="middle" style="font-size:11px;fill:var(--mute)">只畫繞回點前後 15 秒</text>';
     $('wdial').innerHTML = s;

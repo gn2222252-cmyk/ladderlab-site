@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>掃描週期實驗室：輸入、程式、輸出一圈一圈看 | LadderLab</title>
 <meta name="description" content="PLC 掃描週期的動畫實驗室：輸入刷新、由上往下執行、輸出刷新一步一步播放；慢一圈、雙線圈在映像表裡怎麼發生；按鈕太短為什麼會被漏掉；看門狗 D8000。">
-<link rel="stylesheet" href="style.css?v=140b24f618">
-<link rel="stylesheet" href="labview/lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="labview/lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
@@ -41,7 +41,7 @@
   .scbit.on { border-color: #16a34a; background: rgba(22, 163, 74, .18); }
   .scbit.diff { outline: 3px dashed #f59e0b; outline-offset: 1px; }
   .scbit.flash { animation: flash .5s ease-out; }
-  @keyframes flash { from { box-shadow: 0 0 0 6px rgba(30, 111, 255, .45); } }
+  @keyframes flash { from { box-shadow: 0 0 0 6px var(--onbg); } }
   button.btnx { min-width: 92px; }
   button.btnx.on { background: #16a34a; border-color: #14532d; color: #fff; font-weight: 700; }
   .lamp2 { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-width: 56px; font-size: 12px; }
@@ -76,14 +76,14 @@
   .chartbox svg { display: block; color: var(--ink); }
   .chartbox svg text { fill: currentColor; font: 11px ui-monospace, Consolas, monospace; }
   .wdbar { position: relative; height: 26px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin: 8px 0; background: var(--bg); }
-  .wdbar .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #1e6fff; opacity: .6; }
+  .wdbar .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--on); opacity: .6; }
   .wdbar .fill.bad { background: #dc2626; }
   .wdbar .lim { position: absolute; top: 0; bottom: 0; width: 3px; background: #dc2626; }
   .wdbar .lbl { position: absolute; top: 3px; font: 12px ui-monospace, Consolas, monospace; }
   @media (prefers-reduced-motion: reduce) { .mfly { display: none; } .scbit.flash { animation: none; } }
 </style>
 </head>
-<body>
+<body class="plc">
 <header class="top">
   <a class="brand" href="index.html">LadderLab <span>梯圖實驗室</span></a>
   <nav class="topnav"><a href="path.html" class="here">課程</a><a href="practice.html">練習題</a><a href="sim.html">模擬器</a><a href="exam.html">技能檢定</a><a href="check.html">程式健檢</a><a href="ref/index.html">指令手冊</a></nav>
@@ -209,7 +209,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

@@ -1,23 +1,23 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="cabc461d6f">
+<meta name="ll-version" content="1cf5bb246f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Formula Node 實驗室：把公式寫成文字 | LadderLab</title>
 <meta name="description" content="LabVIEW Formula Node 的動畫實驗室：同一個公式用圖形節點拉線和寫在 Formula Node 裡並排對照（脈波換算位置、溫度補償、量測判定、梯形速度）；語法檢查器提示少分號、變數沒宣告、大小寫不一致；整數相除、Quotient & Remainder 與取餘數。">
-<link rel="stylesheet" href="../style.css?v=140b24f618">
-<link rel="stylesheet" href="lab.css?v=db8fcf7252">
+<link rel="stylesheet" href="../style.css?v=2cdca2fdbd">
+<link rel="stylesheet" href="lab.css?v=5af91f3571">
 <style>
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
   .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
-  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .tabs button.here { background: var(--on); color: var(--card); border-color: var(--on); }
   .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
   .two { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px; align-items: start; }
   @media (max-width: 860px) { .two { grid-template-columns: minmax(0, 1fr); } }
   .panel { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
   .panel h3 { margin: 0 0 6px; font-size: 15px; }
-  .bdw { overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #d1d5db; }
+  .bdw { overflow-x: auto; background: #fff; border-radius: 8px; border: 1px solid #d1d5db; color: #18212a; }
   .bdw svg { display: block; min-width: 520px; width: 100%; height: auto; font-family: ui-monospace, Consolas, monospace; }
   .bdw .nd rect, .bdw .nd circle { fill: #fff7d6; stroke: #c58b00; stroke-width: 1.5; transition: fill .25s; }
   .bdw .nd text { fill: #3b2f00; font-size: 12px; font-weight: 700; }
@@ -57,7 +57,7 @@
   .runarrow.broken { color: #9ca3af; text-decoration: line-through; }
   .kv { font: 14px ui-monospace, Consolas, monospace; }
   .dots { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; min-height: 40px; }
-  .grp { display: flex; flex-wrap: wrap; gap: 3px; border: 2px solid #1e5bd7; border-radius: 6px; padding: 4px; max-width: 120px; }
+  .grp { display: flex; flex-wrap: wrap; gap: 3px; border: 2px solid var(--on); border-radius: 6px; padding: 4px; max-width: 120px; }
   .grp.rest { border-color: #dc2626; border-style: dashed; }
   .dot { width: 14px; height: 14px; border-radius: 50%; background: #e8820c; transition: transform .25s, opacity .25s; }
   .dot.pending { opacity: .25; transform: scale(.6); }
@@ -145,7 +145,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "cabc461d6f" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1cf5bb246f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

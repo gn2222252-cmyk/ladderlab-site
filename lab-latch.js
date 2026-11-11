@@ -152,13 +152,14 @@
     stop: { name: '自保持，停止優先（課程第 4 課）', il: 'LD X000\nOR Y000\nANI X001\nOUT Y000', both: false },
     start: { name: '自保持，啟動優先（啟動並聯在最外面）', il: 'LDI X001\nAND Y000\nOR X000\nOUT Y000', both: true },
     setrst: { name: 'SET／RST，RST 寫在後面', il: 'LD X000\nSET Y000\nLD X001\nRST Y000', both: false },
-    rstset: { name: 'SET／RST，SET 寫在後面', il: 'LD X001\nRST Y000\nLD X000\nSET Y000', both: true }
+    rstset: { name: 'SET／RST，SET 寫在後面', il: 'LD X001\nRST Y000\nLD X000\nSET Y000', both: true },
+    none: { name: '對照：拿掉 Y0 自己的接點（沒有自保持）', il: 'LD X000\nANI X001\nOUT Y000', both: false }
   };
   $('hsel').innerHTML = Object.keys(HOLD).map(function (k) { return '<option value="' + k + '">' + HOLD[k].name + '</option>'; }).join('');
   var H = { x0: false, x1: false, both: false, img: null, hist: [], prev: {} };
   function startHold() {
     var key = $('hsel').value, prog = parseIL(HOLD[key].il);
-    H.img = { X: {}, Y: {} }; H.hist = []; H.prev = {}; say('hsay', '');
+    H.img = { X: {}, Y: {} }; H.hist = []; H.prev = {}; H.prevY0 = false; say('hsay', '');
     startLoop(function () {
       var x = { X0: H.x0 || H.both, X1: H.x1 || H.both }, closed = scan(prog, H.img, x), y0 = !!H.img.Y.Y0;
       H.hist.push({ X0: x.X0, X1: x.X1, Y0: y0 }); if (H.hist.length > 400) H.hist.splice(0, 100);
@@ -168,8 +169,9 @@
       var p = H.prev;
       if (x.X0 && x.X1 && !(p.X0 && p.X1)) say('hsay', '兩個一起按：Y0 ' + (y0 ? 'ON。這種寫法是「啟動優先」。' : 'OFF。這種寫法是「停止優先」。') + (key === 'setrst' || key === 'rstset' ? '兩行都成立，' + (key === 'setrst' ? 'RST' : 'SET') + ' 寫在後面，蓋掉前面那行。' : ''), y0 ? 'bad' : 'ok');
       else if (!x.X0 && p.X0 && !x.X1 && y0) say('hsay', '放開啟動，Y0 還是 ON：' + (key.indexOf('set') >= 0 || key === 'rstset' ? 'SET 會一直保持到 RST。' : '電改走 Y0 自己的接點，自保持。'), 'ok');
+      else if (!x.X0 && p.X0 && !x.X1 && !y0 && H.prevY0) say('hsay', '放開啟動，Y0 就 OFF 了：放開就停＝沒有自保持。' + (key === 'none' ? '這個程式沒有和 X0 並聯的 Y0 接點（OR Y000），按鈕一放開，電就沒有路可以繞回來。把 OR Y000 加回去，放開後才會繼續 ON。' : '和 X0 並聯的 Y0 接點沒有接上，電沒有路可以繞回來。'), 'bad');
       else if (x.X1 && !p.X1 && !x.X0 && !y0) say('hsay', '按停止：Y0 OFF。放開停止也不會再亮，要重新按啟動。');
-      H.prev = x;
+      H.prev = x; H.prevY0 = y0;
     });
   }
   $('hsel').onchange = startHold;
