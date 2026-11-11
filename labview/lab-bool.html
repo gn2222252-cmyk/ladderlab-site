@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="5e2b32b8c7">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>布林實驗室：按鈕機械動作、邏輯閘、比較 | LadderLab</title>
+<meta name="description" content="LabVIEW 布林與比較的動畫實驗室：六種按鈕機械動作即時畫出時間圖、邏輯閘真值表與位元遮罩、Select 與 In Range and Coerce 數線。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .mech { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 900px) { .mech { grid-template-columns: 1fr; } }
+  .mlist button { display: block; width: 100%; text-align: left; margin: 3px 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .mlist button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .mlist small { display: block; color: var(--mute); font-size: 12px; }
+  .bigbtn { width: 150px; height: 64px; border-radius: 12px; border: 3px solid #555; background: #ddd; font: 700 18px inherit; cursor: pointer; user-select: none; touch-action: none; transition: transform .05s; }
+  .bigbtn.down { transform: translateY(2px); background: #bbb; }
+  .led { display: inline-block; width: 34px; height: 34px; border-radius: 50%; background: #2b3a2b; border: 3px solid #555; vertical-align: middle; transition: background .1s; }
+  .led.on { background: #3ee66b; box-shadow: 0 0 14px #3ee66b; }
+  .mrow { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  canvas.tl { width: 100%; height: 190px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg, #fff); }
+  .gates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .gate { border: 1px solid var(--line); border-radius: 10px; padding: 8px; text-align: center; cursor: pointer; background: var(--card); }
+  .gate.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .gate b { display: block; }
+  .tt { border-collapse: collapse; margin: 8px 0; }
+  .tt td, .tt th { border: 1px solid var(--line); padding: 4px 12px; text-align: center; font-family: ui-monospace, Consolas, monospace; }
+  .tt tr.cur td { background: rgba(245, 158, 11, .25); }
+  .sw { display: inline-flex; align-items: center; gap: 6px; border: 2px solid #1f9d3a; border-radius: 8px; padding: 4px 10px; cursor: pointer; user-select: none; font-weight: 700; }
+  .sw.on { background: #1f9d3a; color: #fff; }
+  .bits { display: inline-flex; gap: 3px; font: 600 15px ui-monospace, Consolas, monospace; }
+  .bits span { width: 24px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px; transition: background .25s; }
+  .bits span.one { background: #bbf7d0; }
+  .bits span.flash { background: #fde68a; }
+  .nline { position: relative; height: 70px; margin: 18px 6px; }
+  .nline .axis { position: absolute; left: 0; right: 0; top: 34px; height: 3px; background: var(--mute); }
+  .nline .band { position: absolute; top: 28px; height: 15px; background: rgba(30, 111, 255, .25); border-radius: 4px; }
+  .nline .pt { position: absolute; top: 18px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: #e8820c; transition: left .6s cubic-bezier(.4, .1, .2, 1); }
+  .nline .pt.ghost { background: transparent; border: 2px dashed #e8820c; }
+  .nline .tick { position: absolute; top: 42px; font: 11px ui-monospace, Consolas, monospace; color: var(--mute); transform: translateX(-50%); }
+  .nline .lim { position: absolute; top: 22px; width: 3px; height: 27px; background: #1e6fff; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-array.html">陣列實驗室</a><a href="lab-bool.html" class="here">布林實驗室</a><a href="lab-numeric.html">數值實驗室</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <h1>布林實驗室</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="mech" class="here">按鈕機械動作</button>
+    <button type="button" data-t="gate">邏輯閘與位元遮罩</button>
+    <button type="button" data-t="cmp">比較：Select、In Range</button>
+  </div>
+
+  <section class="lab-stage" id="t-mech">
+    <h2>按鈕的六種機械動作：按下去，看值什麼時候變</h2>
+    <p class="why">右鍵按鈕 ▸ Mechanical Action 有六種。差別只在兩件事：<b>什麼時候切換</b>（按下、放開、按住期間），以及<b>要不要自己彈回</b>（Switch 會停在新值；Latch 被程式讀一次就彈回）。選一種，按住下面的大按鈕試試，時間圖會即時畫出來。</p>
+    <div class="mech">
+      <div class="mlist" id="mlist"></div>
+      <div>
+        <div class="mrow">
+          <button type="button" class="bigbtn" id="bigbtn">按我</button>
+          <span>按鈕的值 <span class="led" id="led"></span></span>
+          <span>程式讀到 <span class="led" id="led2"></span></span>
+          <label class="check small"><input type="checkbox" id="slowread"> 程式每 1 秒才讀一次（看 Latch 的差別）</label>
+        </div>
+        <canvas class="tl" id="tl" width="900" height="190"></canvas>
+        <p class="why" id="mexplain"></p>
+        <div class="callout" id="mtip"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab-stage" id="t-gate" hidden>
+    <h2>邏輯閘：點開關，看真值表亮哪一列</h2>
+    <div class="gates" id="gates"></div>
+    <div class="mrow">
+      <span class="sw" id="swa">x</span><span class="sw" id="swb">y</span>
+      <span>→ 輸出 <span class="led" id="gout"></span></span>
+    </div>
+    <table class="tt" id="tt"></table>
+    <h3>同一個 And，接數字就變成「位元遮罩」</h3>
+    <p class="why">And、Or、Xor 接兩個整數時，會一個位元一個位元算。最常用的是 <b>x And 1</b>：只留下最低位元，結果是 1 就是奇數（PLC 的狀態字也常這樣取出某一個位元）。</p>
+    <div class="mrow">
+      <label>x <input class="scalar" id="mx" value="13"></label>
+      <select id="mop"><option>And</option><option>Or</option><option>Xor</option></select>
+      <label>y <input class="scalar" id="my" value="1"></label>
+      <button type="button" id="mrun">▶ 逐位元計算</button>
+    </div>
+    <div id="mbits"></div>
+  </section>
+
+  <section class="lab-stage" id="t-cmp" hidden>
+    <h2>Select：二選一</h2>
+    <p class="why">Select 有三個輸入：t、s?、f。s? 是 True 就輸出 t，False 就輸出 f。它是程式裡最小的「如果…就…否則…」，不用拉一整個 Case Structure。</p>
+    <div class="mrow">
+      <label>金額 <input class="scalar" id="samt" value="5200"></label>
+      <span>s? = 金額 &gt; 5000 → <b id="scond"></b></span>
+      <span>t = 金額 × 0.8　f = 金額</span>
+      <span>輸出 <span class="scalar dbl" id="sout"></span></span>
+    </div>
+    <h2>In Range and Coerce：在不在範圍內，超出就夾回邊界</h2>
+    <p class="why">兩個輸出：<b>In Range?</b>（是否在上下限之間）和 <b>coerced(x)</b>（超出就換成最近的邊界）。邊界的菱形實心＝包含、空心＝不包含（在節點上點一下切換）。常用來限制使用者輸入的設定值。</p>
+    <div class="mrow">
+      <label>下限 <input class="scalar" id="lo" value="0"></label>
+      <label>x <input class="scalar" id="cx" value="65" type="range" min="-20" max="120" style="width:200px"></label> <b id="cxv"></b>
+      <label>上限 <input class="scalar" id="hi" value="50"></label>
+      <label class="check small"><input type="checkbox" id="incl" checked> 包含上限</label>
+    </div>
+    <div class="nline" id="nline"></div>
+    <p>In Range? <span class="led" id="inr"></span>　coerced(x) = <span class="scalar dbl" id="cout"></span></p>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-bool.js?v=99a5b38263"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "5e2b32b8c7" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

@@ -20,7 +20,7 @@ const nested={name:'兩層 For Loop 產生 2D 陣列',bd:{w:520,h:200,structs:[{
   {id:'i2',k:'iter',s:'i'},{id:'t1',k:'tunnel',t:'i32[]',s:'i',side:'r',y:120,idx:true},{id:'t2',k:'tunnel',t:'i32[][]',s:'o',side:'r',y:120,idx:true},{id:'o2',k:'ind',t:'i32[][]',label:'2D',x:440,y:110}],
  wires:[{id:'w1',from:'k3',to:'N1',t:'i32'},{id:'w2',from:'k4',to:'N2',t:'i32',pts:[[150,61],[150,67]]},{id:'w3',from:'i2',to:'t1.i',t:'i32'},{id:'w4',from:'t1.o',to:'t2.i',t:'i32[]'},{id:'w5',from:'t2.o',to:'o2',t:'i32[][]'}]}};
 L.push({id:'C05',order:105,no:'C5',part:PART,title:'陣列與 Cluster 函式：多型、2D、預設值',mins:60,
-goals:[['學會','全部常用陣列函式、超出範圍的行為、多型運算、2D 陣列、Cluster 順序與轉換。'],['考試重點','Index Array 超出範圍回傳預設值、陣列加陣列取短的、Search 1D Array 找不到回 -1、Bundle 用位置、Cluster 順序。']],
+goals:[['學會','全部常用陣列函式、超出範圍的行為、多型運算、2D 陣列、Cluster 順序與轉換。'],['考試重點','Index Array 超出範圍回傳預設值、陣列加陣列取短的、Search 1D Array 找不到回 -1、Bundle 用位置、Cluster 順序。'],['動畫練習','<a href="lab-array.html">陣列函式動畫實驗室</a>：用「隨機挑戰」練到看圖就知道輸出。']],
 check:'能說出 Index Array 索引 10（陣列只有 3 個）的輸出、[1,2,3,4] + [10,20] 的結果。',
 body:[
 C.h3('懂','','陣列函式總表'),

@@ -101,7 +101,7 @@ const coerce={name:'強制轉換點',view:'bd',
  wires:[{id:'w1',from:'d',to:'add.x',t:'u16',coerce:true},{id:'w2',from:'c',to:'add.y',t:'dbl'},{id:'w3',from:'add.out',to:'a',t:'dbl'}]}
 };
 L.push({id:'L03',order:3,no:'3',part:'LabVIEW 基礎',title:'資料型別：線的顏色會說話',mins:40,files:['練習\\L02_Address.vi（改成 U16）','練習\\L03_Overflow.vi'],
-goals:[['學會','數字的表示法（Representation）、線色、強制轉換點、十六進位顯示。'],['做出','把上一課的位址計算改成 U16，並用十六進位顯示 10C8。'],['用在專案','PLC 的 D 是 16 位元，整個專案的 D 值一律用 U16。']],
+goals:[['學會','數字的表示法（Representation）、線色、強制轉換點、十六進位顯示。'],['做出','把上一課的位址計算改成 U16，並用十六進位顯示 10C8。'],['用在專案','PLC 的 D 是 16 位元，整個專案的 D 值一律用 U16。'],['動畫練習','<a href="lab-numeric.html">數值實驗室</a>：U8 數到 255 再加 1 會怎樣？轉盤動畫一看就懂；也有捨入函式的數線。']],
 check:'D Number = 100 時，Address 以十六進位顯示 10C8，方塊圖上沒有紅色小點。',
 body:[
 C.h3('懂','','看線的顏色就知道是什麼資料'),

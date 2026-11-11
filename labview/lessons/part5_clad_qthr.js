@@ -28,7 +28,7 @@ function thrLab(d){
 L.push({id:'C16',order:116,no:'C16',part:PART,title:'考題解析：比較函式的上下順序與條件通道（閾值篩選）',mins:30,
 goals:[['題目','For Loop 跑 10 圈，每圈用 DAQmx Read（Analog DBL 1Chan 1Samp）讀一個值，接到 Greater?，再用條件通道收集。哪些值會被存進陣列？'],
  ['答案','Threshold 接在 Greater? <b>上面</b>（x）、讀值接<b>下面</b>（y）→ 判斷 <b>Threshold &gt; 讀值</b> → 只收<b>小於</b>閾值的讀值。'],
- ['學會','比較函式一律是「上面 x、下面 y」，算的是 x ? y；看方塊圖時先找哪條線接上面。條件通道只收 True 那圈的值。']],
+ ['學會','比較函式一律是「上面 x、下面 y」，算的是 x ? y；看方塊圖時先找哪條線接上面。條件通道只收 True 那圈的值。'],['動畫練習','<a href="lab-bool.html#cmp">布林實驗室：比較</a>：Select 和 In Range and Coerce 的數線動畫。']],
 check:'看到任何比較函式，能先說出哪條線是 x、哪條是 y，再說出 True 代表什麼。',
 body:[
 C.h3('懂','','這題用到的功能'),

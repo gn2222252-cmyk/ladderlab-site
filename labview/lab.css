@@ -1,0 +1,50 @@
+/* LabVIEW animated labs (array, boolean, numeric) */
+.lab-main { max-width: 1240px; margin: 0 auto; padding: 16px; }
+.lab-grid { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .lab-grid { grid-template-columns: 1fr; } }
+.lab-list { position: sticky; top: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
+.lab-list h3 { font-size: 12px; color: var(--mute); margin: 10px 6px 4px; }
+.lab-list button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; font: inherit; color: inherit; }
+.lab-list button:hover { background: var(--onbg); }
+.lab-list button.here { background: var(--on); color: #fff; }
+.lab-list button.done::after { content: " ✓"; color: #16a34a; }
+.lab-list button.here.done::after { color: #fff; }
+.lab-stage { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.lab-head { display: flex; gap: 14px; align-items: center; }
+.lab-head h2 { margin: 0 0 4px; font-size: 20px; }
+.fdesc { margin: 0; color: var(--mute); }
+.node { flex: none; width: 64px; height: 64px; border: 2px solid #c58b00; border-radius: 6px; background: #fff7d6; display: grid; place-items: center; font: 700 11px ui-monospace, Consolas, monospace; color: #6b4b00; text-align: center; line-height: 1.15; box-shadow: 2px 2px 0 #e2c46a; }
+.lab-io { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 16px; align-items: center; margin: 18px 0; }
+@media (max-width: 1100px) { .lab-io { grid-template-columns: 1fr; } }
+.lab-run { display: grid; gap: 8px; justify-items: center; }
+.term { margin: 10px 0; }
+.term > .tl { font-size: 13px; color: var(--mute); margin-bottom: 4px; display: flex; gap: 6px; align-items: center; }
+.wire { display: inline-block; width: 18px; height: 4px; border-radius: 2px; background: #e8820c; }
+.wire.i32 { background: #1e5bd7; }
+.wire.bool { background: #1f9d3a; }
+.arr { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 6px; border: 2px solid #e8820c; border-radius: 6px; background: rgba(232, 130, 12, .06); min-height: 46px; align-items: flex-start; }
+.arr.i32 { border-color: #1e5bd7; background: rgba(30, 91, 215, .05); }
+.arr.d2 { display: inline-grid; }
+.cellw { display: grid; justify-items: center; gap: 1px; }
+.cellw small { font: 10px ui-monospace, Consolas, monospace; color: var(--mute); }
+.cell { width: 46px; height: 32px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg, #fff); display: grid; place-items: center; font: 600 15px ui-monospace, Consolas, monospace; }
+input.cell { text-align: center; color: inherit; }
+.cell.hit { outline: 3px solid #f59e0b; background: rgba(245, 158, 11, .2); }
+.cell.new { outline: 3px solid #16a34a; }
+.cell.gone { opacity: .25; text-decoration: line-through; }
+.cell.empty { opacity: .3; border-style: dashed; }
+.arrbtn { margin-left: 4px; font-size: 12px; }
+.scalar { display: inline-grid; place-items: center; min-width: 60px; height: 34px; padding: 0 10px; border: 2px solid #1e5bd7; border-radius: 6px; font: 600 15px ui-monospace, Consolas, monospace; background: var(--bg, #fff); }
+.scalar.dbl { border-color: #e8820c; }
+input.scalar { width: 70px; text-align: center; color: inherit; }
+.anim-layer { position: fixed; inset: 0; pointer-events: none; z-index: 80; }
+.fly { position: fixed; display: grid; place-items: center; border-radius: 5px; font: 700 15px ui-monospace, Consolas, monospace; background: #fde68a; border: 2px solid #f59e0b; color: #111; box-shadow: 0 4px 14px rgba(0, 0, 0, .2); transition-property: left, top, opacity, transform; transition-timing-function: cubic-bezier(.4, .1, .2, 1); }
+.fly.new { background: #bbf7d0; border-color: #16a34a; }
+.pred input { width: 220px; font: 15px ui-monospace, Consolas, monospace; }
+.verdict-line { font-weight: 700; min-height: 1.4em; }
+.verdict-line.ok { color: #15803d; }
+.verdict-line.bad { color: #dc2626; }
+.lab-notes { border-top: 1px solid var(--line); padding-top: 10px; }
+.lab-notes li { margin: 4px 0; }
+.lab-challenge { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
+.lab-challenge h3 { margin: 0 0 4px; font-size: 16px; }

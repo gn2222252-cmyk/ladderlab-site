@@ -265,7 +265,7 @@ const jogVI={name:'UI 迴圈：D107 點動（有變化才送）',view:'split',ra
    return {out:{d107:v,q:st.q.slice(-9).join('\n')},frames:{cs:ch?1:0},vals:{'u.out':v,last:prev,'ne.out':ch,now:v},msg:ch?'值變了 → 送一次':'值沒變 → 不送（按住不放也只送一次）'};}}
 };
 L.push({id:'L17',order:17,no:'17',part:'完整專案',title:'按鈕命令：D106 脈衝、D107 點動、參數',mins:70,files:['GT_Main.vi（加入全部命令）'],
-goals:[['學會','把一群按鈕變成命令字、只在變化時送出、For Loop 一次送多筆、In Range and Coerce 限制範圍。'],['做出','完成品全部的命令：Start/Stop/Home/Reset/Clear、11 個手動點動、4 個參數。'],['用在專案','UI 迴圈完成。']],
+goals:[['學會','把一群按鈕變成命令字、只在變化時送出、For Loop 一次送多筆、In Range and Coerce 限制範圍。'],['做出','完成品全部的命令：Start/Stop/Home/Reset/Clear、11 個手動點動、4 個參數。'],['用在專案','UI 迴圈完成。'],['動畫練習','<a href="lab-bool.html">布林實驗室</a>：六種按鈕機械動作，按住大按鈕即時畫出時間圖，看懂 Latch 為什麼適合「啟動」、Switch Until Released 為什麼適合點動。']],
 check:'按住 L Forward：D107 送一次 0001h，放開送一次 0000h；Start/Stop/Home/Reset/Clear 都能在軟 PLC 看到效果；參數 Write 後軟 PLC 的 D100～D103 改變。',
 body:[
 C.h3('懂','','三種命令，三種送法'),

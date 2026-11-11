@@ -946,6 +946,24 @@ window.COURSE = {
      "id": "labview/fxlab.html",
      "href": "labview/fxlab.html",
      "label": "FX 封包練習台：在網頁上和模擬 PLC 對話"
+    },
+    {
+     "k": "G",
+     "id": "labview/lab-array.html",
+     "href": "labview/lab-array.html",
+     "label": "動畫實驗室：陣列函式"
+    },
+    {
+     "k": "G",
+     "id": "labview/lab-bool.html",
+     "href": "labview/lab-bool.html",
+     "label": "動畫實驗室：按鈕機械動作、邏輯閘、比較"
+    },
+    {
+     "k": "G",
+     "id": "labview/lab-numeric.html",
+     "href": "labview/lab-numeric.html",
+     "label": "動畫實驗室：溢位、捨入、商與餘數"
     }
    ]
   }

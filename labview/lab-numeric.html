@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="5e2b32b8c7">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>數值實驗室：溢位、捨入、商與餘數 | LadderLab</title>
+<meta name="description" content="LabVIEW 數值的動畫實驗室：整數型態的溢位轉盤（U8、I8、U16、I16）、浮點數轉整數的飽和、四種捨入函式的數線動畫、Quotient & Remainder 分組動畫與毫秒換算。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .mrow { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .dialwrap { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: center; }
+  @media (max-width: 800px) { .dialwrap { grid-template-columns: 1fr; } }
+  svg.dial { width: 260px; height: 260px; }
+  .dial .needle { transition: transform .5s cubic-bezier(.4, .1, .2, 1); transform-origin: 130px 130px; }
+  .dial text { fill: currentColor; font: 12px ui-monospace, Consolas, monospace; }
+  .big { font: 700 34px ui-monospace, Consolas, monospace; }
+  .flag { font-weight: 700; color: #dc2626; min-height: 1.4em; }
+  .rline { position: relative; height: 90px; margin: 10px 8px; }
+  .rline .axis { position: absolute; left: 0; right: 0; top: 50px; height: 2px; background: var(--mute); }
+  .rline .tick { position: absolute; top: 56px; transform: translateX(-50%); font: 12px ui-monospace, Consolas, monospace; color: var(--mute); }
+  .rline .tk { position: absolute; top: 44px; width: 2px; height: 14px; background: var(--mute); }
+  .rline .pt { position: absolute; top: 24px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: #e8820c; transition: left .7s cubic-bezier(.4, .1, .2, 1); }
+  .rline .pt.res { background: #1e5bd7; }
+  .rline .lab { position: absolute; top: 2px; transform: translateX(-50%); font: 12px ui-monospace, Consolas, monospace; white-space: nowrap; transition: left .7s cubic-bezier(.4, .1, .2, 1); }
+  .rtab { border-collapse: collapse; }
+  .rtab td, .rtab th { border: 1px solid var(--line); padding: 4px 10px; font-family: ui-monospace, Consolas, monospace; text-align: center; }
+  .rtab tr.here td { background: rgba(30, 91, 215, .12); }
+  .dots { display: flex; flex-wrap: wrap; gap: 10px; min-height: 40px; }
+  .grp { display: flex; gap: 3px; padding: 4px; border: 2px solid #1e5bd7; border-radius: 8px; }
+  .grp.left { border-color: #e8820c; border-style: dashed; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: #1e5bd7; animation: pop .35s both; }
+  .grp.left .dot { background: #e8820c; }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  .chain { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-family: ui-monospace, Consolas, monospace; }
+  .chain .st { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; opacity: 0; transform: translateY(6px); transition: all .4s; }
+  .chain .st.show { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="lab-array.html">陣列實驗室</a><a href="lab-bool.html">布林實驗室</a><a href="lab-numeric.html" class="here">數值實驗室</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · 動畫實驗室</p>
+  <h1>數值實驗室</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="ovf" class="here">整數溢位與轉換</button>
+    <button type="button" data-t="round">捨入函式</button>
+    <button type="button" data-t="qr">商與餘數</button>
+  </div>
+
+  <section class="lab-stage" id="t-ovf">
+    <h2>整數像里程表：數到頭會繞回來</h2>
+    <p class="why">整數型態的範圍是固定的。用 Add、Increment 算到超過上限，<b>不會報錯</b>，而是繞到另一頭（U8 的 255 + 1 = 0）。這叫溢位，PLC 的計數值、心跳計數（D240 每秒加 1）都要注意。</p>
+    <div class="dialwrap">
+      <svg class="dial" id="dial" viewBox="0 0 260 260"></svg>
+      <div>
+        <div class="mrow">
+          <label>型態 <select id="rep"><option>U8</option><option>I8</option><option>U16</option><option>I16</option></select></label>
+          <span class="big" id="dval">0</span>
+        </div>
+        <div class="mrow">
+          <button type="button" data-d="1">+1（Increment）</button><button type="button" data-d="-1">−1（Decrement）</button>
+          <button type="button" data-d="10">+10</button><button type="button" data-d="100">+100</button>
+          <button type="button" id="tomax">跳到上限</button><button type="button" id="tomin">跳到下限</button>
+        </div>
+        <p class="flag" id="dflag"></p>
+        <p class="why" id="drange"></p>
+      </div>
+    </div>
+    <h2>浮點數轉整數：不是繞回，是夾住</h2>
+    <p class="why">To Unsigned Byte Integer 這類轉換函式碰到超出範圍的 DBL，會<b>夾在最大或最小值</b>（飽和），小數照 Round To Nearest 捨入。和上面整數加法的「繞回」不一樣，CLAD 常考。</p>
+    <div class="mrow">
+      <label>DBL 輸入 <input class="scalar dbl" id="cin" value="300.7" style="width:110px"></label>
+      <label>轉成 <select id="cto"><option>U8</option><option>I8</option><option>U16</option><option>I16</option><option>I32</option></select></label>
+      <span>輸出 <span class="scalar" id="cout"></span></span>
+      <span class="why" id="cwhy"></span>
+    </div>
+  </section>
+
+  <section class="lab-stage" id="t-round" hidden>
+    <h2>四種捨入：拖動數值，看點跳到哪個整數</h2>
+    <div class="mrow">
+      <label>x <input type="range" id="rx" min="-3" max="3" step="0.1" value="2.5" style="width:260px"></label> <b class="big" id="rxv"></b>
+      <select id="rfn">
+        <option value="near">Round To Nearest</option><option value="down">Round Toward −Infinity</option>
+        <option value="up">Round Toward +Infinity</option><option value="trunc">To Long Integer（I32）</option>
+      </select>
+    </div>
+    <div class="rline" id="rline"></div>
+    <table class="rtab" id="rtab"></table>
+    <div class="callout">Round To Nearest 碰到剛好 .5 時，捨入到<b>偶數</b>：2.5 → 2、3.5 → 4、-2.5 → -2（銀行家捨入）。不是國小教的「四捨五入」。要無條件進位用 Round Toward +Infinity，無條件捨去用 Round Toward −Infinity。</div>
+  </section>
+
+  <section class="lab-stage" id="t-qr" hidden>
+    <h2>Quotient &amp; Remainder：分成幾組、剩幾個</h2>
+    <p class="why">x ÷ y：IQ（整數商）是能分成幾組，R（餘數）是分完剩下幾個。整數運算時，不用小數就能拆時間、拆位數。</p>
+    <div class="mrow">
+      <label>x <input class="scalar" id="qx" value="17"></label>
+      <label>y <input class="scalar" id="qy" value="5"></label>
+      <button type="button" id="qrun">▶ 分組</button>
+      <span>IQ = <b id="qiq"></b>　R = <b id="qr"></b></span>
+    </div>
+    <div class="dots" id="dots"></div>
+    <h2>用連續的商與餘數，把毫秒換成時、分、秒</h2>
+    <p class="why">Tick Count 給的是毫秒。每次除以下一個單位，餘數留在這一層、商往下一層送。</p>
+    <div class="mrow"><label>毫秒 <input class="scalar" id="ms" value="3725480" style="width:120px"></label><button type="button" id="msrun">▶ 換算</button></div>
+    <div class="chain" id="chain"></div>
+  </section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；函式行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-numeric.js?v=f86a3cb6ba"></script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "5e2b32b8c7" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>
