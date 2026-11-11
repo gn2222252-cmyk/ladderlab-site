@@ -134,7 +134,7 @@ C.h3('懂','','六個步驟'),
 <li><b>看背板</b><span class="ans">回答：它用什麼跟外面接？</span><span class="pass">過關：說得出接頭的名字（RS-232、RS-485、USB、GPIB、網路，或只是兩條訊號線）。</span></li>
 <li><b>翻說明書的通訊章節</b><span class="ans">回答：它聽得懂什麼、會回什麼？</span><span class="pass">過關：抄下通訊參數、命令格式、結尾字元、回覆格式、誰先開口。章名通常是 Remote Control、Communication、Interface、Programming，或「通訊」「資料輸出」。</span></li>
 <li><b>不寫程式，先講到話</b><span class="ans">回答：線和參數對了嗎？</span><span class="pass">過關：用現成的工具送一條最不會出事的命令，看到它回話。這時候還沒有你的程式，出錯一定是線或參數。</span></li>
-<li><b>看原始回覆</b><span class="ans">回答：它實際送回來的每一個字元是什麼？</span><span class="pass">過關：把回覆原封不動顯示出來，連看不見的換行、空白都看到。先不要急著轉成數字。</span></li>
+<li><b>看原始回覆</b><span class="ans">回答：它實際送回來的每一個字元是什麼？</span><span class="pass">過關：把回覆原封不動顯示出來，連看不見的換行、空白都看到。先不要急著轉成數字。要寫入設定的設備，也在這一步試一次：寫一個值，再讀回來、問錯誤，確定它真的照做了（I14）。</span></li>
 <li><b>在紙上把回覆變成數字</b><span class="ans">回答：要切哪裡、轉成什麼型別、要不要乘除？</span><span class="pass">過關：拿三筆真的回覆，手算得出正確的數值和單位。</span></li>
 <li><b>最後才規劃程式</b><span class="ans">回答：要重複做嗎？要記住什麼？有幾種情況？會失敗嗎？</span><span class="pass">過關：說得出為什麼這裡要迴圈、為什麼那條線要進 Shift Register、Case 分的是哪幾種情況。</span></li>
 </ol>`,
