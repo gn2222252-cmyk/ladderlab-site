@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="a138daa79d">
+<meta name="ll-version" content="719a424243">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabVIEW 動畫實驗室總覽 | LadderLab</title>
@@ -46,8 +46,10 @@
     { f: 'lab-struct.html', n: '結構', ic: '?', c: '#1e6fff', d: 'Case 走哪一頁、事件怎麼排隊、狀態機怎麼換狀態。', t: ['Case 選擇器：範圍、Default、捨入、大小寫', 'Event 事件排隊與 Timeout', 'State Machine 洗衣機', 'Sequence 與 Tick Count 計時'], l: '第 6 課、C4、C9、A2' },
     { f: 'lab-array.html', n: '陣列', ic: '[ ]', c: '#e8820c', d: '十個常用陣列函式，看元素怎麼搬。', t: ['Index、Insert、Delete、Replace、Subset…', '先預測再執行、隨機挑戰'], l: '第 7 課、C5' },
     { f: 'lab-string.html', n: '字串', ic: 'abc', c: '#c026d3', d: '一格一個字元，位置從 0 算起。', t: ['切、接、找、換九個函式', 'Format／Scan 格式碼對照', 'Normal、\'\\\' Codes、Hex 看控制碼'], l: '第 9 課、C6、F2' },
+    { f: 'lab-cluster.html', n: '叢集', ic: '{ }', c: '#9333ea', d: '把資料打包、拆開，錯誤沿著錯誤線往後傳。', t: ['Bundle／Unbundle 與 By Name', 'Type Def 一改全部跟著改', '錯誤叢集怎麼流、Close 為什麼照樣執行'], l: '第 8、11 課、C10、C18' },
     { f: 'lab-graph.html', n: '圖表', ic: '∿', c: '#0f766e', d: 'Chart 會記住舊資料，Graph 每次整張換掉。', t: ['六種資料型別各畫出什麼', 'XY Graph 用兩個陣列畫圓'], l: 'C11、C14' },
     { f: 'lab-var.html', n: '變數', ic: 'x', c: '#7c3aed', d: '兩個迴圈共用一個變數，資料是怎麼不見的。', t: ['競爭條件：你來當排程器', '一顆 Stop 停兩個迴圈的四種接法', 'FGV 功能型全域變數'], l: '第 16 課、C8' },
+    { f: 'lab-queue.html', n: '佇列', ic: 'Q', c: '#0891b2', d: '迴圈之間傳資料：一筆都不能少用 Queue，只要最新用 Notifier。', t: ['生產者、佇列、消費者三欄動畫', 'Queue、Notifier、Local Variable 比一比', 'Producer/Consumer 怎麼關才不掉資料'], l: '第 16 課、C8、A2' },
     { f: 'lab-daq.html', n: 'DAQ', ic: 'AI', c: '#dc2626', d: '資料擷取的三個 R：取樣率、解析度、範圍。', t: ['取樣率不夠時的混疊', '解析度與範圍：最小可分辨電壓', 'DAQmx 流程與緩衝區溢位'], l: 'C12' },
     { f: 'fxlab.html', n: 'FX 封包練習台', ic: 'ENQ', c: '#334155', d: '對一台模擬的 FX PLC 送封包，看它怎麼回。', t: ['讀寫 D 暫存器、ACK／NAK', '10 個任務、封包解碼練習'], l: '第 9、12～14 課' }
   ];
@@ -71,7 +73,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "a138daa79d" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "719a424243" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

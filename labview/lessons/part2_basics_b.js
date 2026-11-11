@@ -195,7 +195,7 @@ const clu={name:'L08_Cluster.vi',view:'split',ratio:1.3,
  sim:{live:true,step(i){return {out:{rs:i.s0,ac:i.s6,cmd:'D = 106\nValue = 4'},vals:{'ub.Right Step':i.s0,'ub.Alarm Code':i.s6,k106:106,k4:4}};}}
 };
 L.push({id:'L08',order:8,no:'8',part:'LabVIEW 基礎',title:'Cluster 與 Type Def：把狀態打包',mins:50,files:['GT_Status.ctl','GT_Cmd.ctl','練習\\L08_Cluster.vi'],
-goals:[['學會','Cluster、Bundle/Unbundle By Name、元素順序、Type Def 自訂型別。'],['做出','GT_Status.ctl（PLC 狀態全部打包）和 GT_Cmd.ctl（一筆命令 = D 位址 + 值）。'],['用在專案','讀回來的 42 個字變成一個 Status；按鈕命令以 GT_Cmd 放進佇列。']],
+goals:[['學會','Cluster、Bundle/Unbundle By Name、元素順序、Type Def 自訂型別。'],['做出','GT_Status.ctl（PLC 狀態全部打包）和 GT_Cmd.ctl（一筆命令 = D 位址 + 值）。'],['用在專案','讀回來的 42 個字變成一個 Status；按鈕命令以 GT_Cmd 放進佇列。'],['動畫練習','<a href="lab-cluster.html">叢集實驗室</a>：元素怎麼飛進叢集、拆出來；改叢集順序後 Unbundle 接錯、By Name 不受影響；Type Def 一改全部跟著改。']],
 check:'GT_Status.ctl 有 16 個元素、名稱與課程一致；L08_Cluster.vi 用 Unbundle By Name 取出 Right Step 和 Alarm Code。',
 body:[
 C.h3('懂','','Cluster：不同型別的資料綁成一捆'),

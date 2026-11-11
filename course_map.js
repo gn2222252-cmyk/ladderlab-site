@@ -979,6 +979,12 @@ window.COURSE = {
     },
     {
      "k": "G",
+     "id": "labview/lab-cluster.html",
+     "href": "labview/lab-cluster.html",
+     "label": "動畫實驗室：Cluster、Type Def、錯誤叢集"
+    },
+    {
+     "k": "G",
      "id": "labview/lab-graph.html",
      "href": "labview/lab-graph.html",
      "label": "動畫實驗室：Chart、Graph、XY Graph"
@@ -988,6 +994,12 @@ window.COURSE = {
      "id": "labview/lab-var.html",
      "href": "labview/lab-var.html",
      "label": "動畫實驗室：競爭條件、Stop 接法、FGV"
+    },
+    {
+     "k": "G",
+     "id": "labview/lab-queue.html",
+     "href": "labview/lab-queue.html",
+     "label": "動畫實驗室：Queue、Notifier、Producer/Consumer"
     },
     {
      "k": "G",

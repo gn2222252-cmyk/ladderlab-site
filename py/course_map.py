@@ -59,7 +59,7 @@ TRACKS = [
     {"id": "Y", "t": "上位機：LabVIEW", "after": "7",
      "why": "PLC 之外，用 LabVIEW 寫讀寫 PLC 的上位機：資料流、迴圈、VISA 通訊、雙迴圈與 Queue、心跳與重連；另有 CLAD 證照課與模擬考。",
      "can": ["寫出能讀寫 FX 的上位機", "準備 CLAD"],
-     "items": [["G", "labview/index.html", "LabVIEW 上位機課程"], ["G", "labview/fxlab.html", "FX 封包練習台：在網頁上和模擬 PLC 對話"], ["G", "labview/labs.html", "動畫實驗室總覽"], ["G", "labview/lab-loop.html", "動畫實驗室：While、For、通道、Shift Register"], ["G", "labview/lab-struct.html", "動畫實驗室：Case、Event、State Machine、Sequence"], ["G", "labview/lab-array.html", "動畫實驗室：陣列函式"], ["G", "labview/lab-string.html", "動畫實驗室：字串函式、格式碼、顯示模式"], ["G", "labview/lab-graph.html", "動畫實驗室：Chart、Graph、XY Graph"], ["G", "labview/lab-var.html", "動畫實驗室：競爭條件、Stop 接法、FGV"], ["G", "labview/lab-daq.html", "動畫實驗室：DAQ 取樣率、解析度、緩衝區"], ["G", "labview/lab-bool.html", "動畫實驗室：按鈕機械動作、邏輯閘、比較"], ["G", "labview/lab-numeric.html", "動畫實驗室：溢位、捨入、商與餘數"]]},
+     "items": [["G", "labview/index.html", "LabVIEW 上位機課程"], ["G", "labview/fxlab.html", "FX 封包練習台：在網頁上和模擬 PLC 對話"], ["G", "labview/labs.html", "動畫實驗室總覽"], ["G", "labview/lab-loop.html", "動畫實驗室：While、For、通道、Shift Register"], ["G", "labview/lab-struct.html", "動畫實驗室：Case、Event、State Machine、Sequence"], ["G", "labview/lab-array.html", "動畫實驗室：陣列函式"], ["G", "labview/lab-string.html", "動畫實驗室：字串函式、格式碼、顯示模式"], ["G", "labview/lab-cluster.html", "動畫實驗室：Cluster、Type Def、錯誤叢集"], ["G", "labview/lab-graph.html", "動畫實驗室：Chart、Graph、XY Graph"], ["G", "labview/lab-var.html", "動畫實驗室：競爭條件、Stop 接法、FGV"], ["G", "labview/lab-queue.html", "動畫實驗室：Queue、Notifier、Producer/Consumer"], ["G", "labview/lab-daq.html", "動畫實驗室：DAQ 取樣率、解析度、緩衝區"], ["G", "labview/lab-bool.html", "動畫實驗室：按鈕機械動作、邏輯閘、比較"], ["G", "labview/lab-numeric.html", "動畫實驗室：溢位、捨入、商與餘數"]]},
 ]
 
 

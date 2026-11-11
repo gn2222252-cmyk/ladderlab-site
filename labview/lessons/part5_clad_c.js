@@ -52,7 +52,7 @@ C.h3('測','q','小測驗'),
    C10 錯誤處理與除錯進階
    ====================================================================== */
 L.push({id:'C10',order:110,no:'C10',part:PART,title:'錯誤處理進階：錯誤與警告、自訂錯誤、處理策略',mins:40,
-goals:[['學會','錯誤和警告的差別、自動錯誤處理、Simple 與 General Error Handler、Merge Errors、自訂錯誤碼、錯誤處理策略。'],['考試重點','status = False 但 code ≠ 0 是「警告」；error in 有錯時大部分函式不執行，但 Close、Release 類的函式照樣執行。']],
+goals:[['學會','錯誤和警告的差別、自動錯誤處理、Simple 與 General Error Handler、Merge Errors、自訂錯誤碼、錯誤處理策略。'],['考試重點','status = False 但 code ≠ 0 是「警告」；error in 有錯時大部分函式不執行，但 Close、Release 類的函式照樣執行。'],['動畫練習','<a href="lab-cluster.html#err">叢集實驗室：錯誤叢集</a>：錯誤與警告的差別、Merge Errors、Clear Errors 一步一步看。']],
 check:'能分辨 status/code 的四種組合各代表什麼。',
 body:[
 C.h3('懂','','錯誤、警告、沒事'),

@@ -38,7 +38,7 @@ function bundleLab(d){
 L.push({id:'C18',order:118,no:'C18',part:PART,title:'考題解析：Cluster 線分叉與 Bundle By Name 改的是哪一份',mins:30,
 goals:[['題目','Cluster {Age 18, Name "Jack"} 經過 Unbundle By Name、Concatenate Strings、Bundle By Name、Increment、再一個 Bundle By Name，最後 Output Cluster 顯示什麼？'],
  ['答案','<b>B：Age 19、Name Jack</b>。最後一個 Bundle By Name 上面接的是<b>原始 cluster</b>，Name 改成 Jack Williams 的那份在最後被丟掉了。'],
- ['學會','線分叉是<b>複製</b>（傳值），不是同一份；Bundle By Name 的上方輸入決定「改哪一份」；看圖時一定要追這條線從哪裡來。']],
+ ['學會','線分叉是<b>複製</b>（傳值），不是同一份；Bundle By Name 的上方輸入決定「改哪一份」；看圖時一定要追這條線從哪裡來。'],['動畫練習','<a href="lab-cluster.html">叢集實驗室</a>：Bundle By Name 只改一個元素、其他照舊；叢集順序與 Unbundle。']],
 check:'能指出圖上最後一個 Bundle By Name 的上方輸入從哪裡接過來，並說出為什麼 Name 還是 Jack。',
 body:[
 C.h3('懂','','這題用到的功能'),

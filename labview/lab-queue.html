@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="ll-version" content="719a424243">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>佇列實驗室：Queue、Notifier、Producer/Consumer | LadderLab</title>
+<meta name="description" content="LabVIEW 迴圈之間傳資料的動畫實驗室：Queue 的 Obtain、Enqueue、Dequeue、Release，佇列滿了生產者會等、Dequeue 逾時；Queue、Notifier、Local Variable 三種傳法比一比；Producer/Consumer 的正確關閉順序。">
+<link rel="stylesheet" href="../style.css?v=92cf2ac4c4">
+<link rel="stylesheet" href="lab.css?v=e8438eac1f">
+<style>
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .tabs button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; color: inherit; }
+  .tabs button.here { background: var(--on); color: #fff; border-color: var(--on); }
+  .row { display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+  .lab-stage button:disabled { opacity: .45; cursor: default; }
+  .row label { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .row input[type=range] { width: 130px; }
+  .log { font: 13px ui-monospace, Consolas, monospace; max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin-top: 8px; overflow-wrap: anywhere; }
+  .flow { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; margin: 8px 0; font-size: 13px; }
+  .flow span { border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; transition: all .25s; }
+  .flow span.on { background: var(--on); color: #fff; border-color: var(--on); }
+  .flow span.done { opacity: .5; }
+  .pc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; align-items: stretch; }
+  @media (max-width: 800px) { .pc { grid-template-columns: minmax(0, 1fr); } }
+  .loopbox { border: 4px solid #6b6b6b; border-radius: 10px; padding: 10px; min-width: 0; transition: border-color .3s; }
+  .loopbox h3 { margin: 0 0 6px; font-size: 16px; }
+  .loopbox.run { border-color: #1f9d3a; }
+  .loopbox.block { border-color: #dc2626; border-style: dashed; }
+  .loopbox.end { opacity: .55; }
+  .loopbox .st { font-size: 14px; min-height: 2.8em; }
+  .qwrap { border: 3px solid #0e7490; border-radius: 12px; padding: 8px; min-width: 0; overflow: hidden; }
+  .qwrap.dead { border-style: dashed; opacity: .5; }
+  .qwrap h3 { margin: 0 0 6px; font-size: 15px; }
+  .slots { display: flex; flex-wrap: wrap; gap: 4px; min-height: 48px; align-items: center; }
+  .chip { flex: none; width: 50px; height: 44px; border-radius: 6px; padding: 0; display: grid; place-items: center; align-content: center; font: 700 13px ui-monospace, Consolas, monospace; background: #fde68a; border: 2px solid #f59e0b; color: #111; line-height: 1.15; }
+  .chip small { font-size: 10px; font-weight: 400; }
+  .chip.empty { background: transparent; border: 2px dashed var(--line); }
+  .chip.exit { background: #fecaca; border-color: #dc2626; }
+  .chip.lost { opacity: .45; text-decoration: line-through; background: #e5e7eb; border-color: #9ca3af; }
+  .chip.dup { background: #fecaca; border-color: #dc2626; }
+  .chip.dflt { background: #e5e7eb; border-color: #9ca3af; }
+  .chip.in { animation: flyin .45s ease-out; }
+  .chip.take { animation: take .45s ease-out; }
+  .chip.gone { animation: gone .6s ease-out forwards; }
+  @keyframes flyin { from { transform: translateX(-70px) scale(.6); opacity: 0; } }
+  @keyframes take { from { transform: translateX(-70px) scale(.7); opacity: .2; } }
+  @keyframes gone { to { transform: translateY(-18px) scale(.6); opacity: 0; } }
+  .led { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #4b5563; vertical-align: -2px; border: 1px solid #111; }
+  .led.on { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .led.err { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  .kv { font: 13px ui-monospace, Consolas, monospace; }
+  .cmp3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 900px) { .cmp3 { grid-template-columns: minmax(0, 1fr); } }
+  .col { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+  .col h3 { margin: 0 0 4px; font-size: 16px; }
+  .col .lbl { font-size: 13px; color: var(--mute); margin: 8px 0 4px; }
+  .col .res { font-weight: 700; min-height: 1.4em; font-size: 14px; }
+  .col .res.ok { color: #15803d; } .col .res.bad { color: #dc2626; }
+  .src { display: flex; gap: 4px; flex-wrap: wrap; }
+  .src .chip.sent { opacity: .35; }
+  .scn button { display: block; width: 100%; text-align: left; margin: 4px 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font: inherit; color: inherit; }
+  .scn button.here { border-color: var(--on); box-shadow: 0 0 0 2px var(--on) inset; }
+  .two { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .stopb { padding: 8px 16px; border-radius: 8px; border: 3px solid #555; background: #ddd; color: #222; font-weight: 700; cursor: pointer; }
+  .stopb.on { background: #dc2626; color: #fff; border-color: #7f1d1d; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../index.html">LadderLab <span>梯圖實驗室</span></a>
+  <nav class="topnav"><a href="../path.html">課程</a><a href="index.html">LabVIEW 課程</a><a href="labs.html">動畫實驗室</a><a href="lab-queue.html" class="here">佇列</a></nav>
+</header>
+<main class="lab-main">
+  <p class="crumb"><a href="index.html">LabVIEW 上位機課程</a> · <a href="labs.html">動畫實驗室</a></p>
+  <h1>佇列實驗室：迴圈之間傳資料</h1>
+  <div class="tabs" id="tabs">
+    <button type="button" data-t="basic" class="here">Queue 基本</button>
+    <button type="button" data-t="cmp">Queue、Notifier、Local Variable 比一比</button>
+    <button type="button" data-t="stop">Producer/Consumer 怎麼關</button>
+  </div>
+
+  <section class="lab-stage" id="t-basic">
+    <p class="why">情境：上面的迴圈（生產者）定時讀 PLC 的溫度 D0，下面的迴圈（消費者）把每一筆寫進檔案。寫檔比較慢，所以中間放一條 Queue 當緩衝：生產者 Enqueue 放進去，消費者 Dequeue 依序拿出來，先進先出（FIFO）。先按「Obtain Queue」建立佇列，再按「開始執行」。</p>
+    <div class="flow" id="bflow"></div>
+    <div class="row">
+      <button type="button" class="go" id="bobtain">① Obtain Queue</button>
+      <button type="button" id="brun" disabled>▶ 開始執行</button>
+      <button type="button" id="benq" disabled>手動 Enqueue 一筆</button>
+      <button type="button" id="brel" disabled>④ Release Queue</button>
+      <button type="button" id="breset">重來</button>
+    </div>
+    <div class="row">
+      <label>max queue size <select id="bmax"><option value="-1">-1（不限）</option><option value="3">3</option><option value="5" selected>5</option><option value="8">8</option></select></label>
+      <label>Dequeue timeout <select id="btmo"><option value="-1" selected>-1（一直等）</option><option value="500">500 ms</option><option value="1000">1000 ms</option></select></label>
+      <label>生產者 <select id="bpmode"><option value="timer" selected>定時讀值</option><option value="button">只在按按鈕時放</option></select></label>
+    </div>
+    <div class="row">
+      <label>生產：每 <input type="range" id="bpint" min="200" max="3000" step="100" value="600"> <b id="bpintv"></b></label>
+      <label>消費：寫一筆要 <input type="range" id="bcint" min="200" max="3000" step="100" value="1500"> <b id="bcintv"></b></label>
+      <label class="check small"><input type="checkbox" id="bpause"> 消費者暫停（都不拿）</label>
+    </div>
+    <div class="pc">
+      <div class="loopbox" id="bprod"></div>
+      <div class="qwrap" id="bq"></div>
+      <div class="loopbox" id="bcons"></div>
+    </div>
+    <p class="verdict-line" id="bsay"></p>
+    <div class="log" id="blog"></div>
+    <div class="callout">重點：<b>max queue size</b> 只能在 Obtain Queue 時決定（-1 表示不設上限，只受記憶體限制），要改就得重新 Obtain。佇列滿了，Enqueue Element 會<b>停在原地等</b>到有空位（它的 timeout 預設 -1，一直等），所以生產者迴圈也跟著慢下來，資料不會被丟掉。Dequeue Element 在佇列空的時候會等；timeout 設 -1 就一直等，設成毫秒數則時間到就往下走，這時 <b>timed out?</b> 輸出 True，element 是該型別的預設值（數值就是 0），記得用 timed out? 判斷，不要把這個 0 當成真的資料存進檔案。</div>
+  </section>
+
+  <section class="lab-stage" id="t-cmp" hidden>
+    <p class="why">同一串資料 1、2、3、4、5 快速送出（每一步送一個），接收端比較慢，每拿一筆要忙好幾步。三種傳法並排跑，看接收端最後拿到什麼。</p>
+    <div class="row">
+      <button type="button" class="go" id="cstep">走一步</button>
+      <button type="button" id="cauto">▶ 自動跑完</button>
+      <button type="button" id="creset">重來</button>
+      <label>接收端每拿一筆要忙 <select id="cper"><option value="2">2 步</option><option value="3" selected>3 步</option></select></label>
+      <span class="kv">第 <b id="ct">0</b> 步</span>
+    </div>
+    <div class="lbl why">送出端（照順序送 1～5）</div>
+    <div class="src" id="csrc"></div>
+    <div class="cmp3">
+      <div class="col"><h3>Queue</h3><small class="why">Enqueue → Dequeue</small><div class="lbl">佇列裡</div><div class="slots" id="cqbox"></div><div class="lbl">接收端拿到</div><div class="slots" id="cqgot"></div><div class="lbl" id="cqst"></div><div class="res" id="cqres"></div></div>
+      <div class="col"><h3>Notifier</h3><small class="why">Send Notification → Wait on Notification</small><div class="lbl">通知器裡（只放一個）</div><div class="slots" id="cnbox"></div><div class="lbl">接收端拿到</div><div class="slots" id="cngot"></div><div class="lbl" id="cnst"></div><div class="res" id="cnres"></div></div>
+      <div class="col"><h3>Local Variable</h3><small class="why">一邊寫、一邊定時讀</small><div class="lbl">變數現在的值</div><div class="slots" id="clbox"></div><div class="lbl">接收端讀到</div><div class="slots" id="clgot"></div><div class="lbl" id="clst"></div><div class="res" id="clres"></div></div>
+    </div>
+    <div class="log" id="clog"></div>
+    <div class="callout"><b>Queue</b>：每一筆都排隊，一筆不掉、不重複，順序不變，適合「每筆都要處理」的資料（量測紀錄、要寫檔的資料、指令）。<b>Notifier</b>：只存最新的一筆，新的會蓋掉還沒被拿走的舊值；等待的一方只會拿到「它還沒看過的最新值」，不會重拿同一筆。適合「只要知道最新狀態」的情況，例如畫面要顯示目前溫度、或廣播一個「該停了」的訊號給好幾個迴圈。<b>Local Variable</b>：沒有「新資料來了」的概念，讀的一方照自己的速度讀，太慢會漏、太快會重讀同一個值，兩邊都不知道。</div>
+  </section>
+
+  <section class="lab-stage" id="t-stop" hidden>
+    <p class="why">生產者迴圈按了 Stop 會停，可是消費者還卡在 Dequeue 等資料，怎麼通知它也停？而且生產者停下時手上還有一筆「最後的讀值」要送。選一種關法，按 ▶ 開始，等佇列堆了幾筆再按 STOP。</p>
+    <div class="two">
+      <div>
+        <div class="scn" id="dscn"></div>
+        <div class="row"><label>消費者寫一筆要 <select id="dcper"><option value="1">1 步（快）</option><option value="3" selected>3 步（慢）</option></select></label></div>
+      </div>
+      <div style="min-width:0">
+        <div class="flow" id="dflow"></div>
+        <div class="row">
+          <button type="button" class="go" id="drun">▶ 開始</button>
+          <button type="button" class="stopb" id="dstop">STOP</button>
+          <button type="button" id="dstep">走一步</button>
+          <button type="button" id="dreset">重來</button>
+        </div>
+        <div class="pc">
+          <div class="loopbox" id="dprod"></div>
+          <div class="qwrap" id="dq"></div>
+          <div class="loopbox" id="dcons"></div>
+        </div>
+        <div class="lbl why">已寫進檔案</div><div class="slots" id="dsaved"></div>
+        <div class="lbl why">遺失（沒寫進檔案）</div><div class="slots" id="dlost"></div>
+        <p class="verdict-line" id="dsay"></p>
+      </div>
+    </div>
+    <div class="log" id="dlog"></div>
+    <div class="callout">對的順序：生產者停下時，先把最後的資料 Enqueue，再 Enqueue 一個特殊的 <b>Exit</b> 訊息（例如資料型別用 cluster「命令＋數值」，命令填 Exit）。因為佇列先進先出，Exit 一定排在所有資料後面，消費者處理完前面每一筆才會看到它。<b>兩個迴圈都結束後</b>才 Release Queue（把佇列參考接到兩個迴圈外面，用資料流保證順序）。<br>另一種常見寫法是讓生產者直接 Release Queue：正在 Dequeue 等待的消費者會收到錯誤 <b>1122</b>，用這個錯誤停迴圈（停下後記得把 1122 清掉，不要當成真的錯誤跳視窗）。但佇列裡還沒拿走的資料就跟著佇列一起沒了，所以只有在「剩下的資料丟掉也沒關係」時才這樣做。</div>
+  </section>
+
+  <section class="lab-stage lab-challenge" id="qquiz" style="margin-top:16px"></section>
+</main>
+<footer><p>LabVIEW 為 NI 之商標。本站為獨立製作，與 NI 無關；行為以 LabVIEW 說明文件為準。</p></footer>
+<script src="lab-quiz.js?v=3c80f55f3a"></script>
+<script src="lab-queue.js?v=adf12bdbb6"></script>
+<script>try{var s=JSON.parse(localStorage.getItem('ll_lv_labs_seen')||'{}');s[location.pathname.split('/').pop()]=1;localStorage.setItem('ll_lv_labs_seen',JSON.stringify(s))}catch(e){}</script>
+<script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "719a424243" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body>
+</html>

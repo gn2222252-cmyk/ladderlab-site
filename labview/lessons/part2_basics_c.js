@@ -215,7 +215,7 @@ const errCase={name:'錯誤處理的標準樣子',view:'bd',
    {id:'w4',from:'to.o',to:'eo',t:'err'},{id:'w5',from:'td.o',to:'dd',t:'str'}]}
 };
 L.push({id:'L11',order:11,no:'11',part:'LabVIEW 基礎',title:'錯誤處理：Error Cluster 與錯誤線',mins:50,files:['FX_Check.vi'],
-goals:[['學會','Error Cluster、錯誤線串順序、Error Case、自訂錯誤碼、Simple Error Handler。'],['做出','FX_Check.vi：檢查 PLC 回應的 STX 和校驗，錯了就產生錯誤。'],['用在專案','通訊一出錯，後面的函式自動跳過，主程式才知道要重連。']],
+goals:[['學會','Error Cluster、錯誤線串順序、Error Case、自訂錯誤碼、Simple Error Handler。'],['做出','FX_Check.vi：檢查 PLC 回應的 STX 和校驗，錯了就產生錯誤。'],['用在專案','通訊一出錯，後面的函式自動跳過，主程式才知道要重連。'],['動畫練習','<a href="lab-cluster.html#err">叢集實驗室：錯誤叢集</a>：在任一個節點注入錯誤，看它沿著錯誤線往後傳、哪些節點不執行、Close 為什麼照樣執行。']],
 check:'FX_Check 輸入正確回應 &lt;STX&gt;D204&lt;ETX&gt;DD 時 Data = D204、沒有錯誤；把最後一個字元改掉就輸出錯誤 5001。',
 body:[
 C.h3('懂','','Error Cluster：三個欄位'),

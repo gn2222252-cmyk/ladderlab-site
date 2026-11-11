@@ -156,7 +156,7 @@ const qmhStates=[
  ['其他','Pause','暫停（保留下一個狀態）'],['其他','Done','結批、關設備、結束']];
 
 L.push({id:'A02',order:32,no:'A2',part:PART,title:'QMH 從零開始：用 10 MES.vi 看懂「訊息 + 狀態機」',mins:90,files:['我的QMH骨架.vi'],
-goals:[['學會','State Machine 的限制、QMH 的三個零件（生產者、訊息佇列、消費者）、怎麼新增一個訊息、怎麼正確結束。'],['看懂','13_PLC 的前身 10 MES.vi：25 個狀態、Decode_Cmd 解訊息、MES 迴圈。'],['做出','自己的 QMH 骨架，按按鈕送訊息、狀態機處理、Exit 正常結束。'],['動畫練習','<a href="lab-struct.html#event">結構實驗室：Event 事件排隊</a>：按得比程式處理快時事件怎麼排隊，就是 QMH 用 Queue 不漏訊息的同一個想法。']],
+goals:[['學會','State Machine 的限制、QMH 的三個零件（生產者、訊息佇列、消費者）、怎麼新增一個訊息、怎麼正確結束。'],['看懂','13_PLC 的前身 10 MES.vi：25 個狀態、Decode_Cmd 解訊息、MES 迴圈。'],['做出','自己的 QMH 骨架，按按鈕送訊息、狀態機處理、Exit 正常結束。'],['動畫練習','<a href="lab-struct.html#event">結構實驗室：Event 事件排隊</a>：按得比程式處理快時事件怎麼排隊，就是 QMH 用 Queue 不漏訊息的同一個想法。'],['動畫練習','<a href="lab-queue.html#stop">佇列實驗室：怎麼關</a>：先送 Exit 訊息、兩邊都停了才 Release，QMH 的結束順序就是這樣。']],
 check:'自己的 QMH 骨架：按 Start 狀態列會從 Idle 依序跑到 Inspect 再回來；生產中按 Pause 會停住、Resume 繼續；Exit 兩個迴圈都停、沒有錯誤對話框。',
 body:[
 note('先修','CLAD 的 <a href="#C09">C9 設計模式</a> 講過 State Machine 和 QMH 的定義；第 <a href="#L16">16 課</a> 寫過雙迴圈 + Queue。這一課用真實專案把它們接起來。'),
