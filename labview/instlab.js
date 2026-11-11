@@ -241,7 +241,7 @@
 
   /* ====================================================================== ③ VISA、DAQ 還是 TCP？ */
   var LINK = ['序列埠（COM）：用 VISA，要設鮑率、資料位元、同位', 'USB 測試儀器（USBTMC）：用 VISA，選 USB 資源就好，不用設鮑率', '網路線：用 VISA 的 TCPIP 資源或 TCP 函式，要 IP 和埠號', '它不講話：用 DAQ 卡（DAQmx）量電壓'];
-  var DATA = ['文字（ASCII），一行一行，有結尾字元', '位元組加檢查碼（例如 Modbus RTU 的 CRC）', '位元組，前面有長度欄位（例如 Modbus TCP 的 MBAP）'];
+  var DATA = ['文字（ASCII），一行一行，有結尾字元', '位元組加檢查碼（例如 Modbus RTU 的 CRC）', '位元組，前面有長度欄位（例如 Modbus TCP 的 MBAP）', '命令和短的回覆是文字；大筆資料是 # 開頭的區塊（先給長度，再給位元組）'];
   var WHO = ['一問一答：我送命令，它才回', '它自己會送：我只要讀，但要小心緩衝區裡的舊資料'];
   var SC = [
     { id: 'psu', name: '電源供應器', sub: '背面一個 USB 孔', clue: '背面只有一個 USB 孔。裝好驅動程式後，Windows 裝置管理員多了一個「COM7」。', quote: 'Baud rate: 9600／57600／115200, Data bits: 8, Parity: none. 例：VSET1:5.0', speaks: true, link: 0, linkWhy: '雖然插的是 USB 線，但電腦看到的是 COM 埠（虛擬序列埠），而且說明書要你設鮑率：這就是序列埠。', data: 0, dataWhy: '命令是看得懂的字（VSET1:5.0）。', who: 0, whoWhy: '說明書列的是命令和查詢，沒有說它會自己送。' },
@@ -251,6 +251,7 @@
     { id: 'tc', name: '溫度控制器', sub: '兩個端子 D+、D−', clue: '背面的端子標 D+、D−（或 DATA+、DATA−），要透過 USB 轉 RS-485 的轉接器接到電腦。', quote: 'RS-485, Modbus RTU／ASCII, 2400～38400 bps. 位址 1000H：PV', speaks: true, link: 0, linkWhy: 'RS-485 經過轉接器後，電腦上還是一個 COM 埠，一樣要設鮑率。', data: 1, dataWhy: 'Modbus RTU 是位元組，最後兩個位元組是 CRC。（選 ASCII 模式的話是十六進位文字加 LRC。）', who: 0, whoWhy: 'Modbus 永遠是主站（電腦）先問，從站才回。' },
     { id: 'adam', name: '網路型類比輸入模組', sub: 'RJ-45 網路孔', clue: '模組上有 RJ-45 網路孔，用原廠工具可以搜尋到它的 IP。', quote: 'Protocol: Modbus/TCP.　Address 40001～40008: AI value', speaks: true, link: 2, linkWhy: '有 IP：網路連線。', data: 2, dataWhy: 'Modbus TCP 是位元組，前面多一段 MBAP 標頭（含長度），沒有 CRC。', who: 0, whoWhy: 'Modbus 是一問一答。' },
     { id: 'pt', name: '壓力傳送器', sub: '兩條線', clue: '只有兩條線，沒有任何接頭。銘牌上寫「Output: 4–20 mA」。', quote: 'Output signal: 4…20 mA, 2-wire.　Range: 0…10 bar', speaks: false, speakWhy: '它只輸出一個電流大小，沒有命令、沒有協定。', dataWhy: 'DAQ 讀回來的是電壓的數值陣列。電流要先經過電阻變成電壓，再自己依規格換算成壓力。' },
+    { id: 'scope', name: '示波器（接網路）', sub: 'RJ-45 網路孔', clue: '背面有 USB 和 RJ-45 網路孔。面板的 Utility 選單裡有「Socket Server」，打開後顯示埠號 4000。', quote: 'CURVe? … <Block> is #<x><yyy><data><newline>.　DATa:ENCdg RIBinary', speaks: true, link: 2, linkWhy: '有 IP、有埠號：網路連線。它講 SCPI，所以用 VISA 的 TCPIP SOCKET 資源。', data: 3, dataWhy: '命令和 *IDN? 這種回覆是文字；波形（CURVe?）是 # 開頭的二進位區塊：# 之後一位數說長度欄有幾位，接著是長度，然後才是資料。', who: 0, whoWhy: '一問一答：送 CURVe? 它才送波形。' },
     { id: 'scan', name: '條碼掃描器', sub: 'USB', clue: 'USB 接頭。照說明書掃了「USB COM Port Emulation」的設定條碼後，裝置管理員多了一個 COM 埠。', quote: 'Suffix: CR.　掃到條碼時送出條碼內容', speaks: true, link: 0, linkWhy: '設定成 COM Port Emulation 之後，電腦看到的就是序列埠。', data: 0, dataWhy: '送出的是條碼的文字，後面加 CR。', who: 1, whoWhy: '有人掃它才送，不是你問它才回：程式要一直準備好收。' }
   ];
   var fcur = 'psu', F = null;
@@ -269,7 +270,7 @@
   }
   function flowEnd(s) {
     if (!s.speaks) return '結論：用 DAQmx。先在 NI MAX 的 Test Panel 看到電壓，再想換算公式。';
-    return '結論：' + ['VISA（序列埠）', 'VISA（USB 資源）', s.data === 2 ? 'TCP 函式（或 Modbus 函式庫）' : 'VISA 的 TCPIP 資源，或 TCP 函式'][s.link] + '；資料是' + ['文字，用字串函式切', '位元組，要算檢查碼、用陣列函式取位元組', '位元組，前 7 個是標頭，用陣列函式取位元組'][s.data] + '；' + (s.who ? '它會自己送，程式要一直讀，而且先清掉舊資料。' : '一問一答，送完命令再讀。');
+    return '結論：' + ['VISA（序列埠）', 'VISA（USB 資源）', s.data === 2 ? 'TCP 函式（或 Modbus 函式庫）' : 'VISA 的 TCPIP 資源，或 TCP 函式'][s.link] + '；資料是' + ['文字，用字串函式切', '位元組，要算檢查碼、用陣列函式取位元組', '位元組，前 7 個是標頭，用陣列函式取位元組', '文字加二進位區塊：照區塊標頭的長度讀（讀資料時關掉結尾字元），再用 Type Cast 變成數字陣列'][s.data] + '；' + (s.who ? '它會自己送，程式要一直讀，而且先清掉舊資料。' : '一問一答，送完命令再讀。');
   }
   function drawFlow() {
     pickRow('fpick', fcur, function (id) { fcur = id; F = null; flowSay(''); drawFlow(); }, SC);

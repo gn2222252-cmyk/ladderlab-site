@@ -17,6 +17,8 @@ const DEVICES=[
   why:'它有自己的 CPU，聽得懂文字命令。USB 在電腦上變成 COM 埠，所以走序列埠。'},
  {n:'數位電表（Keysight 34461A）',back:'背板有 USB 和網路孔。',man:'說明書說用 SCPI 命令，網路可以用 VXI-11、HiSLIP 或 Socket 連線。',talks:true,link:'lan',lan:'scpi',
   why:'它是標準的量測儀器，USB 和網路講的是同一套 SCPI 命令。'},
+ {n:'示波器（Tektronix TBS2000B）',back:'背板有 USB 和網路孔。',man:'程式設計手冊列了 SCPI 命令；走網路要先在面板打開 Socket Server（預設埠 4000）。波形用 CURVe? 傳回來。',talks:true,link:'lan',lan:'scpi',
+  why:'它也是量測儀器，講 SCPI，判斷方法跟電表一樣。不一樣的是一次回來一整段波形，I12 再講怎麼讀。'},
  {n:'壓力傳送器（輸出 4–20 mA）',back:'只有兩條線，沒有任何通訊孔。',man:'規格表只有一句：輸出 4–20 mA 對應 0–10 bar。沒有命令表。',talks:false,
   why:'它只會把壓力變成電流，不會聽、也不會回答。要有人幫它把電流量成數字。'},
  {n:'溫控器（台達 DTB 系列）',back:'端子台上有一對 RS-485 端子（常見的標示是 D+、D−，依型號的端子圖）。',man:'說明書附一張 Modbus 位址表：哪個位址是現在溫度、哪個是設定溫度。',talks:true,link:'serial',
