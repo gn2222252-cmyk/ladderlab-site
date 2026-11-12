@@ -454,3 +454,4 @@ details.think[open]>summary{margin-bottom:4px}
 .bb-parts figure{margin:0;text-align:center}
 .bb-parts figcaption{font-size:13px;opacity:.75}
 .bb-part{width:150px;height:auto;display:block}
+.bb-part.bb-sch{width:300px;max-width:100%}
