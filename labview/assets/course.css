@@ -359,3 +359,11 @@ details.think[open]>summary{margin-bottom:4px}
 .pl-log tr.bad td:not(:first-child){font-weight:600}
 .pl-log tr.warn td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
 .pl-log tr.ok td:first-child{box-shadow:inset 3px 0 0 var(--accent2)}
+
+/* myRIO 課：步驟、專案總管樹狀圖、介面上的字 */
+.mr-steps{padding-left:1.6em}
+.mr-steps li{margin:4px 0}
+.mr-ui{font-weight:700;border-bottom:2px solid var(--line);padding:0 2px}
+#content .mr-tree{background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.9;padding:10px 12px;overflow-x:auto}
+.mr-tree small{font-family:var(--font);color:var(--mute)}
+.mr-ic{display:inline-block;width:1.4em;text-align:center}
