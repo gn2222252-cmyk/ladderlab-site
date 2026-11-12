@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="e29470f069">
+<meta name="ll-version" content="fe76d5160b">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>急停、安全迴路與硬體互鎖：為什麼不能只靠 PLC 程式 | LadderLab</title>
@@ -205,7 +205,7 @@ OUT Y001      ; 反轉</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "e29470f069" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "fe76d5160b" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
