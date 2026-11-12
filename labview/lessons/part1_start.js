@@ -225,7 +225,7 @@ C.table(['快捷鍵','作用','什麼時候用'],[
 ]),
 `<h4>選盤（Palette）</h4><p>在<b>前面板空白處按右鍵</b>會跳出 <b>Controls</b> 選盤（放控制項）；在<b>方塊圖空白處按右鍵</b>會跳出 <b>Functions</b> 選盤（放函式）。左上角的圖釘可以把選盤釘住。本課程寫位置時用這種格式：</p>
 <p>${fn('Programming','Numeric','Add')}　表示 Functions 選盤 → Programming → Numeric → Add。</p>
-<p>更快的方法是 <b>Quick Drop</b>：在方塊圖按 <kbd>Ctrl</kbd>+<kbd>Space</kbd>，打 <code>Add</code>，按 Enter，再點一下放下。前面板也能用（打 <code>Numeric Control</code>）。中文版 Windows 預設改成 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd>（避開輸入法切換），也可以在 Tools » Options » Menu Shortcuts 自己改。</p>
+<p>更快的方法是 <b>Quick Drop</b>：在方塊圖按 <kbd>Ctrl</kbd>+<kbd>Space</kbd>，打 <code>Add</code>，按 Enter，再點一下放下。前面板也能用（打 <code>Numeric Control</code>）。中文 Windows 上 <kbd>Ctrl</kbd>+<kbd>Space</kbd> 常常被輸入法切換搶走：按了沒反應，就到 Tools » Options » Menu Shortcuts 自己改（下一課 <a href="#L01Q">1+</a> 有實機畫面和完整步驟）。</p>
 <h4>滑鼠游標會自己換工具</h4>
 ${C.table(['游標樣子','時機','能做什麼'],[['箭頭','指在物件上','選取、拖曳、調大小'],['線軸（像捲線）','指在端子上','點一下開始接線，再點目的端子'],['手指','指在控制項上（執行時）','操作數值、按按鈕'],['I 字','雙擊文字','改標籤、改常數']])}
 `,

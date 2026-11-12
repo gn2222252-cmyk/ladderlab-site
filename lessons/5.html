@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="61927beb69">
+<meta name="ll-version" content="1445d1cfdb">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>4.1 用自保持寫流程：開始打結｜PLC 互動課程</title>
@@ -70,7 +70,7 @@ OUT Y002</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "61927beb69" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1445d1cfdb" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

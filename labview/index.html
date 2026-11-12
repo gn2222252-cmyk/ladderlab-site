@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="61927beb69">
+<meta name="ll-version" content="1445d1cfdb">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -28,7 +28,8 @@
 <script src="assets/course.js?v=a4d410b27b"></script>
 <script src="assets/lvfmt.js?v=174413c716"></script>
 <script src="assets/instsim.js?v=6e697d376b"></script>
-<script src="lessons/part1_start.js?v=92e87ae171"></script>
+<script src="lessons/part1_start.js?v=f39628d24c"></script>
+<script src="lessons/part1_quickdrop.js?v=a00723c833"></script>
 <script src="lessons/part2_basics_a.js?v=4debd6fd89"></script>
 <script src="lessons/part2_basics_b.js?v=862b228e40"></script>
 <script src="lessons/part2_basics_c.js?v=bf10812ab2"></script>
@@ -63,14 +64,14 @@
 <script src="lessons/part5_clad_qthr.js?v=210cb91fdc"></script>
 <script src="lessons/part5_clad_qfile.js?v=8f0e097eb5"></script>
 <script src="lessons/part5_clad_q26.js?v=a3f33c54c1"></script>
-<script src="lessons/part5_clad_bank2.js?v=cd32bd32cb"></script>
+<script src="lessons/part5_clad_bank2.js?v=a68d05a25d"></script>
 <script src="lessons/part5_clad_exam.js?v=18387a5d6e"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "61927beb69" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "1445d1cfdb" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
