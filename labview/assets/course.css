@@ -405,3 +405,39 @@ details.think[open]>summary{margin-bottom:4px}
 .mc-led i{display:block;width:18px;height:8px;border-radius:2px;background:#2b2f33;margin-bottom:3px;border:1px solid #555}
 .mc-led.on i{background:#4aa3ff;box-shadow:0 0 8px #4aa3ff}
 .mc-led.on{color:var(--ink);font-weight:700}
+
+/* M3+ MXP 麵包板模擬器 */
+.bb-wrap{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:16px;align-items:start;margin:14px 0}
+@media (max-width:760px){.bb-wrap{grid-template-columns:1fr}}
+.bb-svg{width:100%;height:auto;display:block;user-select:none;touch-action:manipulation}
+.bb-svg .bb-h{fill:#bfc3c8;stroke:#8d9298;stroke-width:.6;cursor:pointer}
+.bb-svg .bb-h:hover{fill:#90caf9}
+.bb-svg .bb-h.hi{fill:#ffb300;stroke:#a86d00}
+.bb-svg .bb-cg *{pointer-events:none}
+.bb-svg .bb-cg .hit{pointer-events:auto;cursor:pointer}
+.bb-side{font-size:14px;min-width:0}
+.bb-pre{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.bb-pre b{width:100%}
+.bb-pre button{font:inherit;font-size:13px;padding:4px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card,transparent);color:inherit;cursor:pointer}
+.bb-pre button:hover{border-color:currentColor}
+.bb-pre .bb-flip,.bb-pre .bb-clr{opacity:.8}
+.bb-tools{border:1px solid var(--line);border-radius:6px;padding:6px 10px;margin:0 0 8px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.bb-tools legend{font-size:13px;padding:0 4px}
+.bb-opt{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.bb-opt select,.bb-dl select{font:inherit;font-size:13px}
+.bb-say{background:rgba(255,179,0,.12);border-left:3px solid #ffb300;padding:6px 10px;margin:8px 0;border-radius:0 6px 6px 0}
+.bb-h4{font-weight:700;margin:10px 0 4px}
+.bb-dl{display:block;margin:4px 0}
+.bb-res{padding-left:18px;margin:8px 0}
+.bb-res li{margin:4px 0}
+.bb-ok{color:#2e7d32}
+.bb-warn{color:#b26a00}
+.bb-bad{color:#c62828;font-weight:600}
+.bb-chain{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:10px 0}
+.bb-chain span{border:1px solid var(--line);border-radius:5px;padding:3px 8px;font-size:14px}
+.bb-chain span.pw{border-color:#c62828;color:#c62828}
+.bb-chain span.gd{border-color:#546e7a}
+.bb-chain span.dio{border-color:#1565c0;color:#1565c0}
+.bb-chain span.led{background:rgba(255,59,48,.1)}
+.bb-chain i{font-style:normal;opacity:.6}
+.bb-gal .mr-shot img{height:auto;max-height:420px;object-fit:contain}
