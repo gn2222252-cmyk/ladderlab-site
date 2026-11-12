@@ -283,6 +283,89 @@ C.h3('測','q','小測驗'),
 ]}
 ]});
 
+/* ---------- F2 的動手寫：Format Into String 三個輸入（結果由 assets/lvfmt.js 算，跟上面的實驗室同一套） ---------- */
+const askF=(q,a)=>`<details class="think"><summary><span class="q">問自己：${q}</span><span class="hint">先想一下，寫下你的猜測，再點開看</span></summary>${a}</details>`;
+const FMT_RE=/%([-+0#]*)(\d+)?(?:\.(\d+))?([dxXobfegps])/g;
+/* 格式字串切成三段，每段一個格式碼，各自交給 LVFMT.format（%% 不算格式碼） */
+function fmt3(f,vals,types){
+  if(!window.LVFMT) return {err:1,msg:'（格式碼模擬沒有載入）'};
+  const src=f.replace(/%%/g,'\u0000'),cuts=[];let m;FMT_RE.lastIndex=0;
+  while((m=FMT_RE.exec(src)))cuts.push(FMT_RE.lastIndex);
+  if(cuts.length<3) return {err:83,msg:'錯誤 83：格式碼只有 '+cuts.length+' 個，但有 3 個輸入。有幾個輸入就要幾個格式碼。'};
+  if(cuts.length>3) return {err:-1,msg:'格式碼有 '+cuts.length+' 個，比輸入多（這個練習固定 3 個輸入：Name、Value、Address）。'};
+  let out='',start=0;
+  for(let k=0;k<3;k++){
+    const seg=src.slice(start,k===2?src.length:cuts[k]).replace(/\u0000/g,'%%');start=cuts[k];
+    const r=LVFMT.format(seg,vals[k],types[k]);
+    if(r.err) return {err:81,msg:'錯誤 81：第 '+(k+1)+' 個格式碼和輸入的型別不合（'+['Name 是字串','Value 是 DBL','Address 是 I32'][k]+'）。'};
+    out+=r.text;
+  }
+  return {text:out};
+}
+const unescF=s=>String(s||'').replace(/\\r/g,'\r').replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/\\s/g,' ');
+const fmtVI={name:'F2_Format_Line.vi',view:'split',ratio:1.3,
+ fp:{w:380,h:330,items:[
+  {id:'fs',k:'str',ctl:true,label:'format string（\\ Codes Display，可以改）',x:16,y:16,w:340,v:'%s,%.3f,%04X\\r\\n'},
+  {id:'nm',k:'str',ctl:true,label:'Name',x:16,y:74,w:110,v:'Sensor A'},
+  {id:'val',k:'num',ctl:true,label:'Value (DBL)',x:140,y:74,w:100,v:3.14159,inc:0.5},
+  {id:'adr',k:'num',ctl:true,label:'Address (I32)',rep:'I32',x:256,y:74,w:100,v:4096},
+  {id:'res',k:'str',label:'resulting string（\\ Codes Display）',x:16,y:134,w:340,rows:2},
+  {id:'len',k:'num',label:'String Length',x:16,y:206,w:90},
+  {id:'eo',k:'err',label:'error out',x:150,y:196}]},
+ bd:{w:480,h:220,nodes:[
+  {id:'fs',k:'ctl',t:'str',label:'format string',x:20,y:32},
+  {id:'nm',k:'ctl',t:'str',label:'Name',x:20,y:64},
+  {id:'val',k:'ctl',t:'dbl',label:'Value',x:20,y:96},
+  {id:'adr',k:'ctl',t:'i32',label:'Address',x:20,y:128},
+  {id:'fis',k:'fn',fn:'Format Into String',x:200,y:10,h:160,ins:['format string','input 1','input 2','input 3'],outs:['resulting string','error out']},
+  {id:'res',k:'ind',t:'str',label:'resulting string',x:330,y:53},
+  {id:'sl',k:'fn',fn:'String Length',x:290,y:134},
+  {id:'len',k:'ind',t:'i32',label:'String Length',x:360,y:140},
+  {id:'eo',k:'ind',t:'err',label:'error out',x:330,y:180}],
+ wires:[
+  {id:'w1',from:'fs',to:'fis.format string',t:'str'},
+  {id:'w2',from:'nm',to:'fis.input 1',t:'str'},
+  {id:'w3',from:'val',to:'fis.input 2',t:'dbl'},
+  {id:'w4',from:'adr',to:'fis.input 3',t:'i32'},
+  {id:'w5',from:'fis.resulting string',to:'res',t:'str'},
+  {id:'w6',from:'fis.resulting string',to:'sl.string',t:'str',pts:[[270,63],[270,150]]},
+  {id:'w7',from:'sl.length',to:'len',t:'i32'},
+  {id:'w8',from:'fis.error out',to:'eo',t:'err',pts:[[256,117],[256,190]]}]},
+ sim:{live:true,step(i){
+  const f=unescF(i.fs),r=fmt3(f,[String(i.nm||''),+i.val,Math.trunc(+i.adr)],['str','dbl','i32']);
+  if(r.err){const e={status:true,code:r.err,source:'Format Into String in F2_Format_Line.vi'};
+   return {out:{res:'',len:0,eo:e},msg:r.msg,vals:{fs:f,nm:i.nm,val:i.val,adr:i.adr,'fis.resulting string':'','sl.length':0,'fis.error out':e}};}
+  return {out:{res:r.text,len:r.text.length,eo:{status:false,code:0,source:''}},msg:'resulting string 有 '+r.text.length+' 個字元（最後的 CR LF 也算）',
+   vals:{fs:f,nm:i.nm,val:i.val,adr:i.adr,'fis.resulting string':r.text,'sl.length':r.text.length,'fis.error out':{status:false,code:0,source:''}}};
+ }}
+};
+const F05_LV=[
+C.h3('做','b','動手寫：F2_Format_Line.vi（一個 Format Into String，三種輸入，組成一行）'),
+`<p>上面的格式碼，實際用起來幾乎都是這個樣子：好幾個值、一個格式字串，組成要寫進檔案或送給儀器的一行。這支 VI 把名稱（字串）、數值（DBL）、位址（整數）組成 <code>Sensor A,3.142,1000</code> 加換行。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\F2_Format_Line.vi</code>。',
+ in:'三個控制元件：<code>Name</code>（字串）、<code>Value</code>（DBL，例 3.14159）、<code>Address</code>（I32，例 4096）。格式字串也做成控制元件，方便邊改邊看（正式程式裡通常是常數）。',
+ calc:'Format Into String 往下拉成 3 個輸入，格式字串 <code>%s,%.3f,%04X\\r\\n</code>：第 1 個 %s 吃 Name、第 2 個 %.3f 吃 Value（小數 3 位）、第 3 個 %04X 吃 Address（十六進位、4 位補 0），格式碼和輸入照順序一個對一個。中間的逗號照抄，最後的 \\r\\n 是換行。',
+ out:'String Indicator <code>resulting string</code>，右鍵 <b>\'\\\' Codes Display</b>，看得到最後的 \\r\\n。String Length 顯示總共幾個字元。',
+ loop:'不用迴圈。按 Run 一次（網頁上改值就會重算）。',
+ end:'格式碼和型別不合（例如 %d 配到 Name）會是錯誤 81、格式碼比輸入少是 83：resulting string 是空的，error out 有錯。'}),
+note('VI 視窗是網頁模擬的','結果由跟上面「格式碼實驗室」同一套的程式算出來。改 format string 或任何一個輸入，馬上重算。'),
+{steps:{title:'F2_Format_Line.vi：格式碼一個對一個輸入',lv:fmtVI,steps:[
+ {t:'前面板',view:'fp',add:['fs','nm','val','adr','res','len','eo'],h:`<p>${ctl('Modern','String & Path','String Control')} 兩個：<code>format string</code>、<code>Name</code>；Numeric Control <code>Value</code>（DBL）、<code>Address</code>（右鍵 Representation ▸ I32）。String Indicator <code>resulting string</code>、Numeric Indicator <code>String Length</code>。</p><p><b>format string 和 resulting string 都先右鍵選 '\\' Codes Display</b>，再打 <code>%s,%.3f,%04X\\r\\n</code>。</p>`},
+ {t:'Format Into String 拉成 3 個輸入',view:'bd',add:['fs','nm','val','adr','fis','w1','w2','w3','w4'],h:`<p>${fn('Programming','String','Format Into String')} ${qd('Format Into String')}。滑鼠移到它的下緣，出現拉桿時往下拉，拉出 input 1、input 2、input 3。</p>${wt([
+ ['format string','format string','最上面那一個'],
+ ['Name','input 1','對到第 1 個格式碼 %s'],
+ ['Value','input 2','對到 %.3f'],
+ ['Address','input 3','對到 %04X']])}<p class="qd">在 Format Into String 上按右鍵 <b>Edit Format String</b>，有一個對話框可以一格一格選格式，不用背格式碼。</p>`},
+ {t:'resulting string、error out',view:'bd',add:['res','eo','w5','w8'],h:`<p>resulting string 接 String Indicator；error out 在 Format Into String 右下角，Create ▸ Indicator。</p>`},
+ {t:'String Length：數一數有幾個字元',view:'bd',add:['sl','len','w6','w7'],h:`<p>${fn('Programming','String','String Length')} ${qd('String Length')}。<code>Sensor A,3.142,1000</code> 是 19 個字，加上 \\r\\n 兩個，共 21 個。看不見的字元也算。</p>`},
+ {t:'Run：改格式字串，看結果',view:'split',add:[],h:`<p>試這幾個（每次只改一樣）：</p><ul><li>%.3f 改成 <code>%8.3f</code>：數字前面多了空白（寬度至少 8）。</li><li>%04X 改成 <code>%d</code>：4096 用十進位。</li><li>把逗號改成 <code>\\t</code>：用 Tab 分欄。</li><li>第一個 %s 改成 %d：錯誤 81。</li><li>刪掉 %04X：錯誤 83。</li></ul>`}
+]}},
+askF('改一個數字，先預測結果：格式字串的 %.3f 改成 %.0f，Value 改成 2.5。resulting string 和 String Length 各是多少？Value 改成 3.5 呢？',
+ `<p>2.5 → <code>Sensor A,2,1000</code>＋\\r\\n，String Length <b>18</b>；3.5 → <code>Sensor A,4,1000</code>＋\\r\\n，也是 18。</p>
+<p>剛好一半時 LabVIEW 取偶數（上面的「四捨六入五成雙」），所以 2.5 變 2、3.5 變 4。寫進檔案的數字跟你心裡想的「四捨五入」差 1，而且沒有錯誤。要保留原本的精度，就不要用 %.0f 或 %d 存小數。</p>`)
+];
+
 /* ======================================================================
    F2：格式碼完整教學（數字與字串）
    ====================================================================== */
@@ -362,6 +445,7 @@ C.table(['format string','input string','output 1','remaining string','說明（
  ['<code>%p</code>','673.635m','0.673635','""','SI 字首換算回去'],
  ['<code>%f</code>','1,234.5','1','",234.5"','千分位逗號會讓它停住'],
  ['<code>%f</code>','abc','default value','abc','<b>錯誤 85</b>']]),
+...F05_LV,
 C.h3('測','q','小測驗'),
 {quiz:[
  {q:'Format Into String，format string = %06.2f，輸入 -3.5，結果是？',o:['-03.50','-3.50','0-3.50','-003.50'],a:0,ex:'寬 6 包含負號：- 0 3 . 5 0 剛好 6 個字。0 補在負號後面。'},

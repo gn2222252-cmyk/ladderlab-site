@@ -49,6 +49,87 @@ C.h3('測','q','小測驗'),
 ]});
 
 /* ======================================================================
+   C10、C11 的動手寫（VI 視窗是網頁模擬的）
+   ====================================================================== */
+const ask=(q,a)=>`<details class="think"><summary><span class="q">問自己：${q}</span><span class="hint">先想一下，寫下你的猜測，再點開看</span></summary>${a}</details>`;
+const PR2=['Functions','Programming'];
+if(!LV.F['Error Cluster From Error Code'])LV.F['Error Cluster From Error Code']={g:'#→err',ins:['error code','error message'],outs:['error out'],w:50,col:'#fff1c2',pal:[...PR2,'Dialog & User Interface','Error Cluster From Error Code.vi']};
+const NOE={status:false,code:0,source:''};
+/* Merge Errors：回報第一個錯誤；沒有錯誤時回報第一個警告 */
+const mergeE=(...es)=>es.find(e=>e.status)||es.find(e=>e.code)||NOE;
+
+const errVI={name:'C10_Errors.vi',view:'split',ratio:1.6,
+ fp:{w:360,h:330,items:[
+  {id:'val',k:'num',ctl:true,label:'Value',x:16,y:16,w:100,v:50,inc:30},
+  {id:'inj',k:'btn',label:'（模擬）error in 帶著錯誤進來',text:'注入錯誤',mech:'switch',x:150,y:16},
+  {id:'eo',k:'err',label:'error out',x:16,y:80},
+  {id:'ec',k:'err',label:'Clear Errors 之後',x:190,y:80},
+  {id:'dlg',k:'str',label:'（模擬）Simple Error Handler 跳出的對話框',x:16,y:226,w:330,rows:3}]},
+ bd:{w:520,h:200,nodes:[
+  {id:'val',k:'ctl',t:'dbl',label:'Value',x:16,y:33},
+  {id:'k100',k:'const',t:'dbl',v:100,x:58,y:48},
+  {id:'gt',k:'fn',fn:'Greater?',x:96,y:36},
+  {id:'k5001',k:'const',t:'i32',v:5001,x:96,y:8},
+  {id:'k0',k:'const',t:'i32',v:0,x:110,y:70},
+  {id:'sel',k:'fn',fn:'Select',x:140,y:34},
+  {id:'kmsg',k:'const',t:'str',v:'Value 超過 100',x:60,y:95},
+  {id:'ecfc',k:'fn',fn:'Error Cluster From Error Code',x:200,y:39,h:32,showName:false},
+  {id:'ein',k:'ctl',t:'err',label:'error in',x:16,y:170},
+  {id:'merge',k:'fn',fn:'Merge Errors',x:280,y:44},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:360,y:44},
+  {id:'eo',k:'ind',t:'err',label:'error out',x:430,y:50},
+  {id:'clr',k:'fn',fn:'Clear Errors',x:360,y:110},
+  {id:'ec',k:'ind',t:'err',label:'Clear Errors 之後',x:430,y:116}],
+ wires:[
+  {id:'w1',from:'val',to:'gt.x',t:'dbl'},
+  {id:'w2',from:'k100',to:'gt.y',t:'dbl'},
+  {id:'w3',from:'gt.out',to:'sel.s',t:'bool'},
+  {id:'w4',from:'k5001',to:'sel.t',t:'i32',pts:[[136,17],[136,41]]},
+  {id:'w5',from:'k0',to:'sel.f',t:'i32',pts:[[134,79],[134,59]]},
+  {id:'w6',from:'sel.out',to:'ecfc.error code',t:'i32'},
+  {id:'w7',from:'kmsg',to:'ecfc.error message',t:'str',pts:[[190,104],[190,60]]},
+  {id:'w8',from:'ecfc.error out',to:'merge.error 1',t:'err'},
+  {id:'w9',from:'ein',to:'merge.error 2',t:'err',pts:[[270,180],[270,65]]},
+  {id:'w10',from:'merge.error out',to:'seh.error in',t:'err'},
+  {id:'w11',from:'seh.error out',to:'eo',t:'err'},
+  {id:'w12',from:'merge.error out',to:'clr.error in',t:'err',pts:[[340,60],[340,126]]},
+  {id:'w13',from:'clr.error out',to:'ec',t:'err'}]},
+ sim:{live:true,step(i){
+  const over=i.val>100,cust=over?{status:true,code:5001,source:'Value 超過 100'}:NOE;
+  const ein=i.inj?{status:true,code:-1073807339,source:'VISA Read（逾時）——模擬從上游帶進來的錯誤'}:NOE;
+  const m=mergeE(cust,ein);
+  const dlg=m.status?'Error '+m.code+' occurred at '+m.source+'\n（按 OK 後程式繼續；error out 仍然是這個錯誤）':'（沒有錯誤：不跳對話框）';
+  return {out:{eo:m,ec:NOE,dlg},msg:m.status?'Merge Errors 送出 code '+m.code+(cust.status&&ein.status?'：兩個都有錯，回報 error 1（自訂的 5001）':''):'沒有錯誤',
+   vals:{val:i.val,k100:100,k5001:5001,k0:0,kmsg:'Value 超過 100','gt.out':over,'sel.out':over?5001:0,'ecfc.error out':cust,ein,'merge.error out':m,'seh.error out':m,'clr.error out':NOE}};
+ }}
+};
+const C10_LV=[
+C.h3('做','b','動手寫：C10_Errors.vi（自訂錯誤、Merge Errors、Simple Error Handler 和 Clear Errors 各做什麼）'),
+`<p>表格上的工具，放進同一支小 VI 裡比一比。自訂一個錯誤：Value 超過 100 就產生錯誤 5001；再跟 error in 帶進來的錯誤合併；最後一條給 Simple Error Handler，一條給 Clear Errors，看兩邊的 error out 有什麼不同。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\C10_Errors.vi</code>。',
+ in:'前面板 <code>Value</code>（DBL）和 <code>error in</code>（錯誤叢集：status、code、source）。',
+ calc:'Greater?（Value &gt; 100）→ Select 選錯誤碼 5001 或 0 → Error Cluster From Error Code.vi 把碼變成錯誤叢集（碼是 0 就是「沒有錯誤」）。Merge Errors 把自訂的錯誤和 error in 合成一條：回報<b>第一個</b>錯誤。',
+ out:'兩個 Error Out 指示器：一個接在 Simple Error Handler 後面（有錯會跳對話框，錯誤照樣往後傳），一個接在 Clear Errors 後面（永遠是沒有錯誤）。',
+ loop:'不用迴圈，按一次 Run 做一次。',
+ end:'這支 VI 自己就是最上層，所以由它顯示錯誤（Simple Error Handler）。如果它是 SubVI，就只把 error out 接到接線端，不要跳對話框，讓主程式決定。'}),
+note('VI 視窗是網頁模擬的','改 Value、按「注入錯誤」就會重算；「對話框」那一格模擬 Simple Error Handler 跳出的視窗。'),
+{steps:{title:'C10_Errors.vi：產生、合併、顯示、清除',lv:errVI,steps:[
+ {t:'前面板',view:'fp',add:['val','inj','eo','ec','dlg'],h:`<p>Numeric Control <code>Value</code>；${ctl('Modern','Array, Matrix & Cluster','Error In 3D.ctl')}；兩個 ${ctl('Modern','Array, Matrix & Cluster','Error Out 3D.ctl')}，標籤 <code>error out</code>、<code>Clear Errors 之後</code>。</p>`},
+ {t:'自訂錯誤：Value > 100 就是 5001',view:'bd',add:['val','k100','gt','k5001','k0','sel','kmsg','ecfc','w1','w2','w3','w4','w5','w6','w7'],h:`<p>${fn('Programming','Comparison','Greater?')} 跟 <code>100</code> 比；${fn('Programming','Comparison','Select')} 的 t 接 <code>5001</code>、f 接 <code>0</code>。</p><p>${fn('Programming','Dialog & User Interface','Error Cluster From Error Code.vi')} ${qd('Error Cluster From Error Code')}：error code 接 Select 的輸出，error message 接說明文字（字串常數 <code>Value 超過 100</code>）。碼用 5000～9999 這一段，才不會跟 NI 的碼撞在一起。</p>`},
+ {t:'Merge Errors：兩條錯誤線合一',view:'bd',add:['ein','merge','w8','w9'],h:`<p>${fn('Programming','Dialog & User Interface','Merge Errors')} ${qd('Merge Errors')}：</p>${wt([
+ ['Error Cluster From Error Code 的 error out','Merge Errors 的 error 1','自訂的錯誤'],
+ ['error in','Merge Errors 的 error 2','從上游帶進來的錯誤']])}<p>Merge Errors 由上往下找，回報<b>第一個</b>錯誤。</p>`},
+ {t:'Simple Error Handler：顯示，但不清掉',view:'bd',add:['seh','eo','w10','w11'],h:`<p>${fn('Programming','Dialog & User Interface','Simple Error Handler.vi')}：有錯就跳對話框。注意它的 error out <b>還是那個錯誤</b>：它只負責顯示。</p>`},
+ {t:'Clear Errors：清掉，但不顯示',view:'bd',add:['clr','ec','w12','w13'],h:`<p>從 Merge Errors 的輸出拉一條分岔到 ${fn('Programming','Dialog & User Interface','Clear Errors.vi')} ${qd('Clear Errors')}。它的輸出永遠是「沒有錯誤」，而且什麼都不會跳出來。</p><div class="warn"><b>Clear Errors 要先記錄再清</b>直接清掉等於假裝沒事。I11、I13 的做法都是：先把錯誤寫進紀錄或顯示出來，確定處理過了，才清。</div>`},
+ {t:'Run：四種組合各試一次',view:'split',add:[],h:`<p>Value 50／150，「注入錯誤」開／關，四種組合都看一次：error out 的 code 是多少？Clear Errors 之後呢？對話框有沒有跳？</p>`}
+]}},
+ask('改一個數字，先預測結果：Value 改成 150，而且按下「注入錯誤」。error out 的 code 是 5001 還是 -1073807339？如果想讓上游的錯誤優先，要改哪裡？',
+ `<p>是 <b>5001</b>：兩個都是錯誤時，Merge Errors 回報第一個，自訂的錯誤接在 error 1。另一個錯誤不會出現在 error out。</p>
+<p>想讓上游的錯誤優先，就把 error in 接到 error 1、自訂的接到 error 2。一般的習慣是「先發生的錯誤先報」：上游的錯誤通常才是根本原因，後面的錯誤常常是被它連累的。</p>`)
+];
+
+/* ======================================================================
    C10 錯誤處理與除錯進階
    ====================================================================== */
 L.push({id:'C10',order:110,no:'C10',part:PART,title:'錯誤處理進階：錯誤與警告、自訂錯誤、處理策略',mins:40,
@@ -73,6 +154,7 @@ C.h3('懂','','處理策略'),
 <li><b>迴圈裡的錯誤</b>：決定要停止迴圈（錯誤線接 Loop Condition）、重試（第 19 課重連）、還是記錄後清除繼續。</li>
 <li><b>Shift Register 放錯誤線</b>：讓錯誤能延續到下一圈處理。</li>
 <li>錯誤通常在最上層（主 VI）統一顯示，SubVI 只負責把錯誤正確傳出去。</li></ul>`,
+...C10_LV,
 C.h3('測','q','小測驗'),
 {quiz:[
  {q:'error out 顯示 status = False、code = 1073676294，這代表？',o:['錯誤','警告','沒事','LabVIEW 當機'],a:1,ex:'status False + code 非 0 = 警告。'},
@@ -108,6 +190,87 @@ function chartDemo(d){
     ctx.stroke();
   },50);
 }
+const dispVI={name:'C11_Display.vi',view:'split',ratio:1.5,
+ fp:{w:380,h:400,items:[
+  {id:'temp',k:'num',label:'Temperature (°C)',x:16,y:16,w:110,dig:1},
+  {id:'pts',k:'num',label:'Graph 的點數',x:160,y:16,w:90},
+  {id:'stop',k:'btn',label:'stop',text:'STOP',x:296,y:20,stop:true},
+  {id:'chart',k:'chart',label:'Waveform Chart（一次一點；網頁把歷史長度設成 50）',x:16,y:76,w:300,h:100,min:15,max:35},
+  {id:'graph',k:'chart',label:'Waveform Graph（每圈整個陣列重畫；點多時網頁抽樣畫）',x:16,y:216,w:300,h:100,min:15,max:35}]},
+ bd:{w:640,h:300,structs:[{id:'wl',k:'while',x:60,y:20,w:560,h:260}],
+  nodes:[
+  {id:'karr',k:'const',t:'dbl[]',v:'[ ]',x:16,y:187},
+  {id:'sra',k:'sr',t:'dbl[]',s:'wl',y:196},
+  {id:'rnd',k:'fn',fn:'Random Number (0-1)',x:90,y:60},
+  {id:'k10',k:'const',t:'dbl',v:10,x:120,y:96},
+  {id:'mul',k:'fn',fn:'Multiply',x:150,y:69},
+  {id:'k20',k:'const',t:'dbl',v:20,x:166,y:100},
+  {id:'add',k:'fn',fn:'Add',x:200,y:69},
+  {id:'temp',k:'ind',t:'dbl',label:'Temperature (°C)',x:300,y:73},
+  {id:'chart',k:'ind',t:'dbl',label:'Waveform Chart',x:300,y:125},
+  {id:'ba',k:'fn',fn:'Build Array',x:300,y:185,ins:['array','element'],outs:['appended array']},
+  {id:'graph',k:'ind',t:'dbl[]',label:'Waveform Graph',x:380,y:191},
+  {id:'asz',k:'fn',fn:'Array Size',x:440,y:140},
+  {id:'pts',k:'ind',t:'i32',label:'Graph 的點數',x:500,y:146},
+  {id:'k100',k:'const',t:'i32',v:100,x:100,y:240},
+  {id:'wait',k:'fn',fn:'Wait (ms)',x:140,y:233},
+  {id:'stop',k:'ctl',t:'bool',label:'stop',x:530,y:248},
+  {id:'cond',k:'stop',s:'wl'}],
+  wires:[
+  {id:'w1',from:'karr',to:'sra.init',t:'dbl[]'},
+  {id:'w2',from:'rnd',to:'mul.x',t:'dbl'},
+  {id:'w3',from:'k10',to:'mul.y',t:'dbl',pts:[[145,105],[145,90]]},
+  {id:'w4',from:'mul.out',to:'add.x',t:'dbl'},
+  {id:'w5',from:'k20',to:'add.y',t:'dbl',pts:[[192,109],[192,97]]},
+  {id:'w6',from:'add.out',to:'temp',t:'dbl'},
+  {id:'w7',from:'add.out',to:'chart',t:'dbl',pts:[[260,83],[260,135]]},
+  {id:'w8',from:'sra.L',to:'ba.array',t:'dbl[]'},
+  {id:'w9',from:'add.out',to:'ba.element',t:'dbl',pts:[[260,83],[260,206]]},
+  {id:'w10',from:'ba.appended array',to:'graph',t:'dbl[]'},
+  {id:'w11',from:'ba.appended array',to:'sra.R',t:'dbl[]',pts:[[360,201],[360,240],[600,240],[600,196]]},
+  {id:'w12',from:'ba.appended array',to:'asz.array',t:'dbl[]',pts:[[372,201],[372,156]]},
+  {id:'w13',from:'asz.size',to:'pts',t:'i32'},
+  {id:'w14',from:'k100',to:'wait',t:'i32'},
+  {id:'w15',from:'stop',to:'cond',t:'bool'}]},
+ sim:{period:150,init(){return {arr:[],seed:3};},step(i,st,ctx){
+  st.seed=(st.seed*1103515245+12345)&0x7fffffff;const r=st.seed/0x7fffffff,v=+(20+10*r).toFixed(3);
+  st.arr.push(v);const n=st.arr.length,step=Math.max(1,Math.ceil(n/150));
+  const g=st.arr.filter((_,k)=>k%step===0),stp=!!i.stop;
+  return {out:{temp:v,chart:st.arr.slice(-50),graph:g,pts:n},stop:stp,msg:stp?'按了 STOP':'第 '+ctx.i+' 圈：Chart 收到 1 個點（最多留 50 點）；Graph 收到整個陣列，'+n+' 點',
+   vals:{rnd:r,k10:10,k20:20,'mul.out':10*r,'add.out':v,'sra.L':'['+(n-1)+' 點]','ba.appended array':'['+n+' 點]','asz.size':n,k100:100,stop:stp,karr:'[ ]'}};
+ },doneMsg:'迴圈結束'}
+};
+const C11_LV=[
+C.h3('做','b','動手寫：C11_Display.vi（同一筆資料，三種呈現）'),
+`<p>同一個溫度值，每一圈同時送給 Numeric Indicator、Waveform Chart、Waveform Graph。跑起來比一比：Chart 自己記歷史，Graph 只畫你給它的那個陣列。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\C11_Display.vi</code>。',
+ in:'每一圈用 Random Number (0-1) 產生一個假的溫度：DBL，20～30 °C（代替真的感測器）。',
+ calc:'隨機數 × 10 ＋ 20。另外用一個 Shift Register 存「到目前為止的所有點」，每圈 Build Array 把新的一點接在後面。',
+ out:'Numeric Indicator <code>Temperature (°C)</code>：單位寫在標籤上，Display Format 小數 1 位。Waveform Chart：每圈給<b>一個點</b>，它自己留歷史（Chart History Length，預設 1024 點）。Waveform Graph：每圈給<b>整個陣列</b>，整張重畫。Array Size 顯示 Graph 現在有幾點。',
+ loop:'While Loop，Wait 100 ms：一秒 10 點。顯示元件都在迴圈裡面，才會每圈更新。',
+ end:'STOP 按鈕。注意 Shift Register 裡的陣列會一直變長：跑一整天就是 86 萬點，記憶體一直加（下面的問題）。'}),
+note('VI 視窗是網頁模擬的','為了看得出差別，網頁上 Chart 的歷史長度設成 50 點（LabVIEW 預設 1024）；點數多時 Graph 會抽樣畫。'),
+{steps:{title:'C11_Display.vi：一個值，三種顯示',lv:dispVI,steps:[
+ {t:'前面板：三種顯示元件',view:'fp',add:['temp','chart','graph','pts','stop'],h:`<p>${ctl('Modern','Numeric','Numeric Indicator')} 標籤 <code>Temperature (°C)</code>；${ctl('Modern','Graph','Waveform Chart')}；${ctl('Modern','Graph','Waveform Graph')}；Numeric Indicator <code>Graph 的點數</code>（I32）；Stop Button。</p>
+<p>Temperature 右鍵 ▸ <b>Display Format</b>：Type 選 Floating point、Digits 填 <code>1</code>、選 Digits of precision。單位不要放進數值，寫在標籤上。</p>`},
+ {t:'While Loop、Wait 100 ms、STOP',view:'bd',add:['wl','k100','wait','stop','cond','w14','w15'],h:`<p>While Loop 裡放 Wait (ms) 接 <code>100</code>，Loop Condition 上 Create Control（stop）。</p>`},
+ {t:'產生資料：Random × 10 ＋ 20',view:'bd',add:['rnd','k10','mul','k20','add','w2','w3','w4','w5'],h:`<p>${fn('Programming','Numeric','Random Number (0-1)')} ${qd('Random')}、Multiply 接 <code>10</code>、Add 接 <code>20</code>：每圈一個 20～30 的 DBL。</p>`},
+ {t:'Numeric Indicator 和 Chart：都只給一個點',view:'bd',add:['temp','chart','w6','w7'],h:`${wt([
+ ['Add 的 x+y','Temperature (°C)','只顯示最新一個'],
+ ['同一條線分岔','Waveform Chart','純量：Chart 接在歷史後面']])}
+<p>Chart 右鍵 ▸ <b>Chart History Length…</b> 可以改它記幾點（預設 1024）。超過就把最舊的丟掉。</p>`},
+ {t:'Graph：給它整個陣列',view:'bd',add:['karr','sra','ba','graph','asz','pts','w1','w8','w9','w10','w11','w12','w13'],h:`<p>迴圈左框右鍵 Add Shift Register，外面接一個<b>空的 DBL 陣列常數</b>當初始值。${fn('Programming','Array','Build Array')}：上面接 Shift Register（陣列）、下面接這一圈的值，輸出就是「陣列後面多一點」。</p>${wt([
+ ['Build Array 的 appended array','Waveform Graph','每圈整個陣列重畫'],
+ ['同一條線','Shift Register 右邊','存給下一圈'],
+ ['同一條線','Array Size → Graph 的點數','看陣列一直變長']])}`},
+ {t:'Run：比一比',view:'split',add:[],h:`<p>Run 一陣子：Temperature 只有一個數；Chart 的線往左捲，最舊的點會消失；Graph 每圈整張重畫，點越來越多（X 軸一直變長），Graph 的點數一直加。</p>`}
+]}},
+ask('改一個數字，先預測結果：Chart History Length 用 LabVIEW 預設的 1024，讓迴圈跑 2000 圈。Chart 上剩幾點？Graph 上有幾點？如果把 Graph 和 Build Array 移到迴圈<b>外面</b>（用自動索引的 Tunnel 收資料），跑的時候 Graph 會怎樣？',
+ `<p>Chart 只剩最後 <b>1024</b> 點，前面 976 點被丟掉了；Graph 有 <b>2000</b> 點，因為陣列是你自己存的，一點都沒丟，記憶體也一直變大。</p>
+<p>移到迴圈外面：跑的時候 Graph <b>一直是空的</b>，按 STOP、迴圈結束後，自動索引的 Tunnel 才把整個陣列一次送出去，Graph 這時才出現 2000 點。所以：要邊跑邊看，用 Chart（或在迴圈裡給 Graph 陣列）；要跑完看全部、存檔、分析，用 Graph。</p>`)
+];
+
 L.push({id:'C11',order:111,no:'C11',part:PART,title:'Chart、Graph 與使用者介面',mins:50,
 goals:[['學會','Waveform Chart 與 Graph 的差別、Chart 的更新模式與歷史長度、各種 Graph 接受的資料、多條曲線、常用 UI 技巧。'],['考試重點','Chart 一次加一個（或一段）點並保留歷史；Graph 每次重畫整個陣列；XY Graph 要 X、Y 兩個陣列。'],['動畫練習','<a href="lab-graph.html">圖表實驗室</a>：同一筆資料同時送給 Chart 和 Graph，看純量、1D、2D、Bundle、Waveform 各畫出什麼；<a href="lab-graph.html#xy">XY Graph 畫圓</a>。'],['動畫練習','<a href="lab-prop.html#val">屬性節點實驗室：Value 與事件</a>：Local Variable、Value、Value (Signaling) 哪一種會觸發 Value Change。'],['動畫練習','<a href="lab-wave.html#wf">波形實驗室：Waveform</a>：改 dt 時 Graph 的 X 軸跟著變，Y 一個數字都沒變。'],['動畫練習','<a href="lab-invoke.html#cls">方法節點實驗室：類別階層</a>：控制參考接得上哪一種 Refnum 輸入、什麼時候要 To More Specific Class。'],['動畫練習','<a href="lab-panel.html">人機介面設計工作室</a>：Label 與 Caption、上色與透明、Control Editor 的 Customize Mode、Tab Control 的值，18 種題型隨機練。']],
 check:'能說出 Waveform Graph、XY Graph、Waveform Chart 各接什麼資料。',
@@ -132,6 +295,7 @@ C.table(['需求','做法'],[
  ['大量資料畫圖很慢','降低更新頻率、減少點數（降採樣），或在 Defer Panel Updates 期間一次更新'],
  ['游標量測','Graph 右鍵 Visible Items ▸ Cursor Legend']
 ]),
+...C11_LV,
 C.h3('測','q','小測驗'),
 {quiz:[
  {q:'While Loop 每圈產生一個溫度值，要畫出隨時間變化的曲線，最簡單的顯示元件？',o:['Waveform Graph','Waveform Chart','XY Graph','Intensity Graph'],a:1,ex:'Chart 每次加一個點並保留歷史。'},
