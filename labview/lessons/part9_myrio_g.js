@@ -154,14 +154,14 @@ const PRESETS={
     say:'DIO1 → 按鈕 → GND。DIO1 是輸入，內建 40 kΩ 上拉：沒按讀到 TRUE，按下去讀到 FALSE。點按鈕（灰色小方塊）按下、放開。'}
 };
 
-function bbLab(d,start){
-  const id='bb'+(++UID),S={tool:'look',R:330,col:'red',comps:[],dio:{},sel:null,hi:null,wn:0};
-  const holes=Object.keys(POS);
+const HOLES=Object.keys(POS);
+function boardSvg(){
+  const holes=HOLES;
   const rowNum=[1,5,10,15,20,25,30].map(r=>`<text x="78" y="${RY(r)+3}" font-size="8" text-anchor="end" fill="#555">${r}</text><text x="274" y="${RY(r)+3}" font-size="8" fill="#555">${r}</text>`).join('');
   const colLab=c=>`<text x="${CX[c]}" y="66" font-size="8" text-anchor="middle" fill="#555">${c}</text><text x="${CX[c]}" y="558" font-size="8" text-anchor="middle" fill="#555">${c}</text>`;
   const dlab=DLD.map((t,i)=>t.length>2?`<text transform="translate(${20+i*16+3},606) rotate(90)" font-size="7.5" fill="#e8eef5">${t}</text>`:`<text x="${20+i*16}" y="612" font-size="8" text-anchor="middle" fill="#e8eef5">${t}</text>`).join('');
   const tlab=TLD.map((t,i)=>t.length>2?`<text transform="translate(${96+i*16+3},40) rotate(-90)" font-size="6.5" fill="#e8eef5">${t}</text>`:`<text x="${96+i*16}" y="47" font-size="8" text-anchor="middle" fill="#e8eef5">${t}</text>`).join('');
-  const svg=`<svg class="bb-svg" viewBox="0 0 360 640" role="img" aria-label="MXP 麵包板模擬：點孔看相通，或選工具接線">
+  return `<svg class="bb-svg" viewBox="0 0 360 640" role="img" aria-label="MXP 麵包板模擬：點孔看相通，或選工具接線">
 <rect x="2" y="2" width="356" height="636" rx="10" fill="#14476e"/>
 <rect x="84" y="6" width="214" height="34" rx="3" fill="#1b1b1b"/><rect x="8" y="568" width="344" height="30" rx="3" fill="#1b1b1b"/>
 ${tlab}<text x="120" y="57" font-size="7.5" text-anchor="middle" fill="#9fc3e6">AI</text><text x="184" y="57" font-size="7.5" text-anchor="middle" fill="#9fc3e6">AO</text><text x="236" y="57" font-size="7.5" text-anchor="middle" fill="#9fc3e6">UART</text>
@@ -173,6 +173,22 @@ ${dlab}<text x="150" y="634" font-size="8" text-anchor="middle" fill="#9fc3e6">D
 ${[...COLS].map(colLab).join('')}${rowNum}
 ${holes.map(h=>{const [x,y]=POS[h];return `<rect class="bb-h" data-h="${h}" x="${x-4}" y="${y-4}" width="8" height="8" rx="1.5"/>`;}).join('')}
 <g class="bb-cg"></g></svg>`;
+}
+const WC=['#e8711a','#7a7a7a','#1565c0','#2e7d32','#8e24aa','#c62828'];
+function compSvg(comps,res,sel){
+  return comps.map((c,i)=>{
+      const [x1,y1]=POS[c.a],[x2,y2]=POS[c.b],mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1,ang=Math.atan2(dy,dx)*180/Math.PI;
+      if(c.t==='w'){const col=c.color||WC[(c.k||0)%WC.length],bend=Math.min(26,len*.22),cx=mx-dy/len*bend,cy=my+dx/len*bend;
+        return `<path d="M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}" stroke="${col}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".92"/><circle class="hit" data-i="${i}" cx="${(mx+cx)/2}" cy="${(my+cy)/2}" r="4" fill="${col}" stroke="#fff" stroke-width="1"/>`;}
+      if(c.t==='r')return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#8d8d8d" stroke-width="1.6"/><g transform="translate(${mx} ${my}) rotate(${ang})"><rect class="hit" data-i="${i}" x="-10" y="-4" width="20" height="8" rx="3.5" fill="#d9bf86" stroke="#7a5f12"/></g><text x="${mx+9}" y="${my-6}" font-size="7.5" fill="#5a4300">${c.R>=1000?c.R/1000+'k':c.R}</text>`;
+      if(c.t==='led'){const L_=res&&res.led&&res.led[i],on=L_&&L_.on,lc=LEDC[c.col],op=on?Math.min(1,.35+L_.mA/8):0;
+        return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#9a9a9a" stroke-width="1.6"/>${on?`<circle cx="${mx}" cy="${my}" r="14" fill="${lc[2]}" opacity="${(op*.45).toFixed(2)}"/>`:''}<circle class="hit" data-i="${i}" cx="${mx}" cy="${my}" r="7" fill="${on?lc[2]:'#f2f2f2'}" fill-opacity="${on?op.toFixed(2):1}" stroke="${c.col==='white'?'#b0a46a':lc[2]}" stroke-width="1.5"/><text x="${x1+(dx>=0?-9:5)}" y="${y1-5}" font-size="9" font-weight="700" fill="#c62828">+</text>`;}
+      if(c.t==='btn')return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#666" stroke-width="1.6"/><rect class="hit" data-i="${i}" x="${mx-6}" y="${my-6}" width="12" height="12" rx="2" fill="${c.pressed?'#333':'#c9c9c9'}" stroke="#333"/>`;
+      return '';}).join('')+(sel?`<circle cx="${POS[sel][0]}" cy="${POS[sel][1]}" r="7" fill="none" stroke="#d32f2f" stroke-width="2"/>`:'');
+  }
+function bbLab(d,start){
+  const id='bb'+(++UID),S={tool:'look',R:330,col:'red',comps:[],dio:{},sel:null,hi:null,wn:0};
+  const holes=HOLES,svg=boardSvg();
   const pre=Object.keys(PRESETS).map(k=>`<button type="button" class="bb-pb" data-p="${k}">${PRESETS[k].name}</button>`).join('');
   d.innerHTML=`<div class="bb-wrap fig"><div class="bb-board">${svg}</div><div class="bb-side">
 <div class="bb-pre"><b>載入接法</b>${pre}<button type="button" class="bb-flip">LED 反過來</button><button type="button" class="bb-clr">清除全部</button></div>
@@ -183,18 +199,7 @@ ${holes.map(h=>{const [x,y]=POS[h];return `<rect class="bb-h" data-h="${h}" x="$
 <div class="bb-dio"></div><div class="bb-out" aria-live="polite"></div></div></div>`;
   const cg=d.querySelector('.bb-cg'),say=d.querySelector('.bb-say'),out=d.querySelector('.bb-out'),dioBox=d.querySelector('.bb-dio');
   const hEls={};d.querySelectorAll('.bb-h').forEach(e=>hEls[e.dataset.h]=e);
-  const WC=['#e8711a','#7a7a7a','#1565c0','#2e7d32','#8e24aa','#c62828'];
-  function draw(res){
-    cg.innerHTML=S.comps.map((c,i)=>{
-      const [x1,y1]=POS[c.a],[x2,y2]=POS[c.b],mx=(x1+x2)/2,my=(y1+y2)/2,dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1,ang=Math.atan2(dy,dx)*180/Math.PI;
-      if(c.t==='w'){const col=WC[c.k%WC.length],bend=Math.min(26,len*.22),cx=mx-dy/len*bend,cy=my+dx/len*bend;
-        return `<path d="M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}" stroke="${col}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".92"/><circle class="hit" data-i="${i}" cx="${(mx+cx)/2}" cy="${(my+cy)/2}" r="4" fill="${col}" stroke="#fff" stroke-width="1"/>`;}
-      if(c.t==='r')return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#8d8d8d" stroke-width="1.6"/><g transform="translate(${mx} ${my}) rotate(${ang})"><rect class="hit" data-i="${i}" x="-10" y="-4" width="20" height="8" rx="3.5" fill="#d9bf86" stroke="#7a5f12"/></g><text x="${mx+9}" y="${my-6}" font-size="7.5" fill="#5a4300">${c.R>=1000?c.R/1000+'k':c.R}</text>`;
-      if(c.t==='led'){const L_=res&&res.led&&res.led[i],on=L_&&L_.on,lc=LEDC[c.col],op=on?Math.min(1,.35+L_.mA/8):0;
-        return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#9a9a9a" stroke-width="1.6"/>${on?`<circle cx="${mx}" cy="${my}" r="14" fill="${lc[2]}" opacity="${(op*.45).toFixed(2)}"/>`:''}<circle class="hit" data-i="${i}" cx="${mx}" cy="${my}" r="7" fill="${on?lc[2]:'#f2f2f2'}" fill-opacity="${on?op.toFixed(2):1}" stroke="${c.col==='white'?'#b0a46a':lc[2]}" stroke-width="1.5"/><text x="${x1+(dx>=0?-9:5)}" y="${y1-5}" font-size="9" font-weight="700" fill="#c62828">+</text>`;}
-      if(c.t==='btn')return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#666" stroke-width="1.6"/><rect class="hit" data-i="${i}" x="${mx-6}" y="${my-6}" width="12" height="12" rx="2" fill="${c.pressed?'#333':'#c9c9c9'}" stroke="#333"/>`;
-      return '';}).join('')+(S.sel?`<circle cx="${POS[S.sel][0]}" cy="${POS[S.sel][1]}" r="7" fill="none" stroke="#d32f2f" stroke-width="2"/>`:'');
-  }
+  function draw(res){cg.innerHTML=compSvg(S.comps,res,S.sel);}
   function update(){
     const used=[...new Set(S.comps.flatMap(c=>[c.a,c.b]).map(net).filter(n=>/^DIO\d/.test(n)).map(n=>+n.slice(3)))].sort((a,b)=>a-b);
     dioBox.innerHTML=used.length?`<p class="bb-h4">LabVIEW 對 DIO 做什麼（插在 MXP A）</p>`+used.map(k=>`<label class="bb-dl">A/DIO${k} <select data-k="${k}">${[['hi','Digital Output 寫 TRUE（3.3 V）'],['lo','Digital Output 寫 FALSE（0 V）'],['in','Digital Input（或程式還沒跑）']].map(o=>`<option value="${o[0]}"${(S.dio[k]||'in')===o[0]?' selected':''}>${o[1]}</option>`).join('')}</select></label>`).join(''):'';
@@ -239,6 +244,88 @@ ${holes.map(h=>{const [x,y]=POS[h];return `<rect class="bb-h" data-h="${h}" x="$
   if(start)load(start);else update();
 }
 
+/* ---------- 一步一步接：每一步一條線或一個元件 ---------- */
+const RED='#e8711a',GRAY='#7a7a7a',SIG='#1565c0',SHORT='#2e7d32';
+const GUIDES={
+  fix:{name:'把你照片裡的板子改好（不用程式的 LED）',col:'red',dio:{},
+    intro:'保留你已經接好的兩條線，只動 LED，再加一顆電阻、一條短跳線。動手前先把 myRIO 斷電。',
+    steps:[['w',hd('+3.3V'),'P28',RED,'（已經接好）橘線：排母「+3.3V」→ 電源軌＋（紅線那一排）。再對一次板子上印的字：是 +3.3V，不是旁邊的 GND 或 +5V。'],
+      ['w','X0b','N28',GRAY,'（已經接好）灰線：排母「GND」→ 電源軌－（藍線那一排）。'],
+      ['r','P14','A14',null,'先把 LED 拔起來。拿一顆 330 Ω 電阻（色環：橙 橙 棕），一腳插電源軌＋第 14 列，另一腳插 A14。電阻不分方向。'],
+      ['led','C14','C17',null,'LED 長腳插 C14（和電阻同一排，A14～E14 相通），短腳插 C17（另一排）。兩隻腳不能插在同一排。'],
+      ['w','A17','N17',SHORT,'短跳線：A17 → 電源軌－第 17 列。電流從＋軌經過電阻、LED，回到－軌，接成一圈。']],
+    end:'檢查一遍再接上 myRIO 電源：LED 應該亮，而且不用跑程式（+3.3V 是常電）。不亮：把 LED 反過來插；還是不亮，用三用電表量＋軌和－軌之間有沒有 3.3 V。'},
+  source:{name:'正向接法：DIO0 → 電阻 → LED → GND',col:'red',dio:{0:'hi'},
+    intro:'先斷電。上一個電路的電阻、LED、短跳線拔掉；橘線（+3.3V）也拔掉，這個電路用不到它。灰線（GND）留著。',
+    steps:[['w','X0b','N30',GRAY,'灰線：排母「GND」→ 電源軌－（已經接著就不用動）。'],
+      ['w',hd('DIO0'),'A8',SIG,'訊號線：排母「0」（就是 DIO0，MXP 第 11 腳）→ A8。'],
+      ['r','B8','B12',null,'330 Ω 電阻：一腳插 B8（和訊號線同一排），另一腳插 B12。'],
+      ['led','C12','C14',null,'LED 長腳插 C12（和電阻同一排），短腳插 C14。'],
+      ['w','A14','N14',SHORT,'短跳線：A14 → 電源軌－第 14 列。']],
+    end:'通電、還沒跑程式：LED 不亮（或暗處極微亮）。從專案開 Main.vi，放 Digital Output，選 A/DIO0，接一個前面板開關。開關 TRUE 亮、FALSE 滅。右邊選單可以先試。'},
+  sink:{name:'負向接法：+3.3V → 電阻 → LED → DIO0',col:'red',dio:{0:'lo'},
+    intro:'先斷電，拔掉正向接法的電阻、LED、兩條訊號線。這次 LED 的電從 +3.3V 來。',
+    steps:[['w',hd('+3.3V'),'P30',RED,'橘線：排母「+3.3V」→ 電源軌＋。'],
+      ['r','P8','A8',null,'330 Ω 電阻：一腳插電源軌＋第 8 列，另一腳插 A8。'],
+      ['led','C8','C10',null,'LED 長腳插 C8（和電阻同一排），短腳插 C10。'],
+      ['w',hd('DIO0'),'E10',SIG,'訊號線：E10（和 LED 短腳同一排）→ 排母「0」（DIO0）。']],
+    end:'這個電路沒有接 GND：電流流進 DIO0，從 myRIO 裡面回到地。程式寫 FALSE 亮、寫 TRUE 滅。在 Digital Output 前面加一個 Not，前面板開關就變回 TRUE＝亮。'},
+  btn:{name:'按鈕：DIO1 → 按鈕 → GND',col:'red',dio:{1:'in'},
+    intro:'加一顆四腳按鈕當輸入。它可以和 LED 電路同時插在板子上，用不同的排就好。',
+    steps:[['w','X0b','N30',GRAY,'灰線：排母「GND」→ 電源軌－（已經有就不用再接）。'],
+      ['btn','E20','F22',null,'四腳按鈕跨在中間的溝上，四隻腳插 E20、E22、F20、F22（腳距不同就照實際的排數，道理一樣）。模擬器只畫對角的兩隻：E20 和 F22。'],
+      ['w',hd('DIO1'),'A20',SIG,'訊號線：排母「1」（DIO1，MXP 第 13 腳）→ A20（和按鈕左上那隻腳同一排）。'],
+      ['w','J22','N22',SHORT,'跳線：J22（和按鈕右下那隻腳同一排）→ 電源軌－第 22 列。']],
+    end:'放 Digital Input，選 A/DIO1。沒按讀到 TRUE（內建 40 kΩ 上拉），按下讀到 FALSE。點模擬器上的灰色方塊試試。接對角最保險：四腳按鈕裡面兩兩常通，對角的兩隻一定分屬兩組，所以一定是「按下才通」。'}
+};
+function bbGuide(d,key){
+  const G=GUIDES[key],id='bg'+(++UID),S={n:0,comps:[],dio:Object.assign({},G.dio)};
+  const all=G.steps.map(s=>({t:s[0],a:s[1],b:s[2],color:s[3]||null,R:330,col:G.col,pressed:false}));
+  d.innerHTML=`<div class="bb-wrap fig bb-guide"><div class="bb-board">${boardSvg()}</div><div class="bb-side">
+<p class="bb-h4">${G.name}</p><p>${G.intro}</p>
+<ol class="bb-steps">${G.steps.map((s,i)=>`<li data-s="${i+1}">${s[4]}</li>`).join('')}</ol>
+<div class="bb-nav"><button type="button" class="bb-prev">上一步</button><button type="button" class="bb-next">下一步</button><button type="button" class="bb-all">全部接好</button><span class="bb-cnt"></span></div>
+<p class="bb-say" aria-live="polite"></p><div class="bb-dio"></div><div class="bb-out" aria-live="polite"></div></div></div>`;
+  const cg=d.querySelector('.bb-cg'),say=d.querySelector('.bb-say'),out=d.querySelector('.bb-out'),dioBox=d.querySelector('.bb-dio'),cnt=d.querySelector('.bb-cnt');
+  const hEls={};d.querySelectorAll('.bb-h').forEach(e=>hEls[e.dataset.h]=e);
+  function show(){
+    S.comps=all.slice(0,S.n);
+    Object.values(hEls).forEach(e=>e.classList.remove('hi'));
+    d.querySelectorAll('.bb-steps li').forEach(li=>{const k=+li.dataset.s;li.classList.toggle('cur',k===S.n);li.classList.toggle('done',k<S.n);});
+    cnt.textContent=`${S.n}／${all.length}`;
+    const done=S.n===all.length;
+    if(S.n>0){const c=all[S.n-1];[c.a,c.b].forEach(h=>hEls[h].classList.add('hi'));say.innerHTML=`<b>第 ${S.n} 步</b>：${G.steps[S.n-1][4]}`;}
+    else say.textContent='按「下一步」，一次接一條線或一個元件。黃色的孔就是這一步要插的位置。';
+    if(!done){cg.innerHTML=compSvg(S.comps,null,null);dioBox.innerHTML='';out.innerHTML='';return;}
+    const used=Object.keys(G.dio).map(Number);
+    dioBox.innerHTML=used.map(k=>`<label class="bb-dl">A/DIO${k} <select data-k="${k}">${[['hi','Digital Output 寫 TRUE'],['lo','Digital Output 寫 FALSE'],['in','Digital Input（或程式還沒跑）']].filter(o=>G.dio[k]==='in'?o[0]==='in':true).map(o=>`<option value="${o[0]}"${S.dio[k]===o[0]?' selected':''}>${o[1]}</option>`).join('')}</select></label>`).join('');
+    const res=solve(S.comps,S.dio);cg.innerHTML=compSvg(S.comps,res,null);
+    const li=[];
+    S.comps.forEach((c,i)=>{if(c.t==='led'){const r=res.led[i];li.push(`<li class="${r.on?'bb-ok':''}"><b>LED ${r.on?'亮':'不亮'}</b>：${r.msg}</li>`);}});
+    Object.keys(res.dio).forEach(k=>{const r=res.dio[k];li.push(r.m==='in'?`<li><b>A/DIO${k}</b> 讀到 <b>${r.read}</b>（腳上 ${r.v.toFixed(2)} V）</li>`:`<li><b>A/DIO${k}</b> 腳上 ${r.v.toFixed(2)} V，電流 ${Math.abs(r.I).toFixed(1)} mA ${r.I>=0?'流出':'流進'}腳位</li>`);});
+    out.innerHTML=`<p class="bb-end">${G.end}</p><ul class="bb-res">${li.join('')}</ul>`;
+  }
+  d.addEventListener('click',e=>{
+    if(e.target.closest('.bb-next')){if(S.n<all.length)S.n++;show();return;}
+    if(e.target.closest('.bb-prev')){if(S.n>0)S.n--;show();return;}
+    if(e.target.closest('.bb-all')){S.n=all.length;show();return;}
+    const li=e.target.closest('.bb-steps li');if(li){S.n=+li.dataset.s;show();return;}
+    const hit=e.target.closest('.hit');
+    if(hit){const c=S.comps[+hit.dataset.i];if(c&&c.t==='btn'){c.pressed=!c.pressed;show();say.textContent=c.pressed?'按鈕按下。':'按鈕放開。';}return;}
+    const h=e.target.closest('.bb-h');if(h)say.innerHTML=holeSay(h.dataset.h);
+  });
+  d.addEventListener('change',e=>{if(e.target.dataset.k!=null){S.dio[+e.target.dataset.k]=e.target.value;show();}});
+  show();
+}
+
+/* ---------- 材料圖：LED 長短腳、電阻色環 ---------- */
+const BAND={0:'#111',1:'#7b4a12',2:'#d32f2f',3:'#f57c00',4:'#fbc02d',5:'#2e7d32',6:'#1565c0',7:'#7b1fa2',8:'#8d8d8d',9:'#f5f5f5'};
+function resSvg(R){
+  const s=String(R),d1=+s[0],d2=+s[1],m=s.length-2;
+  return `<svg viewBox="0 0 150 40" class="bb-part" role="img" aria-label="${R} 歐姆電阻的色環"><line x1="0" y1="20" x2="150" y2="20" stroke="#999" stroke-width="2"/><rect x="40" y="9" width="70" height="22" rx="10" fill="#e3cf9f" stroke="#8a6d00"/>${[[52,BAND[d1]],[62,BAND[d2]],[72,BAND[m]],[96,'#c9a227']].map(b=>`<rect x="${b[0]}" y="9" width="5" height="22" fill="${b[1]}"/>`).join('')}</svg>`;
+}
+const ledSvg=`<svg viewBox="0 0 140 120" class="bb-part" role="img" aria-label="LED 的長腳和短腳"><path d="M38 60 V30 a22 22 0 0 1 44 0 V60 Z" fill="#ffdede" stroke="#c62828"/><rect x="33" y="60" width="54" height="7" fill="#ffcdcd" stroke="#c62828"/><line x1="82" y1="60" x2="82" y2="67" stroke="#fff" stroke-width="3"/><line x1="48" y1="67" x2="48" y2="116" stroke="#888" stroke-width="2.5"/><line x1="72" y1="67" x2="72" y2="100" stroke="#888" stroke-width="2.5"/><text x="20" y="104" font-size="11" fill="#c62828">長腳＋</text><text x="76" y="112" font-size="11" fill="currentColor">短腳－</text><text x="88" y="58" font-size="9" fill="currentColor">平邊＝－</text></svg>`;
+
 /* =============================== M3+ =============================== */
 L.push({id:'M03B',order:30.35,no:'M3+',part:PART,title:'MXP 麵包板：看懂板子、接出第一顆 LED，正向和負向接法',mins:60,
 goals:[['學會','Digilent MXP 麵包板上每一排孔、每一個字對到 myRIO 哪一隻腳、LabVIEW 裡叫什麼；麵包板裡面哪些孔相通；LED 為什麼一定要串電阻、長腳短腳怎麼分；正向接法（DIO 送電）和負向接法（DIO 吸電）的差別。'],['做出','先接一顆不用程式的常亮 LED，再改成 DIO0 用 LabVIEW 控制，兩種接法各做一次，最後加一個按鈕。'],['為什麼','板子插上去以後，接錯一條線，LED 不亮還算好；接錯電源會讓 myRIO 保護、重開機，甚至燒腳位。先看懂板子，再動手。']],
@@ -257,6 +344,21 @@ C.table(['位置','是什麼','注意'],[
 note('板子上的字 ↔ myRIO 腳 ↔ LabVIEW 名字','板子幫你把字印好了，但 LabVIEW 的 Express VI 用的是「接頭/腳名」。對照：「0」＝ DIO0 ＝ MXP 第 11 腳 ＝ <code>A/DIO0</code>；「8」＝ DIO8 ＝ 第 27 腳，第二功能 PWM0（M06 會用）；「14」「15」是 I2C（M08 會用），內建 2.1 kΩ 上拉。完整腳位圖在 M03。'),
 ask('板子插在 MXP B，你把 LED 接在板子上的「3」。Digital Output Express VI 要選哪一個？',
  `<p><b>B/DIO3</b>。板子上的字只告訴你「第幾號 DIO」，是 A 還是 B 由你插在哪個接頭決定。選錯 A／B，程式照樣會跑，只是控制到另一個接頭的腳，你的 LED 永遠不動。這是最常見、也最難發現的錯。</p>`),
+
+C.h3('準備','','材料、工具，和怎麼拿零件'),
+C.table(['材料','數量','怎麼認、注意什麼'],[
+ ['MXP 麵包板（你這塊）','1','插在 myRIO 的 MXP A。34 孔母座對準接頭，兩邊平均出力插到底；拔的時候左右輪流輕輕扳，不要單邊硬拔。'],
+ ['公對公杜邦線（兩頭都是針）','5～10 條','板子上的排母是「孔」，麵包板也是「孔」，所以線的兩頭都要是「針」。你照片裡的橘線、灰線就是這種。'],
+ ['紅光 LED（5 mm）','2','長腳是＋、短腳是－；外殼底部有一邊是平的，平邊那側是－。腳剪過、分不出長短時，看平邊，或用三用電表的二極體檔量。'],
+ ['330 Ω 電阻','2','色環：橙 橙 棕（最後一圈金色是誤差）。對照：220 Ω 紅 紅 棕、1 kΩ 棕 黑 紅、10 kΩ 棕 黑 橙。看不清楚就用三用電表的歐姆檔量。'],
+ ['四腳按鈕（6×6 mm 輕觸開關）','1','四隻腳兩兩常通；跨在麵包板中間的溝上插。'],
+ ['三用電表','1','量電壓（＋軌對－軌應該是 3.3 V）、通路（電源軌是不是整條通）、電阻值、LED 方向。']]),
+{fn:d=>{d.innerHTML=`<div class="bb-parts fig"><figure>${ledSvg}<figcaption>LED：長腳＋、短腳－，平邊那側是－</figcaption></figure><figure>${resSvg(330)}<figcaption>330 Ω：橙 橙 棕 ＋ 金</figcaption></figure><figure>${resSvg(220)}<figcaption>220 Ω：紅 紅 棕 ＋ 金</figcaption></figure><figure>${resSvg(10000)}<figcaption>10 kΩ：棕 黑 橙 ＋ 金</figcaption></figure></div>`;}},
+`<ul class="mr-check">
+<li><b>線的顏色自己定一個規則，一直照著用</b>：紅（或橘）＝電源、黑（或灰）＝地、其他顏色＝訊號。你手上是橘、灰，就讓橘線只接 +3.3V、灰線只接 GND。之後看板子一眼就知道哪條是電。</li>
+<li><b>零件腳垂直插到底</b>：插進去會感覺到被夾住。只插一半的腳常常沒夾到，是「看起來接了、其實斷路」的頭號原因。</li>
+<li><b>腳太長可以剪短</b>到約 1 cm，比較不會碰到旁邊的腳。剪 LED 之前，先把長腳彎一個小角度做記號。</li>
+<li><b>改線之前先斷電</b>：拔掉 myRIO 的電源，接好、檢查完再通電。</li></ul>`,
 
 C.h3('第 1 步','','麵包板裡面怎麼相通'),
 `<p>麵包板表面看起來每個孔都一樣，裡面其實是一條一條的金屬夾片。先把這件事弄清楚，後面所有接線問題都是它。</p>
@@ -287,21 +389,23 @@ ask('你的 LED 外殼是透明的。它會是什麼顏色？有差嗎？',
 <p>差很多：3.3 V 減掉 3 V，只剩 0.3 V 給電阻，串 330 Ω 只有約 1 mA，會很暗。用紅光 LED 學比較清楚；要用白光，電阻可以換小一點（例如 100 Ω），並且量一下電流。三用電表的二極體檔可以量壓降，順便知道哪隻是長腳（+）。</p>`),
 `<p>在上面的模擬器按 <b>「你照片裡的接法」</b>，看右邊的說明；再按「LED 反過來」，看另一種插法。然後按「錯誤：沒串電阻」看電流有多大。</p>`,
 
-C.h3('第 3 步','','先接一顆不用程式的 LED'),
+C.h3('第 3 步','','先接一顆不用程式的 LED（從你的板子改）'),
 `<p>接任何要程式控制的電路之前，先確定零件和麵包板是好的。這一步跟 LabVIEW 無關。</p>`,
 chain([['+3.3V 排母','pw'],['電源軌＋'],['330 Ω'],['LED 長腳（＋）','led'],['LED 短腳（－）','led'],['電源軌－'],['GND 排母','gd']]),
-`<ol class="mr-steps"><li>myRIO 先拔電源（插拔麵包板、改線之前都這樣做）。</li>
-<li>跳線：板子的 <b>+3.3V</b> → 電源軌＋；<b>GND</b> → 電源軌－。</li>
-<li>電阻一腳插電源軌＋，另一腳插 A10。</li>
-<li>LED 長腳插 C10（和電阻同一組），短腳插 C13（另一組）。</li>
-<li>跳線：A13 → 電源軌－。</li>
-<li>接上電源，LED 應該亮。不亮就先檢查 LED 有沒有反、每隻腳是不是插在你以為的那一組。</li></ol>`,
-`<p>模擬器裡按「常亮測試」對照。</p>`,
+`<p>下面照著你現在的板子一步一步改。按「下一步」，黃色的孔就是這一步要插的位置；點左邊清單也可以直接跳到某一步。</p>`,
+{fn:d=>bbGuide(d,'fix')},
+ask('接好了，LED 還是不亮。先查什麼？',
+ `<p>照「電從哪裡來、到哪裡去」一段一段查，不要一次懷疑全部：</p>
+<ol><li>三用電表電壓檔，紅棒碰＋軌、黑棒碰－軌：有沒有 3.3 V？沒有 → 橘線、灰線插錯排母，或 myRIO 沒開。</li>
+<li>LED 反過來插。</li>
+<li>每隻腳是不是真的插到底、插在你以為的那一排（A14 和 A15 看起來很像）。</li>
+<li>電阻是不是 330 Ω（不是 330 kΩ：橙 橙 黃）。</li></ol>`),
 
 C.h3('第 4 步','','正向接法：DIO 送電（寫 TRUE 亮）'),
 chain([['DIO0','dio'],['330 Ω'],['LED 長腳','led'],['LED 短腳','led'],['GND','gd']]),
 `<p>把上一步的 +3.3V 換成 <b>DIO0</b>。現在 LED 的電從 DIO0 來：LabVIEW 寫 TRUE，DIO0 輸出 3.3 V，電流從腳位<b>流出來</b>，經過 LED 回到地，LED 亮；寫 FALSE，DIO0 是 0 V，沒有電壓差，不亮。</p>
 <p>這叫<b>正向接法</b>（也有人叫 source、送電、拉電流）：腳位當電源。</p>`,
+{fn:d=>bbGuide(d,'source')},
 ask('程式還沒開始跑的時候，正向接法的 LED 會怎樣？',
  `<p>還沒被設成輸出的 DIO 是輸入，M03 的規格表：MXP DIO0～13 有 40 kΩ 上拉到 3.3 V。所以有一條很細的路：3.3 V → 40 kΩ → 330 Ω → LED → 地，大約 0.03 mA。多數時候看不出來，但在暗處、用高亮度 LED，可能看到微微亮。這不是程式錯。在模擬器載入「正向接法」，把 DIO0 改成「Digital Input（或程式還沒跑）」看看。</p>`),
 
@@ -311,6 +415,9 @@ chain([['+3.3V','pw'],['330 Ω'],['LED 長腳','led'],['LED 短腳','led'],['DIO
 <ul><li><b>寫 FALSE</b>：DIO0 是 0 V，LED 兩端有 3.3 V 的差，電流從 +3.3V 經過 LED <b>流進</b> DIO0，LED <b>亮</b>。</li>
 <li><b>寫 TRUE</b>：DIO0 是 3.3 V，LED 兩端都是 3.3 V，沒有電壓差，LED <b>不亮</b>。</li></ul>
 <p>這叫<b>負向接法</b>（sink、吸電、灌電流）：腳位當開關，把電流導到地。邏輯跟正向相反，所以程式裡常在 Digital Output 前面放一個 <b>Not</b>，讓前面板的「LED 亮」開關照常理運作。</p>`,
+{fn:d=>bbGuide(d,'sink')},
+ask('負向接法整個電路都沒有接 GND，電流最後去哪裡？',
+ `<p>流進 DIO0 這隻腳，再經過 myRIO 裡面的輸出電路到地。寫 FALSE 時，DIO0 的輸出等於把這隻腳接到地，所以 GND 是在 myRIO 裡面接的。這也是為什麼負向接法的電流不能太大：它全部流進一隻小小的 DIO 腳。</p>`),
 C.table(['','正向接法（source）','負向接法（sink）'],[
  ['電路','DIO → 電阻 → LED → GND','+3.3V → 電阻 → LED → DIO'],
  ['電流方向','從 DIO 流出','流進 DIO'],
@@ -334,7 +441,8 @@ tip('Express VI 設定視窗的名字','各版本 myRIO Toolkit 的設定視窗�
 C.h3('第 7 步','','加一個按鈕（輸入）'),
 chain([['DIO1','dio'],['按鈕'],['GND','gd']]),
 `<p>M03 講過：MXP 的 DIO0～13 有 40 kΩ 上拉。所以按鈕只要接在 DIO1 和 GND 之間，不用自己加電阻。沒按讀到 TRUE，按下讀到 FALSE。</p>
-<p>真的四腳按鈕要跨過中間的溝插，兩邊各兩隻腳。用三用電表量一下哪兩隻腳是「按下才通」，那兩隻分別接 DIO1 和 GND。模擬器把它簡化成兩隻腳：載入「按鈕輸入：DIO1」，點灰色方塊按下、放開。</p>`,
+<p>四腳按鈕裡面兩兩常通：不管怎麼按，有兩對腳一直是通的，按下去才把兩對接起來。不知道哪兩隻是一對也沒關係，<b>接對角的兩隻腳</b>一定是一對一隻，一定是「按下才通」。不放心就用三用電表的通路檔量：沒按不通、按下會嗶的那兩隻就對了。</p>`,
+{fn:d=>bbGuide(d,'btn')},
 ask('把按鈕讀到的值直接接到正向接法 LED 的 Digital Out，按下去 LED 會亮還是滅？',
  `<p>按下讀到 FALSE，寫給正向接法的 LED 就是滅；放開反而亮。要「按下亮」：中間加一個 Not，或改用負向接法的 LED（兩個反相剛好抵消）。這種「訊號到底是高有效還是低有效」，是接任何感測器、按鈕前都要先想的事。</p>`),
 

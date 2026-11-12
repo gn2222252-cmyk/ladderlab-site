@@ -441,3 +441,16 @@ details.think[open]>summary{margin-bottom:4px}
 .bb-chain span.led{background:rgba(255,59,48,.1)}
 .bb-chain i{font-style:normal;opacity:.6}
 .bb-gal .mr-shot img{height:auto;max-height:420px;object-fit:contain}
+.bb-steps{padding-left:20px;margin:8px 0}
+.bb-steps li{margin:4px 0;padding:3px 6px;border-radius:5px;cursor:pointer;opacity:.6}
+.bb-steps li.done{opacity:.85}
+.bb-steps li.cur{opacity:1;background:rgba(255,179,0,.15);outline:1px solid #ffb300}
+.bb-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.bb-nav button{font:inherit;font-size:13px;padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:transparent;color:inherit;cursor:pointer}
+.bb-nav .bb-next{border-color:#1565c0;color:#1565c0;font-weight:600}
+.bb-cnt{font-size:13px;opacity:.7}
+.bb-end{border-left:3px solid #2e7d32;padding:4px 10px;margin:8px 0}
+.bb-parts{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin:12px 0}
+.bb-parts figure{margin:0;text-align:center}
+.bb-parts figcaption{font-size:13px;opacity:.75}
+.bb-part{width:150px;height:auto;display:block}
