@@ -122,6 +122,7 @@ body:[
 C.h3('情境','x','按一下，換下一顆燈'),
 `<p>先不接任何線：myRIO 板上就有 4 顆 LED（LED0～3）和一個按鈕（Button0）。說明書：LED 寫 TRUE 就亮；Button0 按下去是 TRUE。</p>
 <p>目標：每按一下 Button0，亮的燈往下一顆移。聽起來很簡單，先照最直覺的方法寫一次。</p>`,
+`<figure class="mr-shot half"><img src="img/myrio/real/button.jpg" alt="實機側面的兩個按鈕：左邊是 Wi-Fi 鍵，右邊是 BUTTON0（程式讀得到的那一個）。" loading="lazy"><figcaption>實機側面的兩個按鈕：左邊是 Wi-Fi 鍵，右邊是 BUTTON0（程式讀得到的那一個）。</figcaption></figure>`,
 C.h3('第 1 步','','把 Express VI 放進迴圈'),
 `<ol class="mr-steps"><li>從 M02 的範本專案開始，打開 myRIO 底下的 Main.vi（確認標題列斜線後面是 myRIO）。</li>
 <li>方塊圖按右鍵 ▸ myRIO 函式選單，把 <b>Button</b> 和 <b>LED</b> 兩個 Express VI 放進 Main Loop。</li>

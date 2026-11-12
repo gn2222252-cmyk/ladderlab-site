@@ -30,6 +30,7 @@ ask('USB-6009 和 myRIO，程式各跑在哪裡？',
  `<p><b>USB-6009</b>：程式跑在你的電腦上。DAQ 卡只負責把電壓變成數字，傳給電腦。電腦關機，什麼都不會動。</p>
 <p><b>myRIO</b>：盒子裡面有自己的電腦。說明書：處理器是 Xilinx Zynq-7010，雙核心、667 MHz，有 256 MB 記憶體和 512 MB 的儲存空間，跑的是 LabVIEW Real-Time。同一顆晶片裡還有一塊 FPGA，負責直接控制接腳。</p>
 <p>所以你在電腦上寫的程式，按下執行之後，會被<b>送到 myRIO 上跑</b>。電腦只是拿來寫程式、看前面板。這是整個 myRIO 課最重要的一句話，後面每一個「為什麼要這樣做」都從這裡來。</p>`),
+`<figure class="mr-shot"><img src="img/myrio/real/front.jpg" alt="實機正面（myRIO-1900）。上排的燈由左到右：POWER、STATUS、Wi-Fi，接著是 LED0～LED3。透明窗裡中間那顆大晶片印著 ZYNQ：處理器和 FPGA 就在這一顆裡。" loading="lazy"><figcaption>實機正面（myRIO-1900）。上排的燈由左到右：POWER、STATUS、Wi-Fi，接著是 LED0～LED3。透明窗裡中間那顆大晶片印著 ZYNQ：處理器和 FPGA 就在這一顆裡。</figcaption></figure>`,
 C.table(['','電腦＋USB-6009','myRIO'],[
  ['程式跑在','你的電腦','myRIO 裡的處理器（LabVIEW Real-Time）'],
  ['電腦拔掉','全部停','可以設定成自己繼續跑（M10）'],
@@ -55,6 +56,7 @@ steps([`把電源接到 myRIO 的電源接頭。說明書：電源電壓 6～16 
  `看盒子正面：${ui('POWER')} 燈亮起來，表示電源夠。`,
  `${ui('STATUS')} 燈會先亮一下，這是開機自我檢查（POST）。<b>STATUS 燈熄掉，才是開機完成</b>。`,
  `用 USB 線接 myRIO 的 ${ui('USB Device')} 埠到電腦。注意盒子上有兩個 USB：另一個是 USB Host，是給隨身碟、攝影機用的，接電腦要接 Device 那一個。`]),
+`<figure class="mr-shot half"><img src="img/myrio/real/usb_power.jpg" alt="實機的這一端：透出藍光、空著的是 USB Host（給隨身碟、攝影機）；接著線的是 USB Device（另一頭接電腦）；下面是電源接頭，外殼標著 6–16 V；最下面的小孔是 RESET。" loading="lazy"><figcaption>實機的這一端：透出藍光、空著的是 USB Host（給隨身碟、攝影機）；接著線的是 USB Device（另一頭接電腦）；下面是電源接頭，外殼標著 6–16 V；最下面的小孔是 RESET。</figcaption></figure>`,
 ask('STATUS 燈一直沒熄，每隔幾秒閃幾下。怎麼辦？',
  `<p>數它閃幾下。說明書的對照：</p>`+C.table(['每隔幾秒閃','意思','怎麼辦'],[
  ['2 下','myRIO 偵測到軟體有問題，常見原因是更新軟體時被中斷','重新把軟體裝到 myRIO（NI MAX 或 Getting Started Wizard）'],

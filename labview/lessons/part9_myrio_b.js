@@ -77,16 +77,19 @@ C.table(['接頭','有什麼','適合接'],[
  ['USB Host','USB 攝影機（UVC）、隨身碟（FAT16／FAT32，在 myRIO 上通常是 /U）','拍照、存資料'],
  ['板上','加速度計（±8 g）、4 顆 LED（LED0～3）、一個按鈕（Button0）','不用接線就能練習（M04）']
 ]),
+`<div class="mr-gal"><figure class="mr-shot"><img src="img/myrio/real/mxp.jpg" alt="MXP A、B 接頭" loading="lazy"><figcaption>MXP A、B：兩個 34 腳的接頭</figcaption></figure><figure class="mr-shot"><img src="img/myrio/real/msp.jpg" alt="MSP 端子台與音訊插孔" loading="lazy"><figcaption>MSP C 端子台、AUDIO OUT、AUDIO IN</figcaption></figure><figure class="mr-shot"><img src="img/myrio/real/usb_power.jpg" alt="USB 與電源" loading="lazy"><figcaption>USB Host、USB Device、電源、RESET</figcaption></figure><figure class="mr-shot"><img src="img/myrio/real/button.jpg" alt="Wi-Fi 鍵與 BUTTON0" loading="lazy"><figcaption>Wi-Fi 鍵、BUTTON0</figcaption></figure><figure class="mr-shot"><img src="img/myrio/real/back.jpg" alt="背面" loading="lazy"><figcaption>背面：加速度計的軸向、固定用的鑰匙孔</figcaption></figure></div><p class="mr-credit">實機照片：本課程用的 myRIO-1900（序號已遮）。</p>`,
 note('MXP A 和 B 怎麼分','說明書：兩個接頭的訊號一模一樣，在程式裡用接頭的名字分，例如 ConnectorA/DIO1 和 ConnectorB/DIO1。所以 Express VI 的設定視窗裡，一定要選對是 A 還是 B。'),
 
 C.h3('第 2 步','','MXP 腳位圖（A、B 一樣）'),
 `<p>點任一隻腳看說明。腳位的排法照 NI 說明書：上排是奇數腳（右邊是第 1 腳），下排是偶數腳。<b>接線前一定要先找到第 1 腳</b>，myRIO 外殼和 MXP 轉接板上都有標。</p>`,
+`<figure class="mr-shot"><img src="img/myrio/real/mxp.jpg" alt="實機的 MXP 接頭：外殼上印著腳位編號，上排左邊 33、右邊 1，下排左邊 34、右邊 2；左邊是 A、右邊是 B。跟下面腳位圖的排法一樣：<b>第 1 腳在右上角</b>。" loading="lazy"><figcaption>實機的 MXP 接頭：外殼上印著腳位編號，上排左邊 33、右邊 1，下排左邊 34、右邊 2；左邊是 A、右邊是 B。跟下面腳位圖的排法一樣：<b>第 1 腳在右上角</b>。</figcaption></figure>`,
 {fn:pinMap('mxp')},
 ask('MXP 上有好幾隻 DGND 和一隻 AGND。接類比感測器時，地要接哪一隻？',
  `<p>說明書：AGND 是類比輸入、輸出的參考；DGND 是數位訊號、+5 V、+3.3 V 的參考。</p>
 <p>所以可變電阻、類比感測器的地接 <b>AGND（第 6 腳）</b>；按鈕、LED、數位模組的地接 <b>DGND</b>。分開接，數位訊號切換時的雜訊比較不會跑進類比讀數。</p>`),
 
 C.h3('第 3 步','','MSP 腳位圖'),
+`<figure class="mr-shot half"><img src="img/myrio/real/msp.jpg" alt="實機的 MSP 端子台：外殼上直接印著每一格的名字，由 +15V、−15V、AGND、AO 0、1、AGND、AI 0+、0−、1+、1−，到 DIO 0～7、DGND、5V。下面兩個插孔是 AUDIO OUT、AUDIO IN。" loading="lazy"><figcaption>實機的 MSP 端子台：外殼上直接印著每一格的名字，由 +15V、−15V、AGND、AO 0、1、AGND、AI 0+、0−、1+、1−，到 DIO 0～7、DGND、5V。下面兩個插孔是 AUDIO OUT、AUDIO IN。</figcaption></figure>`,
 {fn:pinMap('msp')},
 ask('一個工業用的壓力傳送器輸出 0～10 V，接 MXP 的 AI 還是 MSP 的 AI？',
  `<p>MSP。MXP 的類比輸入只到 5 V，10 V 會超出範圍（讀數卡在最大值）。MSP 的 AI0、AI1 是 ±10 V 的差動輸入：訊號接 AI0+，訊號的地接 AI0−，同時也要接 AGND。</p>`),
