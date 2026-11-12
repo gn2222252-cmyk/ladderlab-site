@@ -390,3 +390,4 @@ details.think[open]>summary{margin-bottom:4px}
 .mr-wire{display:block;width:100%;height:auto}
 .mr-extra{font-size:14px;margin:6px 0 0}
 .mr-credit{font-size:13px;color:var(--mute)}
+.mr-plot{display:block;width:100%;max-width:640px;height:auto;background:var(--code);border-radius:6px;margin-top:6px;color:var(--ink)}
