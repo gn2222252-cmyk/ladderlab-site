@@ -82,6 +82,140 @@ function planLab(d){
   d.addEventListener('change',run);run();
 }
 
+/* ======================================================================
+   LabVIEW 實作：I13_TestStation.vi 的骨架（While＋Case＋Enum＋Shift Register），
+   只把「上電」和「錯誤」兩頁畫完整；其他頁照上面的狀態表填。驅動 VI 的名稱沿用 I10 的命名。
+   ====================================================================== */
+const ctl=C.ctl,qd=C.qd,wt=C.wt;
+const ST=['等產品','上電','等穩定','量測','斷電','判斷存檔','錯誤','結束'];
+const lbl=(id,f,text)=>({id,k:'label',text,x:200,y:70,w:330,h:62,f:'cs:'+f});
+const tsVI={name:'I13_TestStation.vi（骨架）',view:'bd',
+ bd:{w:640,h:360,structs:[{id:'wl',k:'while',x:110,y:20,w:510,h:330},{id:'cs',k:'case',x:170,y:40,w:400,h:240,frames:ST,cur:6}],
+  nodes:[
+  {id:'kinit',k:'const',t:'enum',v:'等產品',x:40,y:51},
+  {id:'gpd',k:'ctl',t:'visa',label:'GPD（Initialize 之後）',x:50,y:90},
+  {id:'ein',k:'ctl',t:'err',label:'error in',x:50,y:240},
+  {id:'srs',k:'sr',t:'enum',s:'wl',y:60},
+  {id:'tg0',k:'tunnel',t:'visa',s:'wl',side:'l',y:100},
+  {id:'sre',k:'sr',t:'err',s:'wl',y:250},
+  {id:'sel',k:'sel',t:'enum',s:'cs',y:60},
+  {id:'cg',k:'tunnel',t:'visa',s:'cs',side:'l',y:100},
+  {id:'ce',k:'tunnel',t:'err',s:'cs',side:'l',y:250},
+  {id:'cso',k:'tunnel',t:'enum',s:'cs',side:'r',y:60},
+  {id:'ceo',k:'tunnel',t:'err',s:'cs',side:'r',y:250},
+  // 上電
+  {id:'kV',k:'const',t:'dbl',v:12,x:214,y:115,f:'cs:上電'},
+  {id:'k05',k:'const',t:'dbl',v:0.5,x:176,y:132,f:'cs:上電'},
+  {id:'cfgs',k:'sub',name:'GPD_Configure.vi',top:'GPD',icon:['CONFIG'],ins:['VISA in','Voltage','Current Limit'],outs:['VISA out'],err:true,x:240,y:90,h:80,f:'cs:上電'},
+  {id:'kOn',k:'const',t:'bool',v:true,x:296,y:127,f:'cs:上電'},
+  {id:'outs',k:'sub',name:'GPD_Output.vi',top:'GPD',icon:['OUT'],ins:['VISA in','On?'],outs:['VISA out'],err:true,x:320,y:113,f:'cs:上電'},
+  {id:'ub1',k:'unbundle',items:['status'],x:400,y:180,f:'cs:上電'},
+  {id:'kE1',k:'const',t:'enum',v:'錯誤',x:470,y:150,f:'cs:上電'},
+  {id:'kN1',k:'const',t:'enum',v:'等穩定',x:458,y:212,f:'cs:上電'},
+  {id:'sl1',k:'fn',fn:'Select',x:510,y:178,f:'cs:上電'},
+  // 錯誤
+  {id:'kOff',k:'const',t:'bool',v:false,x:214,y:104,f:'cs:錯誤'},
+  {id:'offs',k:'sub',name:'GPD_Output.vi',top:'GPD',icon:['OUT'],ins:['VISA in','On?'],outs:['VISA out'],err:true,x:240,y:90,f:'cs:錯誤'},
+  {id:'ub2',k:'unbundle',items:['status'],x:330,y:90,f:'cs:錯誤'},
+  {id:'kEnd',k:'const',t:'enum',v:'結束',x:420,y:60,f:'cs:錯誤'},
+  {id:'kWait',k:'const',t:'enum',v:'等產品',x:418,y:116,f:'cs:錯誤'},
+  {id:'sl2',k:'fn',fn:'Select',x:470,y:88,f:'cs:錯誤'},
+  {id:'merge',k:'fn',fn:'Merge Errors',x:330,y:160,f:'cs:錯誤'},
+  {id:'kRes',k:'const',t:'str',v:'ERROR',x:340,y:136,f:'cs:錯誤'},
+  {id:'log',k:'sub',name:'TS_Log.vi',top:'TS',icon:['LOG'],ins:['Result'],outs:[],err:true,x:390,y:137,f:'cs:錯誤'},
+  {id:'clr',k:'fn',fn:'Clear Errors',x:450,y:160,f:'cs:錯誤'},
+  lbl('l0','等產品','等序號（條碼或按鈕）。有了 → 下一個是「上電」。\n沒有 → 留在「等產品」，Wait 100 ms。'),
+  lbl('l2','等穩定','GPD 不動。讀電表，最近 3 筆差不到 1 mV → 量測；\n超過 3 秒 → 錯誤。最近 3 筆放在另一個 Shift Register。'),
+  lbl('l3','量測','電表 READ?；示波器抓一次波形算峰對峰。\n數值放進「這一片的資料」Cluster。出錯 → 錯誤。'),
+  lbl('l4','斷電','GPD_Output.vi（On? ＝ F）。→ 判斷存檔；出錯 → 錯誤。'),
+  lbl('l5','判斷存檔','比對 4.95～5.05 V、漣波 < 50 mV；TS_Log.vi 寫一列\nPASS／FAIL。→ 等產品。'),
+  lbl('l7','結束','什麼都不做；迴圈外面的 Equal? 看到「結束」就停。\n迴圈後三台 Close。'),
+  {id:'kend',k:'const',t:'enum',v:'結束',x:490,y:302},
+  {id:'eq',k:'fn',fn:'Equal?',x:540,y:290},
+  {id:'cond',k:'stop',s:'wl'}],
+  wires:[
+  {id:'w1',from:'kinit',to:'srs.init',t:'enum'},
+  {id:'w2',from:'gpd',to:'tg0.o',t:'visa'},
+  {id:'w3',from:'ein',to:'sre.init',t:'err'},
+  {id:'w4',from:'srs.L',to:'sel',t:'enum'},
+  {id:'w5',from:'tg0.i',to:'cg.o',t:'visa'},
+  {id:'w6',from:'sre.L',to:'ce.o',t:'err'},
+  {id:'w7',from:'cso.o',to:'srs.R',t:'enum'},
+  {id:'w8',from:'ceo.o',to:'sre.R',t:'err'},
+  // 上電
+  {id:'p1',from:'cg.i',to:'cfgs.VISA in',t:'visa',mx:200,f:'cs:上電'},
+  {id:'p2',from:'kV',to:'cfgs.Voltage',t:'dbl',f:'cs:上電'},
+  {id:'p3',from:'k05',to:'cfgs.Current Limit',t:'dbl',f:'cs:上電'},
+  {id:'p4',from:'ce.i',to:'cfgs.error in',t:'err',mx:190,f:'cs:上電'},
+  {id:'p5',from:'cfgs.VISA out',to:'outs.VISA in',t:'visa',f:'cs:上電'},
+  {id:'p6',from:'kOn',to:'outs.On?',t:'bool',f:'cs:上電'},
+  {id:'p7',from:'cfgs.error out',to:'outs.error in',t:'err',mx:300,f:'cs:上電'},
+  {id:'p8',from:'outs.error out',to:'ceo.i',t:'err',pts:[[372,159],[372,250]],f:'cs:上電'},
+  {id:'p9',from:'outs.error out',to:'ub1.input cluster',t:'err',pts:[[380,159],[380,194]],f:'cs:上電'},
+  {id:'p10',from:'ub1.status',to:'sl1.s',t:'bool',f:'cs:上電'},
+  {id:'p11',from:'kE1',to:'sl1.t',t:'enum',pts:[[506,159],[506,185]],f:'cs:上電'},
+  {id:'p12',from:'kN1',to:'sl1.f',t:'enum',pts:[[504,221],[504,203]],f:'cs:上電'},
+  {id:'p13',from:'sl1.out',to:'cso.i',t:'enum',pts:[[550,194],[550,60]],f:'cs:上電'},
+  // 錯誤
+  {id:'e1',from:'cg.i',to:'offs.VISA in',t:'visa',mx:200,f:'cs:錯誤'},
+  {id:'e2',from:'kOff',to:'offs.On?',t:'bool',f:'cs:錯誤'},
+  {id:'e3',from:'offs.error out',to:'merge.error 1',t:'err',pts:[[310,129],[310,171]],f:'cs:錯誤'},
+  {id:'e4',from:'ce.i',to:'merge.error 2',t:'err',pts:[[316,250],[316,181]],f:'cs:錯誤'},
+  {id:'e5',from:'offs.error out',to:'ub2.input cluster',t:'err',pts:[[300,129],[300,104]],f:'cs:錯誤'},
+  {id:'e6',from:'ub2.status',to:'sl2.s',t:'bool',f:'cs:錯誤'},
+  {id:'e7',from:'kEnd',to:'sl2.t',t:'enum',pts:[[468,69],[468,95]],f:'cs:錯誤'},
+  {id:'e8',from:'kWait',to:'sl2.f',t:'enum',pts:[[466,125],[466,113]],f:'cs:錯誤'},
+  {id:'e9',from:'sl2.out',to:'cso.i',t:'enum',pts:[[540,104],[540,60]],f:'cs:錯誤'},
+  {id:'e10',from:'merge.error out',to:'log.error in',t:'err',f:'cs:錯誤'},
+  {id:'e11',from:'kRes',to:'log.Result',t:'str',pts:[[387,145],[387,154]],f:'cs:錯誤'},
+  {id:'e12',from:'log.error out',to:'clr.error in',t:'err',f:'cs:錯誤'},
+  {id:'e13',from:'clr.error out',to:'ceo.i',t:'err',pts:[[500,176],[500,250]],f:'cs:錯誤'},
+  // 停止
+  {id:'w9',from:'cso.o',to:'eq.x',t:'enum',pts:[[582,60],[582,286],[530,286],[530,297]]},
+  {id:'w10',from:'kend',to:'eq.y',t:'enum'},
+  {id:'w11',from:'eq.out',to:'cond',t:'bool',mx:578}]}
+};
+const I13_LV=[
+C.h3('LabVIEW','b','動手寫：I13_TestStation.vi 的骨架（先畫「上電」和「錯誤」兩頁）'),
+`<p>狀態表已經寫好了，現在把它變成方塊圖的外框。整張圖不用一次畫完：先把 While＋Case＋Shift Register 的骨架立起來，再一頁一頁填。下面把最容易寫錯的兩頁畫完整：「上電」（正常的一頁長什麼樣）和「錯誤」（乾淨的 error 線怎麼接）。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\儀器\\I13_TestStation.vi</code>。先建一個 Enum，項目照狀態表的順序（等產品、上電、等穩定、量測、斷電、判斷存檔、錯誤、結束），右鍵 Make Type Def 存成 <code>TS_State.ctl</code>：之後加狀態只改一個地方。三台的 Initialize（I10）放在迴圈左邊外面。',
+ in:'每一頁的輸入從迴圈左邊來：<b>狀態</b>（Enum，Shift Register）、<b>error</b>（Shift Register）、三台的 VISA 資源（一般 Tunnel，不會變）。量到的數值由各頁的驅動 VI 讀回來（電表的 DBL、示波器的陣列）。',
+ calc:'每一頁只做自己那一步，最後決定「下一個狀態」：Unbundle By Name 取 error 的 status，Select 選「錯誤」或正常的下一頁。「錯誤」頁的 OUT0 用乾淨的 error 線，送完 Merge Errors，寫紀錄後 Clear Errors。',
+ out:'前面板顯示目前狀態（Enum 指示器）、這一片的電壓、漣波、判定；每一片寫一列 CSV（TS_Log.vi，第 7 部分的寫檔）。',
+ loop:'一個 While Loop 跑整個測試站。「等產品」那一頁自己放 Wait 100 ms（等人的時候不要空轉）；其他頁的時間由儀器決定（量測本身就要時間）。',
+ end:'狀態變成「結束」才離開迴圈（Equal? 接停止條件），迴圈後三台 Close。連 OUT0 都失敗（GPD 自己出錯）就走「結束」，停機叫人。'}),
+note('這張是骨架，不能按 Run','點 Case 上面的 ◀ ▶ 切換頁面：「上電」「錯誤」畫完整，其他頁寫的是要放什麼。GPD_Configure、GPD_Output、TS_Log 是照 I10 的方式自己包的驅動 VI。'),
+{steps:{title:'I13_TestStation.vi：骨架 → 上電 → 錯誤',lv:tsVI,steps:[
+ {t:'While Loop、Case、狀態的 Shift Register',view:'bd',add:['wl','cs','kinit','srs','sel','cso','w1','w4','w7','l0','l2','l3','l4','l5','l7'],frames:{cs:0},h:`<p>畫 While Loop，裡面畫 ${fn('Programming','Structures','Case Structure')} ${qd('Case Structure')}。在迴圈左框右鍵 Add Shift Register，左邊外面接 <code>TS_State</code> 常數，選「等產品」。Shift Register 左邊（迴圈內）接 Case 的選擇端子 <b>?</b>：Case 會自動變成 Enum 的頁名。在 Case 框上右鍵 <b>Add Case for Every Value</b>，八頁一次長出來。</p><p>每一頁最後都要把「下一個狀態」接到右邊的 Tunnel，再接回 Shift Register 右邊。點 ◀ ▶ 看每一頁要放什麼。</p>`},
+ {t:'VISA 一般 Tunnel、error 進 Shift Register',view:'bd',add:['gpd','ein','tg0','sre','cg','ce','ceo','w2','w3','w5','w6','w8'],h:`<p>GPD 的 VISA 線穿過迴圈和 Case：一般 Tunnel（I4：在迴圈裡不會變）。error 走 Shift Register，穿過 Case 的地方左右各一個 Tunnel。</p><p class="qd">圖上只畫 GPD；電表、示波器的 VISA 線接法一樣，各一條 Tunnel。</p>`},
+ {t:'「上電」頁：設定、開輸出',view:'bd',add:['kV','k05','cfgs','kOn','outs','p1','p2','p3','p4','p5','p6','p7','p8'],frames:{cs:1},h:`<p>切到「上電」頁。照 I14 的順序：先設定、再開輸出。</p>${wt([
+ ['VISA Tunnel','GPD_Configure.vi 的 VISA in',''],
+ ['常數 12、0.5','Voltage、Current Limit','規格書：12 V、限流 0.5 A'],
+ ['GPD_Configure.vi','GPD_Output.vi（On? ＝ T）','紫線、黃線照串'],
+ ['GPD_Output.vi 的 error out','右邊的 error Tunnel','']])}`},
+ {t:'「上電」頁：決定下一個狀態',view:'bd',add:['ub1','kE1','kN1','sl1','p9','p10','p11','p12','p13'],frames:{cs:1},h:`<p>error out 分岔接 Unbundle By Name（status）。${fn('Programming','Comparison','Select')}：</p>${wt([
+ ['status','Select 的 s','出錯了嗎'],
+ ['TS_State 常數「錯誤」','Select 的 t','出錯 → 下一圈走「錯誤」'],
+ ['TS_State 常數「等穩定」','Select 的 f','正常 → 下一步'],
+ ['Select 的輸出','右邊的狀態 Tunnel','']])}<p>其他會出錯的頁（等穩定、量測、斷電）都用同樣的四個方塊收尾。</p>`},
+ {t:'「錯誤」頁：OUT0 用乾淨的 error 線',view:'bd',add:['kOff','offs','e1','e2','ub2','kEnd','kWait','sl2','e5','e6','e7','e8','e9'],frames:{cs:6},h:`<p>切到「錯誤」頁。放 GPD_Output.vi（On? ＝ F），<b>它的 error in 不接</b>：不接就是「沒有錯誤」，所以它一定會送 OUT0。這就是上面說的「乾淨的 error 線」。</p>
+<p>下一個狀態看 OUT0 有沒有成功：成功 → 「等產品」，等下一片；連 OUT0 都失敗 → 「結束」，停機叫人。</p>`},
+ {t:'「錯誤」頁：Merge Errors → 寫紀錄 → Clear Errors',view:'bd',add:['merge','kRes','log','clr','e3','e4','e10','e11','e12','e13'],frames:{cs:6},h:`${wt([
+ ['GPD_Output.vi 的 error out','Merge Errors 的 error 1',fn('Programming','Dialog & User Interface','Merge Errors')],
+ ['左邊的 error Tunnel（原本的錯誤）','Merge Errors 的 error 2','OUT0 沒出錯時，合起來就是原本那個錯誤'],
+ ['Merge Errors 的 error out','TS_Log.vi 的 error in','紀錄寫 ERROR 和錯誤訊息'],
+ ['常數 "ERROR"','TS_Log.vi 的 Result',''],
+ ['TS_Log.vi 的 error out','Clear Errors','處理完了，清掉'],
+ ['Clear Errors 的 error out','右邊的 error Tunnel','下一片從乾淨的 error 開始']])}
+<p class="qd">TS_Log.vi 裡面要「有 error 也照樣寫」：它要把錯誤寫進檔案，不能看到 error in 有錯就不做事。所以它裡面用 Unbundle 取出 source 寫成文字，不把 error 接到 Write 的 error in。</p>`},
+ {t:'停止條件：狀態是「結束」',view:'bd',add:['kend','eq','cond','w9','w10','w11'],h:`<p>在迴圈裡、Case 外面：下一個狀態接 ${fn('Programming','Comparison','Equal?')}，跟常數「結束」比，接到停止條件。不需要 STOP 按鈕直接停迴圈：要停，就讓程式走到「結束」，該關的才會關。</p>`}
+]}},
+ask('改一個數字，先預測結果：「錯誤」頁的 Clear Errors 拿掉，Merge Errors 直接接到右邊的 error Tunnel。電表逾時一次之後，下一片放上去會怎樣？',
+ `<p>第一片：OUT0 有送（乾淨的線），紀錄也寫了，狀態回到「等產品」。看起來正常。</p>
+<p>下一片：error Shift Register 裡還是那個逾時錯誤。「上電」頁的 GPD_Configure、GPD_Output 看到 error in 有錯，<b>都不做事</b>，error 原樣傳出去，Select 又選「錯誤」。從此每一片都直接進「錯誤」頁、寫一列 ERROR，產品根本沒有通電。整個測試站卡住，而且紀錄看起來像「每一片都量測失敗」。</p>`)
+];
+
 /* =============================== I13 =============================== */
 L.push({id:'I13',order:29.99,no:'I13',part:PART,title:'測試站：三台儀器一起用，先規劃再寫',mins:70,
 goals:[['學會','把測試規格書翻成步驟；決定每一步之間要等什麼；三台一起用時程式該怎麼排；其中一台出錯時，最要緊的是什麼。'],['做出','一張測試站的規劃圖：狀態、每個狀態用到哪台儀器、出錯往哪裡走、一片產品的紀錄長什麼樣子。'],['為什麼','每一台都接得起來，不等於測試站寫得好。三台一起用時，最危險的錯誤不在通訊，在順序和收尾。'],['先備','I4（狀態機）、I5（電表）、I10（驅動程式四件事）、I12（示波器）。']],
@@ -153,6 +287,7 @@ ask('「判斷存檔」要存成什麼樣子？',
  `<p>一片一列，欄位固定：時間、序號、輸出電壓、漣波、判定（PASS／FAIL／ERROR）、錯誤原因。出錯的那一片也要有一列，判定寫 ERROR，原因寫「電表逾時」。</p>
 <p>在 LabVIEW 裡，這些放在一個 Cluster 裡沿著 Shift Register 走，存檔時用第 7 部分學的 Format Into String 或 Write Delimited Spreadsheet 寫成一列 CSV。</p>`),
 
+...I13_LV,
 C.h3('回頭看','','規劃的順序'),
 C.table(['先想','再想','最後才寫'],[
  ['規格書翻成步驟；找出「兩步之間要等什麼」','每一步出錯時，最要緊的是什麼（安全、紀錄）','狀態機：每個狀態一頁 Case'],

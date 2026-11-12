@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="4ec902f768">
+<meta name="ll-version" content="be37753f7f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
 <meta name="description" content="22 堂互動 LabVIEW 課，從資料流、While Loop、Case 到 VISA 通訊，自己寫出讀寫三菱 FX PLC 的上位機；另有架構拆解 9 課與 CLAD 證照 13 課、201 題原創題庫模擬考。">
-<link rel="stylesheet" href="assets/course.css?v=7d3d275329">
+<link rel="stylesheet" href="assets/course.css?v=d6f28864d2">
 <link rel="stylesheet" href="assets/lv.css?v=7849351da1">
 <style>@media (max-width:900px){.ll-banner{padding-top:56px!important}}</style>
 </head>
@@ -25,11 +25,12 @@
   <main id="main"><div id="content"></div></main>
 </div>
 <script src="assets/lvdraw.js?v=fe4083103b"></script>
-<script src="assets/course.js?v=a4d410b27b"></script>
+<script src="assets/course.js?v=0a53137af0"></script>
 <script src="assets/lvfmt.js?v=174413c716"></script>
 <script src="assets/instsim.js?v=6e697d376b"></script>
 <script src="lessons/part1_start.js?v=f39628d24c"></script>
 <script src="lessons/part1_quickdrop.js?v=a00723c833"></script>
+<script src="lessons/part1_think.js?v=d005227e90"></script>
 <script src="lessons/part2_basics_a.js?v=4debd6fd89"></script>
 <script src="lessons/part2_basics_b.js?v=862b228e40"></script>
 <script src="lessons/part2_basics_c.js?v=bf10812ab2"></script>
@@ -38,15 +39,15 @@
 <script src="lessons/part4_project_b.js?v=beff366eb6"></script>
 <script src="lessons/part7_fileio.js?v=d68aa67564"></script>
 <script src="lessons/part8_instr_a.js?v=0bfa1c16e6"></script>
-<script src="lessons/part8_instr_b.js?v=aa38d2e052"></script>
-<script src="lessons/part8_instr_c.js?v=25c6acba7b"></script>
-<script src="lessons/part8_instr_d.js?v=856bf2a800"></script>
-<script src="lessons/part8_instr_e.js?v=d74489bb52"></script>
-<script src="lessons/part8_instr_f.js?v=159454e6c4"></script>
-<script src="lessons/part8_instr_g.js?v=204e91fe44"></script>
-<script src="lessons/part8_instr_h.js?v=9daa18c496"></script>
-<script src="lessons/part8_instr_i.js?v=25c7b03805"></script>
-<script src="lessons/part8_instr_j.js?v=aee919ba6b"></script>
+<script src="lessons/part8_instr_b.js?v=35289490fb"></script>
+<script src="lessons/part8_instr_c.js?v=1a15453db6"></script>
+<script src="lessons/part8_instr_d.js?v=cb80139ab8"></script>
+<script src="lessons/part8_instr_e.js?v=6107d204a6"></script>
+<script src="lessons/part8_instr_f.js?v=1f1cf5e711"></script>
+<script src="lessons/part8_instr_g.js?v=8db0d1afa6"></script>
+<script src="lessons/part8_instr_h.js?v=ce55cdfbcd"></script>
+<script src="lessons/part8_instr_i.js?v=d8be4580bd"></script>
+<script src="lessons/part8_instr_j.js?v=7cac29bdb1"></script>
 <script src="lessons/part9_myrio_a.js?v=9419bba687"></script>
 <script src="lessons/part9_myrio_b.js?v=a243ad65d7"></script>
 <script src="lessons/part9_myrio_c.js?v=1a472804ac"></script>
@@ -55,6 +56,9 @@
 <script src="lessons/part9_myrio_f.js?v=e08752e497"></script>
 <script src="lessons/part9_myrio_g.js?v=29e494151f"></script>
 <script src="lessons/part9_myrio_h.js?v=e27cf86573"></script>
+<script src="lessons/part9_myrio_lv1.js?v=aa96580ec5"></script>
+<script src="lessons/part9_myrio_lv2.js?v=81560c169b"></script>
+<script src="lessons/part9_myrio_lv3.js?v=1e1fae5de5"></script>
 <script src="lessons/part6_arch_a.js?v=4d7dc3ad04"></script>
 <script src="lessons/part6_arch_b.js?v=4d47316f96"></script>
 <script src="lessons/part5_clad_a.js?v=7f85b05e87"></script>
@@ -73,7 +77,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "4ec902f768" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "be37753f7f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

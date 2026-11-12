@@ -64,6 +64,128 @@ function writeLab(d){
   d.addEventListener('change',run);run();
 }
 
+/* ======================================================================
+   LabVIEW 實作：GPD_SetVoltage.vi（檢查範圍 → 組命令 → 寫 → 讀回 → 比對）
+   回覆是網頁模擬的（照 instsim.js 的 GPD：設定命令不回、VSET1? 回設定值）。
+   ====================================================================== */
+const ctl=C.ctl,qd=C.qd,wt=C.wt,PR=['Functions','Programming'];
+const addF=o=>{for(const k in o)if(!LV.F[k])LV.F[k]=o[k];};
+addF({
+ 'Fract/Exp String To Number':{g:'1.2E→#',ins:['string','offset','default'],outs:['offset past number','number'],w:46,pal:[...PR,'String','Number/String Conversion','Fract/Exp String To Number']},
+ 'Absolute Value':{p:'|x|',a:1,pal:[...PR,'Numeric','Absolute Value']}
+});
+const NOERR={status:false,code:0,source:''};
+const setVI={name:'GPD_SetVoltage.vi',view:'bd',
+ fp:{w:400,h:260,items:[
+  {id:'vin',k:'visa',label:'VISA in',x:16,y:16,w:130,v:'COM5',options:['COM5']},
+  {id:'volt',k:'num',ctl:true,label:'Voltage (V)',x:16,y:76,w:110,v:12.345,inc:1,dig:3},
+  {id:'ein',k:'err',label:'error in (no error)',x:16,y:130},
+  {id:'vout',k:'visa',label:'VISA out',x:200,y:16,w:130,v:'COM5',options:['COM5']},
+  {id:'rb',k:'num',label:'Readback (V)',x:200,y:76,w:110,dig:3},
+  {id:'ver',k:'led',label:'Verified',x:330,y:76},
+  {id:'eout',k:'err',label:'error out',x:200,y:130}]},
+ bd:{w:640,h:350,structs:[{id:'cs',k:'case',x:150,y:20,w:420,h:200,frames:['False','True'],cur:1}],
+  nodes:[
+  {id:'vin',k:'ctl',t:'visa',label:'VISA in',x:10,y:40},
+  {id:'k32',k:'const',t:'dbl',v:32,x:56,y:129},
+  {id:'volt',k:'ctl',t:'dbl',label:'Voltage (V)',x:10,y:140},
+  {id:'k0',k:'const',t:'dbl',v:0,x:56,y:152},
+  {id:'irc',k:'fn',fn:'In Range and Coerce',x:80,y:126,showName:false},
+  {id:'ein',k:'ctl',t:'err',label:'error in',x:10,y:186},
+  {id:'sel',k:'sel',t:'bool',s:'cs',y:157},
+  {id:'tv',k:'tunnel',t:'visa',s:'cs',side:'l',y:50},
+  {id:'tx',k:'tunnel',t:'dbl',s:'cs',side:'l',y:142},
+  {id:'te',k:'tunnel',t:'err',s:'cs',side:'l',y:196},
+  {id:'tvo',k:'tunnel',t:'visa',s:'cs',side:'r',y:131},
+  {id:'teo',k:'tunnel',t:'err',s:'cs',side:'r',y:153},
+  {id:'tbo',k:'tunnel',t:'str',s:'cs',side:'r',y:200},
+  {id:'kfmt',k:'const',t:'str',v:'%.;VSET1:%.3f\\n',x:158,y:82,f:'cs:True'},
+  {id:'fmt',k:'fn',fn:'Format Into String',x:286,y:80,f:'cs:True',showName:false},
+  {id:'wr1',k:'fn',fn:'VISA Write',x:350,y:39,f:'cs:True',showName:false},
+  {id:'kq',k:'const',t:'str',v:'VSET1?\\n',x:400,y:52,f:'cs:True'},
+  {id:'wr2',k:'fn',fn:'VISA Write',x:480,y:39,f:'cs:True',showName:false},
+  {id:'k100',k:'const',t:'i32',v:100,x:381,y:133,f:'cs:True'},
+  {id:'rd',k:'fn',fn:'VISA Read',x:414,y:120,f:'cs:True',showName:false},
+  {id:'fx',k:'fn',fn:'Fract/Exp String To Number',x:170,y:250,showName:false},
+  {id:'rb',k:'ind',t:'dbl',label:'Readback (V)',x:232,y:310},
+  {id:'sub',k:'fn',fn:'Subtract',x:250,y:274,showName:false},
+  {id:'abs',k:'fn',fn:'Absolute Value',x:290,y:274,showName:false},
+  {id:'ktol',k:'const',t:'dbl',v:'0.0005',x:284,y:312},
+  {id:'lt',k:'fn',fn:'Less?',x:340,y:281,showName:false},
+  {id:'ver',k:'ind',t:'bool',label:'Verified',x:380,y:285},
+  {id:'vout',k:'ind',t:'visa',label:'VISA out',x:590,y:121},
+  {id:'eout',k:'ind',t:'err',label:'error out',x:590,y:165}],
+  wires:[
+  {id:'w1',from:'vin',to:'tv.o',t:'visa'},
+  {id:'w2',from:'k32',to:'irc.upper limit',t:'dbl'},
+  {id:'w3',from:'volt',to:'irc.x',t:'dbl'},
+  {id:'w4',from:'k0',to:'irc.lower limit',t:'dbl'},
+  {id:'w5',from:'irc.In Range?',to:'sel',t:'bool'},
+  {id:'w6',from:'irc.coerced(x)',to:'tx.o',t:'dbl'},
+  {id:'w7',from:'ein',to:'te.o',t:'err'},
+  {id:'t1',from:'kfmt',to:'fmt.format string',t:'str',f:'cs:True'},
+  {id:'t2',from:'tx.i',to:'fmt.input 1',t:'dbl',pts:[[270,142],[270,103]],f:'cs:True'},
+  {id:'t3',from:'tv.i',to:'wr1.VISA resource name',t:'visa',f:'cs:True'},
+  {id:'t4',from:'fmt.resulting string',to:'wr1.write buffer',t:'str',pts:[[338,97],[338,61]],f:'cs:True'},
+  {id:'t5',from:'te.i',to:'wr1.error in',t:'err',pts:[[346,196],[346,72]],f:'cs:True'},
+  {id:'t6',from:'wr1.VISA resource name out',to:'wr2.VISA resource name',t:'visa',f:'cs:True'},
+  {id:'t7',from:'kq',to:'wr2.write buffer',t:'str',f:'cs:True'},
+  {id:'t8',from:'wr1.error out',to:'wr2.error in',t:'err',f:'cs:True'},
+  {id:'t9',from:'wr2.VISA resource name out',to:'rd.VISA resource name',t:'visa',pts:[[540,50],[540,118],[380,118],[380,131]],f:'cs:True'},
+  {id:'t10',from:'wr2.error out',to:'rd.error in',t:'err',pts:[[527,72],[527,112],[372,112],[372,153]],f:'cs:True'},
+  {id:'t11',from:'k100',to:'rd.byte count',t:'i32',f:'cs:True'},
+  {id:'t12',from:'rd.VISA resource name out',to:'tvo.i',t:'visa',f:'cs:True'},
+  {id:'t13',from:'rd.error out',to:'teo.i',t:'err',f:'cs:True'},
+  {id:'t14',from:'rd.read buffer',to:'tbo.i',t:'str',pts:[[462,142],[462,200]],f:'cs:True'},
+  {id:'f1',from:'tv.i',to:'tvo.i',t:'visa',pts:[[360,50],[360,131]],f:'cs:False'},
+  {id:'f2',from:'te.i',to:'teo.i',t:'err',pts:[[360,196],[360,153]],f:'cs:False'},
+  {id:'w8',from:'tvo.o',to:'vout',t:'visa'},
+  {id:'w9',from:'teo.o',to:'eout',t:'err',mx:582},
+  {id:'w10',from:'tbo.o',to:'fx.string',t:'str',pts:[[600,200],[600,240],[160,240],[160,262]]},
+  {id:'w11',from:'fx.number',to:'sub.x',t:'dbl'},
+  {id:'w12',from:'fx.number',to:'rb',t:'dbl',pts:[[224,281],[224,320]]},
+  {id:'w13',from:'irc.coerced(x)',to:'sub.y',t:'dbl',pts:[[130,142],[130,295]]},
+  {id:'w14',from:'sub.out',to:'abs',t:'dbl'},
+  {id:'w15',from:'abs.out',to:'lt.x',t:'dbl'},
+  {id:'w16',from:'ktol',to:'lt.y',t:'dbl',pts:[[337,321],[337,302]]},
+  {id:'w17',from:'lt.out',to:'ver',t:'bool'}]},
+ sim:{live:true,step(i){
+  const v=+i.volt,ok=v>=0&&v<=32,cmd='VSET1:'+v.toFixed(3)+'\n',rb=ok?+v.toFixed(3):0,ver=ok&&Math.abs(rb-v)<0.0005;
+  return {out:{vout:i.vin,rb,ver,eout:NOERR},frames:{cs:ok?1:0},
+   msg:ok?'In Range? ＝ T，走 True 頁：送「'+cmd.replace('\n','\\n')+'」，再問 VSET1? 讀回 '+rb.toFixed(3)+'，差 '+Math.abs(rb-v).toExponential(1)+' → Verified '+(ver?'亮':'不亮'):'超出 0～32 V：In Range? ＝ F，走 False 頁，什麼都不送。Readback 是空字串轉出來的 0，Verified 不亮。（這一版還沒產生錯誤，下面的問題）',
+   vals:{vin:i.vin,volt:v,k32:32,k0:0,'irc.In Range?':ok,'irc.coerced(x)':Math.min(32,Math.max(0,v)),kfmt:'%.;VSET1:%.3f\n','fmt.resulting string':cmd,kq:'VSET1?\n',k100:100,'rd.read buffer':ok?rb.toFixed(3)+'V\r\n':'','fx.number':rb,'sub.out':rb-v,'abs.out':Math.abs(rb-v),ktol:0.0005,'lt.out':ver}};
+ }}
+};
+const I14_LV=[
+C.h3('LabVIEW','b','動手寫：GPD_SetVoltage.vi（上面那張規劃的 Case「不一樣」那一頁，包成驅動）'),
+`<p>把「檢查範圍 → 組命令 → 寫 → 讀回比對」做成一個 SubVI。主程式的迴圈只要在「值有變」時呼叫它一次。ERR? 這一步先不畫，最後的問題會用到。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>驅動\\GPD\\GPD_SetVoltage.vi</code>（跟 I10 的 GPD_ReadCurrent.vi 放在一起）。接線端照 I10 的慣例：VISA 和 error 左進右出。',
+ in:'從接線端進來：<code>VISA in</code>、<code>Voltage (V)</code>（DBL，操作員輸入的，例 12.345）、<code>error in</code>。讀回來的是 VSET1? 的回覆字串（例 <code>12.345V\\r\\n</code>）。',
+ calc:'In Range and Coerce（上限 32、下限 0）→ In Range? 接 Case。True 頁：Format Into String，格式 <code>%.;VSET1:%.3f\\n</code>（小數 3 位、指定句點、帶結尾字元）→ VISA Write → 再寫 <code>VSET1?\\n</code> → VISA Read。外面：Fract/Exp String To Number 轉回 DBL，跟要的值相減、取絕對值，小於 0.0005（%.3f 最後一位的一半）就算對。',
+ out:'接線端出去：<code>Readback (V)</code>、<code>Verified</code>（布林）、<code>VISA out</code>、<code>error out</code>。',
+ loop:'SubVI 裡沒有迴圈：呼叫一次寫一次。主程式用 Shift Register 記「上一次成功寫的值」，有變才呼叫（上面的規劃圖）。',
+ end:'error 線串過 Case。超出範圍走 False 頁，什麼都不送；Verified 是 False，主程式看到就<b>不要更新</b>「上一次的值」，並告訴操作員。'}),
+note('下面的 VI 視窗是網頁模擬的','改 Voltage 就會重算：試 12.345、33、−1。模擬的電源照上面「寫入檢查台」的規則。'),
+{steps:{title:'GPD_SetVoltage.vi：範圍 → 命令 → 寫 → 讀回 → 比對',lv:setVI,steps:[
+ {t:'前面板：照驅動的慣例',view:'fp',add:['vin','volt','ein','vout','rb','ver','eout'],h:`<p>左邊（輸入）：VISA Resource Name <code>VISA in</code>、Numeric Control <code>Voltage (V)</code>（3 位小數）、error in。右邊（輸出）：<code>VISA out</code>、<code>Readback (V)</code>、Round LED <code>Verified</code>、error out。</p>`},
+ {t:'先檢查範圍：In Range and Coerce',view:'bd',add:['vin','volt','ein','k32','k0','irc','w2','w3','w4'],h:`<p>${fn('Programming','Comparison','In Range and Coerce')} ${qd('In Range and Coerce')}：upper limit 接 <code>32</code>、lower limit 接 <code>0</code>（這台每組 0～32 V）。輸出 <b>In Range?</b> 是布林，<b>coerced(x)</b> 是夾在範圍內的值。</p><p>儀器的範圍檢查是最後一道防線；程式自己先擋，不合法的值根本不送出去。</p>`},
+ {t:'Case：In Range? 決定送不送',view:'bd',add:['cs','sel','tv','tx','te','tvo','teo','tbo','w1','w5','w6','w7','f1','f2'],h:`<p>Case Structure 的選擇端子接 In Range?，自動變成 True／False 兩頁。<b>False 頁</b>只把 VISA 線和 error 線從左接到右（點 ◀ ▶ 看）。</p><p class="qd">右邊那個字串 Tunnel 在 False 頁沒有接：右鍵 ▸ <b>Use Default If Unwired</b>，False 頁就輸出空字串。</p>`},
+ {t:'True 頁：Format Into String 組命令',view:'bd',add:['kfmt','fmt','t1','t2'],frames:{cs:1},h:`<p>${fn('Programming','String','Format Into String')} ${qd('Format Into String')}。format string 接常數（'\\' Codes Display）<code>%.;VSET1:%.3f\\n</code>：</p>
+${C.table(['格式字串的一段','意思'],[['%.;','這一次用句點當小數點（電腦語系是逗號也不會變）'],['VSET1:','固定文字，照抄'],['%.3f','input 1 的數字，小數 3 位'],['\\n','結尾字元']])}
+<p>input 1 接穿進 Case 的電壓。輸出就是 <code>VSET1:12.345\\n</code>。</p>`},
+ {t:'True 頁：寫設定、問設定值、讀回',view:'bd',add:['wr1','kq','wr2','k100','rd','t3','t4','t5','t6','t7','t8','t9','t10','t11','t12','t13','t14'],frames:{cs:1},h:`${wt([
+ ['Format Into String 的 resulting string','VISA Write 的 write buffer','送設定（沒有回覆）'],
+ ['常數 VSET1?\\n','第二個 VISA Write','問：你現在設的是多少'],
+ ['第二個 VISA Write','VISA Read（byte count 100）','讀回 12.345V\\r\\n'],
+ ['VISA Read 的 read buffer','右邊的字串 Tunnel','拿到 Case 外面轉數字']])}`},
+ {t:'Case 外面：轉回數字、比對',view:'split',add:['fx','rb','sub','abs','ktol','lt','ver','vout','eout','w8','w9','w10','w11','w12','w13','w14','w15','w16','w17'],h:`<p>Fract/Exp String To Number 把讀回的字串變 DBL，接 <code>Readback (V)</code>。${fn('Programming','Numeric','Subtract')}（讀回 − 要的）→ ${fn('Programming','Numeric','Absolute Value')} → ${fn('Programming','Comparison','Less?')} 常數 <code>0.0005</code> → <code>Verified</code>。</p><p>不用 Equal?：DBL 算過、轉過字串，最後一位可能不一樣（上面「完全相等」那一題）。改 Voltage 試 12.345、33、−1。</p>`}
+]}},
+ask('改一個數字，先預測結果：格式字串的 <code>%.3f</code> 改成 <code>%.1f</code>，Voltage 輸入 12.345。送出的命令是什麼？Verified 會亮嗎？',
+ `<p>送出 <code>VSET1:12.3\\n</code>（%.1f 四捨五入到 1 位）。電源很乖地設成 12.300，VSET1? 讀回 12.300。差 0.045，比 0.0005 大：<b>Verified 不亮</b>。</p>
+<p>這就是讀回比對抓得到、ERR? 抓不到的那一種錯：儀器沒有做錯任何事，錯在你送的字串。另外注意：超出範圍（33 V）時這一版的 Verified 也是不亮，但 error out 沒有錯。正式的驅動要在 False 頁用 ${fn('Programming','Dialog & User Interface','Error Cluster From Error Code.vi')} 產生一個自訂錯誤（例 5003「電壓超出 0～32 V」），讓主程式從 error 線就知道（I10）。</p>`)
+];
+
 /* =============================== I14 =============================== */
 L.push({id:'I14',order:29.995,no:'I14',part:PART,title:'寫入：把數字送進儀器，怎麼知道它真的照做了',mins:50,
 goals:[['學會','數字怎麼變成命令字串而不走樣；寫完怎麼知道儀器照做了；好幾個設定要照什麼順序寫；迴圈裡多久寫一次。'],['做出','一個「設定電壓」的子 VI 規劃：檢查範圍 → 組命令 → 寫 → 讀回比對 → 問錯誤。'],['為什麼','讀錯了，頂多數字不對；寫錯了，儀器會照做。而且大部分設定命令沒有回覆：不特別去確認，程式永遠不知道。'],['先備','I2～I4（電源）、I7（溫控器）。']],
@@ -125,6 +247,7 @@ ask('那要怎麼寫？要用到什麼結構？',
 <p>另一種做法是 Event Structure：控制項的 Value Change 事件發生才寫。效果一樣，第 6 部分的架構課有講。</p>`),
 flow(['VISA Open',{loop:['讀「設定電壓」控制項',{kase:['一樣：什麼都不做','不一樣：In Range 檢查 → Format Into String（%.;VSET1:%.3f）→ VISA Write → VSET1? 讀回比對 → ERR? → 成功才更新上一次的值'],label:'跟上一次寫的值一樣嗎？'},'其他要讀的資料'],label:'While Loop',sr:'上一次成功寫入的值、error'},'OUT0 → VISA Close']),
 
+...I14_LV,
 C.h3('回頭看','','寫入的檢查表'),
 C.table(['寫之前','寫的時候','寫之後'],[
  ['程式自己檢查範圍（In Range and Coerce）','Format Into String 照說明書的位數；必要時 %.; 指定句點','讀回來比對（差在解析度以內）'],

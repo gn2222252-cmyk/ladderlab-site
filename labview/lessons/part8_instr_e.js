@@ -61,6 +61,143 @@ function daqLab(el){
   draw();
 }
 
+/* ======================================================================
+   LabVIEW 實作：I08_Pressure.vi（DAQmx：建立通道 → Start → 迴圈 Read → 換算 → Stop → Clear）
+   DAQmx 函式的端子名稱跟第 5 部分（CLAD）用的目錄一致；Create Virtual Channel 多畫了 input terminal configuration。
+   ====================================================================== */
+const ctl=C.ctl,qd=C.qd,wt=C.wt,PR=['Functions','Programming'],DQ=['Functions','Measurement I/O','NI-DAQmx'];
+const addF=o=>{for(const k in o)if(!LV.F[k])LV.F[k]=o[k];};
+addF({ // 跟 part5_clad_a.js 的定義相同（那個檔案較晚載入，會用同樣的內容覆蓋）
+ 'DAQmx Create Virtual Channel':{g:'DAQmx\nCH',ins:['physical channels','min value','max value','error in'],outs:['task out','error out'],w:48,h:56,col:'#e3f1ff',pal:[...DQ,'DAQmx Create Virtual Channel.vi']},
+ 'DAQmx Start Task':{g:'DAQmx\n▶',ins:['task/channels in','error in'],outs:['task out','error out'],w:48,h:44,col:'#e3f1ff',pal:[...DQ,'DAQmx Start Task.vi']},
+ 'DAQmx Read':{g:'DAQmx\nR',ins:['task/channels in','number of samples per channel','error in'],outs:['task out','data','error out'],w:48,h:56,col:'#e3f1ff',pal:[...DQ,'DAQmx Read.vi']},
+ 'DAQmx Stop Task':{g:'DAQmx\n■',ins:['task/channels in','error in'],outs:['task out','error out'],w:48,h:44,col:'#e3f1ff',pal:[...DQ,'DAQmx Stop Task.vi']},
+ 'DAQmx Clear Task':{g:'DAQmx\n✕',ins:['task/channels in','error in'],outs:['error out'],w:48,h:44,col:'#e3f1ff',pal:[...DQ,'DAQmx Clear Task.vi']}
+});
+const NOERR={status:false,code:0,source:''};
+const presVI={name:'I08_Pressure.vi',view:'bd',
+ fp:{w:380,h:340,items:[
+  {id:'bar',k:'num',label:'Pressure (bar)',x:16,y:16,w:110,dig:2},
+  {id:'brk',k:'led',label:'斷線',x:150,y:16,color:'red'},
+  {id:'stop',k:'btn',label:'stop',text:'STOP',x:250,y:20,stop:true},
+  {id:'chart',k:'chart',label:'Pressure Chart（0～10 bar）',x:16,y:76,w:260,h:90,min:0,max:10},
+  {id:'real',k:'num',ctl:true,label:'（模擬）實際壓力 (bar)',x:16,y:196,w:110,v:3.2,inc:0.5},
+  {id:'cut',k:'btn',label:'（模擬）拔掉一條線',text:'拔線',mech:'switch',x:16,y:250},
+  {id:'eo',k:'err',label:'error out',x:190,y:190}]},
+ bd:{w:640,h:470,structs:[{id:'wl',k:'while',x:150,y:130,w:470,h:260}],
+  nodes:[
+  {id:'kch',k:'const',t:'str',v:'Dev1/ai0',x:48,y:29},
+  {id:'kdiff',k:'const',t:'enum',v:'Differential',x:20,y:48},
+  {id:'kmin',k:'const',t:'dbl',v:-10,x:83,y:66},
+  {id:'kmax',k:'const',t:'dbl',v:10,x:92,y:84},
+  {id:'cvc',k:'fn',fn:'DAQmx Create Virtual Channel',x:120,y:20,h:110,ins:['physical channels','input terminal configuration','minimum value','maximum value','error in'],outs:['task out','error out'],showName:false},
+  {id:'start',k:'fn',fn:'DAQmx Start Task',x:190,y:42},
+  {id:'t1',k:'tunnel',t:'visa',s:'wl',side:'l',y:190},
+  {id:'sre',k:'sr',t:'err',s:'wl',y:246},
+  {id:'rd',k:'fn',fn:'DAQmx Read',x:200,y:176},
+  {id:'k08',k:'const',t:'dbl',v:0.8,x:262,y:161},
+  {id:'gt',k:'fn',fn:'Greater?',x:300,y:163},
+  {id:'k25',k:'const',t:'dbl',v:2.5,x:262,y:209},
+  {id:'mul',k:'fn',fn:'Multiply',x:300,y:197},
+  {id:'k25b',k:'const',t:'dbl',v:2.5,x:334,y:216},
+  {id:'sub',k:'fn',fn:'Subtract',x:372,y:204},
+  {id:'knan',k:'const',t:'dbl',v:'NaN',x:404,y:160},
+  {id:'sel',k:'fn',fn:'Select',x:450,y:193},
+  {id:'brk',k:'ind',t:'bool',label:'斷線',x:466,y:170},
+  {id:'bar',k:'ind',t:'dbl',label:'Pressure (bar)',x:500,y:199},
+  {id:'chart',k:'ind',t:'dbl',label:'Pressure Chart',x:500,y:262},
+  {id:'k100',k:'const',t:'i32',v:100,x:170,y:340},
+  {id:'wait',k:'fn',fn:'Wait (ms)',x:210,y:333},
+  {id:'ub',k:'unbundle',items:['status'],x:270,y:300},
+  {id:'stop',k:'ctl',t:'bool',label:'stop',x:480,y:365},
+  {id:'or',k:'fn',fn:'Or',x:540,y:354},
+  {id:'cond',k:'stop',s:'wl'},
+  {id:'t2',k:'tunnel',t:'visa',s:'wl',side:'r',y:150},
+  {id:'stp',k:'fn',fn:'DAQmx Stop Task',x:420,y:410},
+  {id:'clr',k:'fn',fn:'DAQmx Clear Task',x:490,y:410},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:556,y:416,showName:false}],
+  wires:[
+  {id:'w1',from:'kch',to:'cvc.physical channels',t:'str'},
+  {id:'w2',from:'kdiff',to:'cvc.input terminal configuration',t:'enum'},
+  {id:'w3',from:'kmin',to:'cvc.minimum value',t:'dbl'},
+  {id:'w4',from:'kmax',to:'cvc.maximum value',t:'dbl'},
+  {id:'w5',from:'cvc.task out',to:'start.task/channels in',t:'visa'},
+  {id:'w6',from:'cvc.error out',to:'start.error in',t:'err',mx:180},
+  {id:'w7',from:'start.task out',to:'t1.o',t:'visa',pts:[[256,57],[256,118],[128,118],[128,190]]},
+  {id:'w8',from:'start.error out',to:'sre.init',t:'err',pts:[[248,71],[248,110],[120,110],[120,246]]},
+  {id:'w9',from:'t1.i',to:'rd.task/channels in',t:'visa'},
+  {id:'w10',from:'sre.L',to:'rd.error in',t:'err',mx:180},
+  {id:'w11',from:'rd.task out',to:'t2.i',t:'visa',pts:[[252,190],[252,150]]},
+  {id:'w12',from:'rd.data',to:'mul.x',t:'dbl'},
+  {id:'w13',from:'k25',to:'mul.y',t:'dbl'},
+  {id:'w14',from:'mul.out',to:'sub.x',t:'dbl'},
+  {id:'w15',from:'k25b',to:'sub.y',t:'dbl'},
+  {id:'w16',from:'rd.data',to:'gt.y',t:'dbl',pts:[[284,204],[284,184]]},
+  {id:'w17',from:'k08',to:'gt.x',t:'dbl'},
+  {id:'w18',from:'gt.out',to:'sel.s',t:'bool',pts:[[334,177],[334,186],[440,186],[440,209]]},
+  {id:'w19',from:'gt.out',to:'brk',t:'bool',pts:[[334,177],[334,186],[460,186],[460,180]]},
+  {id:'w20',from:'knan',to:'sel.t',t:'dbl',pts:[[446,169],[446,200]]},
+  {id:'w21',from:'sub.out',to:'sel.f',t:'dbl'},
+  {id:'w22',from:'sel.out',to:'bar',t:'dbl'},
+  {id:'w23',from:'sel.out',to:'chart',t:'dbl',pts:[[490,209],[490,272]]},
+  {id:'w24',from:'rd.error out',to:'sre.R',t:'err',pts:[[256,218],[256,246]]},
+  {id:'w25',from:'k100',to:'wait',t:'i32'},
+  {id:'w26',from:'rd.error out',to:'ub.input cluster',t:'err',pts:[[256,218],[256,314]]},
+  {id:'w27',from:'ub.status',to:'or.x',t:'bool',mx:520},
+  {id:'w28',from:'stop',to:'or.y',t:'bool'},
+  {id:'w29',from:'or.out',to:'cond',t:'bool'},
+  {id:'w30',from:'t2.o',to:'stp.task/channels in',t:'visa',pts:[[636,150],[636,404],[410,404],[410,425]]},
+  {id:'w31',from:'sre.out',to:'stp.error in',t:'err',pts:[[630,246],[630,398],[404,398],[404,439]]},
+  {id:'w32',from:'stp.task out',to:'clr.task/channels in',t:'visa'},
+  {id:'w33',from:'stp.error out',to:'clr.error in',t:'err'},
+  {id:'w34',from:'clr.error out',to:'seh.error in',t:'err'}]},
+ sim:{period:250,init(){return {hist:[]};},step(i,st,ctx){
+  const n=ctx.i,cut=!!i.cut,p=Math.max(0,Math.min(10,+i.real||0));
+  const v=+((cut?0:(4+16*p/10)*0.25)+0.0012*Math.sin(n*2.1)).toFixed(4),broken=0.8>v,b=broken?NaN:+(2.5*v-2.5).toFixed(3);
+  st.hist.push(b);const stp=!!i.stop;
+  return {out:{bar:b,brk:broken,chart:st.hist.slice(),eo:NOERR},stop:stp,msg:stp?'按了 STOP':(broken?'讀到 '+v+' V：比 0.8 V 低，判成斷線。Select 送出 NaN，Chart 不畫這一點':'第 '+n+' 圈：DAQmx Read → '+v+' V → 2.5 × '+v+' − 2.5 ＝ '+b+' bar（網頁模擬：250 Ω 分流電阻）'),
+   vals:{kch:'Dev1/ai0',kdiff:'Differential',kmin:-10,kmax:10,k08:0.8,k25:2.5,k25b:2.5,knan:NaN,k100:100,'rd.data':v,'mul.out':2.5*v,'sub.out':2.5*v-2.5,'gt.out':broken,'sel.out':b,'rd.error out':NOERR,'ub.status':false,stop:stp,'or.out':stp}};
+ },doneMsg:'迴圈結束：DAQmx Stop Task、Clear Task'}
+};
+const I08_LV=[
+C.h3('LabVIEW','b','動手寫：I08_Pressure.vi（DAQmx 版的「迴圈外建立、迴圈內讀、迴圈外清掉」）'),
+`<p>函式換成 DAQmx，形狀跟 I4 一樣。先把上面算好的東西對到方塊圖：通道、範圍、接法是 Create Virtual Channel 的輸入；換算式是一個 Multiply 和一個 Subtract；斷線判斷是一個比較。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\儀器\\I08_Pressure.vi</code>。先在 NI MAX 的 Test Panels 確認 Dev1/ai0 看得到 1～5 V，再開始寫。',
+ in:'DAQmx Read（Analog ▸ Single Channel ▸ Single Sample ▸ DBL）每次給 <b>一個 DBL</b>，單位伏特，正常範圍 1～5 V（4–20 mA × 250 Ω）。通道 <code>Dev1/ai0</code>、差動、範圍 ±10 V。',
+ calc:'壓力 ＝ 2.5 × 電壓 − 2.5（Multiply、Subtract）。先判斷：0.8 &gt; 電壓（Greater?）就是斷線，用 Select 把壓力換成 NaN。',
+ out:'Numeric Indicator <code>Pressure (bar)</code>（2 位小數）、Waveform Chart（0～10 bar）、紅色 LED <code>斷線</code>。Chart 遇到 NaN 不畫，斷線那段會是空白，不會畫成 −2.5 bar。',
+ loop:'While Loop，Wait 100 ms：管路壓力一秒讀 10 次就夠（上面「一秒要讀幾次」）。這種一次讀一點、用 Wait 控制的寫法叫「軟體計時」，夠用；要每秒幾千點時才改用 DAQmx Timing 讓卡片自己計時。',
+ end:'STOP 或出錯就停。迴圈後 <b>DAQmx Stop Task → DAQmx Clear Task</b>（相當於 VISA Close），再 Simple Error Handler。不 Clear，任務會一直佔著這張卡，下次執行可能出錯。'}),
+note('下面的 VI 視窗是網頁模擬的','模擬的是 4–20 mA 傳送器經 250 Ω 接到 USB-6009；雜訊是示意。'),
+{steps:{title:'I08_Pressure.vi：DAQmx 的四個函式加一個換算',lv:presVI,steps:[
+ {t:'前面板',view:'fp',add:['bar','brk','stop','chart','eo','real','cut'],h:`<p>Numeric Indicator <code>Pressure (bar)</code>、Waveform Chart（Y 軸 0～10）、Round LED <code>斷線</code>（On 改紅色）、Stop Button。</p><p class="qd">兩個「（模擬）」控制元件只在網頁上：一個代替真的壓力，一個代替拔線。</p>`},
+ {t:'DAQmx Create Virtual Channel：通道、接法、範圍',view:'bd',add:['kch','kdiff','kmin','kmax','cvc','w1','w2','w3','w4'],h:`<p>${fn('Measurement I/O','NI-DAQmx','DAQmx Create Virtual Channel.vi')} ${qd('DAQmx Create Virtual Channel')}。下面的選單選 <b>Analog Input ▸ Voltage</b>（這個 VI 是多型的，選了才有電壓用的輸入）。</p>${wt([
+ ['常數 Dev1/ai0','physical channels','NI MAX 裡看到的卡片名稱＋通道'],
+ ['常數 Differential','input terminal configuration','差動接法：上面接線那一段'],
+ ['常數 -10','minimum value','範圍 ±10 V：包得住 1～5 V 還有餘裕'],
+ ['常數 10','maximum value','']])}
+<p class="qd">在 physical channels 上 Create ▸ Constant，會出現一個下拉選單，直接選 Dev1/ai0；不用自己打字。</p>`},
+ {t:'DAQmx Start Task，接進迴圈',view:'bd',add:['start','wl','t1','sre','rd','w5','w6','w7','w8','w9','w10','t2','w11','w24'],h:`<p>${fn('Measurement I/O','NI-DAQmx','DAQmx Start Task.vi')} ${qd('DAQmx Start Task')}，接著畫 While Loop。迴圈裡放 ${fn('Measurement I/O','NI-DAQmx','DAQmx Read.vi')} ${qd('DAQmx Read')}，選單選 <b>Analog ▸ Single Channel ▸ Single Sample ▸ DBL</b>：一次一個點、一個 DBL。</p>
+<p>任務線（紫色）跟 VISA 線一樣，在迴圈裡不會變，用一般 Tunnel；error 用 Shift Register（I4）。</p>`},
+ {t:'換算：2.5 × 電壓 − 2.5',view:'bd',add:['k25','mul','k25b','sub','w12','w13','w14','w15'],h:`${wt([
+ ['DAQmx Read 的 data','Multiply 的 x','電壓 (V)'],
+ ['常數 2.5','Multiply 的 y','斜率：10 bar ÷ 4 V'],
+ ['Multiply 的 x*y','Subtract 的 x',''],
+ ['常數 2.5','Subtract 的 y','截距：1 V 時要等於 0 bar']])}<p>用 3 V 驗算：2.5 × 3 − 2.5 ＝ 5 bar，跟上面小測驗一樣。</p>`},
+ {t:'斷線判斷：Greater? + Select + NaN',view:'bd',add:['k08','gt','knan','sel','brk','bar','chart','w16','w17','w18','w19','w20','w21','w22','w23'],h:`<p>${fn('Programming','Comparison','Greater?')}：x 接常數 <code>0.8</code>、y 接電壓，意思是「0.8 &gt; 電壓」。${fn('Programming','Comparison','Select')} ${qd('Select')}：</p>${wt([
+ ['Greater? 的 x &gt; y?','Select 的 s；也接到 斷線 LED','True＝斷線'],
+ ['常數 NaN','Select 的 t','斷線時送 NaN（DBL 常數直接打 NaN）'],
+ ['Subtract 的 x-y','Select 的 f','正常時送算出來的壓力'],
+ ['Select 的輸出','Pressure (bar)、Pressure Chart','']])}`},
+ {t:'Wait、停止條件',view:'bd',add:['k100','wait','ub','stop','or','cond','w25','w26','w27','w28','w29'],h:`<p>Wait (ms) 接 <code>100</code>。停止條件跟 I4 一樣：Unbundle By Name 的 status <b>或</b> stop。</p>`},
+ {t:'迴圈後：Stop Task、Clear Task；Run',view:'split',add:['stp','clr','seh','w30','w31','w32','w33','w34'],h:`<p>${fn('Measurement I/O','NI-DAQmx','DAQmx Stop Task.vi')}、${fn('Measurement I/O','NI-DAQmx','DAQmx Clear Task.vi')}，再 Simple Error Handler。</p><p>Run。把「實際壓力」改成 0、5、10，Pressure 應該跟著是 0、5、10。按「拔線」：斷線燈亮、Pressure 顯示 NaN、Chart 斷開。</p>`}
+]}},
+ask('改一個數字，先預測結果：現場把分流電阻從 250 Ω 換成 500 Ω，程式沒改。壓力 5 bar 時 Pressure 顯示多少？斷線燈會亮嗎？',
+ `<p>500 Ω 時，5 bar 是 12 mA × 500 Ω ＝ <b>6 V</b>，程式照舊算 2.5 × 6 − 2.5 ＝ <b>12.5 bar</b>：錯了，而且看起來像真的。斷線燈不會亮（6 V 比 0.8 大）。壓力再高一點，20 mA × 500 Ω ＝ 10 V，頂到 ±10 V 的上限被截掉。</p>
+<p>所以換算式的兩個數字（2.5、2.5）跟分流電阻是綁在一起的。硬體一改，換算要重算：0 bar 是 4 mA × 500 Ω ＝ 2 V、10 bar 是 10 V，斜率 10 ÷ 8 ＝ 1.25，截距 −2.5。把這兩個數字寫在前面板或設定檔，旁邊註明「250 Ω 時」，比埋在方塊圖裡安全。</p>`)
+];
+
 L.push({id:'I08',order:29.85,no:'I8',part:PART,title:'感測器接 DAQ：沒有命令可以送',mins:55,
 goals:[['學會','不會說話的設備怎麼接；電流訊號怎麼變成電壓；輸入範圍和取樣率怎麼選；電壓怎麼換算成物理量。'],['做出','壓力傳送器的接入單（量測版）、換算式和程式規劃圖。'],['為什麼','工廠裡大部分的感測器都是這一型：壓力、流量、溫度、位移、荷重。它們只給一個電壓或電流。'],['動畫練習','<a href="lab-daq.html">DAQ 實驗室</a>：取樣率、解析度、緩衝區。']],
 check:'給你一顆感測器的規格（輸出範圍和對應的物理量），你能說出：怎麼接、DAQ 的範圍選哪一檔、換算式是什麼、斷線時會看到什麼。',
@@ -156,6 +293,7 @@ C.table(['','對話型（VISA）','量測型（DAQ）'],[
  ['讀取速度由誰決定','儀器多久能回、資料多久更新','訊號變化有多快'],
  ['程式骨架','開 → 迴圈（寫、讀）→ 關','建立 → 迴圈（讀）→ 清除']
 ]),
+...I08_LV,
 
 C.h3('測驗','q','小測驗'),
 {quiz:[

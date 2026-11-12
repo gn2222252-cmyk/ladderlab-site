@@ -106,6 +106,138 @@ function modbusLab(el){
     out.innerHTML=h;};
 }
 
+/* ======================================================================
+   LabVIEW 實作：I07_ReadPV.vi（讀一次 1000H、1001H：先讀 3 個，再照長度讀完）
+   回覆是網頁模擬的（上面的 makeDTB 規則）。
+   ====================================================================== */
+const ctl=C.ctl,qd=C.qd,wt=C.wt,PR=['Functions','Programming'];
+const addF=o=>{for(const k in o)if(!LV.F[k])LV.F[k]=o[k];};
+addF({
+ 'Join Numbers':{g:'hi|lo',ins:['hi','lo'],outs:['hi.lo'],pal:[...PR,'Numeric','Data Manipulation','Join Numbers']},
+ 'To Word Integer':{p:'I16',a:1,pal:[...PR,'Numeric','Conversion','To Word Integer']},
+ 'To Double Precision Float':{p:'DBL',a:1,pal:[...PR,'Numeric','Conversion','To Double Precision Float']}
+});
+const NOERR={status:false,code:0,source:''};
+const hexs=b=>b.map(x=>hx(x)).join(' ');
+const PVSIM=['25.0 ℃（回 00 FA）','−1.0 ℃（回 FF F6）','感測器沒接（回 80 03）','封包錯或站號錯：不回'];
+const pvVI={name:'I07_ReadPV.vi',view:'bd',
+ fp:{w:380,h:280,items:[
+  {id:'res',k:'visa',label:'Resource',x:16,y:16,w:170,v:'COM7',options:['COM7','COM3','COM4']},
+  {id:'sim',k:'ring',label:'（模擬）溫控器這次',x:200,y:16,w:160,options:PVSIM,v:0},
+  {id:'pv',k:'num',label:'PV (℃)',x:16,y:76,w:110,dig:1},
+  {id:'body',k:'str',label:'Body（Hex Display）',x:150,y:76,w:210},
+  {id:'eo',k:'err',label:'error out',x:16,y:140}]},
+ bd:{w:640,h:390,nodes:[
+  {id:'res',k:'ctl',t:'visa',label:'Resource',x:16,y:30},
+  {id:'k1000',k:'const',t:'u32',v:1000,x:60,y:50},
+  {id:'k9600',k:'const',t:'u32',v:9600,x:60,y:69},
+  {id:'kev',k:'const',t:'enum',v:'Even',x:60,y:87},
+  {id:'kF',k:'const',t:'bool',v:false,x:78,y:106},
+  {id:'cfg',k:'fn',fn:'VISA Configure Serial Port',x:106,y:21,h:132,ins:['VISA resource name','timeout','baud rate','parity','enable termination char','error in']},
+  {id:'kreq',k:'const',t:'str',v:'0103 1000 0002 C0CB',hex:true,x:160,y:103},
+  {id:'wr',k:'fn',fn:'VISA Write',x:310,y:90},
+  {id:'k3',k:'const',t:'i32',v:3,x:356,y:103},
+  {id:'rd1',k:'fn',fn:'VISA Read',x:380,y:90},
+  {id:'sb1',k:'fn',fn:'String To Byte Array',x:436,y:134},
+  {id:'kidx',k:'const',t:'i32',v:2,x:470,y:172},
+  {id:'idx1',k:'fn',fn:'Index Array',x:500,y:139},
+  {id:'k2',k:'const',t:'i32',v:2,x:525,y:180},
+  {id:'add',k:'fn',fn:'Add',x:552,y:149},
+  {id:'rd2',k:'fn',fn:'VISA Read',x:150,y:240},
+  {id:'sb2',k:'fn',fn:'String To Byte Array',x:210,y:246},
+  {id:'body',k:'ind',t:'str',label:'Body',x:214,y:304},
+  {id:'idx2',k:'fn',fn:'Index Array',x:280,y:250,ins:['array','index 0','index 1'],outs:['element 0','element 1'],h:47},
+  {id:'join',k:'fn',fn:'Join Numbers',x:332,y:255},
+  {id:'i16',k:'fn',fn:'To Word Integer',x:386,y:257,showName:false},
+  {id:'dbl',k:'fn',fn:'To Double Precision Float',x:426,y:257,showName:false},
+  {id:'k10',k:'const',t:'dbl',v:10,x:444,y:290},
+  {id:'div',k:'fn',fn:'Divide',x:470,y:264,showName:false},
+  {id:'pv',k:'ind',t:'dbl',label:'PV (℃)',x:512,y:268},
+  {id:'cl',k:'fn',fn:'VISA Close',x:566,y:290},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:566,y:344}],
+ wires:[
+  {id:'w1',from:'res',to:'cfg.VISA resource name',t:'visa'},
+  {id:'w2',from:'k1000',to:'cfg.timeout',t:'u32'},
+  {id:'w3',from:'k9600',to:'cfg.baud rate',t:'u32'},
+  {id:'w4',from:'kev',to:'cfg.parity',t:'enum'},
+  {id:'w5',from:'kF',to:'cfg.enable termination char',t:'bool'},
+  {id:'w6',from:'cfg.VISA resource name out',to:'wr.VISA resource name',t:'visa',pts:[[155,65],[155,101]]},
+  {id:'w7',from:'cfg.error out',to:'wr.error in',t:'err',pts:[[152,109],[152,123]]},
+  {id:'w8',from:'kreq',to:'wr.write buffer',t:'str'},
+  {id:'w9',from:'wr.VISA resource name out',to:'rd1.VISA resource name',t:'visa'},
+  {id:'w10',from:'wr.error out',to:'rd1.error in',t:'err'},
+  {id:'w11',from:'k3',to:'rd1.byte count',t:'i32'},
+  {id:'w12',from:'rd1.read buffer',to:'sb1.string',t:'str',pts:[[430,112],[430,150]]},
+  {id:'w13',from:'sb1.unsigned byte array',to:'idx1.array',t:'u8[]'},
+  {id:'w14',from:'kidx',to:'idx1.index',t:'i32',pts:[[496,181],[496,162]]},
+  {id:'w15',from:'idx1.element',to:'add.x',t:'u8'},
+  {id:'w16',from:'k2',to:'add.y',t:'i32',pts:[[549,189],[549,170]]},
+  {id:'w17',from:'rd1.VISA resource name out',to:'rd2.VISA resource name',t:'visa',pts:[[600,101],[600,226],[136,226],[136,251]]},
+  {id:'w18',from:'add.out',to:'rd2.byte count',t:'i32',pts:[[590,163],[590,218],[128,218],[128,262]]},
+  {id:'w19',from:'rd1.error out',to:'rd2.error in',t:'err',pts:[[427,123],[427,210],[120,210],[120,273]]},
+  {id:'w20',from:'rd2.read buffer',to:'sb2.string',t:'str'},
+  {id:'w21',from:'rd2.read buffer',to:'body',t:'str',pts:[[205,262],[205,314]]},
+  {id:'w22',from:'sb2.unsigned byte array',to:'idx2.array',t:'u8[]'},
+  {id:'w23',from:'idx2.element 0',to:'join.hi',t:'u8'},
+  {id:'w24',from:'idx2.element 1',to:'join.lo',t:'u8',mx:326},
+  {id:'w25',from:'join.hi.lo',to:'i16',t:'u16'},
+  {id:'w26',from:'i16.out',to:'dbl',t:'i16'},
+  {id:'w27',from:'dbl.out',to:'div.x',t:'dbl'},
+  {id:'w28',from:'k10',to:'div.y',t:'dbl',pts:[[467,299],[467,285]]},
+  {id:'w29',from:'div.out',to:'pv',t:'dbl'},
+  {id:'w30',from:'rd2.VISA resource name out',to:'cl.VISA resource name',t:'visa',pts:[[200,251],[200,236],[556,236],[556,305]]},
+  {id:'w31',from:'rd2.error out',to:'cl.error in',t:'err',pts:[[202,273],[202,330],[560,330],[560,319]]},
+  {id:'w32',from:'cl.error out',to:'seh.error in',t:'err',pts:[[618,312],[618,338],[558,338],[558,360]]}]},
+ sim:{live:true,step(i){
+  const k=+i.sim||0,E={status:true,code:-1073807339,source:'VISA Read in I07_ReadPV.vi（逾時：溫控器沒有回）'};
+  if(k===3)return {out:{pv:0,body:'',eo:E},msg:'CRC 錯或站號錯，溫控器一個位元組都不回：第一個 Read 等滿 1000 ms 逾時，後面都不做。PV 停在 0，error out 有錯。',vals:{'rd1.error out':E,'rd2.error out':E,'cl.error out':E}};
+  const pv=[0x00FA,0xFFF6,0x8003][k],rep=withCrc([1,3,4,pv>>8,pv&255,0x01,0x2C]);
+  const head=rep.slice(0,3),bodyB=rep.slice(3),n=head[2]+2;
+  const u=(bodyB[0]<<8)|bodyB[1],s=u>=0x8000?u-0x10000:u,t=s/10;
+  return {out:{pv:t,body:hexs(bodyB),eo:NOERR},msg:'讀 3 個：'+hexs(head)+' → 第 3 個是 '+head[2]+'，再讀 '+head[2]+'＋2＝'+n+' 個：'+hexs(bodyB)+'。'+hx(bodyB[0])+' '+hx(bodyB[1])+' 合成 '+hx(u,4)+'H，當 I16 是 '+s+'，÷10＝'+t+(k===2?'。這不是溫度：8003H 是「感測器沒接」，要先挑出來（下面的問題）。':''),
+   vals:{res:i.res,k1000:1000,k9600:9600,kev:'Even',kF:false,kreq:'01 03 10 00 00 02 C0 CB',k3:3,kidx:2,k2:2,k10:10,'rd1.read buffer':hexs(head),'sb1.unsigned byte array':head,'idx1.element':head[2],'add.out':n,'rd2.read buffer':hexs(bodyB),'sb2.unsigned byte array':bodyB,'idx2.element 0':bodyB[0],'idx2.element 1':bodyB[1],'join.hi.lo':u,'i16.out':s,'dbl.out':s,'div.out':t,'rd1.error out':NOERR,'rd2.error out':NOERR,'cl.error out':NOERR}};
+ }}
+};
+const I07_LV=[
+C.h3('LabVIEW','b','動手寫：I07_ReadPV.vi（把上面那張表畫成方塊圖）'),
+`<p>上面的表格列了每一格要用的函式。這裡把它們排成一張真的方塊圖。先只讀<b>一次</b>：確定 25.0 讀得出來，再包進迴圈。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\儀器\\I07_ReadPV.vi</code>。這一台跟前面的文字儀器差太多，不從舊 VI 改。',
+ in:'送出 8 個位元組 <code>01 03 10 00 00 02 C0 CB</code>。回覆分兩次讀：先讀 3 個（站號、功能碼、後面幾個位元組），再讀「第 3 個位元組的值＋2」個（資料＋CRC）。讀到的是字串，但裡面是位元組，不是文字。',
+ calc:'String To Byte Array 變成 U8 陣列 → Index Array 取前兩個 → Join Numbers（高位元組接 hi）合成 U16 → To Word Integer 當成有號的 I16 → To Double Precision Float → 除以 10。例：00 FA → 250 → 25.0 ℃；FF F6 → −10 → −1.0 ℃。',
+ out:'Numeric Indicator <code>PV (℃)</code>，1 位小數（儀器的單位是 0.1 度）。另外一個字串指示器 <code>Body</code> 開 <b>Hex Display</b>，對照網頁上看到的位元組。',
+ loop:'這支只做一次。確定對了再照 I4 包進 While Loop，Wait 500 ms：位址表寫 PV 每 0.4 秒才更新一次。',
+ end:'error 線一路串到 VISA Close。溫控器對錯的封包不回，所以「沒回」就是 1000 ms 後的逾時錯誤，Read 後面的事都不做。CRC 驗證和例外回覆（功能碼加 80H）這一版還沒處理，下面的問題會用到。'}),
+note('下面的 VI 視窗是網頁模擬的','方塊圖照真的 LabVIEW 畫。模擬的溫控器規則跟上面的封包練習台一樣；站號 1、9600、8、Even、1 是這一課假設的面板設定。'),
+{steps:{title:'I07_ReadPV.vi：送封包 → 讀頭 → 照長度讀身體 → 合成溫度',lv:pvVI,steps:[
+ {t:'前面板',view:'fp',add:['res','pv','body','eo','sim'],h:`<p>Resource 選 USB 轉 RS-485 的 COM 埠。放 Numeric Indicator <code>PV (℃)</code>（Display Format 1 位小數），String Indicator <code>Body</code>，右鍵選 <b>Hex Display</b>。</p>`},
+ {t:'序列埠：termination char 一定要關',view:'bd',add:['res','k1000','k9600','kev','kF','cfg','w1','w2','w3','w4','w5'],h:`<p>VISA Configure Serial Port 的常數照面板抄到的：baud <code>9600</code>、parity <code>Even</code>、timeout <code>1000</code>（data bits 8、stop bits 1.0 用預設值）。</p><p>在 <b>enable termination char</b> 上 Create ▸ Constant，設成 <b>F</b>（False）。上面講過：資料剛好是 0AH 時，Read 會以為讀完了。</p>`},
+ {t:'送出 8 個位元組：Hex Display 的字串常數',view:'bd',add:['kreq','wr','w6','w7','w8'],h:`<p>在 VISA Write 的 write buffer 上 Create ▸ Constant。<b>先右鍵選 Hex Display</b>，再打 <code>0103 1000 0002 C0CB</code>（每兩個十六進位字是一個位元組，空白 LabVIEW 會自己排）。常數左邊出現小小的 x，就表示現在是 Hex Display。</p><p class="qd">先抄說明書的範例封包，能通以後才改成自己組（用 Byte Array To String）。</p>`},
+ {t:'讀頭：VISA Read 讀 3 個',view:'bd',add:['k3','rd1','w9','w10','w11'],h:`<p>VISA Read 的 byte count 接 <code>3</code>：站號、功能碼、「後面還有幾個位元組」。</p>`},
+ {t:'從頭算出還要讀幾個',view:'bd',add:['sb1','kidx','idx1','k2','add','w12','w13','w14','w15','w16'],h:`<p>${fn('Programming','String','String/Array/Path Conversion','String To Byte Array')} ${qd('String To Byte Array')} 把 3 個位元組變成 U8 陣列。${fn('Programming','Array','Index Array')} ${qd('Index Array')} 的 index 接 <code>2</code>（第 3 個，從 0 數）。${fn('Programming','Numeric','Add')} 加 <code>2</code>（CRC 兩個位元組）。</p>${wt([
+ ['VISA Read（讀頭）的 read buffer','String To Byte Array 的 string'],
+ ['unsigned byte array','Index Array 的 array','粗藍線：U8 陣列'],
+ ['常數 2','Index Array 的 index'],
+ ['Index Array 的 element','Add 的 x','例：04'],
+ ['常數 2','Add 的 y','x + y = 6']])}`},
+ {t:'讀身體：byte count 用算的',view:'bd',add:['rd2','w17','w18','w19'],h:`<p>第二個 VISA Read。紫線、黃線從第一個 Read 接過來，byte count 接 Add 的結果。</p>${wt([
+ ['VISA Read（讀頭）的 VISA resource name out','VISA Read（讀身體）的 VISA resource name'],
+ ['Add 的 x+y','VISA Read（讀身體）的 byte count','6：4 個資料＋2 個 CRC'],
+ ['VISA Read（讀頭）的 error out','VISA Read（讀身體）的 error in']])}`},
+ {t:'兩個位元組合成溫度',view:'bd',add:['sb2','body','idx2','join','i16','dbl','k10','div','pv','w20','w21','w22','w23','w24','w25','w26','w27','w28','w29'],h:`<p>身體也用 String To Byte Array 變成陣列。Index Array 往下拉成兩格，<b>index 都不接</b>：第一格預設取第 0 個，第二格自動取下一個（第 1 個）。</p>${wt([
+ ['element 0（00）','Join Numbers 的 hi',fn('Programming','Numeric','Data Manipulation','Join Numbers')],
+ ['element 1（FA）','Join Numbers 的 lo','高位元組在前：Modbus 規定'],
+ ['Join Numbers 的 hi.lo（U16）','To Word Integer',fn('Programming','Numeric','Conversion','To Word Integer')+'：溫度會是負的，要當 I16'],
+ ['I16','To Double Precision Float','先變 DBL 再除，才有小數'],
+ ['DBL','Divide 的 x；常數 10 接 y','單位 0.1 度'],
+ ['Divide 的 x/y','PV (℃)','']])}`},
+ {t:'VISA Close、Simple Error Handler；Run',view:'split',add:['cl','seh','w30','w31','w32'],h:`<p>收尾跟前面每一支一樣。Run：PV 是 25.0。在模擬上把「溫控器這次」換成 −1.0 ℃ 和「感測器沒接」各看一次（改值就會重算）。</p>`}
+]}},
+ask('改一個數字，先預測結果：把 To Word Integer 刪掉，Join Numbers 直接接 To Double Precision Float。溫控器回 FF F6 時，PV 顯示多少？回 80 03（感測器沒接）時呢？',
+ `<p>FF F6 會顯示 <b>6552.6</b>：FFF6H 當成沒有正負號的 U16 是 65526，÷10。這就是上面說的「零下要當 I16」。</p>
+<p>80 03 不管有沒有 To Word Integer 都不是溫度：U16 是 32771 → 3277.1；I16 是 −32765 → −3276.5。所以在 Join Numbers 之後、換算以前，要先比對 8002H～8004H（Equal? 或 In Range and Coerce），是錯誤值就走另一頁 Case，不要算成溫度。這一步就是你下一個要加的東西。</p>`)
+];
+
 L.push({id:'I07',order:29.8,no:'I7',part:PART,title:'溫控器：它說的不是文字（Modbus）',mins:70,
 goals:[['學會','看懂 Modbus 的位址表和封包；沒有結尾字元時怎麼知道一筆讀完了；兩個位元組怎麼合成一個數值；CRC 是做什麼的。'],['做出','親手送出讀溫度的封包，並把回覆的每一個位元組解釋出來。'],['為什麼','溫控器、變頻器、電力錶、遠端 I/O、很多 PLC，講的都是 Modbus。這是工廠裡最常遇到的一種。'],['先備','I2～I6。這一課最難，因為前面學的「文字、結尾字元」在這裡都不適用。']],
 check:'給你位址表的一行和一串回覆位元組，你能說出：封包怎麼組、回覆有幾個位元組、哪兩個位元組是數值、換算後是幾度。',
@@ -215,6 +347,7 @@ C.table(['要做的事','函式','從哪裡拿','注意'],[
  ['關閉','VISA Close',fn('Instrument I/O','Serial'),'—']
 ]),
 `<p>兩次 VISA Read 讀到的字串，都另外接到開了 Hex Display 的字串指示器。先確認看到的位元組跟網頁上一樣，再往下接轉換。</p>`,
+...I07_LV,
 C.h3('懂','','CRC：不用背算法，但要知道三件事'),
 `<ul><li><b>它是什麼</b>：把前面所有位元組照固定的算法算出兩個位元組，附在最後。接收的那一邊照同樣的算法再算一次，結果不一樣就表示封包在路上壞了。</li>
 <li><b>送的時候</b>：你要算對，不然設備不理你（剛才試過）。</li>

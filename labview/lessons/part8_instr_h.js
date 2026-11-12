@@ -101,6 +101,119 @@ function wfLab(d){
   d.addEventListener('change',run);run();
 }
 
+/* ======================================================================
+   LabVIEW 實作：I12_Curve.vi（照長度讀一塊 RIBINARY 波形：讀 2 → 讀 x → 關結尾字元 → 讀 n → 讀掉 \n → 開回來）
+   回覆是網頁模擬的（2000 點、1 V/div 下振幅約 50 小格的正弦波，跟上面的模擬示波器同一個情境）。
+   ====================================================================== */
+const ctl=C.ctl,qd=C.qd,wt=C.wt,PR=['Functions','Programming'];
+const addF=o=>{for(const k in o)if(!LV.F[k])LV.F[k]=o[k];};
+addF({
+ 'Decimal String To Number':{g:'123→#',ins:['string','offset','default'],outs:['offset past number','number'],w:46,pal:[...PR,'String','Number/String Conversion','Decimal String To Number']},
+ 'Type Cast':{g:'⇢T',ins:['x','type'],outs:['*(type *) &x'],pal:[...PR,'Numeric','Data Manipulation','Type Cast']}
+});
+const NOERR={status:false,code:0,source:''};
+const TBSRES='TCPIP0::192.168.1.70::4000::SOCKET';
+const WAVE=Array.from({length:2000},(_,k)=>Math.round(50*Math.sin(2*Math.PI*k/1333.33)));
+const curveVI={name:'I12_Curve.vi',view:'bd',
+ fp:{w:400,h:260,items:[
+  {id:'res',k:'visa',label:'Resource',x:16,y:16,w:300,v:TBSRES,options:[TBSRES,'TCPIP0::127.0.0.1::5565::SOCKET']},
+  {id:'graph',k:'chart',label:'Waveform Graph（單位：小格；網頁只畫抽樣的點）',x:16,y:76,w:300,h:110,min:-128,max:127},
+  {id:'eo',k:'err',label:'error out',x:16,y:210}]},
+ bd:{w:640,h:320,nodes:[
+  {id:'res',k:'ctl',t:'visa',label:'Resource',x:10,y:37},
+  {id:'init',k:'sub',name:'TBS_Initialize.vi',top:'TBS',icon:['INIT'],ins:['Resource'],outs:['VISA out'],err:true,x:56,y:30},
+  {id:'kcurve',k:'const',t:'str',v:'CURVE?\\n',x:110,y:49},
+  {id:'wr',k:'fn',fn:'VISA Write',x:180,y:36,showName:false},
+  {id:'k2',k:'const',t:'i32',v:2,x:230,y:49},
+  {id:'rd2',k:'fn',fn:'VISA Read',x:256,y:36,showName:false},
+  {id:'k1a',k:'const',t:'i32',v:1,x:296,y:117},
+  {id:'k1b',k:'const',t:'i32',v:1,x:296,y:135},
+  {id:'ss1',k:'fn',fn:'String Subset',x:320,y:90,h:72,showName:false},
+  {id:'d2n1',k:'fn',fn:'Decimal String To Number',x:370,y:114,showName:false},
+  {id:'rdx',k:'fn',fn:'VISA Read',x:470,y:36,showName:false},
+  {id:'kF',k:'const',t:'bool',v:false,x:522,y:54},
+  {id:'pnoff',k:'prop',cls:'VISA',items:[{n:'TermChar En',w:true}],err:true,x:546,y:38,w:90},
+  {id:'d2n2',k:'fn',fn:'Decimal String To Number',x:530,y:98,showName:false},
+  {id:'rdn',k:'fn',fn:'VISA Read',x:110,y:200,showName:false},
+  {id:'k1c',k:'const',t:'i32',v:1,x:170,y:213},
+  {id:'rdlf',k:'fn',fn:'VISA Read',x:200,y:200,showName:false},
+  {id:'kT',k:'const',t:'bool',v:true,x:248,y:218},
+  {id:'pnon',k:'prop',cls:'VISA',items:[{n:'TermChar En',w:true}],err:true,x:270,y:202,w:90},
+  {id:'cl',k:'fn',fn:'VISA Close',x:380,y:196,showName:false},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:440,y:202,showName:false},
+  {id:'karr',k:'const',t:'i8[]',v:'[I8]',x:168,y:282},
+  {id:'tc',k:'fn',fn:'Type Cast',x:210,y:270},
+  {id:'graph',k:'ind',t:'i8[]',label:'Waveform Graph',x:290,y:276}],
+ wires:[
+  {id:'w1',from:'res',to:'init.Resource',t:'visa'},
+  {id:'w2',from:'init.VISA out',to:'wr.VISA resource name',t:'visa'},
+  {id:'w3',from:'init.error out',to:'wr.error in',t:'err'},
+  {id:'w4',from:'kcurve',to:'wr.write buffer',t:'str'},
+  {id:'w5',from:'wr.VISA resource name out',to:'rd2.VISA resource name',t:'visa'},
+  {id:'w6',from:'wr.error out',to:'rd2.error in',t:'err'},
+  {id:'w7',from:'k2',to:'rd2.byte count',t:'i32'},
+  {id:'w8',from:'rd2.read buffer',to:'ss1.string',t:'str',pts:[[306,58],[306,108]]},
+  {id:'w9',from:'k1a',to:'ss1.offset',t:'i32'},
+  {id:'w10',from:'k1b',to:'ss1.length',t:'i32'},
+  {id:'w11',from:'ss1.substring',to:'d2n1.string',t:'str'},
+  {id:'w12',from:'d2n1.number',to:'rdx.byte count',t:'i32',pts:[[440,145],[440,58]]},
+  {id:'w13',from:'rd2.VISA resource name out',to:'rdx.VISA resource name',t:'visa'},
+  {id:'w14',from:'rd2.error out',to:'rdx.error in',t:'err'},
+  {id:'w15',from:'rdx.VISA resource name out',to:'pnoff.reference',t:'visa'},
+  {id:'w16',from:'kF',to:'pnoff.TermChar En',t:'bool'},
+  {id:'w17',from:'rdx.error out',to:'pnoff.error in',t:'err',pts:[[516,69],[516,78]]},
+  {id:'w18',from:'rdx.read buffer',to:'d2n2.string',t:'str',pts:[[518,58],[518,110]]},
+  {id:'w19',from:'pnoff.reference out',to:'rdn.VISA resource name',t:'visa',pts:[[639,47],[639,196],[36,196],[36,211]]},
+  {id:'w20',from:'pnoff.error out',to:'rdn.error in',t:'err',pts:[[637,78],[637,188],[28,188],[28,233]]},
+  {id:'w21',from:'d2n2.number',to:'rdn.byte count',t:'i32',pts:[[584,129],[584,180],[20,180],[20,222]]},
+  {id:'w22',from:'rdn.VISA resource name out',to:'rdlf.VISA resource name',t:'visa'},
+  {id:'w23',from:'rdn.error out',to:'rdlf.error in',t:'err'},
+  {id:'w24',from:'k1c',to:'rdlf.byte count',t:'i32'},
+  {id:'w25',from:'rdlf.VISA resource name out',to:'pnon.reference',t:'visa'},
+  {id:'w26',from:'kT',to:'pnon.TermChar En',t:'bool'},
+  {id:'w27',from:'rdlf.error out',to:'pnon.error in',t:'err',pts:[[246,233],[246,242]]},
+  {id:'w28',from:'pnon.reference out',to:'cl.VISA resource name',t:'visa'},
+  {id:'w29',from:'pnon.error out',to:'cl.error in',t:'err',mx:370},
+  {id:'w30',from:'cl.error out',to:'seh.error in',t:'err'},
+  {id:'w31',from:'rdn.read buffer',to:'tc.x',t:'str',pts:[[160,222],[160,281]]},
+  {id:'w32',from:'karr',to:'tc.type',t:'i8[]'},
+  {id:'w33',from:'tc.*(type *) &x',to:'graph',t:'i8[]'}]},
+ sim:{live:true,step(i){
+  const pts=WAVE.filter((_,k)=>k%13===0);
+  return {out:{graph:pts,eo:NOERR},msg:'讀 2 個：「#4」→ x＝4；讀 4 個：「2000」→ n＝2000；關掉結尾字元，讀 2000 個資料，再讀 1 個把 \\n 讀掉；開回結尾字元。Type Cast 成 I8：2000 點，最大 50、最小 −50（小格）。',
+   vals:{res:i.res,kcurve:'CURVE?\n',k2:2,k1a:1,k1b:1,kF:false,k1c:1,kT:true,karr:'[I8]','rd2.read buffer':'#4','ss1.substring':'4','d2n1.number':4,'rdx.read buffer':'2000','d2n2.number':2000,'rdn.read buffer':'（2000 個位元組）','tc.*(type *) &x':WAVE,'init.error out':NOERR,'rdn.error out':NOERR,'cl.error out':NOERR}};
+ }}
+};
+const I12_LV=[
+C.h3('LabVIEW','b','動手寫：I12_Curve.vi（照標頭的長度讀一塊波形）'),
+`<p>上面的規劃圖裡，新的只有「讀 2 → 讀 x → 關結尾字元 → 讀 n＋1 → 開結尾字元」和 Type Cast。這一支只抓<b>一塊</b>，把讀法做對；換算和迴圈在最後一步說明怎麼加。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\儀器\\I12_Curve.vi</code>。初始化那一串（VISA Open、Termination Character Enable＝True、Termination Character＝10、Timeout、HEADER OFF、DATA:SOURCE CH1、DATA:ENCDG RIBINARY、DATA:WIDTH 1）照 I10 的做法先包成 <code>TBS_Initialize.vi</code>，這張圖只畫它的方塊。',
+ in:'送 <code>CURVE?\\n</code>。回覆是 <code>#42000</code>＋2000 個位元組＋<code>\\n</code>。每個位元組是一點，有號的 −128～127，單位是「小格」。',
+ calc:'讀 2 個 → String Subset（offset 1、length 1）→ Decimal String To Number 得到 x＝4 → 再讀 x 個 → Decimal String To Number 得到 n＝2000 → Property Node 把 TermChar En 寫成 False → 讀 n 個（資料）→ 再讀 1 個（把最後的 \\n 讀掉）→ TermChar En 寫回 True。資料用 Type Cast（type 接 I8 陣列常數）變成 I8 陣列。換成伏特：（資料 − YOFF）× YMULT ＋ YZERO，陣列直接算，不用迴圈。',
+ out:'Waveform Graph：先畫 I8 陣列（Y 軸是小格），確定形狀對了再接換算後的電壓。',
+ loop:'這一支只抓一次。正式程式照規劃圖：While Loop 裡每一輪 ACQ 單次 → *OPC? → 問換算參數 → CURVE?。',
+ end:'error 線一路串到 VISA Close。注意：如果讀資料那一次忘了關結尾字元，<b>不會有錯誤</b>，只會在第一個 0A 停下來、讀到一半。讀完一定要把 TermChar En 寫回 True，不然下一個文字查詢會等到逾時。'}),
+note('下面的 VI 視窗是網頁模擬的','模擬的示波器跟上面終端機同一個情境；畫面只抽樣畫出一部分的點。'),
+{steps:{title:'I12_Curve.vi：讀 2、讀 x、讀 n、讀 1',lv:curveVI,steps:[
+ {t:'前面板',view:'fp',add:['res','graph','eo'],h:`<p>Resource 打 SOCKET 的資源名稱（示波器先在面板打開 Socket Server）。放 ${ctl('Modern','Graph','Waveform Graph')}：Graph 一次收一整個陣列（Chart 是一點一點累積），抓波形用 Graph。</p>`},
+ {t:'初始化、送 CURVE?、讀 2 個',view:'bd',add:['res','init','kcurve','wr','k2','rd2','w1','w2','w3','w4','w5','w6','w7'],h:`<p><code>TBS_Initialize.vi</code> 是自己包的驅動（I10）：裡面 VISA Open，對紫線 Create ▸ Property Node 設 TermChar En＝True、TermChar＝10、Timeout＝5000，再送 HEADER OFF 等四條設定命令。</p><p>接著 VISA Write 送 <code>CURVE?\\n</code>，VISA Read 的 byte count 接 <code>2</code>：讀到「#4」。</p>`},
+ {t:'第 2 個字元是長度欄的位數',view:'bd',add:['k1a','k1b','ss1','d2n1','w8','w9','w10','w11'],h:`<p>String Subset：offset <code>1</code>、length <code>1</code>，取出「4」。${fn('Programming','String','Number/String Conversion','Decimal String To Number')} ${qd('Decimal String To Number')} 變成整數 4。</p>`},
+ {t:'讀 x 個：得到 n',view:'bd',add:['rdx','d2n2','w12','w13','w14','w18'],h:`<p>第二個 VISA Read，byte count 接上一步的 4，讀到「2000」。再一個 Decimal String To Number：n＝2000。</p><p class="qd">記錄長度改了，這裡自己就會變成別的數字，程式不用改。</p>`},
+ {t:'關掉結尾字元，讀 n 個，再讀 1 個',view:'bd',add:['kF','pnoff','w15','w16','w17','rdn','w19','w20','w21','k1c','rdlf','w22','w23','w24'],h:`<p>在紫線上右鍵 ▸ Create ▸ Property Node ▸ Message Based Settings ▸ <b>Termination Character Enable</b>（圖上是簡稱 TermChar En），右鍵 Change All To Write，接常數 <b>F</b>。</p>${wt([
+ ['Property Node 的 reference out','VISA Read 的 VISA resource name','一定要在關掉之後才讀'],
+ ['n（Decimal String To Number 的 number）','VISA Read 的 byte count','2000 個資料'],
+ ['常數 1','下一個 VISA Read 的 byte count','把最後的 \\n 讀掉，不留在緩衝區']])}
+<p class="qd">課文說「讀 n＋1 個」；這裡拆成「讀 n 個」加「讀 1 個」，效果一樣，資料那一段就不用再切掉最後一個位元組。</p>`},
+ {t:'開回結尾字元，Close',view:'bd',add:['kT','pnon','cl','seh','w25','w26','w27','w28','w29','w30'],h:`<p>再一個 Property Node，TermChar En 寫 <b>T</b>。之後的文字查詢（*OPC?、WFMOUTPRE:YMULT?）才會讀到 \\n 就回來。然後 VISA Close、Simple Error Handler。</p>`},
+ {t:'Type Cast 成 I8 陣列，畫出來',view:'split',add:['karr','tc','graph','w31','w32','w33'],h:`<p>${fn('Programming','Numeric','Data Manipulation','Type Cast')}：x 接讀 n 個那一次的 read buffer，type 接一個 <b>I8 陣列常數</b>（Array Constant 裡放一個 I8 數值常數）。輸出接 Waveform Graph。</p>
+<p>Run：一條振幅約 50 小格的正弦波。<b>換成伏特</b>的下一步：用 I3 的「送查詢、讀、Scan From String」問 <code>WFMOUTPRE:YMULT?</code>、<code>YOFF?</code>、<code>YZERO?</code>，I8 陣列先 To Double Precision Float，再接 Subtract（YOFF）→ Multiply（YMULT）→ Add（YZERO）。三個函式直接接陣列，不用 For Loop。</p>`}
+]}},
+ask('改一個數字，先預測結果：Type Cast 的 type 從 I8 陣列改成 U8 陣列（或直接用 String To Byte Array）。Graph 會變成什麼樣子？',
+ `<p>正的那一半不變；負的那一半全部跳到上面：−10 存成位元組是 F6，U8 看成 246，−50 變成 206。Graph 上是一個「正弦波的上半段＋一塊浮在 200 附近的東西」，Y 軸被撐到 0～255。</p>
+<p>沒有任何錯誤。這跟上面「拆一塊波形」的 ✖ 一模一樣：位元組本身沒有正負號，<b>要用什麼型別看它，是你決定的</b>。說明書寫 RIBINARY 是有號的，所以用 I8。</p>`)
+];
+
 /* =============================== I12 =============================== */
 L.push({id:'I12',order:29.98,no:'I12',part:PART,title:'示波器：一次回來兩千個數字',mins:65,
 goals:[['學會','讀懂 #42000 這種二進位區塊；讀一整段波形時，VISA Read 該怎麼讀；螢幕上的「小格」怎麼換算成伏特和秒；2000 個點的換算要不要用迴圈。'],['做出','示波器的接入單和程式規劃圖：抓一次波形、換算、畫圖、處理「沒有觸發」。'],['為什麼','測試站的工作常常要把波形抓回電腦存檔、自動判斷。前面幾台都是一次一個數字，這一台一次一整段，讀法和轉法都要重想。'],['網頁練習','<a href="instlab.html">儀器接入練習台</a> 選「TBS2000B 示波器」。']],
@@ -209,6 +322,7 @@ ask('改成抓 CH2，程式卡在 CURVE? 一直等到逾時。示波器沒有回
  `<p>說明書：要抓的通道沒有顯示在螢幕上時，CURVE? 什麼都不回，只在事件佇列記下 2244（Waveform requested is not activated）和 420（Query UNTERMINATED）。</p>
 <p>所以「不回應」又出現了，跟 I5 的電表一樣：要自己去問。送 <code>ALLEV?</code> 把事件讀出來。解法是先 <code>SELECT:CH2 ON</code>。</p>`),
 
+...I12_LV,
 C.h3('回頭看','','跟電表比，哪裡不同'),
 C.table(['接入單上的事','數位電表（I5）','示波器','所以程式哪裡不同'],[
  ['一次回多少','一個數字','一整段：1000～5000000 點','byte count 從標頭算，不寫死'],

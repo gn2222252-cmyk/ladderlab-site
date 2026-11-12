@@ -30,6 +30,257 @@ function flow(items){
   return `<div class="bdflow fig">${items.map(one).join('<i class="fa">→</i>')}</div>`;
 }
 
+/* ======================================================================
+   LabVIEW 實作（I5、I6）。回覆是網頁模擬的（照 instsim.js 的 dmm、bal）。
+   ====================================================================== */
+const ctl=C.ctl,qd=C.qd,wt=C.wt,PR=['Functions','Programming'];
+const addF=o=>{for(const k in o)if(!LV.F[k])LV.F[k]=o[k];};
+addF({
+ 'Wait Until Next ms Multiple':{g:'⌚▤',ins:['millisecond multiple'],outs:['millisecond timer value'],col:'#e8f0ff',pal:[...PR,'Timing','Wait Until Next ms Multiple']},
+ 'Fract/Exp String To Number':{g:'1.2E→#',ins:['string','offset','default'],outs:['offset past number','number'],w:46,pal:[...PR,'String','Number/String Conversion','Fract/Exp String To Number']}
+});
+const NOERR={status:false,code:0,source:''};
+const TMO=(vi,ms)=>({status:true,code:-1073807339,source:'VISA Read in '+vi+'（逾時：等了 '+(ms||1000)+' ms）'});
+const SIMLV=note('下面的 VI 視窗是網頁模擬的','方塊圖照真的 LabVIEW 畫；按 Run 時儀器的回覆是網頁假裝的。真的儀器以你看到的為準。');
+
+/* ---------- I05_DMM.vi：Property Node 設逾時、CONF 在迴圈外、READ? 在迴圈裡、過載亮燈 ---------- */
+const DMMRES='USB0::0x2A8D::0x1301::MY53200000::INSTR';
+const dmmVI={name:'I05_DMM.vi',view:'bd',
+ fp:{w:360,h:330,items:[
+  {id:'res',k:'visa',label:'Resource',x:16,y:16,w:320,v:DMMRES,options:[DMMRES,'TCPIP0::192.168.1.60::INSTR']},
+  {id:'chart',k:'chart',label:'DC Volts（0～10 V）',x:16,y:76,w:260,h:90,min:0,max:10},
+  {id:'ol',k:'led',label:'Overload',x:290,y:76,color:'red'},
+  {id:'stop',k:'btn',label:'stop',text:'STOP',x:282,y:130,stop:true},
+  {id:'over',k:'btn',label:'（模擬）接上超出量程的電壓',text:'超量程',mech:'switch',x:16,y:190},
+  {id:'eo',k:'err',label:'error out',x:190,y:186}]},
+ bd:{w:640,h:440,structs:[{id:'wl',k:'while',x:150,y:110,w:470,h:270}],
+  nodes:[
+  {id:'res',k:'ctl',t:'visa',label:'Resource',x:10,y:20},
+  {id:'kconf',k:'const',t:'str',v:'CONF:VOLT:DC 10\\n',x:52,y:32},
+  {id:'wr1',k:'fn',fn:'VISA Write',x:186,y:19},
+  {id:'k3000',k:'const',t:'u32',v:3000,x:246,y:37},
+  {id:'pn',k:'prop',cls:'VISA',items:[{n:'Timeout',w:true}],err:true,x:290,y:21,w:80},
+  {id:'t1',k:'tunnel',t:'visa',s:'wl',side:'l',y:170},
+  {id:'sre',k:'sr',t:'err',s:'wl',y:227},
+  {id:'kread',k:'const',t:'str',v:'READ?\\n',x:166,y:172},
+  {id:'wr',k:'fn',fn:'VISA Write',x:232,y:159},
+  {id:'k100',k:'const',t:'i32',v:100,x:282,y:172},
+  {id:'rd',k:'fn',fn:'VISA Read',x:318,y:159},
+  {id:'kf',k:'const',t:'str',v:'%f',x:374,y:207},
+  {id:'sc',k:'fn',fn:'Scan From String',x:398,y:194,h:44,ins:['input string','format string','error in'],outs:['remaining string','output 1','error out']},
+  {id:'chart',k:'ind',t:'dbl',label:'DC Volts',x:560,y:206},
+  {id:'k9e37',k:'const',t:'dbl',v:'9E+37',x:440,y:262},
+  {id:'ge',k:'fn',fn:'Greater Or Equal?',x:490,y:250},
+  {id:'ol',k:'ind',t:'bool',label:'Overload',x:540,y:254},
+  {id:'k1000',k:'const',t:'u32',v:1000,x:166,y:300},
+  {id:'wait',k:'fn',fn:'Wait Until Next ms Multiple',x:210,y:293},
+  {id:'ub',k:'unbundle',items:['status'],x:380,y:320},
+  {id:'stop',k:'ctl',t:'bool',label:'stop',x:470,y:346},
+  {id:'or',k:'fn',fn:'Or',x:520,y:330},
+  {id:'cond',k:'stop',s:'wl'},
+  {id:'t2',k:'tunnel',t:'visa',s:'wl',side:'r',y:170},
+  {id:'cl',k:'fn',fn:'VISA Close',x:500,y:396},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:560,y:402}],
+  wires:[
+  {id:'w1',from:'res',to:'wr1.VISA resource name',t:'visa'},
+  {id:'w2',from:'kconf',to:'wr1.write buffer',t:'str'},
+  {id:'w3',from:'wr1.VISA resource name out',to:'pn.reference',t:'visa'},
+  {id:'w4',from:'wr1.error out',to:'pn.error in',t:'err',mx:238},
+  {id:'w5',from:'k3000',to:'pn.Timeout',t:'u32'},
+  {id:'w6',from:'pn.reference out',to:'t1.o',t:'visa',pts:[[390,30],[390,98],[128,98],[128,170]]},
+  {id:'w7',from:'pn.error out',to:'sre.init',t:'err',pts:[[380,61],[380,90],[120,90],[120,227]]},
+  {id:'w8',from:'t1.i',to:'wr.VISA resource name',t:'visa'},
+  {id:'w9',from:'kread',to:'wr.write buffer',t:'str'},
+  {id:'w10',from:'sre.L',to:'wr.error in',t:'err',mx:229},
+  {id:'w11',from:'wr.VISA resource name out',to:'rd.VISA resource name',t:'visa'},
+  {id:'w12',from:'wr.error out',to:'rd.error in',t:'err'},
+  {id:'w13',from:'k100',to:'rd.byte count',t:'i32'},
+  {id:'w14',from:'rd.read buffer',to:'sc.input string',t:'str',mx:382},
+  {id:'w15',from:'rd.error out',to:'sc.error in',t:'err',mx:370},
+  {id:'w16',from:'kf',to:'sc.format string',t:'str'},
+  {id:'w17',from:'rd.VISA resource name out',to:'t2.i',t:'visa'},
+  {id:'w18',from:'sc.error out',to:'sre.R',t:'err'},
+  {id:'w19',from:'sc.output 1',to:'chart',t:'dbl'},
+  {id:'w20',from:'sc.output 1',to:'ge.x',t:'dbl',pts:[[460,216],[460,257]]},
+  {id:'w21',from:'k9e37',to:'ge.y',t:'dbl'},
+  {id:'w22',from:'ge.out',to:'ol',t:'bool'},
+  {id:'w23',from:'k1000',to:'wait',t:'u32'},
+  {id:'w24',from:'sc.error out',to:'ub.input cluster',t:'err',pts:[[450,227],[450,240],[370,240],[370,334]]},
+  {id:'w25',from:'ub.status',to:'or.x',t:'bool',mx:490},
+  {id:'w26',from:'stop',to:'or.y',t:'bool',mx:513},
+  {id:'w27',from:'or.out',to:'cond',t:'bool',mx:568},
+  {id:'w28',from:'t2.o',to:'cl.VISA resource name',t:'visa',pts:[[636,170],[636,394],[490,394],[490,411]]},
+  {id:'w29',from:'sre.out',to:'cl.error in',t:'err',pts:[[630,227],[630,388],[484,388],[484,425]]},
+  {id:'w30',from:'cl.error out',to:'seh.error in',t:'err'}]},
+ sim:{period:300,init(){return {hist:[]};},step(i,st,ctx){
+  const n=ctx.i,over=!!i.over,v=over?9.9e37:+(5.0012+0.0004*Math.sin(n*1.3)).toFixed(4);
+  const ex=v.toExponential(8).split('e'),s=over?'+9.90000000E+37\n':'+'+ex[0]+'E'+(ex[1][0]==='-'?'-':'+')+ex[1].replace(/[+-]/,'').padStart(2,'0')+'\n';
+  st.hist.push(v);const stp=!!i.stop;
+  return {out:{chart:st.hist.slice(),ol:over,eo:NOERR},stop:stp,msg:stp?'按了 STOP：離開迴圈，VISA Close':over?'讀到 9.9E37：Overload 亮了。Chart 也被畫上去，Y 軸被撐爆（下面「問自己」要你修掉它）':'第 '+n+' 圈：READ? → '+s.trim()+' → '+v+' V（網頁加快成 0.3 秒一圈；真的 VI 是 1 秒）',
+   vals:{res:i.res,kconf:'CONF:VOLT:DC 10\n',k3000:3000,kread:'READ?\n',k100:100,kf:'%f',k9e37:9e37,k1000:1000,'rd.read buffer':s,'sc.output 1':v,'ge.out':over,'sc.error out':NOERR,'ub.status':false,stop:stp,'or.out':stp}};
+ },doneMsg:'迴圈結束，VISA Close'}
+};
+const I05_LV=[
+C.h3('LabVIEW','b','動手寫：I05_DMM.vi（照上面的規劃圖，跟 I04 比只改三處）'),
+`<p>骨架直接拿 I04_Monitor.vi 來改。先在紙上圈出「跟電源那台不一樣」的地方：沒有序列埠設定、多一個量測設定 CONF、逾時要另外設、多一個過載判斷。其他照舊。</p>`,
+C.plan({
+ start:'打開 <code>I04_Monitor.vi</code>，Save As ▸ Copy 存成 <code>練習\\儀器\\I05_DMM.vi</code>。把 VISA Configure Serial Port 刪掉：USB 儀器沒有鮑率可以設。',
+ in:'迴圈裡每圈送 <code>READ?\\n</code>，VISA Read 讀回例如 <code>+8.54530000E+01\\n</code>（字串，科學記號，單位 V）。量程 10 V；超出量程時回 <code>+9.90000000E+37</code>。',
+ calc:'Scan From String（%f）認得科學記號，轉成 DBL。再用 Greater Or Equal? 跟 9E+37 比：大於等於就是過載，不是電壓。',
+ out:'Waveform Chart <code>DC Volts</code>（Y 軸 0～10）；紅色 LED <code>Overload</code>。',
+ loop:'While Loop，一圈 1 秒：用 Wait Until Next ms Multiple 接 1000，每次都對齊到整秒。逾時用 Property Node 設成 3000 ms：照你的量測設定在終端機量一次最慢多久回，留幾倍餘裕（這裡假設量到約 1 秒）。',
+ end:'跟 I04 一樣：STOP 或出錯就停；error 進 Shift Register；迴圈後 VISA Close、Simple Error Handler。'}),
+SIMLV,
+{steps:{title:'I05_DMM.vi：拿 I04 來改',lv:dmmVI,steps:[
+ {t:'前面板：資源名稱換成 USB 的',view:'fp',add:['res','chart','ol','stop','eo','over'],h:`<p>Resource 下拉選電表的 USB 資源（NI MAX 看得到，例：<code>${DMMRES}</code>）。Current (A) 刪掉，Chart 改名 <code>DC Volts</code>、Y 軸 0～10。加 ${ctl('Modern','Boolean','Round LED')}，標籤 <code>Overload</code>，右鍵 Properties 把 On 的顏色改紅色。</p>`},
+ {t:'迴圈外：先送 CONF，再用 Property Node 設逾時',view:'bd',add:['res','kconf','wr1','k3000','pn','w1','w2','w3','w4','w5'],h:`<p>VISA Configure Serial Port 刪掉，在原位置放一個 VISA Write，write buffer 接常數（'\\' Codes Display）<code>CONF:VOLT:DC 10\\n</code>。這是規劃圖上「設定一次就好」的那一條。</p>
+<p>接著在紫線上 <b>右鍵 ▸ Create ▸ Property Node ▸ General Settings ▸ Timeout</b>，在 Property Node 上右鍵 <b>Change All To Write</b>，Timeout 接常數 <code>3000</code>（單位 ms）。</p>${wt([
+ ['Resource','VISA Write 的 VISA resource name','USB 儀器不用 Configure；第一次用到時 VISA 會自己開'],
+ ['VISA Write 的 VISA resource name out','Property Node 的 reference'],
+ ['VISA Write 的 error out','Property Node 的 error in'],
+ ['常數 3000','Property Node 的 Timeout','照「這個量測設定多久回」來設']])}`},
+ {t:'穿進迴圈：命令換成 READ?',view:'bd',add:['wl','t1','sre','kread','wr','k100','rd','kf','sc','t2','w6','w7','w8','w9','w10','w11','w12','w13','w14','w15','w16','w17','w18'],h:`<p>Property Node 的兩個輸出接到迴圈左邊的 VISA Tunnel 和 error Shift Register（線繞到迴圈上方再下來）。迴圈裡的 VISA Write 常數改成 <code>READ?\\n</code>：量測設定已經在迴圈外送過，每圈只要「量一筆、讀回來」。</p><p>VISA Read、Scan From String（%f）跟 I04 一樣，不用動。</p>`},
+ {t:'Chart 和過載判斷',view:'bd',add:['chart','k9e37','ge','ol','w19','w20','w21','w22'],h:`<p>放 ${fn('Programming','Comparison','Greater Or Equal?')} ${qd('Greater Or Equal')}。y 輸入 Create ▸ Constant，輸入 <code>9E+37</code>（DBL 常數可以直接打科學記號）。</p>${wt([
+ ['Scan From String 的 output 1','DC Volts（Chart）'],
+ ['同一條線分岔','Greater Or Equal? 的 x'],
+ ['常數 9E+37','Greater Or Equal? 的 y','電表說 9.9E37 代表過載；比它小一點的門檻就好'],
+ ['Greater Or Equal? 的 x &gt;= y?','Overload']])}`},
+ {t:'一圈 1 秒：Wait Until Next ms Multiple',view:'bd',add:['k1000','wait','w23'],h:`<p>Wait (ms) 換成 ${fn('Programming','Timing','Wait Until Next ms Multiple')} ${qd('Wait Until Next')}，接 <code>1000</code>：等到電腦時鐘的下一個「1000 的倍數」毫秒。READ? 本身花了幾百毫秒也沒關係，每一筆還是落在整秒上，趨勢圖的時間間隔一致。</p>`},
+ {t:'停止條件、Close：跟 I04 一樣',view:'bd',add:['ub','stop','or','cond','cl','seh','w24','w25','w26','w27','w28','w29','w30'],h:`<p>Unbundle By Name（status）、Or、stop、VISA Close、Simple Error Handler 都從 I04 留下來，只是位置挪了。</p><p class="qd">圖上 Close 放在迴圈下方，線繞過去；接法跟 I04 一模一樣。</p>`},
+ {t:'Run，再接一個超出量程的電壓',view:'split',add:[],h:`<p>Run：每秒一點，大約 5 V（模擬加快成 0.3 秒一點）。按「超量程」：Overload 亮了，可是 Chart 也收到了 9.9E37，畫面整個被撐壞。下面的問題要你修。</p>`}
+]}},
+ask('改一個數字，先預測結果：想讓過載的點「不畫上 Chart」，在 Chart 前面放一個 Select：s 接 Overload 的布林、t 接常數 NaN、f 接量到的電壓。Chart 上會看到什麼？',
+ `<p>過載的那幾秒，Chart 上是一段<b>空白</b>：Waveform Chart 遇到 NaN（Not a Number）不畫那一點，線斷開，Y 軸也不會被撐爆。接回正常電壓，線又接著畫。</p>
+<p>這就是規劃圖上的 Case「大於 9E37：不畫上圖表，亮過載燈」。只有「換一個值」這麼簡單時，用 Select 比整個 Case 結構清楚；要多做幾件事（記錄次數、寫檔）時再換成 Case。NaN 常數：放一個 DBL 常數，直接打 <code>NaN</code>。</p>`)
+];
+
+/* ---------- I06_Balance.vi：送 Q、切標頭和重量、上一筆是 US 這一筆是 ST 才記一筆 ---------- */
+const balVI={name:'I06_Balance.vi',view:'bd',
+ fp:{w:380,h:300,items:[
+  {id:'res',k:'visa',label:'Resource',x:16,y:16,w:170,v:'COM6',options:['COM6','COM3','COM4']},
+  {id:'stop',k:'btn',label:'stop',text:'STOP',x:220,y:20,stop:true},
+  {id:'hdr',k:'str',label:'Header',x:16,y:76,w:70},
+  {id:'wt',k:'num',label:'Weight (g)',x:110,y:76,w:110,dig:2},
+  {id:'rec',k:'led',label:'Record（剛剛變成 ST）',x:240,y:76,color:'yel'},
+  {id:'part',k:'btn',label:'（模擬）放上零件／拿走',text:'放上',mech:'switch',x:16,y:136},
+  {id:'eo',k:'err',label:'error out',x:200,y:130}]},
+ bd:{w:640,h:330,structs:[{id:'wl',k:'while',x:196,y:10,w:420,h:310}],
+  nodes:[
+  {id:'res',k:'ctl',t:'visa',label:'Resource',x:16,y:39},
+  {id:'k1000',k:'const',t:'u32',v:1000,x:60,y:59},
+  {id:'k2400',k:'const',t:'u32',v:2400,x:60,y:78},
+  {id:'k7',k:'const',t:'u8',v:7,x:76,y:96},
+  {id:'kev',k:'const',t:'enum',v:'Even',x:60,y:115},
+  {id:'cfg',k:'fn',fn:'VISA Configure Serial Port',x:106,y:30,h:132,ins:['VISA resource name','timeout','baud rate','data bits','parity','error in']},
+  {id:'kE',k:'const',t:'str',v:'',x:150,y:231},
+  {id:'t1',k:'tunnel',t:'visa',s:'wl',side:'l',y:74},
+  {id:'sre',k:'sr',t:'err',s:'wl',y:200},
+  {id:'srh',k:'sr',t:'str',s:'wl',y:240},
+  {id:'kq',k:'const',t:'str',v:'Q\\r\\n',x:210,y:76},
+  {id:'wr',k:'fn',fn:'VISA Write',x:262,y:63},
+  {id:'k100',k:'const',t:'i32',v:100,x:310,y:76},
+  {id:'rd',k:'fn',fn:'VISA Read',x:346,y:63},
+  {id:'k0',k:'const',t:'i32',v:0,x:404,y:94},
+  {id:'k2',k:'const',t:'i32',v:2,x:404,y:112},
+  {id:'ss',k:'fn',fn:'String Subset',x:430,y:67,h:72},
+  {id:'k3',k:'const',t:'i32',v:3,x:404,y:163},
+  {id:'fx',k:'fn',fn:'Fract/Exp String To Number',x:430,y:148},
+  {id:'hdr',k:'ind',t:'str',label:'Header',x:520,y:93},
+  {id:'wt',k:'ind',t:'dbl',label:'Weight (g)',x:520,y:169},
+  {id:'kUS',k:'const',t:'str',v:'US',x:204,y:245},
+  {id:'eq2',k:'fn',fn:'Equal?',x:230,y:233},
+  {id:'kw',k:'const',t:'i32',v:100,x:290,y:242},
+  {id:'wait',k:'fn',fn:'Wait (ms)',x:330,y:235},
+  {id:'kST',k:'const',t:'str',v:'ST',x:470,y:255},
+  {id:'eq1',k:'fn',fn:'Equal?',x:500,y:243},
+  {id:'and',k:'fn',fn:'And',x:545,y:207},
+  {id:'rec',k:'ind',t:'bool',label:'Record',x:578,y:211},
+  {id:'ub',k:'unbundle',items:['status'],x:404,y:280},
+  {id:'stop',k:'ctl',t:'bool',label:'stop',x:505,y:286},
+  {id:'or',k:'fn',fn:'Or',x:548,y:289},
+  {id:'cond',k:'stop',s:'wl'},
+  {id:'t2',k:'tunnel',t:'visa',s:'wl',side:'r',y:74}],
+  wires:[
+  {id:'w1',from:'res',to:'cfg.VISA resource name',t:'visa'},
+  {id:'w2',from:'k1000',to:'cfg.timeout',t:'u32'},
+  {id:'w3',from:'k2400',to:'cfg.baud rate',t:'u32'},
+  {id:'w4',from:'k7',to:'cfg.data bits',t:'u8'},
+  {id:'w5',from:'kev',to:'cfg.parity',t:'enum'},
+  {id:'w6',from:'cfg.VISA resource name out',to:'t1.o',t:'visa'},
+  {id:'w7',from:'cfg.error out',to:'sre.init',t:'err',mx:170},
+  {id:'w8',from:'kE',to:'srh.init',t:'str'},
+  {id:'w9',from:'t1.i',to:'wr.VISA resource name',t:'visa'},
+  {id:'w10',from:'kq',to:'wr.write buffer',t:'str'},
+  {id:'w11',from:'sre.L',to:'wr.error in',t:'err',mx:257},
+  {id:'w12',from:'wr.VISA resource name out',to:'rd.VISA resource name',t:'visa'},
+  {id:'w13',from:'wr.error out',to:'rd.error in',t:'err'},
+  {id:'w14',from:'k100',to:'rd.byte count',t:'i32'},
+  {id:'w15',from:'rd.VISA resource name out',to:'t2.i',t:'visa'},
+  {id:'w16',from:'rd.read buffer',to:'ss.string',t:'str'},
+  {id:'w17',from:'k0',to:'ss.offset',t:'i32'},
+  {id:'w18',from:'k2',to:'ss.length',t:'i32'},
+  {id:'w19',from:'rd.read buffer',to:'fx.string',t:'str',pts:[[400,85],[400,160]]},
+  {id:'w20',from:'k3',to:'fx.offset',t:'i32'},
+  {id:'w21',from:'ss.substring',to:'hdr',t:'str'},
+  {id:'w22',from:'fx.number',to:'wt',t:'dbl'},
+  {id:'w23',from:'rd.error out',to:'sre.R',t:'err',pts:[[394,96],[394,200]]},
+  {id:'w24',from:'ss.substring',to:'srh.R',t:'str',pts:[[490,103],[490,240]]},
+  {id:'w25',from:'srh.L',to:'eq2.x',t:'str'},
+  {id:'w26',from:'kUS',to:'eq2.y',t:'str'},
+  {id:'w27',from:'ss.substring',to:'eq1.x',t:'str',pts:[[490,103],[490,250]]},
+  {id:'w28',from:'kST',to:'eq1.y',t:'str'},
+  {id:'w29',from:'eq1.out',to:'and.y',t:'bool',mx:536},
+  {id:'w30',from:'eq2.out',to:'and.x',t:'bool',pts:[[266,247],[266,214]]},
+  {id:'w31',from:'and.out',to:'rec',t:'bool'},
+  {id:'w32',from:'kw',to:'wait',t:'i32'},
+  {id:'w33',from:'rd.error out',to:'ub.input cluster',t:'err',pts:[[394,96],[394,294]]},
+  {id:'w34',from:'ub.status',to:'or.y',t:'bool',pts:[[496,294],[496,314],[544,314],[544,310]]},
+  {id:'w35',from:'stop',to:'or.x',t:'bool'},
+  {id:'w36',from:'or.out',to:'cond',t:'bool',mx:580}]},
+ sim:{period:250,init(){return {prev:'',g:0,on:false,t:0};},step(i,st,ctx){
+  const want=i.part?12.34:0;
+  if(Math.abs(st.g-want)>0.004){st.g+= (want-st.g)*0.55;st.t=0;}else{st.g=want;st.t++;}
+  const stable=Math.abs(st.g-want)<0.01&&st.t>=1,hdr=stable?'ST':'US';
+  const w=+st.g.toFixed(2),line=hdr+','+(w<0?'-':'+')+Math.abs(w).toFixed(2).padStart(8,'0')+'  g\r\n';
+  const rec=st.prev==='US'&&hdr==='ST';st.prev=hdr;const stp=!!i.stop;
+  return {out:{hdr,wt:w,rec,eo:NOERR},stop:stp,msg:stp?'按了 STOP':(rec?'上一筆 US、這一筆 ST：記一筆 '+w+' g':'讀到 '+line.replace('\r\n','\\r\\n')+(hdr==='ST'?'：穩定，但上一筆也是 ST，不再記':'：還在晃，只顯示')),
+   vals:{res:i.res,k1000:1000,k2400:2400,k7:7,kev:'Even',kq:'Q\r\n',k100:100,k0:0,k2:2,k3:3,kUS:'US',kST:'ST',kw:100,kE:'','rd.read buffer':line,'ss.substring':hdr,'fx.number':w,'srh.L':st.prev,'eq1.out':hdr==='ST','and.out':rec,'rd.error out':NOERR,'ub.status':false,stop:stp,'or.out':stp}};
+ },doneMsg:'迴圈結束'}
+};
+const I06_LV=[
+C.h3('LabVIEW','b','動手寫：I06_Balance.vi（命令模式：送 Q、切開、只在剛變穩定時記一筆）'),
+`<p>照上面的規劃圖，先做「命令模式」：一問一答，跟電源同一種骨架。新的東西只有三樣：用位置切字串、比對標頭、用 Shift Register 記住上一筆的標頭。</p>`,
+C.plan({
+ start:'打開 <code>I04_Monitor.vi</code>，Save As ▸ Copy 存成 <code>練習\\儀器\\I06_Balance.vi</code>。Scan From String 刪掉，這台的數字不在開頭。',
+ in:'每圈送 <code>Q\\r\\n</code>（命令也要加 CR LF），VISA Read 讀回一筆 17 個字元，例：<code>ST,+00001.27␣␣g\\r\\n</code>。重量單位 g。',
+ calc:'String Subset（offset 0、length 2）切出標頭 <code>ST</code>。Fract/Exp String To Number（offset 3）讀出 1.27：讀到空白就停，單位不影響。標頭用 Equal? 比字串：這一筆是 "ST" <b>而且</b>上一筆是 "US"，才是「剛剛變穩定」。',
+ out:'字串指示器 <code>Header</code>、數值 <code>Weight (g)</code>（2 位小數）、LED <code>Record</code>（剛變穩定那一圈亮一次）。',
+ loop:'While Loop，Wait 100 ms：天平回一筆很快，零件放上去到穩定要零點幾秒，一秒看 10 次夠細。',
+ end:'跟 I04 一樣：STOP 或出錯就停，error 進 Shift Register。另外一個 Shift Register 存「上一筆的標頭」，初始值是空字串。'}),
+SIMLV,
+{steps:{title:'I06_Balance.vi：切標頭、比上一筆',lv:balVI,steps:[
+ {t:'前面板',view:'fp',add:['res','stop','hdr','wt','rec','eo','part'],h:`<p>Resource 選 USB 轉 RS-232 線的 COM 埠。放 String Indicator <code>Header</code>、Numeric Indicator <code>Weight (g)</code>、${ctl('Modern','Boolean','Square LED')} <code>Record</code>。</p>`},
+ {t:'序列埠參數改成天平的',view:'bd',add:['res','k1000','k2400','k7','kev','cfg','w1','w2','w3','w4','w5'],h:`<p>VISA Configure Serial Port 的常數照接入單改：baud rate <code>2400</code>、data bits <code>7</code>、parity <code>Even</code>、timeout <code>1000</code>。stop bits 沒接，預設就是 1.0。</p><p>termination char 也沒接：預設 \\n，回覆最後是 CR LF，最後一個字元正是 \\n。</p>`},
+ {t:'迴圈：送 Q\\r\\n、讀一筆',view:'bd',add:['wl','t1','sre','kq','wr','k100','rd','t2','w6','w7','w9','w10','w11','w12','w13','w14','w15','w23'],h:`<p>Write 的常數改成 <code>Q\\r\\n</code>（'\\' Codes Display）。Read 一樣 100。</p><p class="qd">圖上沒有畫迴圈右邊外面的 VISA Close、Simple Error Handler：跟 I04 一模一樣。這張圖 error 線從 Read 直接回 Shift Register：String Subset 和 Fract/Exp 沒有 error 端子。</p>`},
+ {t:'用位置切：String Subset、Fract/Exp',view:'bd',add:['k0','k2','ss','k3','fx','hdr','wt','w16','w17','w18','w19','w20','w21','w22'],h:`<p>${fn('Programming','String','String Subset')} ${qd('String Subset')}：offset <code>0</code>、length <code>2</code>。</p>
+<p>${fn('Programming','String','Number/String Conversion','Fract/Exp String To Number')} ${qd('Fract/Exp')}：offset <code>3</code>（跳過「ST,」三個字元）。</p>${wt([
+ ['VISA Read 的 read buffer','String Subset 的 string'],
+ ['read buffer 分岔','Fract/Exp String To Number 的 string'],
+ ['String Subset 的 substring','Header'],
+ ['Fract/Exp 的 number','Weight (g)','DBL']])}`},
+ {t:'上一筆的標頭：再加一個 Shift Register',view:'bd',add:['kE','srh','w8','w24','kUS','eq2','w25','w26'],h:`<p>在迴圈左邊框上右鍵 ▸ <b>Add Shift Register</b>。左邊外面接一個空字串常數當初始值（第一圈沒有「上一筆」）。</p>${wt([
+ ['String Subset 的 substring','Shift Register 右邊','這一筆的標頭，存給下一圈'],
+ ['Shift Register 左邊（迴圈內）','Equal? 的 x','上一筆的標頭'],
+ ['常數 "US"','Equal? 的 y','上一筆還在晃嗎？']])}
+<p>${fn('Programming','Comparison','Equal?')} 可以直接比兩個字串。</p>`},
+ {t:'這一筆是 ST，而且上一筆是 US',view:'bd',add:['kST','eq1','and','rec','w27','w28','w29','w30','w31'],h:`<p>再放一個 Equal?：substring 跟常數 <code>"ST"</code> 比。兩個結果接 ${fn('Programming','Boolean','And')} ${qd('And')}，輸出接 Record。</p><p>這就是 PLC 課的上升緣：只有「從 US 變成 ST」的那一圈是 True。</p>`},
+ {t:'Wait、停止條件；Run',view:'split',add:['kw','wait','ub','stop','or','cond','w32','w33','w34','w35','w36'],h:`<p>Wait (ms) 接 <code>100</code>；Unbundle By Name、Or、stop 跟 I04 一樣。</p><p>Run，按「放上」：Header 先是 US，穩定後變 ST，Record 只亮<b>一次</b>。零件一直放著，Record 不再亮。按一下變「拿走」，再放上，又亮一次。</p>`}
+]}},
+ask('改一個數字，先預測結果：把常數 "US" 改成 "ST"（變成「上一筆是 ST、這一筆也是 ST」才記錄）。零件放著不動 5 秒，Record 會亮幾次？',
+ `<p>大約 <b>50 次</b>：一圈 100 ms，穩定以後每一圈都符合條件，每一圈都記一筆。這就是上面「問自己」說的「同一個零件被記了十幾次」，只是現在讀得更快。</p>
+<p>反過來想：要「剛剛變成」，就一定要比較「不一樣」的兩筆。上升緣的條件永遠是「上一次是 A、這一次是 B」，A 和 B 不能一樣。</p>`)
+];
+
 /* =============================== I5 =============================== */
 L.push({id:'I05',order:29.5,no:'I5',part:PART,title:'數位電表：同一套問法，答案不同',mins:55,
 goals:[['學會','讀懂 SCPI 命令表的寫法；USB 和網路怎麼選；量測要花時間時逾時怎麼設；怎麼問儀器「剛才哪裡錯了」。'],['做出','一張電表的接入單和程式規劃圖，並說出它跟電源那台哪裡不同、為什麼不同。'],['為什麼','第二台儀器最能看出方法有沒有學到：照同樣的順序問，得到不同的答案，畫出不同的程式。']].concat(window.InstSim?[['網頁練習','<a href="instlab.html">儀器接入練習台</a> 選「數位電表」。']]:[]),
@@ -133,6 +384,7 @@ C.table(['接入單上的事','電源供應器','數位電表','所以程式哪�
  ['特別的回覆','沒有','9.9E37 代表過載','多一個 Case'],
  ['出錯怎麼知道','ERR?','SYST:ERR?，可能有好幾筆','用迴圈讀到 +0 為止']
 ]),
+...I05_LV,
 
 C.h3('測驗','q','小測驗'),
 {quiz:[
@@ -236,6 +488,7 @@ flow(['設定序列埠（2400、7、Even、1）',{loop:['送 Q','讀一筆','長
 ask('拿走零件再放下一個，會不會漏記或多記？',
  `<p>照順序想一次：拿走時重量變化，標頭變 US；空秤穩定，變 ST，這時候會記到一筆接近 0 的重量。</p>
 <p>所以還要再加一個條件：重量大於某個下限才算有零件。這種「想一遍實際操作的每一步，看程式會做什麼」的檢查，要在畫方塊圖以前做。在紙上發現比在產線上發現便宜得多。</p>`),
+...I06_LV,
 
 C.h3('懂','','串流模式的坑：讀到的是舊資料'),
 `<p>有些設備只能串流，所以這個坑一定要認得。把上面終端機裡的天平切成串流模式，然後：</p>`,

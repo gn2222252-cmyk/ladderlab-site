@@ -17,6 +17,109 @@ function term(opts){return d=>{
   else d.innerHTML='<div class="fig"><p>模擬儀器終端機沒有載入。</p></div>';
 };}
 
+/* ======================================================================
+   LabVIEW 參考答案：I11_ADAM4017.vi（讀一次，For Loop 照位置切成 8 個數值）
+   回覆是網頁模擬的；8 個數值用說明書的範例回覆。
+   ====================================================================== */
+const ctl=C.ctl,qd=C.qd,wt=C.wt,PR=['Functions','Programming'];
+const addF=o=>{for(const k in o)if(!LV.F[k])LV.F[k]=o[k];};
+addF({'Fract/Exp String To Number':{g:'1.2E→#',ins:['string','offset','default'],outs:['offset past number','number'],w:46,pal:[...PR,'String','Number/String Conversion','Fract/Exp String To Number']}});
+const NOERR={status:false,code:0,source:''};
+const AI8=[7.2111,7.2567,7.3125,7.1000,7.4712,7.2555,7.1234,7.5678];
+const A4017='>'+AI8.map(v=>(v<0?'-':'+')+Math.abs(v).toFixed(4)).join('')+'\r';
+const adamVI={name:'I11_ADAM4017.vi',view:'bd',
+ fp:{w:420,h:240,items:[
+  {id:'res',k:'visa',label:'Resource',x:16,y:16,w:150,v:'COM8',options:['COM8','COM3']},
+  {id:'sim',k:'ring',label:'（模擬）命令裡的位址',x:190,y:16,w:150,options:['01（線上有這一台）','02（線上沒有）'],v:0},
+  {id:'ai',k:'arr',label:'AI (V)：通道 0～7',x:16,y:76,n:8},
+  {id:'eo',k:'err',label:'error out',x:16,y:130}]},
+ bd:{w:640,h:300,structs:[{id:'fl',k:'for',x:290,y:120,w:300,h:170}],
+  nodes:[
+  {id:'res',k:'ctl',t:'visa',label:'Resource',x:16,y:29},
+  {id:'k1000',k:'const',t:'u32',v:1000,x:60,y:49},
+  {id:'k13',k:'const',t:'u8',v:13,x:74,y:69},
+  {id:'cfg',k:'fn',fn:'VISA Configure Serial Port',x:106,y:20,h:96,ins:['VISA resource name','timeout','termination char','error in']},
+  {id:'kcmd',k:'const',t:'str',v:'#01\\r',x:160,y:54},
+  {id:'wr',k:'fn',fn:'VISA Write',x:210,y:41},
+  {id:'k100',k:'const',t:'i32',v:100,x:256,y:54},
+  {id:'rd',k:'fn',fn:'VISA Read',x:290,y:41},
+  {id:'cl',k:'fn',fn:'VISA Close',x:520,y:41},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:580,y:47,showName:false},
+  {id:'k8',k:'const',t:'i32',v:8,x:262,y:128},
+  {id:'N',k:'N',s:'fl'},
+  {id:'tdata',k:'tunnel',t:'str',s:'fl',side:'l',y:180},
+  {id:'iter',k:'iter',s:'fl'},
+  {id:'k7a',k:'const',t:'i32',v:7,x:332,y:246},
+  {id:'mul',k:'fn',fn:'Multiply',x:360,y:248},
+  {id:'inc',k:'fn',fn:'Increment',x:396,y:248},
+  {id:'k7b',k:'const',t:'i32',v:7,x:444,y:207},
+  {id:'ss',k:'fn',fn:'String Subset',x:470,y:162,h:72},
+  {id:'fx',k:'fn',fn:'Fract/Exp String To Number',x:518,y:186,showName:false},
+  {id:'tout',k:'tunnel',t:'dbl[]',s:'fl',side:'r',y:217,idx:true},
+  {id:'ai',k:'ind',t:'dbl[]',label:'AI (V)',x:600,y:207}],
+ wires:[
+  {id:'w1',from:'res',to:'cfg.VISA resource name',t:'visa'},
+  {id:'w2',from:'k1000',to:'cfg.timeout',t:'u32'},
+  {id:'w3',from:'k13',to:'cfg.termination char',t:'u8'},
+  {id:'w4',from:'cfg.VISA resource name out',to:'wr.VISA resource name',t:'visa'},
+  {id:'w5',from:'cfg.error out',to:'wr.error in',t:'err',mx:205},
+  {id:'w6',from:'kcmd',to:'wr.write buffer',t:'str'},
+  {id:'w7',from:'wr.VISA resource name out',to:'rd.VISA resource name',t:'visa'},
+  {id:'w8',from:'wr.error out',to:'rd.error in',t:'err'},
+  {id:'w9',from:'k100',to:'rd.byte count',t:'i32'},
+  {id:'w10',from:'rd.VISA resource name out',to:'cl.VISA resource name',t:'visa',mx:510},
+  {id:'w11',from:'rd.error out',to:'cl.error in',t:'err',mx:515},
+  {id:'w12',from:'cl.error out',to:'seh.error in',t:'err'},
+  {id:'w13',from:'rd.read buffer',to:'tdata.o',t:'str',pts:[[340,63],[340,100],[250,100],[250,180]]},
+  {id:'w14',from:'k8',to:'N',t:'i32'},
+  {id:'w15',from:'k7a',to:'mul.x',t:'i32'},
+  {id:'w16',from:'iter',to:'mul.y',t:'i32'},
+  {id:'w17',from:'mul.out',to:'inc',t:'i32'},
+  {id:'w18',from:'inc.out',to:'ss.offset',t:'i32',pts:[[430,262],[430,198]]},
+  {id:'w19',from:'k7b',to:'ss.length',t:'i32'},
+  {id:'w20',from:'tdata.i',to:'ss.string',t:'str'},
+  {id:'w21',from:'ss.substring',to:'fx.string',t:'str'},
+  {id:'w22',from:'fx.number',to:'tout.i',t:'dbl'},
+  {id:'w23',from:'tout.o',to:'ai',t:'dbl[]'}]},
+ sim:{live:true,step(i){
+  if(+i.sim===1){const E={status:true,code:-1073807339,source:'VISA Read in I11_ADAM4017.vi（逾時：線上沒有 02 號，沒有回應）'};
+   return {out:{ai:[0,0,0,0,0,0,0,0],eo:E},msg:'02 號不存在：模組不回，Read 等滿 1000 ms 逾時，read buffer 是空字串。For Loop 還是跑 8 次，每次都切到空字串，Fract/Exp 給 0：AI 會是 8 個 0，看起來像量到 0 V。所以要先看 error、再檢查長度。',vals:{'rd.error out':E,'cl.error out':E}};}
+  return {out:{ai:AI8.slice(),eo:NOERR},msg:'讀到 '+A4017.length+' 個字元。For Loop 第 i 圈從 1＋7×i 切 7 個字元：第 0 圈「'+A4017.substr(1,7)+'」、第 1 圈「'+A4017.substr(8,7)+'」…，自動索引收成 8 個 DBL。',
+   vals:{res:i.res,k1000:1000,k13:13,kcmd:'#01\r',k100:100,k8:8,k7a:7,k7b:7,'rd.read buffer':A4017,'tdata.i':A4017,iter:0,'mul.out':0,'inc.out':1,'ss.substring':A4017.substr(1,7),'fx.number':AI8[0],'tout.o':AI8,'rd.error out':NOERR,'cl.error out':NOERR}};
+ }}
+};
+const I11_LV=[
+C.h3('LabVIEW','b','對答案：I11_ADAM4017.vi（讀一次、照位置切成 8 個數值）'),
+`<p><b>先自己畫完再往下看。</b>下面是第 5 步那幾個提示畫成的方塊圖，只做「讀一次、切好」。While Loop、Case、Clear Errors、連續失敗計數是第 6 步的規劃，等這一支確定切對了再照 I4 加上去。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\儀器\\I11_ADAM4017.vi</code>。',
+ in:'送 <code>#01\\r</code>，VISA Read 讀回 58 個字元的字串：<code>&gt;</code>＋8 個「正負號＋6 個數字和小數點」＋<code>\\r</code>。單位 V。',
+ calc:'For Loop，N 接 8。第 i 圈的起點 ＝ 1 ＋ 7 × i（Multiply、Increment），String Subset 取 7 個字元，Fract/Exp String To Number 轉成 DBL。右邊的 Tunnel 是<b>自動索引</b>，8 圈的結果收成一個 8 個元素的陣列。',
+ out:'DBL 陣列指示器 <code>AI (V)</code>，拉成 8 格。之後要畫趨勢圖，就把這個陣列接 Waveform Chart（一圈 8 條線）。',
+ loop:'這一支只讀一次。規劃裡是 While Loop＋Wait 1000 ms：任務是每秒讀一次。',
+ end:'逾時 1000 ms。這台出錯時不回應，所以逾時就是它的錯誤回報。注意：逾時以後 For Loop 照樣跑，切空字串得到 8 個 0；所以加迴圈以前，先在 Read 後面檢查 error 和長度（String Length ＝ 58），不對就不要切。'}),
+note('下面的 VI 視窗是網頁模擬的','8 個數值用說明書的範例回覆；9600、8、None、1 是這一課的假設。'),
+{steps:{title:'I11_ADAM4017.vi：Read 之後用 For Loop 切 8 次',lv:adamVI,steps:[
+ {t:'前面板',view:'fp',add:['res','ai','eo','sim'],h:`<p>Resource（USB 轉 RS-485 的 COM 埠）。${ctl('Modern','Array, Matrix & Cluster','Array')} 裡放 Numeric Indicator，標籤 <code>AI (V)</code>，拉成 8 格。</p>`},
+ {t:'設定序列埠：termination char 改成 13',view:'bd',add:['res','k1000','k13','cfg','w1','w2','w3'],h:`<p>VISA Configure Serial Port 的 baud、data bits、parity、stop bits 不接：預設就是 9600、8、None、1.0。要接的是 <b>termination char <code>13</code></b>（\\r，這台用 CR 結尾，不是預設的 10）和 timeout <code>1000</code>。</p>`},
+ {t:'送 #01\\r，讀 100',view:'bd',add:['kcmd','wr','k100','rd','cl','seh','w4','w5','w6','w7','w8','w9','w10','w11','w12'],h:`<p>Write 的常數（'\\' Codes Display）<code>#01\\r</code>。Read 的 byte count 100（比 58 大就好，讀到 \\r 就回來）。Close、Simple Error Handler 照舊。</p>`},
+ {t:'For Loop，N ＝ 8',view:'bd',add:['fl','N','k8','tdata','w13','w14'],h:`<p>${fn('Programming','Structures','For Loop')} ${qd('For Loop')}。左上角的 <b>N</b> 上 Create ▸ Constant，輸入 <code>8</code>。</p><p>read buffer 拉進 For Loop：穿過邊框的地方是一般 Tunnel（每一圈拿到的都是同一個完整字串）。</p>`},
+ {t:'第 i 圈從哪裡切：1 ＋ 7 × i',view:'bd',add:['iter','k7a','mul','inc','w15','w16','w17'],h:`${wt([
+ ['常數 7','Multiply 的 x','每個數值 7 個字元'],
+ ['i（左下角）','Multiply 的 y','第 0、1、2…圈'],
+ ['Multiply 的 x*y','Increment','跳過開頭的 &gt;']])}<p>i ＝ 0 時是 1，i ＝ 1 時是 8，i ＝ 7 時是 50。</p>`},
+ {t:'String Subset 取 7 個，Fract/Exp 轉數字',view:'bd',add:['k7b','ss','fx','w18','w19','w20','w21'],h:`${wt([
+ ['迴圈裡的字串 Tunnel','String Subset 的 string'],
+ ['Increment 的 x+1','String Subset 的 offset'],
+ ['常數 7','String Subset 的 length'],
+ ['String Subset 的 substring','Fract/Exp String To Number 的 string','「+7.2111」→ 7.2111']])}`},
+ {t:'自動索引：8 個數值變成陣列；Run',view:'split',add:['tout','ai','w22','w23'],h:`<p>Fract/Exp 的 number 拉到迴圈右邊框。For Loop 的輸出 Tunnel <b>預設就是自動索引</b>（框裡有 [ ]），出來是 DBL 陣列，接 <code>AI (V)</code>。</p><p>Run：8 格是 7.2111、7.2567…。把模擬換成「02」：AI 變成 8 個 0，error out 有逾時錯誤。這就是 end 那一格說的「先看 error 再切」。</p>`}
+]}},
+hint('改一個數字，先預測結果：N 的 8 不小心打成 9。AI 會有幾格？最後一格是多少？會不會出錯？',
+ `<p>9 格，<b>不會出錯</b>。第 8 圈的起點是 1 ＋ 7 × 8 ＝ 57，從第 57 個字元（最後的 \\r）切 7 個，String Subset 只給得出「\\r」一個字元；Fract/Exp 開頭不是數字，給預設值 0。所以第 9 格是 0。</p>
+<p>多一格 0 V，很容易被當成「第 9 個通道接地」。陣列的長度也是要檢查的東西：迴圈次數最好不要寫死，或在切之前先確認 String Length ＝ 58。</p>`)
+];
+
 L.push({id:'I11',order:29.97,no:'I11',part:PART,title:'綜合演練：一台沒教過的設備，自己走完六步',mins:60,
 goals:[['這一課不教新東西','給你一台前面沒出現過的設備和幾行說明書摘錄。六個步驟自己走，每一步的提示都收起來，卡住了才打開。'],['做出','一張接入單、三筆手算的結果、一張程式規劃圖。'],['過關的標準','不看提示，說得出每一個決定的理由。'],['先備','I1～I10。']],
 check:'你能在不看提示的情況下完成六個步驟，並且說出：它用 VISA 還是別的、結尾字元是什麼、回覆怎麼切、哪裡用了迴圈、為什麼。',
@@ -104,6 +207,7 @@ hint('提示：連續失敗的次數是做什麼的？',
  `<p>RS-485 的線很長，偶爾一筆被雜訊打壞是正常的。壞一筆就停掉整支程式，太敏感；永遠不停，線真的斷了又沒人知道。</p>
 <p>常見的做法：失敗一次就加 1，成功一次就歸零；連續失敗超過例如 5 次，才當成通訊中斷，顯示警告。「一個數字每一圈被改掉、下一圈要用」，所以它在 Shift Register 裡。</p>`),
 
+...I11_LV,
 C.h3('回頭看','','你剛才做的事'),
 C.table(['步驟','你做的判斷','用到哪一課'],[
  ['1','會說話、序列埠 → VISA','I1'],

@@ -32,6 +32,326 @@ function flow(items){
   return `<div class="bdflow fig">${items.map(one).join('<i class="fa">→</i>')}</div>`;
 }
 
+/* ======================================================================
+   LabVIEW 實作（I2～I4）：把終端機上做的事，一格一格搬進方塊圖
+   回覆是網頁模擬的（照 instsim.js 的 GPD 模擬：*IDN?、5.000V\r\n、設定命令不回）。
+   ====================================================================== */
+const ctl=C.ctl,qd=C.qd,wt=C.wt;
+const NOERR={status:false,code:0,source:''};
+const TMO=vi=>({status:true,code:-1073807339,source:'VISA Read in '+vi+'（逾時：等了 1000 ms 沒有讀到結尾字元）'});
+const unesc=s=>String(s||'').replace(/\\r/g,'\r').replace(/\\n/g,'\n');
+const SIMLV=note('下面的 VI 視窗是網頁模擬的','方塊圖照真的 LabVIEW 畫；按 Run 時，儀器的回覆是網頁假裝的（跟上面的終端機同一套規則）。真的 LabVIEW 接真的儀器，回覆以你看到的為準。');
+const GPD_IDN='GW INSTEK,GPD-3303S,SN:EK123456,V1.00\r\n';
+
+/* ---------- I02_IDN.vi：送一次 *IDN?、讀一次、結束 ---------- */
+const idnVI={name:'I02_IDN.vi',view:'split',ratio:1.7,
+ fp:{w:360,h:250,items:[
+  {id:'res',k:'visa',label:'Resource',x:16,y:16,w:170,v:'COM5',options:['COM5','COM3','COM4']},
+  {id:'cmd',k:'str',ctl:true,label:'Command（\\ Codes Display）',x:16,y:70,w:170,v:'*IDN?\\n'},
+  {id:'baud',k:'num',ctl:true,label:'Baud',rep:'U32',x:16,y:124,w:90,v:9600},
+  {id:'eo',k:'err',label:'error out',x:196,y:56},
+  {id:'reply',k:'str',label:'Reply（\\ Codes Display）',x:16,y:184,w:330,rows:2}]},
+ bd:{w:640,h:200,nodes:[
+  {id:'res',k:'ctl',t:'visa',label:'Resource',x:20,y:30},
+  {id:'k1000',k:'const',t:'u32',v:1000,x:120,y:51},
+  {id:'baud',k:'ctl',t:'u32',label:'Baud',x:20,y:70},
+  {id:'k8',k:'const',t:'u8',v:8,x:136,y:91},
+  {id:'kpar',k:'const',t:'enum',v:'None',x:120,y:111},
+  {id:'kstop',k:'const',t:'enum',v:'1.0',x:127,y:131},
+  {id:'cfg',k:'fn',fn:'VISA Configure Serial Port',x:170,y:20,h:160,ins:['VISA resource name','timeout','baud rate','data bits','parity','stop bits','error in']},
+  {id:'cmd',k:'ctl',t:'str',label:'Command',x:226,y:52},
+  {id:'wr',k:'fn',fn:'VISA Write',x:280,y:40},
+  {id:'k100',k:'const',t:'i32',v:100,x:332,y:53},
+  {id:'rd',k:'fn',fn:'VISA Read',x:370,y:40},
+  {id:'cl',k:'fn',fn:'VISA Close',x:450,y:40},
+  {id:'reply',k:'ind',t:'str',label:'Reply',x:470,y:150},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:520,y:46},
+  {id:'eo',k:'ind',t:'err',label:'error out',x:588,y:52}],
+ wires:[
+  {id:'w1',from:'res',to:'cfg.VISA resource name',t:'visa'},
+  {id:'w2',from:'k1000',to:'cfg.timeout',t:'u32'},
+  {id:'w3',from:'baud',to:'cfg.baud rate',t:'u32'},
+  {id:'w4',from:'k8',to:'cfg.data bits',t:'u8'},
+  {id:'w5',from:'kpar',to:'cfg.parity',t:'enum'},
+  {id:'w6',from:'kstop',to:'cfg.stop bits',t:'enum'},
+  {id:'w7',from:'cfg.VISA resource name out',to:'wr.VISA resource name',t:'visa',pts:[[222,73],[222,30],[268,30],[268,51]]},
+  {id:'w8',from:'cfg.error out',to:'wr.error in',t:'err',mx:272},
+  {id:'w9',from:'cmd',to:'wr.write buffer',t:'str'},
+  {id:'w10',from:'wr.VISA resource name out',to:'rd.VISA resource name',t:'visa'},
+  {id:'w11',from:'wr.error out',to:'rd.error in',t:'err'},
+  {id:'w12',from:'k100',to:'rd.byte count',t:'i32'},
+  {id:'w13',from:'rd.read buffer',to:'reply',t:'str',pts:[[424,62],[424,160]]},
+  {id:'w14',from:'rd.VISA resource name out',to:'cl.VISA resource name',t:'visa',mx:432},
+  {id:'w15',from:'rd.error out',to:'cl.error in',t:'err',mx:440},
+  {id:'w16',from:'cl.error out',to:'seh.error in',t:'err'},
+  {id:'w17',from:'seh.error out',to:'eo',t:'err'}]},
+ sim:{step(i){
+  const cmd=unesc(i.cmd),c=cmd.replace(/[\r\n]+$/,'');
+  let reply='',err=NOERR,msg;
+  if(i.baud!==9600){err=TMO('I02_IDN.vi');msg='鮑率 '+i.baud+'：儀器把位元切錯了，湊不出命令，不回。Read 等滿 1000 ms 逾時。';}
+  else if(!/[\r\n]$/.test(cmd)){err=TMO('I02_IDN.vi');msg='命令後面沒有 \\n：儀器還在等你講完。Read 等滿 1000 ms 逾時。';}
+  else if(c==='*IDN?'){reply=GPD_IDN;msg='收到 '+reply.length+' 個字元。最後兩個是 \\r \\n（Reply 上的 CR、LF）。';}
+  else if(c==='VOUT1?'){reply='0.000V\r\n';msg='（模擬）輸出還沒打開，回 0.000V。';}
+  else if(c==='IOUT1?'){reply='0.000A\r\n';msg='（模擬）輸出還沒打開，回 0.000A。';}
+  else{err=TMO('I02_IDN.vi');msg='（模擬）「'+c+'」沒有回覆：設定命令不回，打錯的命令也不回。要知道原因就送 ERR?。';}
+  const e=err.status?err:NOERR;
+  return {out:{reply,eo:e},msg,vals:{res:i.res,k1000:1000,baud:i.baud,k8:8,kpar:'None',kstop:'1.0',cmd,k100:100,'cfg.VISA resource name out':i.res,'cfg.error out':NOERR,'wr.VISA resource name out':i.res,'wr.error out':NOERR,'rd.VISA resource name out':i.res,'rd.read buffer':reply,'rd.error out':e,'cl.error out':e,'seh.error out':e}};
+ }}
+};
+const I02_LV=[
+C.h3('LabVIEW','b','動手寫：I02_IDN.vi（把終端機上的設定搬進 LabVIEW）'),
+`<p>終端機已經講到話了，每一個設定都確定是對的。現在才打開 LabVIEW，而且<b>只做一模一樣的事</b>：送一次 <code>*IDN?</code>、讀一次、關掉。不加迴圈、不轉數字。這樣如果 LabVIEW 這邊不通，錯的一定是方塊圖，不是儀器。</p>`,
+C.plan({
+ start:'File ▸ New VI，存成 <code>練習\\儀器\\I02_IDN.vi</code>。不用開任何舊的 VI。',
+ in:'回覆從 VISA Read 的 <b>read buffer</b> 出來，是<b>字串</b>（粉紅線），不是數字。*IDN? 的回覆大約 40 個字元，最後是 \\r\\n；byte count 給 100 當上限。',
+ calc:'這一課不轉換。原封不動顯示，先確定「LabVIEW 讀到的」跟「終端機看到的」一模一樣。',
+ out:'一個 String Indicator <code>Reply</code>，右鍵選 <b>\'\\\' Codes Display</b>，才看得到最後的 \\r\\n。',
+ loop:'不用迴圈。按一次 Run，做一次就結束。不要用工具列的 Run Continuously 代替迴圈。',
+ end:'錯誤線從 VISA Configure Serial Port 一路串到 VISA Close，最後接 Simple Error Handler。逾時設 1000 ms：沒回覆時 1 秒內就會看到錯誤 -1073807339。'}),
+SIMLV,
+{steps:{title:'I02_IDN.vi：設定序列埠 → 寫 → 讀 → 關',lv:idnVI,steps:[
+ {t:'前面板：資源、命令、鮑率、回覆、錯誤',view:'fp',add:['res','cmd','baud','reply','eo'],h:`<p>開新 VI 存成 <code>練習\\儀器\\I02_IDN.vi</code>。前面板放：</p><ul>
+<li>${ctl('Modern','I/O','VISA Resource Name')}，標籤 <code>Resource</code>，下拉選你的 COM 埠（例：COM5）。</li>
+<li>${ctl('Modern','String & Path','String Control')}，標籤 <code>Command</code>。<b>先按右鍵選 '\\' Codes Display</b>，再打 <code>*IDN?\\n</code>。沒切顯示模式就打，\\n 會變成兩個普通字元「\\」和「n」。</li>
+<li>${ctl('Modern','Numeric','Numeric Control')}，標籤 <code>Baud</code>，右鍵 Representation ▸ U32，值 9600。</li>
+<li>${ctl('Modern','String & Path','String Indicator')}，標籤 <code>Reply</code>，一樣切成 '\\' Codes Display。</li></ul>
+<p class="qd">error out 先不用從選盤拉，第 5 步在線上 Create Indicator 最快。</p>`},
+ {t:'VISA Configure Serial Port：終端機上的設定，一格一格接上',view:'bd',add:['cfg','k1000','k8','kpar','kstop','w1','w2','w3','w4','w5','w6'],h:`<p>${fn('Instrument I/O','Serial','VISA Configure Serial Port')} ${qd('VISA Configure Serial Port')}。在每個輸入上 <b>右鍵 ▸ Create ▸ Constant</b>，型別就一定對：</p>
+${C.table(['輸入','接什麼','從哪裡來'],[
+ ['VISA resource name','Resource 端子','裝置管理員看到的 COM 埠'],
+ ['timeout','常數 <code>1000</code>','I2：最慢的命令約 0.4 秒，1 秒還沒回就是出事'],
+ ['baud rate','Baud 端子（9600）','面板上的設定'],
+ ['data bits','常數 <code>8</code>','說明書：8 資料位'],
+ ['parity','常數，下拉選 <code>None</code>','說明書：無同位'],
+ ['stop bits','常數，下拉選 <code>1.0</code>','說明書：1 停止位']])}
+<p><b>enable termination char</b> 和 <b>termination char</b> 先不接：不接的預設值就是 True 和 0xA（\\n），剛好是 Read 要停的字元。下一課看完原始回覆，再決定要不要改。</p>`},
+ {t:'VISA Write：送出 Command',view:'bd',add:['wr','cmd','w7','w8','w9'],h:`<p>${fn('Instrument I/O','Serial','VISA Write')} ${qd('VISA Write')}。</p>${wt([
+ ['VISA Configure Serial Port 的 VISA resource name out','VISA Write 的 VISA resource name','紫線：哪一個埠'],
+ ['VISA Configure Serial Port 的 error out','VISA Write 的 error in','黃線：前面出錯，Write 就不送'],
+ ['Command','VISA Write 的 write buffer','送出去的字串，包含最後的 \\n']])}`},
+ {t:'VISA Read：byte count 一定要接',view:'bd',add:['rd','k100','reply','w10','w11','w12','w13'],h:`<p>${fn('Instrument I/O','Serial','VISA Read')} ${qd('VISA Read')}。在 <b>byte count</b> 上 Create ▸ Constant，輸入 <code>100</code>。沒接的話預設是 0，Read 一個位元組都不讀。</p>${wt([
+ ['VISA Write 的 VISA resource name out','VISA Read 的 VISA resource name'],
+ ['VISA Write 的 error out','VISA Read 的 error in'],
+ ['常數 100','VISA Read 的 byte count','「最多讀 100 個」，讀到 \\n 就提早回來'],
+ ['VISA Read 的 read buffer','Reply','原封不動顯示']])}`},
+ {t:'VISA Close、Simple Error Handler',view:'bd',add:['cl','seh','eo','w14','w15','w16','w17'],h:`<p>${fn('Instrument I/O','Serial','VISA Close')} ${qd('VISA Close')}，接著 ${fn('Programming','Dialog & User Interface','Simple Error Handler.vi')} ${qd('Simple Error')}。在 Simple Error Handler 的 error out 上右鍵 ▸ Create ▸ Indicator，就有 error out。</p>${wt([
+ ['VISA Read 的 VISA resource name out','VISA Close 的 VISA resource name'],
+ ['VISA Read 的 error out','VISA Close 的 error in','Close 有錯也照樣關'],
+ ['VISA Close 的 error out','Simple Error Handler 的 error in','有錯就跳出對話框'],
+ ['Simple Error Handler 的 error out','error out']])}`},
+ {t:'Run：跟終端機的結果比',view:'split',add:[],h:`<p>Run 一次。Reply 應該跟終端機上看到的一模一樣：<code>GW INSTEK,GPD-3303S,…</code>，最後是 CR、LF。</p>
+<p>再照 I2 的實驗在這個 VI 上做一次（下面的模擬也可以）：把 Command 最後的 <code>\\n</code> 刪掉；或把 Baud 改成 57600。每次只改一樣，Run，看 Reply 和 error out。</p>
+<p class="qd">按工具列的「123」可以看每條線上的值，像在線上放了 Probe。</p>`}
+]}},
+ask('改一個數字，先預測結果：Baud 改成 57600，Run。Reply 是什麼？error out 的 code 是多少？大約幾秒後才看到？',
+ `<p>Reply 是空的；error out 的 code 是 <b>-1073807339</b>（VISA 逾時）；大約 <b>1 秒</b>後才出現，因為 timeout 接的是 1000。</p>
+<p>注意它<b>不會</b>說「鮑率錯了」。LabVIEW 只知道「等了 1000 ms 沒等到」。跟 I2 實驗 3 一樣：只看到逾時，要靠「一次只改一樣」才分得出原因。把 timeout 常數改成 10000 再試一次，就知道為什麼不用預設的 10 秒。</p>`)
+];
+
+/* ---------- I03_VOUT.vi：讀一次電壓，Scan From String 轉成數字 ---------- */
+const VREPLY=['5.000V\\r\\n','12.340V\\r\\n','（逾時，什麼都沒回）'];
+const voutVI={name:'I03_VOUT.vi',view:'split',ratio:1.7,
+ fp:{w:360,h:270,items:[
+  {id:'res',k:'visa',label:'Resource',x:16,y:16,w:170,v:'COM5',options:['COM5','COM3','COM4']},
+  {id:'sim',k:'ring',label:'（模擬）儀器這次回',x:16,y:70,w:170,options:VREPLY,v:0},
+  {id:'volt',k:'num',label:'Voltage (V)',x:16,y:124,w:110,dig:3},
+  {id:'eo',k:'err',label:'error out',x:196,y:56},
+  {id:'reply',k:'str',label:'Reply（\\ Codes Display）',x:16,y:196,w:330,rows:2}]},
+ bd:{w:640,h:236,nodes:[
+  {id:'res',k:'ctl',t:'visa',label:'Resource',x:20,y:30},
+  {id:'k1000',k:'const',t:'u32',v:1000,x:120,y:51},
+  {id:'k9600',k:'const',t:'u32',v:9600,x:120,y:71},
+  {id:'k8',k:'const',t:'u8',v:8,x:136,y:91},
+  {id:'kpar',k:'const',t:'enum',v:'None',x:120,y:111},
+  {id:'kstop',k:'const',t:'enum',v:'1.0',x:127,y:131},
+  {id:'cfg',k:'fn',fn:'VISA Configure Serial Port',x:170,y:20,h:160,ins:['VISA resource name','timeout','baud rate','data bits','parity','stop bits','error in']},
+  {id:'cmd',k:'const',t:'str',v:'VOUT1?\\n',x:226,y:53},
+  {id:'wr',k:'fn',fn:'VISA Write',x:304,y:40},
+  {id:'k100',k:'const',t:'i32',v:100,x:356,y:53},
+  {id:'rd',k:'fn',fn:'VISA Read',x:394,y:40},
+  {id:'kf',k:'const',t:'str',v:'%f',x:450,y:42},
+  {id:'sc',k:'fn',fn:'Scan From String',x:478,y:40,h:44,ins:['format string','input string','error in'],outs:['remaining string','output 1','error out']},
+  {id:'cl',k:'fn',fn:'VISA Close',x:562,y:40},
+  {id:'reply',k:'ind',t:'str',label:'Reply',x:466,y:196},
+  {id:'volt',k:'ind',t:'dbl',label:'Voltage (V)',x:552,y:112},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:508,y:170}],
+ wires:[
+  {id:'w1',from:'res',to:'cfg.VISA resource name',t:'visa'},
+  {id:'w2',from:'k1000',to:'cfg.timeout',t:'u32'},
+  {id:'w3',from:'k9600',to:'cfg.baud rate',t:'u32'},
+  {id:'w4',from:'k8',to:'cfg.data bits',t:'u8'},
+  {id:'w5',from:'kpar',to:'cfg.parity',t:'enum'},
+  {id:'w6',from:'kstop',to:'cfg.stop bits',t:'enum'},
+  {id:'w7',from:'cfg.VISA resource name out',to:'wr.VISA resource name',t:'visa',pts:[[222,73],[222,30],[298,30],[298,51]]},
+  {id:'w8',from:'cfg.error out',to:'wr.error in',t:'err',mx:298},
+  {id:'w9',from:'cmd',to:'wr.write buffer',t:'str'},
+  {id:'w10',from:'wr.VISA resource name out',to:'rd.VISA resource name',t:'visa'},
+  {id:'w11',from:'wr.error out',to:'rd.error in',t:'err'},
+  {id:'w12',from:'k100',to:'rd.byte count',t:'i32'},
+  {id:'w13',from:'rd.read buffer',to:'sc.input string',t:'str'},
+  {id:'w14',from:'rd.read buffer',to:'reply',t:'str',pts:[[456,62],[456,206]]},
+  {id:'w15',from:'rd.error out',to:'sc.error in',t:'err'},
+  {id:'w16',from:'kf',to:'sc.format string',t:'str'},
+  {id:'w17',from:'rd.VISA resource name out',to:'cl.VISA resource name',t:'visa',pts:[[444,51],[444,26],[552,26],[552,55]]},
+  {id:'w18',from:'sc.error out',to:'cl.error in',t:'err',mx:540},
+  {id:'w19',from:'sc.output 1',to:'volt',t:'dbl',pts:[[532,62],[532,122]]},
+  {id:'w20',from:'cl.error out',to:'seh.error in',t:'err',pts:[[614,62],[614,150],[500,150],[500,186]]}]},
+ sim:{live:true,step(i){
+  const which=+i.sim||0,reply=which===0?'5.000V\r\n':which===1?'12.340V\r\n':'';
+  const rerr=reply?NOERR:TMO('I03_VOUT.vi');
+  const v=reply?parseFloat(reply):0;
+  return {out:{reply,volt:v,eo:rerr},msg:reply?'Scan From String 從開頭讀出 '+v+'，後面的「V\\r\\n」從 remaining string 出去':'Read 逾時，read buffer 是空字串。Scan From String 看到 error in 有錯就不做事：Voltage 顯示 0，可是 error out 有錯。數值對不對，要看 error 線。',
+   vals:{res:i.res,k1000:1000,k9600:9600,k8:8,kpar:'None',kstop:'1.0',cmd:'VOUT1?\n',k100:100,kf:'%f','cfg.VISA resource name out':i.res,'cfg.error out':NOERR,'wr.VISA resource name out':i.res,'wr.error out':NOERR,'rd.VISA resource name out':i.res,'rd.read buffer':reply,'rd.error out':rerr,'sc.output 1':v,'sc.error out':rerr,'cl.error out':rerr}};
+ }}
+};
+const I03_LV=[
+C.h3('LabVIEW','b','動手寫：I03_VOUT.vi（讀一次電壓，變成 DBL）'),
+`<p>手算過了，知道要用哪個函式。現在把它接進上一課的 VI。只改兩個地方：命令換成 <code>VOUT1?</code>，Read 後面多一個 Scan From String。</p>`,
+C.plan({
+ start:'打開 <code>I02_IDN.vi</code>，File ▸ Save As ▸ Copy ▸ <b>Open additional copy</b>，存成 <code>練習\\儀器\\I03_VOUT.vi</code>。原本那支留著，之後要確認「講不講得到話」時還用得到。',
+ in:'VISA Read 的 read buffer：字串 <code>5.000V\\r\\n</code>，8 個字元。數字在最前面，後面跟著單位 V 和 \\r\\n。',
+ calc:`${fn('Programming','String','Scan From String')}，format string 接 <code>%f</code>：從開頭讀出一個浮點數，讀到 V 就停。得到 DBL 5.0。沒讀到東西時它從 error out 報錯 85，不會給你一個假的 0。`,
+ out:'Numeric Indicator <code>Voltage (V)</code>：單位寫在標籤上，數值裡不放單位。右鍵 Display Format 設 3 位小數，跟儀器的解析度一樣。Reply 字串指示器留著，對照原始回覆。',
+ loop:'還是只做一次。這一課只確認「轉得對」。',
+ end:'error 線經過 Scan From String：Read → Scan → Close。Read 逾時時 Scan 不執行，Voltage 停在 0，<b>但 error out 有錯</b>，所以判斷要看 error 線。'}),
+{steps:{title:'I03_VOUT.vi：在 Read 後面接 Scan From String',lv:voutVI,steps:[
+ {t:'另存新檔，前面板加 Voltage (V)',view:'fp',add:['res','reply','eo','volt','sim'],h:`<p>開 <code>I02_IDN.vi</code> 另存 <code>I03_VOUT.vi</code>。Command 和 Baud 這兩個控制元件刪掉（下一步改成常數），加一個 ${ctl('Modern','Numeric','Numeric Indicator')}，標籤 <code>Voltage (V)</code>。</p><p>右鍵 ▸ Display Format：Digits 填 3、選 Digits of precision。</p><p class="qd">「（模擬）儀器這次回」只在網頁上有，真的 VI 不用放：它讓你挑儀器回什麼。</p>`},
+ {t:'鮑率和命令改成常數',view:'bd',add:['k1000','k9600','k8','kpar','kstop','cfg','res','w1','w2','w3','w4','w5','w6'],h:`<p>Baud 端子刪掉以後，在 baud rate 上 Create ▸ Constant，輸入 <code>9600</code>。已經確定的設定就固定下來，不要每次 Run 都讓人改。</p><p>其他輸入跟 I02 一樣：timeout 1000、data bits 8、parity None、stop bits 1.0。</p>`},
+ {t:'Write VOUT1?，Read 100',view:'bd',add:['cmd','wr','k100','rd','w7','w8','w9','w10','w11','w12'],h:`<p>在 VISA Write 的 write buffer 上 Create ▸ Constant。<b>先右鍵切 '\\' Codes Display</b>，再打 <code>VOUT1?\\n</code>。</p><p>VISA Read 的 byte count 一樣是 100。</p>`},
+ {t:'Scan From String：%f',view:'bd',add:['sc','kf','w13','w15','w16'],h:`<p>${fn('Programming','String','Scan From String')} ${qd('Scan From String')}。在 format string 上 Create ▸ Constant，打 <code>%f</code>。</p>${wt([
+ ['VISA Read 的 read buffer','Scan From String 的 input string','要轉的字串'],
+ ['常數 %f','Scan From String 的 format string','讀一個浮點數'],
+ ['VISA Read 的 error out','Scan From String 的 error in','Read 出錯，Scan 就不做']])}
+<p>Scan From String 的輸出 <code>output 1</code> 預設是 DBL，剛好是要的型別。</p>`},
+ {t:'接到 Voltage、Reply、Close',view:'bd',add:['volt','reply','cl','seh','w14','w17','w18','w19','w20'],h:`${wt([
+ ['Scan From String 的 output 1','Voltage (V)','橘線：DBL'],
+ ['VISA Read 的 read buffer（分岔）','Reply','原始回覆留著對照'],
+ ['VISA Read 的 VISA resource name out','VISA Close 的 VISA resource name','繞過 Scan，從上面走'],
+ ['Scan From String 的 error out','VISA Close 的 error in','錯誤線照順序串：Read → Scan → Close'],
+ ['VISA Close 的 error out','Simple Error Handler 的 error in']])}`},
+ {t:'Run：三種回覆各試一次',view:'split',add:[],h:`<p>在模擬上把「儀器這次回」換成三種，各 Run 一次（這個模擬改值就會重算）。前兩種 Voltage 對了；第三種 Voltage 是 0，error out 卻有錯。</p><p>這就是 I3 說的：<b>數值對不對，要看 error 線</b>。只看 Voltage，會以為電源輸出 0 V。</p>`}
+]}},
+ask('改一個數字，先預測結果：選「12.340V」那一筆，把 VISA Read 的 byte count 從 100 改成 3。Reply 會是什麼？Voltage 是多少？',
+ `<p>Reply 是 <code>12.</code> 三個字元：Read 有三種結束方式，「讀滿 byte count」比「讀到 \\n」先發生。Voltage 變成 <b>12</b>，小數不見了，而且沒有錯誤（error out 的 status 是綠勾，code 是警告 1073676294：讀到的數量剛好等於你要的）。</p>
+<p>剩下的 <code>340V\\r\\n</code> 還在緩衝區。這支 VI 馬上就 Close 了所以看不出來；放進迴圈（下一課）的話，下一圈會先讀到這段舊的尾巴。byte count 要給「比最長的回覆還大」，讓結尾字元來決定停在哪裡。</p>`)
+];
+
+/* ---------- I04_Monitor.vi：迴圈外開、迴圈裡問、error 進 Shift Register ---------- */
+const monVI={name:'I04_Monitor.vi',view:'split',ratio:1.9,
+ fp:{w:300,h:380,items:[
+  {id:'res',k:'visa',label:'Resource',x:16,y:16,w:170,v:'COM5',options:['COM5','COM3','COM4']},
+  {id:'stop',k:'btn',label:'stop',text:'STOP',x:206,y:20,stop:true},
+  {id:'cur',k:'num',label:'Current (A)',x:16,y:70,w:110,dig:3},
+  {id:'unplug',k:'btn',label:'（模擬）拔掉 USB 線',text:'拔線',mech:'switch',x:150,y:70},
+  {id:'chart',k:'chart',label:'Current Chart（0～1 A）',x:16,y:126,w:260,h:90,min:0,max:1},
+  {id:'eo',k:'err',label:'error out',x:16,y:250}]},
+ bd:{w:640,h:290,structs:[{id:'wl',k:'while',x:190,y:10,w:370,h:270}],
+  nodes:[
+  {id:'res',k:'ctl',t:'visa',label:'Resource',x:16,y:39},
+  {id:'k1000',k:'const',t:'u32',v:1000,x:60,y:59},
+  {id:'k9600',k:'const',t:'u32',v:9600,x:60,y:79},
+  {id:'cfg',k:'fn',fn:'VISA Configure Serial Port',x:106,y:30,h:96,ins:['VISA resource name','timeout','baud rate','error in']},
+  {id:'t1',k:'tunnel',t:'visa',s:'wl',side:'l',y:72},
+  {id:'sre',k:'sr',t:'err',s:'wl',y:129},
+  {id:'cmd',k:'const',t:'str',v:'IOUT1?\\n',x:208,y:74},
+  {id:'wr',k:'fn',fn:'VISA Write',x:282,y:61},
+  {id:'k100',k:'const',t:'i32',v:100,x:330,y:74},
+  {id:'rd',k:'fn',fn:'VISA Read',x:366,y:61},
+  {id:'kf',k:'const',t:'str',v:'%f',x:422,y:109},
+  {id:'sc',k:'fn',fn:'Scan From String',x:446,y:96,h:44,ins:['input string','format string','error in'],outs:['remaining string','output 1','error out']},
+  {id:'cur',k:'ind',t:'dbl',label:'Current (A)',x:506,y:108},
+  {id:'chart',k:'ind',t:'dbl',label:'Current Chart',x:506,y:146},
+  {id:'k200',k:'const',t:'i32',v:200,x:216,y:150},
+  {id:'wait',k:'fn',fn:'Wait (ms)',x:256,y:143},
+  {id:'ub',k:'unbundle',items:['status'],x:380,y:196},
+  {id:'stop',k:'ctl',t:'bool',label:'stop',x:430,y:255},
+  {id:'or',k:'fn',fn:'Or',x:490,y:244},
+  {id:'cond',k:'stop',s:'wl'},
+  {id:'t2',k:'tunnel',t:'visa',s:'wl',side:'r',y:72},
+  {id:'cl',k:'fn',fn:'VISA Close',x:576,y:57},
+  {id:'seh',k:'fn',fn:'Simple Error Handler',x:586,y:150}],
+  wires:[
+  {id:'w1',from:'res',to:'cfg.VISA resource name',t:'visa'},
+  {id:'w2',from:'k1000',to:'cfg.timeout',t:'u32'},
+  {id:'w3',from:'k9600',to:'cfg.baud rate',t:'u32'},
+  {id:'w4',from:'cfg.VISA resource name out',to:'t1.o',t:'visa',mx:166},
+  {id:'w5',from:'cfg.error out',to:'sre.init',t:'err',mx:166},
+  {id:'w6',from:'t1.i',to:'wr.VISA resource name',t:'visa'},
+  {id:'w7',from:'cmd',to:'wr.write buffer',t:'str'},
+  {id:'w8',from:'sre.L',to:'wr.error in',t:'err',mx:274},
+  {id:'w9',from:'wr.VISA resource name out',to:'rd.VISA resource name',t:'visa'},
+  {id:'w10',from:'wr.error out',to:'rd.error in',t:'err'},
+  {id:'w11',from:'k100',to:'rd.byte count',t:'i32'},
+  {id:'w12',from:'rd.read buffer',to:'sc.input string',t:'str',mx:430},
+  {id:'w13',from:'rd.error out',to:'sc.error in',t:'err',mx:418},
+  {id:'w14',from:'kf',to:'sc.format string',t:'str'},
+  {id:'w15',from:'sc.output 1',to:'cur',t:'dbl'},
+  {id:'w16',from:'sc.output 1',to:'chart',t:'dbl',pts:[[500,118],[500,156]]},
+  {id:'w17',from:'sc.error out',to:'sre.R',t:'err'},
+  {id:'w18',from:'k200',to:'wait',t:'i32'},
+  {id:'w19',from:'sc.error out',to:'ub.input cluster',t:'err',pts:[[540,129],[540,182],[372,182],[372,210]]},
+  {id:'w20',from:'ub.status',to:'or.x',t:'bool',mx:478},
+  {id:'w21',from:'stop',to:'or.y',t:'bool'},
+  {id:'w22',from:'or.out',to:'cond',t:'bool'},
+  {id:'w23',from:'rd.VISA resource name out',to:'t2.i',t:'visa'},
+  {id:'w24',from:'t2.o',to:'cl.VISA resource name',t:'visa'},
+  {id:'w25',from:'sre.out',to:'cl.error in',t:'err',mx:572},
+  {id:'w26',from:'cl.error out',to:'seh.error in',t:'err',pts:[[628,80],[628,124],[580,124],[580,166]]}]},
+ sim:{period:200,init(){return {hist:[]};},step(i,st,ctx){
+  const n=ctx.i,un=!!i.unplug;
+  if(un){const e=TMO('I04_Monitor.vi');return {out:{eo:e},stop:true,msg:'第 '+n+' 圈：Read 等滿 1000 ms 逾時 → error 進 Shift Register → status 是 True，Or 送 True 給停止條件，迴圈結束 → Close → 跳出錯誤對話框',
+   vals:{'rd.read buffer':'','rd.error out':e,'sc.error out':e,'ub.status':true,stop:!!i.stop,'or.out':true}};}
+  const a=+(0.5+0.004*Math.sin(n*1.7)).toFixed(3),s=a.toFixed(3)+'A\r\n';st.hist.push(a);
+  const stp=!!i.stop;
+  return {out:{cur:a,chart:st.hist.slice(),eo:NOERR},stop:stp,msg:stp?'按了 STOP：這一圈跑完就離開迴圈，接著 VISA Close':'第 '+n+' 圈：送 IOUT1?、讀到 '+JSON.stringify(s).slice(1,-1)+'、轉成 '+a+'（網頁模擬：輸出已經用終端機打開，接 10 Ω 負載）',
+   vals:{res:i.res,k1000:1000,k9600:9600,cmd:'IOUT1?\n',k100:100,kf:'%f',k200:200,'cfg.VISA resource name out':i.res,'cfg.error out':NOERR,'t1.i':i.res,'sre.L':NOERR,'wr.VISA resource name out':i.res,'wr.error out':NOERR,'rd.VISA resource name out':i.res,'rd.read buffer':s,'rd.error out':NOERR,'sc.output 1':a,'sc.error out':NOERR,'ub.status':false,stop:stp,'or.out':stp}};
+ },doneMsg:'迴圈結束，VISA Close 關掉 COM 埠'}
+};
+const I04_LV=[
+C.h3('LabVIEW','b','動手寫：I04_Monitor.vi（問題 1、2 的答案畫成方塊圖）'),
+`<p>上面的規劃圖已經回答了「什麼在迴圈外、什麼在迴圈裡、error 為什麼進 Shift Register」。現在照圖把它畫出來。問題 3～5（平均、套用電壓、狀態機）先不加：這支先跑通，再一次加一樣。</p>`,
+C.plan({
+ start:'打開 <code>I03_VOUT.vi</code>（版本 0 就是它，只是命令換成 IOUT1?），Save As ▸ Copy 存成 <code>練習\\儀器\\I04_Monitor.vi</code>。',
+ in:'每一圈送 <code>IOUT1?\\n</code>，VISA Read 讀回例如 <code>0.500A\\r\\n</code>（字串）。單位 A，這台每組最大 3 A。',
+ calc:'Scan From String（%f）轉成 DBL，跟 I3 一樣。這一版不算平均。',
+ out:'迴圈<b>裡面</b>放 Numeric Indicator <code>Current (A)</code>（3 位小數）和一個 Waveform Chart：Chart 每收到一個點就往右加一點，自己記住歷史。',
+ loop:'While Loop。迴圈裡 Wait (ms) 接 <b>200</b>：一秒問 5 次，人看電流夠快；說明書說讀值命令幾十毫秒就回，儀器也跟得上。',
+ end:'STOP 按鈕<b>或</b>出錯就離開（Or 接到停止條件）。error 走 Shift Register，出錯後下一圈的 Write、Read 都不做事。迴圈後 VISA Close，再 Simple Error Handler 顯示錯誤。'}),
+SIMLV,
+{steps:{title:'I04_Monitor.vi：把版本 0 包進 While Loop',lv:monVI,steps:[
+ {t:'前面板：Current、Chart、STOP',view:'fp',add:['res','cur','chart','stop','eo','unplug'],h:`<p>另存成 <code>I04_Monitor.vi</code>。Voltage (V) 改名 <code>Current (A)</code>。加：</p><ul>
+<li>${ctl('Modern','Graph','Waveform Chart')}，標籤 <code>Current Chart</code>。Y 軸刻度雙擊改成 0 到 1。</li>
+<li>${ctl('Modern','Boolean','Stop Button')}，機械動作維持 Latch When Released。</li></ul>
+<p class="qd">「（模擬）拔掉 USB 線」只在網頁上有，用來模擬問題 2。</p>`},
+ {t:'在外面設定，迴圈只包住「問、讀、轉」',view:'bd',add:['res','k1000','k9600','cfg','wl','t1','cmd','wr','k100','rd','kf','sc','w1','w2','w3','w4','w6','w7','w9','w10','w11','w12','w13','w14','t2','w23'],h:`<p>${fn('Programming','Structures','While Loop')} ${qd('While Loop')}：從 VISA Write 的左上方按住拖到 Scan From String 的右下方，<b>只框住 Write、Read、Scan</b>。VISA Configure Serial Port 留在左邊外面，Close 留在右邊外面。</p>
+<p>線穿過迴圈邊框的地方，LabVIEW 自動長出方塊（Tunnel）。紫色 VISA 線用一般 Tunnel 就好：COM 埠在迴圈裡不會變。</p>
+<p class="qd">圖上 data bits、parity、stop bits 沒畫出來：接法跟 I02 一樣（8、None、1.0）；不接時預設值剛好也是這三個。</p>`},
+ {t:'error 的 Tunnel 換成 Shift Register',view:'bd',add:['sre','w5','w8','w17'],h:`<p>在左邊那個<b>黃色</b> Tunnel 上按右鍵 ▸ <b>Replace with Shift Register</b>，滑鼠移到右邊對應的 Tunnel 點一下。兩邊變成一對 ▼ ▲。</p>${wt([
+ ['VISA Configure Serial Port 的 error out','Shift Register 左邊（迴圈外）','初始值：開埠有沒有出錯'],
+ ['Shift Register 左邊（迴圈內）','VISA Write 的 error in','上一圈的錯誤'],
+ ['Scan From String 的 error out','Shift Register 右邊','這一圈的錯誤，存給下一圈']])}
+<p>這就是規劃圖上的「Shift Register：error」。</p>`},
+ {t:'Wait (ms) 200',view:'bd',add:['k200','wait','w18'],h:`<p>${fn('Programming','Timing','Wait (ms)')} ${qd('Wait')} 放在迴圈裡，輸入 Create ▸ Constant <code>200</code>。它跟問、讀平行執行，所以一圈大約 200 ms（讀得慢時就是讀的時間）。</p>`},
+ {t:'停止條件：STOP 或出錯',view:'bd',add:['ub','stop','or','cond','w19','w20','w21','w22'],h:`<p>在 Scan From String 的 error out 線上拉一條分岔，接 ${fn('Programming','Cluster, Class, & Variant','Unbundle By Name')} ${qd('Unbundle By Name')}，它會自動顯示 <code>status</code>。</p>
+<p>放 ${fn('Programming','Boolean','Or')} ${qd('Or')}：</p>${wt([
+ ['Unbundle By Name 的 status','Or 的 x','出錯了'],
+ ['stop','Or 的 y','按了 STOP'],
+ ['Or 的 x .or. y?','Loop Condition（Stop if True）','任一個 True 就停']])}`},
+ {t:'電流顯示在迴圈裡',view:'bd',add:['cur','chart','w15','w16'],h:`${wt([
+ ['Scan From String 的 output 1','Current (A)','每一圈更新'],
+ ['同一條線分岔','Current Chart','Chart 自己記住之前的點']])}
+<p class="qd">Indicator 一定要在迴圈<b>裡面</b>。放在迴圈外，要等迴圈結束才會收到值。</p>`},
+ {t:'迴圈後：Close、顯示錯誤；Run，然後拔線',view:'split',add:['cl','seh','w24','w25','w26'],h:`${wt([
+ ['右邊的 VISA Tunnel','VISA Close 的 VISA resource name'],
+ ['Shift Register 右邊（迴圈外）','VISA Close 的 error in','最後一圈的錯誤'],
+ ['VISA Close 的 error out','Simple Error Handler 的 error in']])}
+<p>Run：Current 每 0.2 秒更新、Chart 往右長。按「拔線」：大約 1 秒後（Read 的 timeout）迴圈自己停，跳出錯誤 -1073807339。按 STOP 則是正常結束，沒有錯誤。</p>`}
+]}},
+ask('改一個數字，先預測結果：Wait 的 200 改成 1000，再按「拔線」。Chart 一秒長幾個點？拔線後大約幾秒停下來？',
+ `<p>一秒 1 個點。拔線後大約 <b>1 秒</b>停：那一圈的 Read 等滿 timeout 1000 ms 出錯，Wait 1000 跟它平行跑，所以那一圈還是約 1 秒；圈尾 Or 收到 status = True，就不跑下一圈。</p>
+<p>如果把 Read 的 timeout 留在預設 10000，拔線後要 10 秒才停，畫面這 10 秒都停在最後一筆。這就是 I2 說「逾時要照儀器正常多久回來設」的原因。</p>`)
+];
+
 /* ---------- I3：把字串變成數字，選錯會看到錯的結果 ---------- */
 const RAWS=[
  {s:'5.000V\r\n',from:'電源供應器 VOUT1? 的回覆（模擬）',want:5},
@@ -78,7 +398,7 @@ check:'你能說出：這台電源的通訊參數是從說明書哪裡來的、�
 body:[
 C.h3('情境','x','桌上這台：GW Instek GPD-3303S'),
 `<p>三組輸出的直流電源供應器，實驗室和產線都很常見。任務是：讓 LabVIEW 設定第 1 組的電壓，再讀回實際輸出的電流。</p>
-<p>照 I1 的六步走。這一課做第 1 到第 3 步，一行 LabVIEW 都不寫。</p>`,
+<p>照 I1 的六步走。這一課做第 1 到第 3 步：先用現成的工具講到話，一行 LabVIEW 都不寫；講到話以後，最後一段才把同樣的設定搬進 LabVIEW。</p>`,
 
 C.h3('第 1 步','','看背板'),
 `<p>把機器轉過來。背板上跟通訊有關的只有一個 USB 孔，沒有 RS-232，也沒有網路孔。</p>`,
@@ -163,6 +483,7 @@ C.table(['你在工具上設的','VISA Configure Serial Port 的輸入','這台�
 ask('為什麼逾時先設 1000 ms，不用預設的 10 秒？',
  `<p>說明書說這台最慢的命令大約 0.4 秒內會回，一般的讀值不到 0.1 秒。等 1 秒還沒回，一定是出事了。但也不要設得比 1 秒更緊。</p>
 <p>預設的 10 秒太久：線被拔掉的時候，你的程式每讀一次就卡 10 秒，畫面看起來像當機。逾時要照「這台儀器正常多久會回」來設，留幾倍的餘裕就好。</p>`),
+...I02_LV,
 
 C.h3('測驗','q','小測驗'),
 {quiz:[
@@ -212,6 +533,7 @@ ask('Fract/Exp 和 Scan From String 都轉得對，要選哪一個？',
 <ul><li>用 Scan From String，讓轉換失敗變成一個錯誤。</li>
 <li>用 Fract/Exp，但一定要先看 VISA Read 的 error out。Read 有錯（例如逾時），就不要拿它的字串去轉。</li></ul>
 <p>不管哪一種，結論一樣：<b>數值對不對，要看 error 線，不能只看數值。</b>這就是為什麼之後的方塊圖裡，error 線要從頭接到尾。</p>`),
+...I03_LV,
 
 C.h3('懂','','換一台儀器，同樣的看法'),
 `<p>把上面的下拉選單換成電表那一筆。Keysight 34461A 的說明書給的範例回覆是：${raw('+8.54530000E+01')}</p>`,
@@ -306,6 +628,7 @@ ask('那 VISA 資源那條線呢？也要進 Shift Register 嗎？',
 <p>之後如果要做「斷線自動重連」，重連會得到一條新的參照，下一圈要用新的那一條。到那時候它才需要進 Shift Register。先不用，等問題出現再加。</p>`),
 flow(['設定序列埠',{loop:['送 IOUT1?','讀回覆','轉成數字','顯示','等 200 ms'],label:'While Loop（按停止，或出錯，就離開）',sr:'error'},'關閉','顯示錯誤']),
 note('判斷要不要進 Shift Register 的問法','「這個值在迴圈裡會被改掉，而且下一圈要用改過的」嗎？是，就進 Shift Register。否，用一般通道。'),
+...I04_LV,
 
 C.h3('問題 3','','電流一直跳，想看最近十筆的平均'),
 ask('算平均需要什麼？',

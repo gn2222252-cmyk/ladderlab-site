@@ -13,6 +13,11 @@ C.wt=rows=>`<table class="t wire-table"><tr><th>從（輸出端）</th><th></th>
 C.table=(head,rows)=>`<table class="t"><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table>`;
 C.h3=(tag,cls,title)=>`<h3><span class="tag ${cls}">${tag}</span>${title}</h3>`;
 C.real=(name,cap)=>`<div class="fig"><div style="font-size:13px;font-weight:700;margin-bottom:6px">真實 LabVIEW 長這樣：參考答案 ${name}.vi 的方塊圖</div><div style="overflow-x:auto"><img src="assets/real/${name}.png" alt="${name} block diagram" style="max-width:none"></div><div class="cap">${cap||'用 LabVIEW 腳本依本課程的設計產生、Clean Up Diagram 排版，並對軟 PLC 實測通過。檔案在 參考答案 資料夾（LV2018 子資料夾是 2018 版）。'}</div></div>`;
+/* 動手寫 LabVIEW 之前的「五個問題」：每一課的 LabVIEW 實作都先填這張表。
+   o={in:輸入從哪裡來、什麼型別、單位與範圍, calc:要怎麼處理、公式, out:給誰看、用什麼元件呈現,
+      loop:多久做一次（迴圈、Wait）, end:什麼時候停、出錯怎麼辦, start:從哪裡開始寫（開哪個 VI、放在哪裡）} */
+C.plan=o=>{const r=[['從哪裡開始',o.start],['① 數值從哪裡來',o.in],['② 怎麼處理、怎麼算',o.calc],['③ 怎麼呈現',o.out],['④ 多久做一次',o.loop],['⑤ 什麼時候停、出錯怎麼辦',o.end]].filter(x=>x[1]);
+ return `<div class="lvplan"><div class="lvplan-h">寫 LabVIEW 之前，先回答這幾個問題</div><table class="t">${r.map(x=>`<tr><th>${x[0]}</th><td>${x[1]}</td></tr>`).join('')}</table></div>`;};
 C.frameHTML=parts=>`<div class="frame">${parts.map(p=>`<span class="${p[2]||''}">${p[0]}<small>${p[1]||''}</small></span>`).join('')}</div>`;
 
 /* FX 編程協定（課程內示範用，與 softplc/fx_server.py 相同規則） */
