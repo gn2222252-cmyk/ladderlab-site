@@ -1,0 +1,86 @@
+{
+ "breadboard": {
+  "file": "breadboard.jpg",
+  "title": "400 points breadboard.jpg",
+  "author": "oomlout",
+  "license": "CC BY-SA 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:400_points_breadboard.jpg"
+ },
+ "jumper": {
+  "file": "jumper.jpg",
+  "title": "A few Jumper Wires.jpg",
+  "author": "oomlout",
+  "license": "CC BY-SA 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:A_few_Jumper_Wires.jpg"
+ },
+ "led": {
+  "file": "led.jpg",
+  "title": "LED Rainbow Pack - 5mm PTH 12903-01.jpg",
+  "author": "SparkFun Electronics",
+  "license": "CC BY 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:LED_Rainbow_Pack_-_5mm_PTH_12903-01.jpg"
+ },
+ "resistor": {
+  "file": "resistor.jpg",
+  "title": "220 ohms 5% axial resistor.jpg",
+  "author": "oomlout",
+  "license": "CC BY-SA 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:220_ohms_5%25_axial_resistor.jpg"
+ },
+ "button": {
+  "file": "button.jpg",
+  "title": "Tactile Switches (3101960804).jpg",
+  "author": "walknboston",
+  "license": "CC BY 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Tactile_Switches_(3101960804).jpg"
+ },
+ "pot": {
+  "file": "pot.jpg",
+  "title": "10k Ohm Breadboard Compatible Potentiometer.jpg",
+  "author": "oomlout",
+  "license": "CC BY-SA 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:10k_Ohm_Breadboard_Compatible_Potentiometer.jpg"
+ },
+ "servo": {
+  "file": "servo.jpg",
+  "title": "Tower Pro SG90 micro servo motor.jpg",
+  "author": "Suyash Dwivedi",
+  "license": "CC BY-SA 4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Tower_Pro_SG90_micro_servo_motor.jpg"
+ },
+ "hbridge": {
+  "file": "hbridge.jpg",
+  "title": "SparkFun Motor Driver - Dual TB6612FNG (with Headers)",
+  "author": "SparkFunElectronics",
+  "license": "CC BY 2.0",
+  "page": "https://www.flickr.com/photos/41898857@N04/29731275240"
+ },
+ "dcmotor": {
+  "file": "dcmotor.jpg",
+  "title": "Electronic-Component-Screw-DC-Motor.jpg",
+  "author": "Evan-Amos",
+  "license": "Public domain",
+  "page": "https://commons.wikimedia.org/wiki/File:Electronic-Component-Screw-DC-Motor.jpg"
+ },
+ "ultrasonic": {
+  "file": "ultrasonic.jpg",
+  "title": "HC SR04 Ultrasonic Module.jpg",
+  "author": "Suyash Dwivedi",
+  "license": "CC BY-SA 4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:HC_SR04_Ultrasonic_Module.jpg"
+ },
+ "imu": {
+  "file": "imu.jpg",
+  "title": "GY-521 MPU-6050 Module 3 Axis Gyroscope + Accelerometer 0487.jpg",
+  "author": "Nevit Dilmen (talk)",
+  "license": "CC BY-SA 3.0",
+  "page": "https://commons.wikimedia.org/wiki/File:GY-521_MPU-6050_Module_3_Axis_Gyroscope_%2B_Accelerometer_0487.jpg"
+ },
+ "multimeter": {
+  "file": "multimeter.jpg",
+  "title": "Digital Multimeter Aka.jpg",
+  "author": "André Karwath aka Aka",
+  "license": "CC BY-SA 2.5",
+  "page": "https://commons.wikimedia.org/wiki/File:Digital_Multimeter_Aka.jpg"
+ }
+}

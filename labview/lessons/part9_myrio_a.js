@@ -138,8 +138,10 @@ steps([`在專案總管裡，雙擊 <b>myRIO 底下的</b> ${ui('Main.vi')}。`,
 ask('標題列那一段「on ….lvproj/NI-myRIO-1900-…」在告訴你什麼？',
  `<p>它說的是：<b>這個 VI 屬於哪個專案、要在哪一台機器上跑</b>。看到 myRIO 的名字，按執行就會送到 myRIO。</p>
 <p>要看清楚的是<b>斜線後面那一段</b>。如果寫的是 <code>on 我的myRIO專案.lvproj/My Computer</code>，表示這個 VI 雖然屬於這個專案，卻是在「我的電腦」底下開的：它跟 myRIO 是斷開的，執行箭頭是斷的。這是新手最常踩的坑，下面「以後怎麼再打開」會再講一次。</p>`),
-`<p>前面板上方有範本的說明：這個範本從板上的加速度計讀資料，畫在波形圖上；使用前先確認專案裡 myRIO 的 IP，然後執行。前面板有一張 Acceleration (g) 的圖（X、Y、Z 三軸）、一個 error out、一個 Stop 鈕。</p>
-<p>按 <kbd>Ctrl</kbd>+<kbd>E</kbd> 看方塊圖。整個程式是一個三格的 Flat Sequence：</p>`,
+`<figure class="mr-shot"><img src="img/myrio/template_panel.png" alt="myRIO Project 範本的 Main.vi 前面板：標題列寫著 on 我的myRIO專案.lvproj/NI-myRIO-1900-xxxxxxxx，左下角也是同一段" loading="lazy"><figcaption>實機畫面：範本的 Main.vi 前面板（LabVIEW 2018）。看標題列和左下角：斜線後面是 myRIO 的名字，表示它會在 myRIO 上跑。（專案名稱和序號已經換掉）</figcaption></figure>
+<p>前面板上方有範本的說明：這個範本從板上的加速度計讀資料，畫在波形圖上；使用前先確認專案裡 myRIO 的 IP，然後執行。前面板有一張 Acceleration (g) 的圖（X、Y、Z 三軸）、一個 error out、一個 Stop 鈕。</p>
+<p>按 <kbd>Ctrl</kbd>+<kbd>E</kbd> 看方塊圖。整個程式是一個三格的 Flat Sequence：</p>
+<figure class="mr-shot"><img src="img/myrio/template_diagram.png" alt="範本 Main.vi 的方塊圖：Initialize、Acquire and process data（Main Loop 裡有 Accelerometer Express VI）、Close（Reset myRIO.vi）三格" loading="lazy"><figcaption>實機畫面：範本的方塊圖。由左到右三格：Initialize、Acquire and process data（裡面的 Main Loop）、Close。</figcaption></figure>`,
 C.table(['格子','裡面有什麼','為什麼這樣排'],[
  ['Initialize','空的，只有一個 #CodeNeeded 的註解：在這裡加入初始化使用者介面和硬體的程式','開始前只做一次的事，例如設定初始輸出、開檔案'],
  ['Acquire and process data','一個 While Loop（Main Loop）：Accelerometer Express VI 讀 X、Y、Z 三軸 → 組成一個陣列 → 畫到 Acceleration 圖；Wait 10 ms；按 Stop 或出錯就停','一直重複做的事放在迴圈裡；Wait 讓迴圈大約每 10 ms 跑一圈'],
