@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="f6dee9b693">
+<meta name="ll-version" content="4ec902f768">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>模擬器和 FX3S 實機的差異：程式上實機前要檢查什麼 | LadderLab</title>
@@ -74,7 +74,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "f6dee9b693" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "4ec902f768" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

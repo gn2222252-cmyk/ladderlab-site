@@ -455,3 +455,27 @@ details.think[open]>summary{margin-bottom:4px}
 .bb-parts figcaption{font-size:13px;opacity:.75}
 .bb-part{width:150px;height:auto;display:block}
 .bb-part.bb-sch{width:300px;max-width:100%}
+/* M3++ 七段顯示器 */
+.s7-wrap{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:18px;align-items:start;margin:14px 0}
+@media (max-width:640px){.s7-wrap{grid-template-columns:1fr}.s7-show{max-width:170px}}
+.s7-digit{width:100%;height:auto;display:block}
+.s7-side{font-size:14px;min-width:0}
+.s7-row{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-bottom:10px}
+.s7-row b{width:100%}
+.s7-row button,.s7-quiz button{font:inherit;font-size:14px;min-width:34px;padding:4px 9px;border:1px solid var(--line);border-radius:6px;background:transparent;color:inherit;cursor:pointer}
+.s7-row button:hover,.s7-quiz button:hover{border-color:currentColor}
+.s7-h{font-weight:600;margin:6px 0}
+.s7-dio{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.s7-b{font:inherit;font-size:12.5px;padding:5px 4px;border:1px solid var(--line);border-radius:6px;background:transparent;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.35}
+.s7-b small{font-size:11.5px;opacity:.8}
+.s7-b.t{border-color:#2e7d32;background:rgba(46,125,50,.1)}
+.s7-b.f{border-color:#9e9e9e;background:rgba(0,0,0,.04)}
+.s7-say{background:rgba(79,141,255,.12);border-left:3px solid #4f8dff;padding:6px 10px;margin:10px 0;border-radius:0 6px 6px 0}
+.s7-quiz{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.s7-quiz select{font:inherit;font-size:14px}
+.s7-ok{color:#2e7d32}
+.s7-hint{color:#c62828}
+.s7-pins{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:640px){.s7-pins{grid-template-columns:1fr}}
+.s7-pinout{width:100%;max-width:260px;height:auto;display:block}
+.s7-cap{font-size:13.5px;opacity:.85}
