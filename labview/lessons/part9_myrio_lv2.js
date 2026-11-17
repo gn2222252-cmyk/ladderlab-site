@@ -226,7 +226,7 @@ C.plan({start:'M07 寫好的 Main.vi，<b>另存一份</b>（File ▸ Save As �
  loop:'10 ms 一圈，dt 寫成常數 0.01。週期不穩，I 和 D 就算錯：正式版用 M09 的 Timed Loop。',
  end:'跟 M07 一樣：Close 格先 duty＝0、STBY＝FALSE，再 Reset myRIO.vi。'}),
 {steps:{title:'M14：P → 加 I（含上限）→ 加 D',lv:m14,steps:[
- {t:'保留 M07 的頭尾',view:'split',add:['wl','angs','outs','tgt','err','w1','w2','ang','w3','kw','wait','w34','stop','cond','w35'],h:`<p>咖啡色的兩個方塊代表 M07 已經寫好、這一課不動的部分。實際上它們還是 M07 那幾個函式；要讓圖乾淨，可以選起來 <b>Edit ▸ Create SubVI</b> 包成 SubVI（第 10 課）。</p><p>誤差 ＝ 目標 − 角度：Subtract 上面接目標。</p>`},
+ {t:'保留 M07 的頭尾',view:'split',add:['wl','angs','outs','tgt','err','w1','w2','ang','w3','chart','load','kw','wait','w34','stop','cond','w35'],h:`<p>咖啡色的兩個方塊代表 M07 已經寫好、這一課不動的部分。實際上它們還是 M07 那幾個函式；要讓圖乾淨，可以選起來 <b>Edit ▸ Create SubVI</b> 包成 SubVI（第 10 課）。</p><p>誤差 ＝ 目標 − 角度：Subtract 上面接目標。</p>`},
  {t:'P：跟 M07 一樣',view:'bd',add:['kp','mp','w4','w5'],h:`<p>Multiply：誤差 × Kp。</p>`},
  {t:'I：累加，放 Shift Register',view:'bd',add:['ki','mi','w6','w7','kdt','mi2','w8','w9','k0','w10','si','addI','w11','w12','kIhi','kIlo','coI','w13','w14','w15','w16'],h:`<p>加一個 Shift Register（初始值 0）存「積分到現在的值」。</p>${wt([['誤差 × Ki × dt','Add 的 x','這一圈要加的量'],['左邊 Shift Register','Add 的 y','上一圈累積的'],['Add','In Range and Coerce（±50）','防積分飽和'],['coerced(x)','右邊 Shift Register','下一圈接著加']])}<p>上限 50 是說「光靠積分最多出 50 % 的力」，負載越大這個數字要越大，實測調整。</p>`},
  {t:'D：對角度微分',view:'bd',add:['k0b','w17','sd','dsub','w18','w19','w20','kdt2','dd','w21','w22','kd','md','w23','w24'],h:`<p>第二個 Shift Register 存上一圈的角度。（角度 − 上一圈角度）÷ dt 是角速度（度／秒），× Kd。</p><p>想一想：第一圈「上一圈角度」是初始值 0，如果關節一開始停在 45°，D 第一圈會算出一個很大的值。改進：初始值接一個「迴圈開始前先讀一次的角度」。</p>`},

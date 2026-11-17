@@ -722,7 +722,7 @@ LV.widget=function(host,spec){
     if(r.out) Object.assign(S.state,r.out);
     if(r.vals) S.vals=r.vals;
     if(r.frames) Object.assign(S.frames,r.frames);
-    if(r.msg!==undefined) msg(r.msg);
+    if(r.msg!==undefined){msg(r.msg);S.lastMsg=r.msg;}
     // latch 按鈕：讀過一次就彈回
     (spec.fp?spec.fp.items:[]).forEach(it=>{if(it.k==='btn'&&(it.mech||'latch')==='latch'&&S.state[it.id]&&!(r.keep&&r.keep.includes(it.id)))S.state[it.id]=false;});
   }
@@ -771,7 +771,7 @@ LV.widget=function(host,spec){
   async function run(cont){
     if(!spec.sim) return;
     if(S.running) return;
-    S.running=true;S.iter=0;const sim=spec.sim;S.simSt=sim.init?sim.init(S):{};render();
+    S.running=true;S.iter=0;S.lastMsg='';const sim=spec.sim;S.simSt=sim.init?sim.init(S):{};render();
     msg('執行中…');
     const loop=!!sim.period;
     do{
@@ -787,7 +787,7 @@ LV.widget=function(host,spec){
       }while(loop&&S.running);
       if(cont&&S.running) await new Promise(res=>S.timer=setTimeout(res,300));
     }while(cont&&S.running);
-    if(S.running){S.running=false;if(!S.lastMsgKeep)msg(spec.sim.doneMsg||'執行完畢');}
+    if(S.running){S.running=false;if(!S.lastMsgKeep)msg(!loop&&S.lastMsg?S.lastMsg+'　（'+(spec.sim.doneMsg||'執行完畢')+'）':(spec.sim.doneMsg||'執行完畢'));}
     if(sim.finish){applyResult(sim.finish(inputs(),S.simSt,S));}
     render();
   }
