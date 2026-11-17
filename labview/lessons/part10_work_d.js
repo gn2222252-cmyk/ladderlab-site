@@ -230,7 +230,7 @@ C.plan({start:'Monitor.vi：一個 While Loop，1 秒一圈。Count.vi 做成 Su
  end:'按停止或換班：把還沒結束的停機補上結束時間，寫班別報表，關 VISA。'}),
 C.h3('⑥ 一步一步寫','','Count.vi：計數器差值累加'),
 {steps:{title:'Count.vi：U16 差值累加，第 0 圈不算',lv:cv,steps:[
- {t:'讀 D102',view:'split',add:['wl','quit','cond','w18','kms','wt','w17','kD','kC','rd','w1','w2','ia','w3','raw','w4'],h:`<p>While Loop、Wait 1000 ms、stop。迴圈裡放 L13 做的 FX_ReadD.vi：D 接 102、Count 接 1。Words 是 U16 陣列，${fn('Programming','Array','Index Array')} 拿第 0 個。</p>`},
+ {t:'讀 D102',view:'split',add:['rate','start','wl','quit','cond','w18','kms','wt','w17','kD','kC','rd','w1','w2','ia','w3','raw','w4'],h:`<p>While Loop、Wait 1000 ms、stop。迴圈裡放 L13 做的 FX_ReadD.vi：D 接 102、Count 接 1。Words 是 U16 陣列，${fn('Programming','Array','Index Array')} 拿第 0 個。</p>`},
  {t:'和上一圈相減',view:'split',add:['sub','w5','k0a','sr1','w0a','w6','w7'],h:`<p>迴圈邊框加一個 Shift Register 存「上一圈讀到的值」。Subtract：這一圈 − 上一圈。兩邊都是 <b>U16</b>，結果也是 U16，繞回 0 時自動算對。</p><p>注意：不要把減法的結果轉成 I32 或 DBL 再減，那樣就失去「自動繞回」了。</p>`},
  {t:'第 0 圈不算',view:'split',add:['it','eq0','w8','kz','sel','w9','w10','w11','delta','w12'],h:`<p>第 0 圈時，Shift Register 裡是初始值 0，「65530 − 0」會把 PLC 開機以來的總數全部算成這一班的產量。</p><p>用 Iteration 端子 i 接 ${fn('Programming','Comparison','Equal To 0?')}，Select：第 0 圈給 0，之後給相減的結果。</p>`},
  {t:'累加成本班產量',view:'split',add:['k0b','sr2','w0b','add','w13','w14','w15','total','w16'],h:`<p>第二個 Shift Register（U32，初始值 0）累加每一圈的差值。用 U32 是因為一班的產量可能超過 65535。</p>`},
