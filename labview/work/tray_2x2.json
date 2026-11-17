@@ -1,0 +1,30 @@
+{
+ "version": 1,
+ "tray": "PM5V2-T22",
+ "taught": "2026-11-17",
+ "taught_by": "ENG-03",
+ "pulses_per_mm": 1000,
+ "approach": "from -X and -Y (same direction every time)",
+ "points": [
+  {
+   "cell": 1,
+   "x_mm": 10.0,
+   "y_mm": 10.0
+  },
+  {
+   "cell": 2,
+   "x_mm": 40.0,
+   "y_mm": 10.0
+  },
+  {
+   "cell": 3,
+   "x_mm": 10.0,
+   "y_mm": 40.0
+  },
+  {
+   "cell": 4,
+   "x_mm": 40.0,
+   "y_mm": 40.0
+  }
+ ]
+}

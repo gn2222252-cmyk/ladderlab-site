@@ -61,10 +61,10 @@ function pyFig(el){
 if(!LV.F['Trim Whitespace'])LV.F['Trim Whitespace']={g:'⌴',ins:['string'],outs:['trimmed string'],pal:['Functions','Programming','String','Trim Whitespace.vi']};
 const RC=['正常','多印了一行 loading...','腳本例外（資料庫被鎖）','這一班不到 50 片'];
 const OUTS=[
- ['{"ok": true, "ver": "1.1.0", "n": 214, "fail": 5, "p": 0.0234, "alarm": false, "png": "C:\\\\ProgramData\\\\MyCompany\\\\PM5Station\\\\report\\\\p_ST01_20261114A.png"}\r\n','',0],
- ['loading...\r\n{"ok": true, "ver": "1.1.0", "n": 214, "fail": 5, "p": 0.0234, "alarm": false, "png": "C:\\\\ProgramData\\\\MyCompany\\\\PM5Station\\\\report\\\\p_ST01_20261114A.png"}\r\n','',0],
- ['{"ok": false, "err": "DatabaseError", "ver": "1.1.0"}\r\n','Traceback (most recent call last):\n  ...\npandas.errors.DatabaseError: Execution failed on sql ...: database is locked',2],
- ['{"ok": false, "err": "too few tests", "n": 12, "ver": "1.1.0"}\r\n','',3]];
+ ['{"ok": true, "ver": "1.1.1", "n": 214, "fail": 5, "p": 0.0234, "alarm": false, "png": "C:\\\\ProgramData\\\\MyCompany\\\\PM5Station\\\\report\\\\p_ST01_20261114_0800.png"}\r\n','',0],
+ ['loading...\r\n{"ok": true, "ver": "1.1.1", "n": 214, "fail": 5, "p": 0.0234, "alarm": false, "png": "C:\\\\ProgramData\\\\MyCompany\\\\PM5Station\\\\report\\\\p_ST01_20261114_0800.png"}\r\n','',0],
+ ['{"ok": false, "err": "DatabaseError", "ver": "1.1.1"}\r\n','Traceback (most recent call last):\n  ...\npandas.errors.DatabaseError: Execution failed on sql ...: database is locked',2],
+ ['{"ok": false, "err": "too few tests", "n": 12, "ver": "1.1.1"}\r\n','',3]];
 const rv={name:'RunPy.vi',view:'split',ratio:1.5,
  fp:{w:360,h:330,items:[
   {id:'cs',k:'enum',ctl:true,label:'這一次（模擬用）',options:RC,x:12,y:8,v:0},
@@ -150,7 +150,7 @@ const rv={name:'RunPy.vi',view:'split',ratio:1.5,
    const last=so.trim().split(/\r?\n/).pop();
    const ok=/"ok": true/.test(last),p=ok?0.0234:0,done=ok&&rc===0;
    return {out:{so,se,rc,p,done,eo:false},
-    vals:{'fis.resulting string':'"C:\\PM5Tools\\py\\python.exe" "C:\\PM5Tools\\yield_report.py" --station ST01 …','sx.return code':rc,'tw.trimmed string':'（去掉結尾的 \\r\\n）','mre.whole match':last.slice(0,40)+'…','ub.ok':ok,'ub2.p':p,'eq.out':rc===0,'ubs.status':false,'not.out':true,'a1.out':rc===0,'a2.out':done},
+    vals:{'fis.resulting string':'"C:\\Program Files\\PM5Station\\py\\python.exe" "C:\\Program Files\\PM5Station\\yield_report.py" --station ST01 …','sx.return code':rc,'tw.trimmed string':'（去掉結尾的 \\r\\n）','mre.whole match':last.slice(0,40)+'…','ub.ok':ok,'ub2.p':p,'eq.out':rc===0,'ubs.status':false,'not.out':true,'a1.out':rc===0,'a2.out':done},
     msg:n===0?'第一段讀到 ok:true → Case 的 True 頁讀第二段，p ＝ 0.0234。結束碼 0、沒有錯誤、ok：分析成功。':n===1?'stdout 有兩行：只取最後一行，照樣解析成功。如果把整段當 JSON，就會解析錯誤。':n===2?'ok 是 false：Case 的 False 頁什麼都不讀（失敗的 JSON 沒有 n、p，硬讀會出錯）。結束碼 2：分析失敗，原因在 stderr，存進 log。':'ok 是 false、結束碼 3：資料不足，不是錯誤。第一段只讀 ok，所以不會因為少了 p 而報錯。'};},
   doneMsg:'換一種情況再 Run'}
 };
@@ -158,7 +158,7 @@ const rv={name:'RunPy.vi',view:'split',ratio:1.5,
 const PYSRC=`import argparse, json, os, sys
 from pathlib import Path
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 
 def main():
     ap = argparse.ArgumentParser()
@@ -170,6 +170,11 @@ def main():
     ap.add_argument("--pbar", type=float, default=0.02)   # 品保定的基準 FAIL 率
     ap.add_argument("--out")
     a = ap.parse_args()
+    if not a.selftest:                            # 少了哪個參數，說清楚
+        miss = [k for k in ("db", "station", "start", "end", "out")
+                if getattr(a, k) is None]
+        if miss:
+            ap.error("missing: " + ", ".join(miss))   # 結束碼 2
     import sqlite3                                # import 放在 try 裡面：
     import pandas as pd                           # 沒裝套件也回一行 JSON
     import matplotlib
@@ -178,13 +183,13 @@ def main():
     if a.selftest:
         print(json.dumps({"ok": True, "ver": VERSION, "selftest": True}))
         return 0
-    uri = Path(a.db).as_uri() + "?mode=ro"        # 唯讀：路徑錯了不會建空檔
+    uri = Path(a.db).resolve().as_uri() + "?mode=ro"   # 唯讀：路徑錯了不會建空檔
     con = sqlite3.connect(uri, uri=True)
     df = pd.read_sql_query(
         "SELECT ts, result FROM tests WHERE station = ? "
         "AND ts >= ? AND ts < ? ORDER BY ts",
         con, params=(a.station, a.start, a.end))
-    df = df[df.result.isin(["PASS", "FAIL"])].reset_index(drop=True)  # ERROR 不算（W6）
+    df = df[df.result.isin(["PASS", "FAIL"])].reset_index(drop=True).copy()  # ERROR 不算（W6）
     if len(df) < 50:
         print(json.dumps({"ok": False, "err": "too few tests",
                           "n": len(df), "ver": VERSION}))
@@ -201,7 +206,7 @@ def main():
     ax.plot(g.index, g.ucl, "r--", label="UCL")
     ax.axhline(p0, color="gray", label="p0")
     ax.legend()
-    tag = a.start[:10].replace("-", "")
+    tag = a.start[:16].replace("-", "").replace(":", "").replace(" ", "_")  # 20261114_0800：兩班不互蓋
     png = os.path.join(a.out, f"p_{a.station}_{tag}.png")
     fig.savefig(png)
     n, fail = int(len(df)), int((df.result == "FAIL").sum())
@@ -229,6 +234,7 @@ check:'不看課文，能說出哪些工作適合交給 Python、為什麼判定
 body:[
 C.h3('這一課的工作','x','兩種語言，一條產線'),
 `<p>W9 的資料庫裡有每一片的結果。品保要的是每一班的<b>良率</b>和<b>管制圖</b>（W14 的 p 管制圖）。資料分析的同事已經用 Python（pandas、matplotlib）寫好一支腳本。你的工作不是重寫它，而是讓測試站在交班時<b>穩穩地叫它</b>，把結果附進交班報表。</p>`,
+tip('練習檔','下載：<a href="work/yield_report.py" download>yield_report.py</a>。yield_report.py 是 W21 課文裡的腳本（1.1.1）。要 Python 3 加 pandas、matplotlib；先在命令提示字元跑 <code>python yield_report.py --selftest</code>。'),
 C.h3('① 聽懂需求','','品保經理的原話'),
 `<div class="fig" style="background:#fffdf3;border:1px solid #e8dca8;border-radius:6px;padding:10px 14px"><p>「每一班結束，每一站要一張良率和 p 管制圖，附在交班報表裡。小林已經用 Python 寫好了，在他電腦上跑得很好。你接到測試站上。」</p></div>`,
 ask('「在他電腦上跑得很好」之後，你要先問清楚什麼？',
@@ -257,7 +263,7 @@ C.table(['編號','規格'],[
  ['PY7','腳本版本（ver）寫進交班報表；腳本、requirements.txt 和 LabVIEW 程式一起發行（W19）'],
  ['PY8','<code>--selftest</code>：只檢查套件載入得了，回 <code>{"ok": true, "selftest": true}</code>，部署驗收用'],
  ['PY9','資料庫用唯讀方式開：路徑打錯時報錯，而不是在錯的地方建一個空的資料庫'],
- ['PY10','管制圖：每 50 片一個子群，界限用品保定的基準 p0（預設 2 %），和 W14 的警報同一個算法']
+ ['PY10','管制圖：每 50 片一個子群，界限用品保定的基準 p0（預設 2 %），和 W14 的警報同一條界限（W14 是滑動視窗，這裡是不重疊的子群）']
 ]),
 ask('PY3 為什麼不能直接用中文？',
  `<p>在 Windows 上，Python 的 stdout 接到管線（不是視窗）時，用的是系統的地區編碼（繁體中文 Windows 是 cp950），不是 UTF-8；LabVIEW 2018 的字串也是 cp950（W17 講過）。所以<b>今天剛好對得上</b>。但 Python 3.15 起預設改成 UTF-8，有人設了 PYTHONUTF8 也一樣：那一天中文就變亂碼，而且<b>不會報錯</b>。今天沒事的東西，換一版就壞，這種地雷最難查。</p>
@@ -280,14 +286,14 @@ C.h3('⑤ 寫程式','','RunPy.vi'),
  {t:'Run：四種情況',view:'split',add:[],h:`<p>依序 Run 四種情況。第二種：多印了一行，只取最後一行就不受影響。第三、四種：ok 是 false，第二段不讀，所以不會因為少了欄位而多出一個錯誤。</p>`}
 ]}},
 C.h3('⑥ 讀懂腳本','','yield_report.py'),
-`<p>小林的腳本（約 70 行，審查後改過一版：1.1.0）。你不用會寫 pandas，但要看得懂它<b>照不照規格</b>：輸入是什麼、stdout 印什麼、結束碼什麼時候回什麼、錯誤印到哪裡。</p>`,
+`<p>小林的腳本（約 75 行，審查後改過兩版：1.1.1）。你不用會寫 pandas，但要看得懂它<b>照不照規格</b>：輸入是什麼、stdout 印什麼、結束碼什麼時候回什麼、錯誤印到哪裡。</p>`,
 `<pre style="font-size:12px;line-height:1.45;overflow-x:auto;background:#f6f8fa;border:1px solid #dde;border-radius:6px;padding:10px">${esc(PYSRC)}</pre>`,
 ask('對照 PY1～PY7，這支腳本哪裡照規格、哪裡要注意？',
  `<ul><li>PY2、PY3：成功、失敗都只 <code>print</code> 一行 <code>json.dumps</code>，預設會把非 ASCII 轉成 \\uXXXX。</li>
  <li>PY4：資料不足回 3，例外回 2，成功回 0。pandas、matplotlib 的 import 寫在 <code>main()</code> 裡，沒裝套件時也會被 except 接住、印一行 JSON。argparse 參數錯誤時它自己結束（結束碼 2、說明印到 stderr），所以 except 先放過 <code>SystemExit</code>。</li>
  <li>PY5：例外時 <code>traceback.print_exc()</code> 印到 stderr。資料庫被鎖時，sqlite3 預設只等 5 秒，之後 pandas 拋出 DatabaseError。</li>
- <li>PY9：<code>Path(a.db).as_uri() + "?mode=ro"</code> 以唯讀開資料庫。</li>
- <li>PY10：每 50 片一組，界限 p0 ＋ 3 × √(p0(1 − p0) ÷ n)，p0 是品保定的基準 2 %：n ＝ 50 時是 7.9 %，和 W14 的警報同一個數字。不要用同一班自己的平均當基準：這一班剛好特別好，一點點 FAIL 就會亂報警。</li>
+ <li>PY9：<code>Path(a.db).resolve().as_uri() + "?mode=ro"</code> 以唯讀開資料庫（resolve 讓相對路徑也能用；網路磁碟的 UNC 路徑要另外組成 <code>file:////server/share/…</code>，實測過再用）。圖檔名帶日期和開始時間，兩班不會互相蓋掉。</li>
+ <li>PY10：每 50 片一組，界限 p0 ＋ 3 × √(p0(1 − p0) ÷ n)，p0 是品保定的基準 2 %：n ＝ 50 時是 7.9 %，和 W14 的警報是<b>同一條界限</b>。用途不同：W14 是「最近 50 片」的滑動視窗，每測一片就重算；這裡是把一班切成不重疊的 50 片一組，畫在管制圖上。不要用同一班自己的平均當基準：這一班剛好特別好，一點點 FAIL 就會亂報警。</li>
  <li><code>matplotlib.use("Agg")</code>：產線電腦上不開視窗，只存 PNG。</li>
  <li>ERROR 的片不算進良率（W6：ERROR 不是 PASS 也不是 FAIL）。這是規格的一部分，要和品保確認。</li></ul>
  <p>試著改一處：品保想把基準從 2 % 改成 1.5 %，要改哪裡？（答案：不用改程式，LabVIEW 呼叫時多給 <code>--pbar 0.015</code>；但這是品保的規格變更，要留紀錄。）改程式的話，要更新 ver，報表上才看得出是新版（PY7）。</p>`),

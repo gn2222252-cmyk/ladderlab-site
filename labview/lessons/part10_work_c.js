@@ -245,6 +245,7 @@ check:'不看課文，能說出這個測試站的 8 個步驟、為什麼滿載�
 body:[
 C.h3('這一課的工作','x','產線測試站是 LabVIEW 最常見的工作'),
 `<p>到人力銀行搜「LabVIEW」，最多的職稱是<b>自動化測試工程師、測試工程師、ATE 工程師</b>。工作內容幾乎都寫著：開發產線測試程式、整合量測儀器（電源供應器、電子負載、DMM、示波器）、建立測試規格與上下限、產出測試報表、維護測試站與治具。這一課做一個完整但縮小的版本。</p><p>I13 已經做過一個測試站的骨架（另一塊 5 V 板、只量電壓和漣波）。這一課換一個產品 PM5（多了 2 A 負載和效率），重點放在序號、上下限檔、CSV 和產線流程；I 部分接過的 GPD-3303S、34461A 也可以直接拿來用，命令見 I2～I4。</p>`,
+tip('練習檔','下載：<a href="work/limits.csv" download>limits.csv</a>。limits.csv 是 W6 的上下限表（ASCII，LabVIEW 2018 讀中文會變亂碼，所以名稱用英文）。用 Read Delimited Spreadsheet（或 Spreadsheet String To Array）讀成字串陣列，再拆出上下限。'),
 C.h3('① 聽懂需求','','產品經理的原話'),
 `<div class="fig" style="background:#fffdf3;border:1px solid #e8dca8;border-radius:6px;padding:10px 14px"><p>「新的 12 V 轉 5 V 電源模組（PM5）下個月上產線，要一個測試站。作業員掃序號、按開始，量輸出電壓和效率，PASS 貼綠標，FAIL 放紅箱。資料要能追溯。一片不要超過 20 秒。規格書 RD 會給你。」</p></div>`,
 ask('至少列出五個要回去問的問題。',

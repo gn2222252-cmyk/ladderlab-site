@@ -1,0 +1,6 @@
+item,name,lo,hi,unit
+T01,No-load input current,5,30,mA
+T02,No-load output voltage,4.90,5.10,V
+T03,Full-load output voltage (2 A),4.85,5.10,V
+T04,Load regulation,0,1.5,%
+T05,Full-load efficiency,85,100,%

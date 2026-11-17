@@ -140,6 +140,7 @@ check:'不看課文，能說出 System Exec 的三個輸出、為什麼不能只
 body:[
 C.h3('這一課的工作','x','LabVIEW 去指揮別人的程式'),
 `<p>前面的課，LabVIEW 都是直接和儀器講話。燒錄不一樣：燒錄器的廠商會給一個<b>命令列工具</b>，LabVIEW 要做的是呼叫它、等它做完、讀它說了什麼，再判斷成功還是失敗。很多產線的工作都是這樣：別人的工具、你的流程。</p>`,
+tip('練習檔','下載：<a href="work/release.csv" download>release.csv</a>。release.csv 是 W18 的發行清單範例：status 是 active 的那一版才能燒；SHA256 是範例值，實際要算你手上的韌體檔。'),
 C.h3('① 聽懂需求','','RD 經理的原話'),
 `<div class="fig" style="background:#fffdf3;border:1px solid #e8dca8;border-radius:6px;padding:10px 14px"><p>「PM5 v2（在 v1.1 的基礎上）板上多了一顆 STM32，韌體要在產線燒。以前都是 RD 自己用燒錄軟體的視窗一片一片點，現在量產了要一個燒錄站：作業員只能掃序號、按開始，不能自己選檔案。韌體一個月會改一兩版。客戶問起來，要能查出每一片燒的是哪一版。」</p></div>`,
 ask('至少列出五個要回去問的問題。',

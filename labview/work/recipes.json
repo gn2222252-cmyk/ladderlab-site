@@ -1,0 +1,23 @@
+{
+ "version": 3,
+ "recipes": [
+  {
+   "name": "A small bag",
+   "temp": 165,
+   "press": 2.5,
+   "time": 1.2
+  },
+  {
+   "name": "B large bag",
+   "temp": 175,
+   "press": 3.0,
+   "time": 2.0
+  },
+  {
+   "name": "C foil bag",
+   "temp": 195,
+   "press": 4.5,
+   "time": 3.5
+  }
+ ]
+}

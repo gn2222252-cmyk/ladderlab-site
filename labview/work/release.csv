@@ -1,0 +1,4 @@
+part,version,file,sha256,approved_by,effective,status
+PM5V2,2.2.0,PM5FW_2.2.0.bin,42cbe0d835267fe3d95d1a00347af6ef2e991f0d8bda157af731ec1fdcb17973,QA-Lin,2026-10-20,retired
+PM5V2,2.3.0,PM5FW_2.3.0.bin,1901a3fd9236a6cb91e439dfec652a69e4a6016145b4b0cabb9ed625c2ef4f17,QA-Lin,2026-11-03,retired
+PM5V2,2.3.1,PM5FW_2.3.1.bin,ccf446ad269d681c1c213921a2dfc880b8c9669ae5d5fec1dfa0d56caec0fb88,QA-Lin,2026-11-12,active
