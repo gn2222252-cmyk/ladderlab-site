@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="661e1f7629">
+<meta name="ll-version" content="c1a83131a6">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -17,7 +17,7 @@
   <a href="fxlab.html" style="margin-left:10px;font-weight:700">FX 封包練習台（網頁版模擬 PLC）</a>
   <a href="instlab.html" style="margin-left:10px;font-weight:700">儀器接入練習台（八台模擬儀器）</a>
   <a href="labs.html" style="margin-left:10px;font-weight:700">動畫實驗室（29 個）</a>
-  <span class="fine">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。「接入新儀器」I1～I14 教拿到沒看過的儀器怎麼接、怎麼規劃程式：網頁上有模擬儀器，也可以下載軟儀器用真的 LabVIEW 練。「myRIO 嵌入式控制」M1～M16（另有 M3+ MXP 麵包板、M3++ 七段顯示器）從開專案、接線、PWM、編碼器到開機自動執行（LabVIEW 2018 32 位元）。「實務案例」W1～W20 每一課是一份完整的工作：聽需求、寫規格、盤點硬體、先驗證、規劃、一步一步寫、照規格驗收交機（包裝機操作畫面、DAQ 馬達監測站、myRIO 搬運小車操作盒、產線功能測試站、設備稼動監控、接手舊程式、測試資料庫與追溯、治具開短路測試、配方與警報、老化燒機記錄、簡易 AOI、現場除錯）。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
+  <span class="fine">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。「接入新儀器」I1～I14 教拿到沒看過的儀器怎麼接、怎麼規劃程式：網頁上有模擬儀器，也可以下載軟儀器用真的 LabVIEW 練。「myRIO 嵌入式控制」M1～M16（另有 M3+ MXP 麵包板、M3++ 七段顯示器）從開專案、接線、PWM、編碼器到開機自動執行（LabVIEW 2018 32 位元）。「實務案例」W1～W21 每一課是一份完整的工作：聽需求、寫規格、盤點硬體、先驗證、規劃、一步一步寫、照規格驗收交機（包裝機操作畫面、DAQ 馬達監測站、myRIO 搬運小車操作盒、產線功能測試站、設備稼動監控、接手舊程式、測試資料庫與追溯、治具開短路測試、配方與警報、老化燒機記錄、簡易 AOI、現場除錯）。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
 </div>
 <button id="menuBtn" class="btn">☰ 課程目錄</button>
 <div id="app">
@@ -59,7 +59,7 @@
 <script src="lessons/part9_myrio_lv1.js?v=aa96580ec5"></script>
 <script src="lessons/part9_myrio_lv2.js?v=8c53a60c47"></script>
 <script src="lessons/part9_myrio_lv3.js?v=1e1fae5de5"></script>
-<script src="lessons/part10_work_a.js?v=818c9d6642"></script>
+<script src="lessons/part10_work_a.js?v=98002e5fb5"></script>
 <script src="lessons/part10_work_b.js?v=9a3c08a9da"></script>
 <script src="lessons/part10_work_c.js?v=7517eb9fd2"></script>
 <script src="lessons/part10_work_d.js?v=7bd8e20e98"></script>
@@ -76,6 +76,7 @@
 <script src="lessons/part10_work_o.js?v=1411f7bcbb"></script>
 <script src="lessons/part10_work_p.js?v=882fcf56f0"></script>
 <script src="lessons/part10_work_q.js?v=fb02aeeeeb"></script>
+<script src="lessons/part10_work_r.js?v=1a62b2835c"></script>
 <script src="lessons/part6_arch_a.js?v=4d7dc3ad04"></script>
 <script src="lessons/part6_arch_b.js?v=4d47316f96"></script>
 <script src="lessons/part5_clad_a.js?v=7f85b05e87"></script>
@@ -95,7 +96,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "661e1f7629" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "c1a83131a6" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
