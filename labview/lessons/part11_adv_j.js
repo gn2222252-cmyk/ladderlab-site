@@ -15,21 +15,22 @@ const tip=(t,b)=>`<div class="tip"><b>${t}</b>${b}</div>`;
 /* ---- TWI 分解表：這一句屬於哪一欄？ ---- */
 const TWI=[
  {s:'掃描板子上的序號標籤',c:0},
- {s:'掃到後畫面序號欄出現 PM5- 開頭的 12 碼',c:1},
+ {s:'掃到後畫面序號欄出現 PM5- 加 8 位數字',c:1},
  {s:'序號錯了，資料庫和客訴就追不到這一片（W9）',c:2},
  {s:'把板子放進治具，壓下壓板',c:0},
  {s:'板子的缺角對準治具左下的定位銷，壓到聽見「喀」一聲',c:1},
- {s:'沒壓到底，探針接觸不良，好板子會被判 FAIL 或 ERROR',c:2},
+ {s:'沒壓到底，探針接觸不良，好板子會被判 FAIL（FAIL 不一定是板子壞，W14）',c:2},
  {s:'按綠色 START',c:0},
- {s:'測試中不要碰板子和線；燈號變綠或紅之前不要拿起來',c:1},
+ {s:'測試中不要碰板子和線；畫面出現 PASS／FAIL／ERROR 之前不要拿起來',c:1},
  {s:'測試中板子帶電（5 V、滿載），拿起來可能燙到或打壞板子',c:2},
+ {s:'測完取出板子，依結果放進良品盒或不良品盒',c:0},
  {s:'畫面顯示 ERROR（不是 FAIL）時，不要放進不良品盒，叫工程師',c:1},
  {s:'ERROR 是測試站的問題，不是板子壞（W6、H2）',c:2}
 ];
 const COLS=['主要步驟','要點','理由'];
 function twiFig(el){
   el.className='fig';el.style.cssText='border:1px solid #d9cfe8;border-radius:6px;padding:10px 12px;background:#fbf9ff;font-size:13px';
-  el.innerHTML=`<p style="margin:0 0 6px">ST01 的作業指導書（WI）草稿。每一句應該放在 TWI 作業分解表的哪一欄？</p>
+  el.innerHTML=`<p style="margin:0 0 6px">ST01 的作業指導書（WI）草稿。每一句應該放在 TWI 作業分解表的哪一欄？（定位銷、壓板、START 按鈕這些是示範用的細節，W6 沒有寫。）</p>
    ${TWI.map((t,i)=>`<div style="display:flex;gap:8px;align-items:center;margin:3px 0;flex-wrap:wrap"><select data-i="${i}"><option value="-1">—</option>${COLS.map((c,j)=>`<option value="${j}">${c}</option>`).join('')}</select><span>${t.s}</span></div>`).join('')}
    <button data-a="chk" style="margin-top:6px">對答案</button><div data-o="out" style="margin-top:8px"></div>`;
   el.querySelector('[data-a=chk]').onclick=()=>{
@@ -43,23 +44,23 @@ function twiFig(el){
 function skillFig(el){
   el.className='fig';el.style.cssText='border:1px solid #c9d6e8;border-radius:6px;padding:10px 12px;background:#f8fbff;font-size:13px';
   const P=['阿明（新人）','小芳','你'],S=['ST01 操作','golden sample 驗證','換治具','ERROR 第一線處理','換版（W19）','改上下限（W6、W8）'];
-  const st=[[2,1,0,0,0,0],[3,3,2,2,1,0],[3,3,3,3,3,3]];
-  const L4=['未訓練','訓練中','可在指導下做','可獨立做'];
-  el.innerHTML=`<p style="margin:0 0 6px">點格子改程度。目標：你調走前，每一項至少要有兩個人「可獨立做」。</p><div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:12px"><tr><th></th>${S.map(s=>`<th style="padding:2px 6px;border-bottom:1px solid #ccc">${s}</th>`).join('')}</tr>${P.map((p,i)=>`<tr><td style="padding:2px 6px">${p}</td>${S.map((s,j)=>`<td data-p="${i}" data-s="${j}" style="padding:2px 6px;text-align:center;cursor:pointer;border:1px solid #e3e8f0"></td>`).join('')}</tr>`).join('')}</table></div><div data-o="out" style="margin-top:6px"></div>`;
+  const st=[[2,1,0,0,0,0],[3,3,2,2,1,0],[4,4,4,4,4,4]];
+  const L4=['未訓練','訓練中','可在指導下做','可獨立做','可以教別人'];
+  el.innerHTML=`<p style="margin:0 0 6px">點格子改程度（○ 未訓練、◔ 訓練中、◑ 可在指導下做、● 可獨立做、★ 可以教別人）。目標：你調走前，<b>不算你</b>，每一項至少要有兩個人可獨立做。</p><div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:12px"><tr><th></th>${S.map(s=>`<th style="padding:2px 6px;border-bottom:1px solid #ccc">${s}</th>`).join('')}</tr>${P.map((p,i)=>`<tr><td style="padding:2px 6px">${p}</td>${S.map((s,j)=>`<td data-p="${i}" data-s="${j}" style="padding:2px 6px;text-align:center;cursor:pointer;border:1px solid #e3e8f0"></td>`).join('')}</tr>`).join('')}</table></div><div data-o="out" style="margin-top:6px"></div>`;
   function draw(){
-    el.querySelectorAll('[data-p]').forEach(td=>{const v=st[+td.dataset.p][+td.dataset.s];td.textContent=['○','◔','◑','●'][v];td.title=L4[v];td.style.color=['#999','#b9770e','#1d4fa0','#1e7b34'][v];});
-    const gap=S.filter((s,j)=>st.filter(r=>r[j]===3).length<2);
-    el.querySelector('[data-o=out]').innerHTML=gap.length?`還不夠的項目：<b style="color:#c0392b">${gap.join('、')}</b>。這些就是你調走前要排進訓練時程表的。`:'<b style="color:#1e7b34">每一項都有兩個人可以獨立做了。</b>';
+    el.querySelectorAll('[data-p]').forEach(td=>{const v=st[+td.dataset.p][+td.dataset.s];td.textContent=['○','◔','◑','●','★'][v];td.title=L4[v];td.style.color=['#999','#b9770e','#1d4fa0','#1e7b34','#7a3fb0'][v];});
+    const gap=S.filter((s,j)=>st.filter((r,i)=>i!==2&&r[j]>=3).length<2);
+    el.querySelector('[data-o=out]').innerHTML=gap.length?`還不夠的項目：<b style="color:#c0392b">${gap.join('、')}</b>。這些就是你調走前要排進訓練時程表的。`:'<b style="color:#1e7b34">不算你，每一項都有兩個人可以獨立做了。</b>再看有沒有人到「可以教別人」：下一批新人來時，不用再找你。';
   }
-  el.addEventListener('click',e=>{const td=e.target.closest('[data-p]');if(!td)return;const r=st[+td.dataset.p];r[+td.dataset.s]=(r[+td.dataset.s]+1)%4;draw();});
+  el.addEventListener('click',e=>{const td=e.target.closest('[data-p]');if(!td)return;const r=st[+td.dataset.p];r[+td.dataset.s]=(r[+td.dataset.s]+1)%5;draw();});
   draw();
 }
 
 L.push({id:'H10',order:49,no:'H10',part:PART,title:'交接和帶新人：讓下一個人只靠文件就接得下去',mins:60,files:[],
-goals:[['學會','分清楚作業指導書（WI）、SOP、工程交接文件各給誰看；用 TWI 的「步驟、要點、理由」寫一頁 WI；工程交接包要有什麼（建置、部署、退版、設定、已知問題、處理手冊）；VI 層級的文件怎麼寫、怎麼輸出；用技能矩陣和訓練時程表帶新人；怎麼驗收交接'],
+goals:[['學會','分清楚作業指導書（WI）、SOP、工程交接文件各給誰看；用 TWI 的「步驟、要點、理由」寫一頁 WI；工程交接包的十項（尤其是建置、部署、退版、設定、已知問題、處理手冊）；VI 層級的文件怎麼寫、怎麼輸出；用技能矩陣和訓練時程表帶新人；怎麼驗收交接'],
  ['工作上','台灣的職缺常寫「撰寫 SOP」「教育訓練」「客戶端訓練、交機」；從業者說最常遇到的是「程式沒有文件，要問同事」。W8 你是接手的人，這一課你是交出去的人'],
  ['用到','W8（接手沒有文件的程式）、W19（部署、換版、退版）、W6、W14（ERROR、現場除錯）、H3（審查）、H5（測試）、H6（VI 文件）、H8（測試計畫）、H9（版本庫、提交訊息）']],
-check:'不看課文，能說出：WI、SOP、交接文件的差別；TWI 的三欄各寫什麼；工程交接包至少要有哪六樣；怎麼驗收一份交接文件；技能矩陣拿來做什麼。',
+check:'不看課文，能說出：WI、SOP、交接文件的差別；TWI 的三欄各寫什麼；工程交接包的十項裡，出事時最要命的是哪兩項；怎麼驗收一份交接文件；技能矩陣拿來做什麼。',
 body:[
 C.h3('這一課的工作','x','你要調到新產品線了'),
 `<p>你負責 PM5 測試站一年多，下個月調去 PM6 的 DVT（H8）。主管說：「走之前把 PM5 交給阿明，他上個月才進來；產線的作業員也要重新訓練一批。<b>你走了以後，不能有事還要打電話問你。</b>」</p>
@@ -73,9 +74,10 @@ C.table(['文件','給誰看','內容','例子'],[
 ]),
 warn('ISO 9001 沒有規定格式','ISO 9001:2015 把文件和紀錄統稱「文件化資訊」，要求在必要的範圍內維持（程序、指導）和保存（紀錄、證據），而且要管制版本、核准、發放；但<b>沒有規定 SOP 要長什麼樣子</b>，也沒有規定一定要用技能矩陣（CQI 等二手說明）。格式照公司的文件管理規定。'),
 C.h3('② 一頁作業指導書：步驟、要點、理由','','TWI 工作教導'),
-`<p>產線最常引用的寫法來自 TWI（二戰時美國的工作教導訓練，後來被日本製造業採用）。作業分解表三欄：<b>主要步驟</b>（做什麼）、<b>要點</b>（影響成敗、可能受傷、讓工作比較容易的地方；安全一定是要點）、<b>理由</b>（為什麼）。</p>`,
+`<p>產線最常引用的寫法來自 TWI（二戰時美國的工作教導訓練，後來被日本製造業採用；歷史和寫法出自 LEI 的 TWI 卡片和 Wikipedia，二手）。作業分解表三欄：<b>主要步驟</b>（做什麼）、<b>要點</b>（影響成敗、可能受傷、讓工作比較容易的地方；安全一定是要點）、<b>理由</b>（為什麼）。</p>`,
 {fn:twiFig},
-ask('作業員只看「步驟」和「要點」就能做，為什麼還要寫「理由」？',`<p>給教的人和以後改 WI 的人看。沒有理由，要點會被當成囉嗦，慢慢被省略：「壓到喀一聲」省掉了，探針接觸不良，好板子被打成 FAIL，查了三天才發現（W14）。TWI 的教法裡，學的人試做時要說出理由，教的人才知道他真的懂。</p>`),
+ask('作業員只看「步驟」和「要點」就能做，為什麼還要寫「理由」？',`<p>給教的人和以後改 WI 的人看。沒有理由，要點會被當成囉嗦，慢慢被省略：「壓到喀一聲」省掉了，探針接觸不良，好板子被打成 FAIL；大家先懷疑板子，很久才查到是治具（就像 W14，FAIL 率上升最後查到的也是治具，雖然原因不一樣）。TWI 的教法裡，學的人試做時要說出理由，教的人才知道他真的懂。</p>`),
+`<p><b>用 WI 教人</b>：TWI 教的四步（LEI 的 TWI 卡片，二手）：<b>讓他準備好</b>（說明這一站做什麼、為什麼重要）→ <b>示範說明</b>（先講步驟，再加要點，再加理由）→ <b>讓他試做</b>（邊做邊說出步驟、要點、理由，做錯當場改）→ <b>追蹤</b>（告訴他有問題找誰，慢慢減少檢查）。TWI 的一句話是：學的人沒學會，是教的人沒教好。</p>`,
 C.h3('③ 工程交接包','','只靠文件就能做完'),
 C.table(['項目','內容','課程'],[
  ['架構','一張圖：迴圈、模組、儀器、資料流；哪些 VI 是重點','A 系列、H1、H4'],
@@ -83,7 +85,7 @@ C.table(['項目','內容','課程'],[
  ['建置和部署','建置規格在哪、怎麼產生安裝程式、部署清單','W19'],
  ['<b>退版</b>','出事時怎麼退回上一版、要多久、設定檔怎麼處理','W19'],
  ['設定檔說明','每一個欄位的意思、單位、誰可以改；上下限檔的變更流程','W6、W11、W8'],
- ['存取方式','電腦、帳號、資料庫在哪裡、找誰申請；<b>不要把密碼寫在文件裡</b>','W9、W17'],
+ ['存取方式','電腦、帳號、資料庫在哪裡、找誰申請；<b>不要把密碼寫在文件裡</b>；聯絡人寫角色（例如「IT 窗口」「品保主管」），不寫個人電話','W9、W17'],
  ['<b>已知問題</b>','還沒修的問題、嚴重程度、暫時的處理方法；沒處理完的審查意見','H3'],
  ['處理手冊（runbook）','常見異常怎麼判斷和處理：ERROR 和 FAIL、儀器掉線、MES 上傳失敗、良率突然掉','W6、W14、W17'],
  ['測試','怎麼跑 Run_All_Tests、預期看到什麼；測試計畫和最近一次驗證報告','H5、H8'],
@@ -97,9 +99,16 @@ C.h3('④ VI 本身的文件','','H6 的文件分數就是在要求這個'),
 <li><b>輸出成文件</b>：NI 的說明寫，File ▸ Print 可以把一個或多個 VI 的文件輸出成 HTML、RTF 或純文字，內容可以選圖示、接線板、前面板、方塊圖、說明、階層、SubVI 清單、修訂歷史。交接包可以附一份 HTML，接手的人不用開 LabVIEW 也能先看。（這一點出自 NI 說明的非官方鏡像，LadderLab 沒有用腳本實測。）</li></ul>`,
 C.h3('⑤ 帶新人：技能矩陣和訓練時程','',''),
 {fn:skillFig},
-`<p>TWI 教的四步：<b>讓他準備好</b>（說明這一站做什麼、為什麼重要）→ <b>示範說明</b>（第一遍講步驟，第二遍加要點，第三遍加理由）→ <b>讓他試做</b>（邊做邊說出步驟、要點、理由，做錯當場改）→ <b>追蹤</b>（告訴他有問題找誰，慢慢減少檢查）。TWI 的一句話是：學的人沒學會，是教的人沒教好。</p>
-<p>技能矩陣加上「誰在什麼日期前學會哪一項」，就是訓練時程表。ISO 9001 要求保存人員能力的證據，技能矩陣是常見的做法之一，但不是唯一的。</p>`,
-C.h3('⑥ 作業','',''),
+`<p>技能矩陣加上「誰在什麼日期前學會哪一項」，就是訓練時程表。ISO 9001 要求保存人員能力的證據，技能矩陣是常見的做法之一，但不是唯一的。</p>`,
+C.h3('⑥ 作業','','另外約 3～4 小時'),
+`<p>兩個空白範本，複製到 Word 或 Excel 用：</p>`,
+`<pre style="background:#f4f6f9;padding:8px;border-radius:4px;white-space:pre-wrap;font-size:12px">【作業指導書】站別：＿＿　文件編號：＿＿　版本：＿＿　核准：＿＿　日期：＿＿
+| 步驟 | 主要步驟 | 要點 | 理由 | 照片 |
+|  1   |          |      |      |      |
+安全注意：＿＿　使用的工具／儀器：＿＿　異常時找：＿＿（角色）</pre>`,
+`<pre style="background:#f4f6f9;padding:8px;border-radius:4px;white-space:pre-wrap;font-size:12px">【工程交接包】系統：＿＿　交接人：＿＿　接手人：＿＿　日期：＿＿
+1 架構　2 原始碼和版本　3 建置和部署　4 退版　5 設定檔說明
+6 存取方式（不寫密碼）　7 已知問題　8 處理手冊　9 測試　10 未完成事項</pre>`,
 `<ol><li>幫 W6 的 ST01 寫一頁 WI（TWI 三欄），用自己拍的照片或示意圖；給一位沒做過的同學照著做一次，記下他卡住的地方，改一版。</li>
 <li>寫一份「W8 那時候你希望拿到的交接文件」：照 ③ 的十項，寫 PM5 測試站（可以用課程裡的 W6～W19 當內容）。</li>
 <li>交換作業：只靠同學的交接文件，做一次換版（W19）和一次異常處理（W14），把卡住的地方回饋給他。</li></ol>`,
