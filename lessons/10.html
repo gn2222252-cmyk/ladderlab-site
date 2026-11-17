@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="524b91598b">
+<meta name="ll-version" content="8f467d1720">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>6.2 回到雙龍門｜PLC 互動課程</title>
@@ -68,7 +68,7 @@ OUT Y001</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "524b91598b" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8f467d1720" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

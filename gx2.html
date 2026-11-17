@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="524b91598b">
+<meta name="ll-version" content="8f467d1720">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GX Works2 實作：FX3S 的階梯圖、STL 與 SFC | LadderLab</title>
@@ -469,7 +469,7 @@ RET</pre>
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "524b91598b" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "8f467d1720" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
