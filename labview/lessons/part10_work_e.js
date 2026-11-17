@@ -189,6 +189,7 @@ C.h3('⑤ 一步一步寫','','修 B5：讀不到就是 ERROR'),
  {t:'和上下限比',view:'split',add:['khi','klo','irc','f5','f6','f7','kP','kF','sel2','f8','f9','f10'],h:`<p>上下限照規格書：4.85～5.10。實際的程式要從 limits 表拿（修改 A），這裡為了看清楚先用常數。</p>`},
  {t:'錯誤優先：ERROR',view:'split',add:['kE','sel3','f11','f12','f13','res','f14','old'],h:`<p>最後一個 Select：有錯誤就是 "ERROR"，不管上下限比出什麼。</p><p>前面板切「DMM 線鬆了」：舊程式用上一片的值判 PASS，修改後判 ERROR。再把「上一片的讀值」改成 4.5：舊程式就變 FAIL，<b>同一個壞掉的接線，結果看上一片而定</b>，這種 bug 最難查。</p>`}
 ]}},
+tip('參考答案','<a href="vi/LV2018/W08_T03_Judge.zip" download>W08_T03_Judge.zip（LabVIEW 2018）</a>　<a href="vi/W08_T03_Judge.zip" download style="font-size:13px">2026 版</a>：解開後保持資料夾結構，W08_sub 裡的 Read DMM.vi 是<b>假的</b> SubVI（用「DMM loose (sim)」「true V (sim)」兩個輸入代替真的電表），換成真的 Read DMM 時要重接端子。NaN 用 0 ÷ 0 產生。實測：4.97 V PASS；線鬆了 value used 是 NaN、結果 ERROR；5.10 和 4.85 PASS（含上下限）；4.80、5.12 FAIL。'),
 C.h3('⑥ 交機：變更說明','','讓下一個人看得懂你改了什麼'),
 C.table(['欄位','內容（範例）'],[
  ['版本','PM5_Test 1.1.0（接手時的版本記為 1.0.0）'],
