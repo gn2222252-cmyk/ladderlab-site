@@ -31,7 +31,7 @@ function oeeSim(el){
    <div style="flex:1 1 260px;font-size:13px" data-o="cnt"></div></div>
   <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px">
    <div style="flex:1 1 300px"><p style="font-size:12px;color:#556;margin:0 0 2px">停機紀錄（最新的在上面）</p><table class="tbl" style="width:100%;font-size:12px" data-o="ev"></table></div>
-   <div style="flex:1 1 220px"><p style="font-size:12px;color:#556;margin:0 0 2px">停機原因排行（分鐘）</p><div data-o="par"></div></div></div>
+   <div style="flex:1 1 220px"><p style="font-size:12px;color:#556;margin:0 0 2px">停機原因排行（分鐘，只算有看到的秒數）</p><div data-o="par"></div></div></div>
   <p data-o="rep" style="font:12px Consolas,monospace;white-space:pre;background:#fff;border:1px solid #ccd;padding:6px;margin-top:8px;overflow:auto"></p>`;
   const o=k=>el.querySelector('[data-o='+k+']'),q=k=>el.querySelector('[data-k='+k+']');
   const tl=o('tl').getContext('2d');
@@ -40,7 +40,7 @@ function oeeSim(el){
   function init(){
     const st=q('wrap').checked?65500:1200;
     S={t:0,run:false,plc:{st:1,code:0,good:st,ng:Math.floor(st/50),prog:0,until:0},
-       pc:{first:null,prevG:null,prevN:null,good:0,ng:0,tSt:[0,0,0,0],unk:0,last:-1,ev:[],open:null,naive:0,startG:st}};
+       pc:{first:null,prevG:null,prevN:null,good:0,ng:0,tSt:[0,0,0,0],unk:0,last:-1,ev:[],open:null,naive:0,startG:st,codeSec:{}}};
     tl.clearRect(0,0,600,34);draw();
   }
   function plcSecond(){
@@ -58,12 +58,12 @@ function oeeSim(el){
   function fault(c){const P=S.plc;P.st=2;P.code=c;const d={1:[120,300],2:[300,540],3:[180,420]}[c];P.until=S.t+d[0]+Math.random()*(d[1]-d[0]);}
   function pcSecond(){
     const C=S.pc,P=S.plc;
-    if(q('cut').checked){C.unk++;C.last=-2;return -2;}
+    if(q('cut').checked){C.unk++;C.last=-2;if(C.open)C.open.unsure=true;return -2;}
     // 讀到 D200 狀態、D201 異常碼、D202 良品、D203 不良（U16）
     if(C.prevG===null){C.prevG=P.good;C.prevN=P.ng;}
     const dg=(P.good-C.prevG)&0xFFFF,dn=(P.ng-C.prevN)&0xFFFF;C.prevG=P.good;C.prevN=P.ng;C.good+=dg;C.ng+=dn;
     C.naive=P.good-C.startG;
-    C.tSt[P.st]++;
+    C.tSt[P.st]++;if(P.st===2&&P.code)C.codeSec[P.code]=(C.codeSec[P.code]||0)+1;
     if(P.st!==C.last){
       if(C.open&&P.st!==2){C.open.end=S.t;C.open=null;}
       if(P.st===2&&!C.open){C.open={start:S.t,code:P.code,end:null};C.ev.unshift(C.open);}
@@ -96,8 +96,8 @@ function oeeSim(el){
     const m=s=>(s/60).toFixed(1);
     o('cnt').innerHTML=`<p>計畫時間 <b>${m(r.plan)}</b> 分（休息 ${m(C.tSt[3])} 分不算）<br>運轉 <b>${m(r.run)}</b>　異常停機 <b>${m(C.tSt[2])}</b>　待機 <b>${m(C.tSt[0])}</b>　通訊中斷 <b>${m(C.unk)}</b> 分</p>
     <p>本班良品 <b>${C.good}</b>　不良 <b>${C.ng}</b>（用差值累加，對的）<br>PLC D202 現在 <b>${P.good}</b>（U16）<br>「D202 減開班時的值」＝ <b style="color:${C.naive<0?'#c0392b':'inherit'}">${C.naive}</b>${C.naive<0?'　← 計數器繞回 0 了，這樣算是錯的':''}</p>`;
-    o('ev').innerHTML='<tr><th>開始</th><th>結束</th><th>分鐘</th><th>原因</th></tr>'+C.ev.slice(0,8).map(e=>`<tr><td>${hms(e.start)}</td><td>${e.end==null?'停機中':hms(e.end)}</td><td>${(((e.end==null?S.t:e.end)-e.start)/60).toFixed(1)}</td><td>${CODES[e.code]||'?'}</td></tr>`).join('');
-    const sum={};C.ev.forEach(e=>{sum[e.code]=(sum[e.code]||0)+((e.end==null?S.t:e.end)-e.start)/60;});
+    o('ev').innerHTML='<tr><th>開始</th><th>結束</th><th>分鐘</th><th>原因</th></tr>'+C.ev.slice(0,8).map(e=>`<tr><td>${hms(e.start)}</td><td>${e.end==null?'停機中':hms(e.end)+(e.unsure?'（中間斷線，不確定）':'')}</td><td>${(((e.end==null?S.t:e.end)-e.start)/60).toFixed(1)}</td><td>${CODES[e.code]||'?'}</td></tr>`).join('');
+    const sum={};Object.keys(C.codeSec).forEach(k=>sum[k]=C.codeSec[k]/60);
     const ks=Object.keys(sum).sort((a,b)=>sum[b]-sum[a]),mx=Math.max(1,...Object.values(sum));
     o('par').innerHTML=ks.length?ks.map(k=>`<div style="font-size:12px;margin:3px 0">${CODES[k]} ${sum[k].toFixed(1)}<div style="height:9px;width:${sum[k]/mx*100}%;background:#d64541;border-radius:3px"></div></div>`).join(''):'<p style="font-size:12px;color:#889">還沒有停機</p>';
     o('rep').textContent='班別報表（每班一列）\n日期,班別,計畫分,運轉分,停機分,停機次數,通訊中斷分,良品,不良,可用率,效能,良率,OEE\n'+
