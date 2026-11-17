@@ -24,10 +24,10 @@ const FILES=[
  {f:'PSU.lvclass、PSU_Sim.lvclass、Drivers.lvlib',in:true,why:'原始碼（類別和函式庫的定義）。同樣是 XML，標成 binary。'},
  {f:'PM5 Station.aliases、PM5 Station.lvlps',in:false,why:'LabVIEW 自動產生，每台電腦都不一樣，換一台電腦打開專案就變。GitHub 的 LabVIEW .gitignore 範本把它們排除。'},
  {f:'builds\\PM5Station.exe、installer\\',in:false,why:'建置產物：可以從原始碼和建置規格重新產生。版本用 tag 標記（W19 的版本號），安裝程式另外存到發行資料夾。'},
- {f:'Documents\\LabVIEW Data\\VIObjCache\\',in:false,why:'只存原始碼後，編譯碼放在這個快取，每台電腦自己會產生；它也不在專案資料夾裡。'},
+ {f:'PM5 Station.vipc（VIPM 記錄專案用到哪些套件、哪個版本）',in:true,why:'別人取下程式後，用它裝齊一樣版本的套件；它很小、是原始資料，放進去（社群建議，二手）。'},
  {f:'station_template.ini（設定檔範本）',in:true,why:'程式需要它（W19 第一次執行時複製），屬於原始碼的一部分。'},
  {f:'ProgramData 裡每一台站自己的 station.ini',in:false,why:'每一台的設定不一樣，是那台電腦的資料，不是原始碼（W19）。範本放版本庫、各站的實際設定另外備份。'},
- {f:'廠商給的 DLL（例如燒錄工具的 SDK）',in:true,why:'程式要用它，而且你不能自己產生，所以要放（或用套件管理記錄版本）。注意 GitHub 的 LabVIEW 範本預設排除 *.dll，要把那一行拿掉。'},
+ {f:'廠商給的 DLL（例如燒錄工具的 SDK）',in:true,why:'程式要用它，而且你不能自己產生，所以要放（或在文件寫明版本和取得方式）。GitHub 的 LabVIEW 範本排除 *.dll：<b>保留那一行</b>（自己建出來的 DLL 仍然不放），另外加一行例外，例如 <code>!vendor/*.dll</code>。也要先確認廠商的授權允許放進版本庫。'},
  {f:'H5 的 results 檔、每天的測試 log',in:false,why:'執行產生的資料，不是原始碼；版本庫只放「怎麼產生它的程式」。發行時的測試結果另外存進發行紀錄（H5、H8）。'}
 ];
 function filesFig(el){
@@ -51,6 +51,7 @@ check:'不看課文，能說出：git diff 對 VI 顯示什麼；為什麼 .lvpr
 body:[
 C.h3('這一課的工作','x','測試站的程式要進 Git'),
 `<p>W8 你接手了舊程式，用「有日期的資料夾」管版本。現在團隊有三個人改同一個測試站的程式，主管要求放進公司的 Git。你很快發現三件事：Git 看不出 VI 改了哪裡；改一個 SubVI，十幾個 VI 都變成「有變更」；兩個人同一天改了同一個 VI，合併不了。</p>`,
+note('先認識幾個詞（沒用過 Git 的話）','<b>版本庫</b>（repository）：放程式和它所有歷史版本的地方。<b>提交</b>（commit）：存一個版本，附一句說明。<b>分支</b>（branch）：從某個版本分出去另外改，不影響主線。<b>合併</b>（merge）：把分支的修改併回來。<b>標籤</b>（tag）：幫某一個提交取名字，例如 v1.3.0。Git 官方的線上書有正體中文版：<a href="https://git-scm.com/book/zh-tw/v2" target="_blank" rel="noopener">git-scm.com/book/zh-tw</a>。'),
 note('為什麼有這一課（資料來源）','助理整理的職缺裡，明寫 Git 的只有兩則國外的資深職缺；台灣的資料裡 Git、SVN 都是 0 則，只有「版本管理」（PLC 參數和程式版本、韌體版本）。所以這一課的重點是「版本紀錄的紀律」，Git 是做到它的工具。整理在 docs/research_git.md。'),
 C.h3('① VI 在 Git 裡長什麼樣子','','LadderLab 實際跑的'),
 `<p>把 H5 的 GPD_VOUT_To_Number.vi 第一版放進一個 Git 版本庫，換成修正後的版本，再下 <code>git diff</code>：</p>`,
@@ -74,16 +75,16 @@ C.table(['工具','怎麼用','限制'],[
  ['LabVIEW CLI 的 CreateComparisonReport','不開畫面，產生 HTML 差異報告；CI 可以在每次提交時自動產生','2025 Q3 才加的（LabVIEW Wiki，二手），<b>LabVIEW 2018 沒有</b>']
 ]),
 `<p>LadderLab 在 LabVIEW 2026 用 CLI 比較 H5 那個 bug 的修正前後：</p>`,
-term('LabVIEWCLI -OperationName CreateComparisonReport ^\n  -VI1 old\\GPD_VOUT_To_Number.vi -VI2 new\\GPD_VOUT_To_Number.vi ^\n  -ReportType html -ReportPath report.html -nobdcosm -nofppos\n\nConnection established with LabVIEW at port number 3363.\nCreateComparisonReport operation succeeded.'),
+term('LabVIEWCLI -OperationName CreateComparisonReport ^\n  -VI1 old\\GPD_VOUT_To_Number.vi -VI2 new\\GPD_VOUT_To_Number.vi ^\n  -ReportType html -ReportPath report_clean.html -nobdcosm -nofppos\n\n（輸出節錄）\nConnection established with LabVIEW at port number 3363.\nCreateComparisonReport operation succeeded.'),
 `<div class="fig" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;text-align:center"><div><img src="img/adv/h9_old.png" alt="修正前" style="max-width:100%;border:1px solid #ccc"><div style="font-size:12px">修正前：只看「後面那個字是 V」</div></div><div><img src="img/adv/h9_new.png" alt="修正後" style="max-width:100%;border:1px solid #ccc"><div style="font-size:12px">修正後：多了 &gt;0 和 AND</div></div></div>
 <div class="fig" style="text-align:center"><img src="img/adv/h9_diff.png" alt="報告標出新增的節點" style="max-width:100%;border:1px solid #ccc"><div style="font-size:12px">報告把新增的兩個節點框起來（1A、1B）</div></div>`,
 `<p>報告的文字部分只有三行：Greater Than 0? 新增、And 新增、接線改變。審查的人不用開 LabVIEW，就知道這次提交改了什麼。</p>`,
-ask('同樣兩個 VI，不加 -nobdcosm -nofppos 時，報告多了一堆「moved」；加了以後，連方塊圖上說明文字的修改也不見了。這代表什麼？',`<p>不加：存檔前做了 Clean Up Diagram，每個節點的位置都變了，報告把它們全列出來，真正的修改被淹沒。加了：位置這類「外觀」的變動都濾掉，只剩功能上的修改；但 LabVIEW 也把<b>說明文字的修改</b>算成外觀，一起濾掉了。</p><p>所以審查時先看濾掉外觀的版本找功能修改，再看完整版確認說明有沒有跟著改（H3 的「文件」那一類）。</p>`),
+ask('同樣兩個 VI，不加 -nobdcosm -nofppos 時，報告多了一堆「moved」；加了以後，連方塊圖上那段註解文字的修改也不見了。這代表什麼？',`<p>不加：這兩版都是腳本建的、存檔前都做了 Clean Up Diagram，節點一多，每個節點的位置都變了，報告把它們全列出來（8 項 moved），真正的修改被淹沒。加了：位置這類「外觀」的變動都濾掉，只剩功能上的修改；但這次<b>方塊圖上的註解（自由標籤）的文字修改</b>也被當成外觀一起濾掉了。控制項標籤、VI 說明、字串常數的修改會不會被濾掉，LadderLab 沒有測。</p><p>所以審查時先看濾掉外觀的版本找功能修改，再看完整版確認說明有沒有跟著改（H3 的「文件」那一類）。</p>`),
 C.h3('④ .gitignore 和 .gitattributes','','第一次提交前寫好'),
 {fn:filesFig},
-`<p>一份起點（照 GitHub 的 LabVIEW .gitignore 範本和 Git 官方文件；依你的專案調整）：</p>`,
-term('# .gitignore\n*.aliases\n*.lvlps\n*.lvprojstate\n.cache/\nbuilds/\n*.exe\n*.lvlibp\n# 範本也排除 *.llb、*.dll：專案原始碼放在 .llb、或要用廠商的 DLL 時，不要排除\n\n# .gitattributes\n*.vi       binary\n*.vim      binary\n*.ctl      binary\n*.lvproj   binary\n*.lvlib    binary\n*.lvclass  binary'),
-ask('.lvproj、.lvclass 其實是 XML 文字檔，Git 本來看得懂。為什麼還要標成 binary？',`<p>LadderLab 試過：不標的話，<code>git diff</code> 對 .lvproj 會逐行顯示 XML 的差異，看起來很方便；但合併時 Git 也會<b>逐行自動合併</b> XML，兩個人各加一個檔案，可能合出 LabVIEW 讀不了的專案檔。標成 binary 後，diff 只顯示「Binary files differ」，合併時一定要人決定。Git 在 Windows 上還可能幫文字檔轉換換行字元（實測有出現 LF 轉 CRLF 的警告），binary 也不會轉。NI 的建議是專案檔開發期間盡量不改、要改時由一個人改。</p>`),
+`<p>一份起點（.gitignore 以 GitHub 的 LabVIEW 範本為主，加了社群的建議；.gitattributes 的 binary 是 Git 官方的語法，檔案類型清單是社群建議。依你的專案調整）：</p>`,
+term('# .gitignore（GitHub 的 LabVIEW 範本）\n*.aliases\n*.lvlps\n*.lvprojstate\n*.UserState\n.cache/\n*.exe\n*.lvlibp\n*.dll\n*.llb\n# 例外：廠商給的 DLL（先確認授權）\n!vendor/*.dll\n# 社群建議（二手）：建置輸出資料夾\nbuilds/\n# 注意：專案原始碼放在 .llb 裡的話，拿掉 *.llb；要放廠商工具的 exe，也要加例外\n\n# .gitattributes（社群建議的類型，二手）\n*.vi       binary\n*.vim      binary\n*.vit      binary\n*.ctl      binary\n*.ctt      binary\n*.lvproj   binary\n*.lvlib    binary\n*.lvclass  binary\n*.xctl     binary\n*.rtm      binary\n*.lvbitx   binary'),
+ask('.lvproj、.lvclass 其實是 XML 文字檔，Git 本來看得懂。為什麼還要標成 binary？',`<p><b>LadderLab 實測過的</b>：不標的話，<code>git diff</code> 對 .lvproj 會逐行顯示 XML 的差異；標成 binary 後，只顯示「Binary files differ」；Git 在 Windows 上還會提示要轉換這個檔案的換行字元（LF 轉 CRLF），binary 就不會轉。</p><p><b>社群的說法（二手，LadderLab 沒有實測）</b>：不標的話，合併時 Git 會<b>逐行自動合併</b> XML，兩個人各加一個檔案，可能合出 LabVIEW 讀不了的專案檔；標成 binary 就一定要人決定。NI 的建議是專案檔開發期間盡量不改、要改時由一個人改。</p>`),
 C.h3('⑤ 不要兩個人改同一個 VI','',''),
 C.table(['做法','說明'],[
  ['架構先切好','VI 小、一個 VI 一件事；用 lvlib、lvclass 分模組，一個人負責一個模組（H1、H4）。常常撞在同一個 VI，代表架構該切了'],
@@ -102,7 +103,7 @@ C.table(['步驟','做什麼','課程'],[
 ]),
 C.h3('⑦ 學校電腦不能裝 Git 時','',''),
 `<ul><li>用「有日期的資料夾或壓縮檔＋一份變更紀錄」模擬提交：每次只改一件、寫一行紀錄、跑一次測試（W8 已經這樣做）。</li>
-<li>在 LabVIEW 裡做 ② 的實驗：設定只存原始碼前後，改一個 SubVI，看呼叫它的 VI 會不會出現 *。</li>
+<li>在 LabVIEW 裡做 ② 的實驗（用 H5 的檔案）：打開 H5_Run_All_Tests.vi，再打開 H5_sub 的 Judge_Limit.vi，把裡面的說明文字改一個字、存檔，看 Judge_Limit_test.vi 和 H5_Run_All_Tests.vi 的標題列有沒有出現 *（有的話，代表它們被標成要重存）。然後把這幾個 VI 都設成只存原始碼、存檔，再改一次，比較結果。</li>
 <li>學校是 Professional 版的話，用 Compare VIs 比兩個資料夾裡的同名 VI。</li>
 <li>Git for Windows 有可攜版，但算不算「安裝軟體」要照學校規定，不要私下用。</li></ul>`,
 C.h3('測','q','小測驗'),
