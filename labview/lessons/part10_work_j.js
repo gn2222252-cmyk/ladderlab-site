@@ -206,6 +206,7 @@ C.h3('⑥ 一步一步寫','','Judge_Washer.vi'),
  {t:'外徑在範圍內',view:'split',add:['khi','klo','irc','w4','w5','w6'],h:`<p>In Range and Coerce：19.8～20.2 mm。記得右鍵勾 Include upper limit（預設不含上限，20.2 mm 會判 NG）。</p>`},
  {t:'面積比 ≥ 95 %',view:'split',add:['ratio','k95','ge','w7','w8','and','w9','w10','ok','w11'],h:`<p>外徑對了不代表沒缺角：缺一小角，外框寬度可能不變。所以再看面積比。兩個都過才 OK。</p><p>改前面板：外框 165 px → 20.37 mm NG；面積比 0.9 → NG；校正係數改成 8.3（相機被撞歪了）→ 161 px 只有 19.40 mm，好的也變 NG：這就是 V6 每天校正的原因。</p>`}
 ]}},
+tip('參考答案','<a href="vi/LV2018/W13_Judge_Washer.vi" download>W13_Judge_Washer.vi（LabVIEW 2018）</a>　<a href="vi/W13_Judge_Washer.vi" download style="font-size:13px">2026 版</a>。In Range and Coerce 已經勾了 Include upper limit。實測：沒勾時，161.6 px ÷ 8 ＝ 20.2 mm 會被判 NG；勾了才是 OK。'),
 C.h3('⑦ 測試、交機','',''),
 C.table(['測試','操作','預期','規格'],[
  ['T1','OK 品 50 片、各種 NG 品各 10 片，每片過 3 次','OK 不被判 NG、NG 全部抓到；同一片 3 次結果一樣','V1、V2'],
