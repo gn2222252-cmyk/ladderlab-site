@@ -25,8 +25,8 @@ function render(kind,light,seed){
   }
   return g;
 }
-function otsu(g){const hist=new Array(256).fill(0);for(const v of g)hist[v|0]++;const n=g.length;let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,best=0,th=128;
-  for(let t=0;t<256;t++){wB+=hist[t];if(!wB)continue;const wF=n-wB;if(!wF)break;sB+=t*hist[t];const mB=sB/wB,mF=(sum-sB)/wF,b=wB*wF*(mB-mF)*(mB-mF);if(b>best){best=b;th=t;}}return th;}
+function otsu(g){const hist=new Array(256).fill(0);for(const v of g)hist[v|0]++;const n=g.length;let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,best=0,th=128,th2=128;
+  for(let t=0;t<256;t++){wB+=hist[t];if(!wB)continue;const wF=n-wB;if(!wF)break;sB+=t*hist[t];const mB=sB/wB,mF=(sum-sB)/wF,b=wB*wF*(mB-mF)*(mB-mF);if(b>best*1.0001){best=b;th=t;th2=t;}else if(b>=best*0.9999)th2=t;}return Math.round((th+th2)/2);}
 function inspect(g,thr){
   let n=0,x0=W,x1=-1,y0=H,y1=-1;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(g[y*W+x]<thr){n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
