@@ -7,6 +7,7 @@ const PART='實務案例';
 const ask=(q,a)=>`<details class="think"><summary><span class="q">問自己：${q}</span><span class="hint">先想一下，寫下你的猜測，再點開看</span></summary>${a}</details>`;
 const warn=(t,b)=>`<div class="warn"><b>${t}</b>${b}</div>`;
 const note=(t,b)=>`<div class="note"><b>${t}</b>${b}</div>`;
+const tip=(t,b)=>`<div class="tip"><b>${t}</b>${b}</div>`;
 
 const ST=['待機','自動運轉','異常停機','計畫停機'];
 const STC=['#e0b100','#2e9d48','#d64541','#7d8fa8'];
