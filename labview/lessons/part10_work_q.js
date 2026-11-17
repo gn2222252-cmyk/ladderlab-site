@@ -16,46 +16,46 @@ if(!LV.F['To Long Integer'])LV.F['To Long Integer']={p:'I32',a:1,pal:['Functions
 const SCN=[
  ['ok','正常跑一盤'],
  ['nohome','早上開機（斷過電），沒回原點就按開始'],
- ['lo','LabVIEW 的舊程式只寫了低位字（第 3 格目標 40.000 mm，高位字還留著上一次的 1）'],
+ ['lo','LabVIEW 的舊程式只寫低位字；上一次寸動送過負座標，高位字還是 0xFFFF（第 3 格目標 40.000 mm）'],
  ['noz','流程寫錯：第 2 格燒完忘了送「Z 上升」就去下一格'],
- ['step','步進馬達：第 2 格之後失步，往 X 偏了 0.6 mm'],
- ['inp','伺服的到位範圍設得很嚴（每次移動多等 1.2 秒）']
+ ['step','步進馬達：第 2 格之後失步，往 X 少走了 0.6 mm'],
+ ['inp','伺服的到位範圍設得很嚴（等 INP 時每次多等 1.2 秒）']
 ];
 const PCK=[['H','PLC：沒回原點，拒絕移動'],['S','PLC：軟體極限（0～60 mm）'],['Z','PLC：Z 軸上升感測器 ON 才准動 XY'],['I','PLC：「完成」要等伺服的到位信號 INP'],['R','LabVIEW：每盤結束回原點，檢查回來時偏了多少']];
 const CELLS=[[10,10],[40,10],[10,40],[40,40]];
 function runTray(sc,c){
   const L=[];let t=0,crash=false,ok=0,bad=0;const pts=[];
-  const mv=d=>0.1+d/100+(sc==='inp'?1.2:0.15);
-  let pos=[0,0],homed=sc!=='nohome',drift=0;
-  if(sc==='nohome'&&!c.H){L.push(['r','PLC 不知道自己在哪：D8340 是 0，但平台其實停在昨天的 (35, 22)。照座標走，每一格都偏了一大段']);}
+  const mv=d=>0.1+d/100+0.15+(sc==='inp'&&c.I?1.2:0);
+  let pos=[0,0];
+  const R=(stop)=>({L,pts,t,crash,ok,bad,stop});
+  if(sc==='nohome'){
+    if(c.H){L.push(['g','第 1 格：PLC 拒絕，異常碼 1「未回原點」。LabVIEW 顯示「請先按原點復歸」，什麼都沒動']);return R('拒絕');}
+    L.push(['r','PLC 不知道自己在哪：目前值是 0，但平台其實停在昨天的 (35, 22)。照座標走，每一格都偏了一大段']);
+    L.push(['r','第 1 格：探針頭實際停在 (45, 32)，偏了 41 mm，氣缸照樣壓下去，壓在第 4 片板子的零件上：探針歪了，板子壓傷。軟體極限沒有用：PLC 以為自己在 (10, 10)']);
+    crash=true;pts.push([45,32,'x']);t+=mv(14)+0.3;return R('撞機');
+  }
   for(let i=0;i<4;i++){
     let tgt=CELLS[i].slice();
-    if(sc==='lo'&&i===2)tgt=[105.536,40];
-    if(sc==='nohome'&&!homed){
-      if(c.H){L.push(['g','第 1 格：PLC 拒絕，異常碼 1「未回原點」。LabVIEW 顯示「請先按原點復歸」，什麼都沒動']);return {L,pts,t,crash,ok,bad,stop:'拒絕'};}
-    }
     if(sc==='lo'&&i===2){
-      if(c.S){L.push(['g','第 3 格：目標變成 1×65536＋40000 ＝ 105536 脈波（105.5 mm），超過軟體極限。PLC 拒絕，異常碼 2；LabVIEW 停下來，顯示目標值']);return {L,pts,t,crash,ok,bad,stop:'拒絕'};}
-      L.push(['r','第 3 格：目標 105.5 mm，平台一路衝到硬體極限才停（驅動器的 LSN／LSP），探針頭撞到托盤外框']);crash=true;pts.push([60,40,'x']);return {L,pts,t,crash,ok,bad,stop:'撞機'};
+      if(c.S){L.push(['g','第 3 格：高位 0xFFFF、低位 40000 合起來是 −25536 個脈波（−25.5 mm），超出軟體極限。PLC 拒絕，異常碼 2；LabVIEW 停下來，顯示目標值']);return R('拒絕');}
+      L.push(['r','第 3 格：目標變成 −25.5 mm，平台往反方向衝，撞到負方向的硬體極限才停（驅動器的 LSN），探針頭撞到托盤外框']);crash=true;pts.push([0,40,'x']);return R('撞機');
     }
     if(sc==='noz'&&i===2){
-      if(c.Z){L.push(['g','第 3 格：PLC 拒絕，異常碼 3「Z 軸未上升」。探針頭還壓在第 2 片上，什麼都沒動。LabVIEW 顯示流程錯誤']);return {L,pts,t,crash,ok,bad,stop:'拒絕'};}
-      L.push(['r','第 3 格：探針頭還壓在第 2 片上就橫移：探針斷了兩根，第 2 片板子刮傷']);crash=true;pts.push([25,25,'x']);return {L,pts,t,crash,ok,bad,stop:'撞機'};
+      if(c.Z){L.push(['g','第 3 格：PLC 拒絕，異常碼 3「Z 軸未上升」。探針頭還壓在第 2 片上，什麼都沒動。LabVIEW 顯示流程錯誤']);return R('拒絕');}
+      L.push(['r','第 3 格：探針頭還壓在第 2 片上就橫移：探針斷了兩根，第 2 片板子刮傷']);crash=true;pts.push([25,25,'x']);return R('撞機');
     }
     const d=Math.hypot(tgt[0]-pos[0],tgt[1]-pos[1]);t+=mv(d);
     let act=tgt.slice();
-    if(sc==='nohome')act=[tgt[0]+35,tgt[1]+22];
-    if(sc==='step'&&i>=2){drift=0.6;act=[tgt[0]+drift,tgt[1]];}
+    if(sc==='step'&&i>=2)act=[tgt[0]-0.6,tgt[1]];
     pos=tgt;t+=0.6;            // Z 下、上
-    if(sc==='nohome'&&(act[0]>60||act[1]>60)){L.push(['r','第 '+(i+1)+' 格：實際位置超出平台範圍，撞到硬體極限停下。（軟體極限沒有用：PLC 以為自己在 ('+tgt.join(', ')+')）']);crash=true;pts.push([Math.min(act[0],60),Math.min(act[1],60),'x']);return {L,pts,t,crash,ok,bad,stop:'撞機'};}
     const off=Math.hypot(act[0]-tgt[0],act[1]-tgt[1]);
     pts.push([act[0],act[1],off>0.3?'b':'o']);
     if(off>0.3){bad++;L.push(['r','第 '+(i+1)+' 格：探針偏了 '+off.toFixed(1)+' mm，沒壓到測試點，燒錄回「No target」（W18 的 BF8 重試兩次也一樣）'+(sc==='step'?'。步進馬達沒有到位信號，PLC 和 LabVIEW 都以為到了':'')]);t+=10;}
     else{ok++;t+=8;}
   }
-  if(sc==='inp')L.push([c.I?'y':'r',c.I?'每一次移動都要多等 1.2 秒才 INP，四格多了將近 5 秒。到位範圍要配合需要的精度設，不是越嚴越好（W16 的節拍）':'沒有等 INP：PLC 送完脈波就回「完成」，伺服還在追，探針在平台還在動的時候壓下去。這次剛好都對到，但沒有保證']);
-  if(sc==='step'){if(c.R)L.push(['y','盤子跑完回原點：PLC 送了該送的脈波，原點感測器卻提早 0.6 mm 就碰到了。LabVIEW 比對後報警「回原點偏差 0.6 mm」，停機檢查。第 3、4 片已經 FAIL，但下一盤不會再錯']);else L.push(['r','沒有人知道失步了：下一盤、下下一盤，第 3、4 格都 FAIL。作業員以為是板子的問題']);}
-  return {L,pts,t,crash,ok,bad,stop:''};
+  if(sc==='inp')L.push([c.I?'y':'r',c.I?'每一次移動都等到 INP 才算完成，四格多了將近 5 秒。到位範圍要配合需要的精度設，不是越嚴越好（W16 的節拍）':'沒有等 INP：PLC 送完脈波就回「完成」，比較快，但伺服還在追，探針在平台還在動的時候壓下去。這次剛好都對到，但<b>沒有保證</b>：等 INP 是用時間換保證']);
+  if(sc==='step'){if(c.R)L.push(['y','盤子跑完回原點：平台實際比 PLC 以為的更靠近原點，原點感測器提早 0.6 mm 就碰到了。LabVIEW 比對後報警「回原點偏差 0.6 mm」，停機檢查。第 3、4 片已經 FAIL，但下一盤不會再錯']);else L.push(['r','沒有人知道失步了：下一盤、下下一盤，第 3、4 格都 FAIL。作業員以為是板子的問題']);}
+  return R('');
 }
 function stageFig(el){
   el.className='fig';el.style.cssText='border:1px solid #c9d6e8;border-radius:6px;padding:10px 12px;background:#f8fbff';
@@ -80,35 +80,33 @@ function stageFig(el){
 }
 
 /* ---- 一步一步寫：XY_Move.vi ---- */
-const SCV=['正常','PLC 拒絕：未回原點（異常碼 1）','PLC 拒絕：Z 軸未上升（異常碼 3）','卡住：一直沒有完成（逾時）'];
+const SCV=['正常','PLC 拒絕：未回原點（異常碼 1）','PLC 拒絕：Z 軸未上升（異常碼 3）','卡住：一直沒有完成（逾時）','通訊斷了（FX_ReadD 出錯）'];
 const mvv={name:'XY_Move.vi',view:'split',ratio:1.5,
  fp:{w:360,h:300,items:[
   {id:'x',k:'num',ctl:true,label:'X mm',x:12,y:8,w:60,v:40,inc:1,dig:3},
   {id:'y',k:'num',ctl:true,label:'Y mm',x:100,y:8,w:60,v:10,inc:1,dig:3},
   {id:'scv',k:'enum',ctl:true,label:'PLC 那邊（模擬用）',options:SCV,x:190,y:8,v:0},
   {id:'px',k:'num',label:'X 脈波（I32）',x:12,y:70,w:80},
-  {id:'hi',k:'num',label:'寫進 D301（高位）',x:120,y:70,w:60},
-  {id:'lo',k:'num',label:'寫進 D300（低位）',x:220,y:70,w:70},
+  {id:'hi',k:'num',label:'D301（高位，U16）',x:120,y:70,w:60},
+  {id:'lo',k:'num',label:'D300（低位，U16）',x:220,y:70,w:70},
   {id:'st',k:'num',label:'D310 狀態',x:12,y:140,w:50},
   {id:'code',k:'num',label:'D311 異常碼',x:110,y:140,w:50},
   {id:'ms',k:'num',label:'等了幾 ms',x:210,y:140,w:70},
   {id:'res',k:'str',label:'結果',x:12,y:200,w:330}]},
- bd:{w:1300,h:430,structs:[{id:'wl',k:'while',x:700,y:20,w:400,h:300}],
+ bd:{w:1320,h:470,structs:[{id:'wl',k:'while',x:700,y:20,w:400,h:380}],
   nodes:[
   {id:'x',k:'ctl',t:'dbl',label:'X mm',x:20,y:40},
   {id:'y',k:'ctl',t:'dbl',label:'Y mm',x:20,y:130},
   {id:'kp',k:'const',t:'dbl',v:1000,x:20,y:86,label:'脈波／mm'},
   {id:'m1',k:'fn',fn:'Multiply',x:110,y:50},
   {id:'m2',k:'fn',fn:'Multiply',x:110,y:130},
-  {id:'r1',k:'fn',fn:'Round To Nearest',x:160,y:50},
-  {id:'r2',k:'fn',fn:'Round To Nearest',x:160,y:130},
-  {id:'i1',k:'fn',fn:'To Long Integer',x:210,y:50},
-  {id:'i2',k:'fn',fn:'To Long Integer',x:210,y:130},
-  {id:'px',k:'ind',t:'i32',label:'X 脈波',x:270,y:10},
-  {id:'sp',k:'fn',fn:'Split Number',x:280,y:50,h:40},
-  {id:'hi',k:'ind',t:'i16',label:'D301',x:350,y:0},
-  {id:'lo',k:'ind',t:'i16',label:'D300',x:440,y:40},
-  {id:'w32',k:'sub',name:'Write32.vi（Split Number ＋ 兩次 FX_WriteD：先低位 D、再高位 D＋1）',icon:['WR','32'],ins:['VISA in','D','I32','error in'],outs:['VISA out','error out'],x:380,y:100,w:56,h:70,color:'#5a6b7d'},
+  {id:'i1',k:'fn',fn:'To Long Integer',x:180,y:50},
+  {id:'i2',k:'fn',fn:'To Long Integer',x:180,y:130},
+  {id:'px',k:'ind',t:'i32',label:'X 脈波',x:250,y:10},
+  {id:'sp',k:'fn',fn:'Split Number',x:260,y:50,h:40},
+  {id:'hi',k:'ind',t:'u16',label:'D301',x:340,y:0},
+  {id:'lo',k:'ind',t:'u16',label:'D300',x:430,y:40},
+  {id:'w32',k:'sub',name:'Write32.vi（Split Number ＋ 兩次 FX_WriteD：低位 D、高位 D＋1，兩個都寫）',icon:['WR','32'],ins:['VISA in','D','I32','error in'],outs:['VISA out','error out'],x:380,y:100,w:56,h:70,color:'#5a6b7d'},
   {id:'kd0',k:'const',t:'i32',v:300,x:330,y:190},
   {id:'w32b',k:'sub',name:'Write32.vi（Y：D302、D303）',icon:['WR','32'],ins:['VISA in','D','I32','error in'],outs:['VISA out','error out'],x:470,y:100,w:56,h:70,color:'#5a6b7d'},
   {id:'kd2',k:'const',t:'i32',v:302,x:430,y:200},
@@ -116,89 +114,97 @@ const mvv={name:'XY_Move.vi',view:'split',ratio:1.5,
   {id:'kd4',k:'const',t:'i32',v:304,x:520,y:200},
   {id:'k1',k:'const',t:'i32',v:1,x:540,y:240,label:'1 ＝ 移動'},
   {id:'visa',k:'ctl',t:'visa',label:'VISA（L13）',x:20,y:220},
-  {id:'tk0',k:'fn',fn:'Tick Count (ms)',x:620,y:280},
+  {id:'tk0',k:'sub',name:'Tick_err.vi（W16：有 error 線的 Tick Count，接在寫完命令之後）',icon:['⏱','err'],ins:['error in'],outs:['ms','error out'],x:632,y:250,w:50,h:44,color:'#5a6b7d'},
   {id:'tv',k:'tunnel',t:'visa',s:'wl',side:'l',y:110},
-  {id:'te',k:'tunnel',t:'err',s:'wl',side:'l',y:150},
-  {id:'tt',k:'tunnel',t:'u32',s:'wl',side:'l',y:290},
+  {id:'se',k:'sr',t:'err',s:'wl',y:150},
+  {id:'tt',k:'tunnel',t:'u32',s:'wl',side:'l',y:262},
   {id:'rd',k:'sub',name:'FX_ReadD.vi（L13）：D310 起讀 2 個字',icon:['READ','D'],ins:['VISA in','D','Count','error in'],outs:['VISA out','Words','error out'],x:770,y:90,w:60,h:80,color:'#5a6b7d'},
   {id:'kd10',k:'const',t:'i32',v:310,x:712,y:200},
   {id:'k2c',k:'const',t:'i32',v:2,x:712,y:236},
   {id:'ia',k:'fn',fn:'Index Array',ins:['array'],outs:['狀態','異常碼'],x:850,y:100,h:40},
-  {id:'k2',k:'const',t:'i32',v:2,x:860,y:180},
+  {id:'k2',k:'const',t:'u16',v:2,x:860,y:180},
   {id:'ge',k:'fn',fn:'Greater Or Equal?',x:910,y:110},
-  {id:'tk',k:'fn',fn:'Tick Count (ms)',x:820,y:250},
+  {id:'tk',k:'fn',fn:'Tick Count (ms)',x:790,y:200},
   {id:'sub',k:'fn',fn:'Subtract',x:880,y:256},
-  {id:'klim',k:'const',t:'u32',v:3000,x:880,y:300,label:'逾時 ms（依距離算）'},
-  {id:'gt',k:'fn',fn:'Greater?',x:960,y:262},
-  {id:'or',k:'fn',fn:'Or',x:1010,y:200},
+  {id:'klim',k:'const',t:'u32',v:3000,x:870,y:300,label:'逾時 ms（依距離算）'},
+  {id:'gt',k:'fn',fn:'Greater?',x:930,y:262},
+  {id:'or',k:'fn',fn:'Or',x:975,y:200},
+  {id:'ub',k:'fn',fn:'Unbundle By Name',outs:['status'],x:960,y:330},
+  {id:'or2',k:'fn',fn:'Or',x:1020,y:290},
   {id:'wt',k:'fn',fn:'Wait (ms)',x:960,y:40},
   {id:'k50',k:'const',t:'i32',v:50,x:910,y:40},
   {id:'cond',k:'stop',s:'wl'},
-  {id:'tst',k:'tunnel',t:'i32',s:'wl',side:'r',y:180},
-  {id:'tto',k:'tunnel',t:'bool',s:'wl',side:'r',y:270},
-  {id:'k0',k:'const',t:'i32',v:0,x:1120,y:340,label:'0 ＝ 收到了'},
-  {id:'k9',k:'const',t:'i32',v:9,x:1120,y:300,label:'9 ＝ 停止'},
-  {id:'sel',k:'fn',fn:'Select',x:1180,y:300},
-  {id:'wc2',k:'sub',name:'FX_WriteD.vi：D304 ＝ 0（或逾時送 9）',icon:['WRITE','D'],ins:['D','Value'],outs:['error out'],x:1220,y:200,w:56,h:56,color:'#5a6b7d'},
-  {id:'kd4b',k:'const',t:'i32',v:304,x:1150,y:220},
-  {id:'st',k:'ind',t:'i32',label:'D310 狀態',x:1140,y:110}],
+  {id:'tst',k:'tunnel',t:'u16',s:'wl',side:'r',y:180},
+  {id:'tto',k:'tunnel',t:'bool',s:'wl',side:'r',y:250},
+  {id:'k0',k:'const',t:'i32',v:0,x:1130,y:380,label:'0 ＝ 收到了'},
+  {id:'k9',k:'const',t:'i32',v:9,x:1130,y:330,label:'9 ＝ 停止'},
+  {id:'sel',k:'fn',fn:'Select',x:1190,y:310},
+  {id:'wc2',k:'sub',name:'FX_WriteD.vi：D304 ＝ 0（或逾時送 9）',icon:['WRITE','D'],ins:['D','Value','error in'],outs:['error out'],x:1240,y:200,w:56,h:64,color:'#5a6b7d'},
+  {id:'kd4b',k:'const',t:'i32',v:304,x:1160,y:230},
+  {id:'st',k:'ind',t:'u16',label:'D310 狀態',x:1150,y:110}],
   wires:[
   {id:'a1',from:'x',to:'m1.x',t:'dbl',mx:95},
   {id:'a2',from:'kp',to:'m1.y',t:'dbl',mx:95},
   {id:'a3',from:'y',to:'m2.x',t:'dbl',mx:95},
   {id:'a4',from:'kp',to:'m2.y',t:'dbl',mx:100},
-  {id:'a5',from:'m1.out',to:'r1',t:'dbl'},{id:'a6',from:'r1.out',to:'i1',t:'dbl'},
-  {id:'a7',from:'m2.out',to:'r2',t:'dbl'},{id:'a8',from:'r2.out',to:'i2',t:'dbl'},
-  {id:'a9',from:'i1.out',to:'px',t:'i32',mx:255},
+  {id:'a5',from:'m1.out',to:'i1',t:'dbl'},
+  {id:'a7',from:'m2.out',to:'i2',t:'dbl'},
+  {id:'a9',from:'i1.out',to:'px',t:'i32',mx:235},
   {id:'a10',from:'i1.out',to:'sp',t:'i32'},
-  {id:'a11',from:'sp.hi(x)',to:'hi',t:'i16',mx:340},
-  {id:'a12',from:'sp.lo(x)',to:'lo',t:'i16',mx:345},
-  {id:'b1',from:'i1.out',to:'w32.I32',t:'i32',pts:[[240,66],[255,66],[255,150],[380,150]]},
+  {id:'a11',from:'sp.hi(x)',to:'hi',t:'u16',mx:325},
+  {id:'a12',from:'sp.lo(x)',to:'lo',t:'u16',mx:330},
+  {id:'b1',from:'i1.out',to:'w32.I32',t:'i32',pts:[[210,66],[240,66],[240,150],[380,150]]},
   {id:'b2',from:'kd0',to:'w32.D',t:'i32',mx:365},
   {id:'b3',from:'visa',to:'w32.VISA in',t:'visa',pts:[[60,228],[300,228],[300,110],[380,110]]},
   {id:'b4',from:'w32.VISA out',to:'w32b.VISA in',t:'visa'},
   {id:'b5',from:'w32.error out',to:'w32b.error in',t:'err'},
-  {id:'b6',from:'i2.out',to:'w32b.I32',t:'i32',pts:[[240,146],[250,146],[250,172],[455,172],[455,150],[470,150]]},
+  {id:'b6',from:'i2.out',to:'w32b.I32',t:'i32',pts:[[210,146],[230,146],[230,172],[455,172],[455,150],[470,150]]},
   {id:'b7',from:'kd2',to:'w32b.D',t:'i32',mx:458},
   {id:'b8',from:'w32b.VISA out',to:'wc.VISA in',t:'visa'},
   {id:'b9',from:'w32b.error out',to:'wc.error in',t:'err'},
   {id:'b10',from:'kd4',to:'wc.D',t:'i32',mx:556},
   {id:'b11',from:'k1',to:'wc.Value',t:'i32',mx:560},
   {id:'c1',from:'wc.VISA out',to:'tv.o',t:'visa'},
-  {id:'c2',from:'wc.error out',to:'te.o',t:'err'},
-  {id:'c3',from:'tk0.millisecond timer value',to:'tt.o',t:'u32'},
+  {id:'c2',from:'wc.error out',to:'tk0.error in',t:'err',mx:629},
+  {id:'c2b',from:'tk0.error out',to:'se.init',t:'err',mx:692},
+  {id:'c3',from:'tk0.ms',to:'tt.o',t:'u32',mx:688},
   {id:'c4',from:'tv.i',to:'rd.VISA in',t:'visa'},
-  {id:'c5',from:'te.i',to:'rd.error in',t:'err',mx:750},
+  {id:'c5',from:'se.L',to:'rd.error in',t:'err',mx:750},
   {id:'c6',from:'kd10',to:'rd.D',t:'i32',mx:754},
   {id:'c7',from:'k2c',to:'rd.Count',t:'i32',mx:758},
-  {id:'c8',from:'rd.Words',to:'ia',t:'i32[]'},
-  {id:'c9',from:'ia.狀態',to:'ge.x',t:'i32',mx:895},
-  {id:'c10',from:'k2',to:'ge.y',t:'i32',mx:900},
+  {id:'c8',from:'rd.Words',to:'ia',t:'u16[]'},
+  {id:'c9',from:'ia.狀態',to:'ge.x',t:'u16',mx:895},
+  {id:'c10',from:'k2',to:'ge.y',t:'u16',mx:900},
   {id:'c11',from:'tk.millisecond timer value',to:'sub.x',t:'u32',mx:868},
   {id:'c12',from:'tt.i',to:'sub.y',t:'u32',mx:860},
-  {id:'c13',from:'sub.out',to:'gt.x',t:'u32',mx:945},
-  {id:'c14',from:'klim',to:'gt.y',t:'u32',mx:948},
-  {id:'c15',from:'ge.out',to:'or.x',t:'bool',mx:990},
-  {id:'c16',from:'gt.out',to:'or.y',t:'bool',mx:995},
-  {id:'c17',from:'or.out',to:'cond',t:'bool'},
+  {id:'c13',from:'sub.out',to:'gt.x',t:'u32',mx:920},
+  {id:'c14',from:'klim',to:'gt.y',t:'u32',mx:922},
+  {id:'c15',from:'ge.out',to:'or.x',t:'bool',mx:960},
+  {id:'c16',from:'gt.out',to:'or.y',t:'bool',mx:968},
+  {id:'e1',from:'rd.error out',to:'se.R',t:'err',pts:[[836,162],[846,162],[846,392],[1092,392],[1092,150]]},
+  {id:'e2',from:'rd.error out',to:'ub',t:'err',pts:[[836,162],[846,162],[846,346],[960,346]]},
+  {id:'e3',from:'or.out',to:'or2.x',t:'bool',mx:1012},
+  {id:'e4',from:'ub.status',to:'or2.y',t:'bool',mx:1018},
+  {id:'c17',from:'or2.out',to:'cond',t:'bool',mx:1058},
   {id:'c18',from:'k50',to:'wt',t:'i32'},
-  {id:'c19',from:'ia.狀態',to:'tst.i',t:'i32',mx:895},
-  {id:'c20',from:'gt.out',to:'tto.i',t:'bool',mx:1050},
-  {id:'d1',from:'tst.o',to:'st',t:'i32'},
-  {id:'d2',from:'tto.o',to:'sel.s',t:'bool',mx:1150},
-  {id:'d3',from:'k9',to:'sel.t',t:'i32',mx:1165},
-  {id:'d4',from:'k0',to:'sel.f',t:'i32',mx:1168},
-  {id:'d5',from:'sel.out',to:'wc2.Value',t:'i32',mx:1212},
-  {id:'d6',from:'kd4b',to:'wc2.D',t:'i32',mx:1205}]},
+  {id:'c19',from:'ia.狀態',to:'tst.i',t:'u16',mx:895},
+  {id:'c20',from:'gt.out',to:'tto.i',t:'bool',mx:1030},
+  {id:'d1',from:'tst.o',to:'st',t:'u16'},
+  {id:'d2',from:'tto.o',to:'sel.s',t:'bool',mx:1160},
+  {id:'d3',from:'k9',to:'sel.t',t:'i32',mx:1175},
+  {id:'d4',from:'k0',to:'sel.f',t:'i32',mx:1178},
+  {id:'d5',from:'sel.out',to:'wc2.Value',t:'i32',mx:1230},
+  {id:'d6',from:'kd4b',to:'wc2.D',t:'i32',mx:1225},
+  {id:'d7',from:'se.out',to:'wc2.error in',t:'err',mx:1220}]},
  sim:{init:()=>({}),
   step(inp){
    const px=Math.round((+inp.x||0)*1000),n=+inp.scv||0;
-   const hi=px>>16,lo=((px&0xffff)<<16)>>16;
-   const st=[2,3,3,1][n],code=[0,1,3,0][n],ms=[620,60,60,3050][n];
-   const res=n===0?'到位完成：讀目前位置記錄，寫 D304 ＝ 0':n===1?'PLC 拒絕：未回原點。顯示「請先原點復歸」，寫 D304 ＝ 0':n===2?'PLC 拒絕：Z 軸未上升。這是流程錯誤，停下來通知工程師':'逾時：送 D304 ＝ 9（停止），報警，這一格判 ERROR';
+   const hi=(px>>>16)&0xffff,lo=px&0xffff,s16=lo>32767?lo-65536:lo;
+   const st=[2,3,3,1,0][n],code=[0,1,3,0,0][n],ms=[620,60,60,3050,50][n];
+   const res=n===0?'到位完成：讀目前位置記錄，寫 D304 ＝ 0':n===1?'PLC 拒絕：未回原點。顯示「請先原點復歸」，寫 D304 ＝ 0':n===2?'PLC 拒絕：Z 軸未上升。這是流程錯誤，停下來通知工程師':n===3?'逾時：送 D304 ＝ 9（停止），報警，這一格判 ERROR':'通訊錯誤：第一圈就從錯誤離開迴圈（不用等到逾時），錯誤碼留下來顯示；平台狀態不明，停機、通知工程師';
    return {out:{px,hi,lo,st,code,ms,res},
-    vals:{'m1.out':px,'i1.out':px,'sp.hi(x)':hi,'sp.lo(x)':lo,'ia.狀態':st,'ia.異常碼':code,'sub.out':ms,'ge.out':st>=2,'gt.out':n===3,'or.out':true,'sel.out':n===3?9:0},
-    msg:'X '+(+inp.x).toFixed(3)+' mm ＝ '+px+' 脈波 → 高位 '+hi+'、低位 '+lo+(px>32767?'（超過 32767：只寫低位字，PLC 會讀成 '+lo+'）':'')+'。'+res};},
+    vals:{'m1.out':px,'i1.out':px,'sp.hi(x)':hi,'sp.lo(x)':lo,'ia.狀態':st,'ia.異常碼':code,'sub.out':ms,'ge.out':st>=2,'gt.out':n===3,'or.out':st>=2||n===3,'ub.status':n===4,'or2.out':true,'sel.out':n===3?9:0},
+    msg:'X '+(+inp.x).toFixed(3)+' mm ＝ '+px+' 脈波 → 高位 '+hi+'、低位 '+lo+'（兩個 U16，兩個都寫）。'+(px>32767?'低位 '+lo+' 超過 32767：如果 PLC 用 16 位元的 DRVA 只讀 D300，會當成 '+s16+'。':'')+res};},
   doneMsg:'改 X 或 PLC 那邊的情況再 Run'}
 };
 
@@ -207,9 +213,9 @@ goals:[['學會','PC、PLC、驅動器怎麼分工；為什麼開機一定要先
 check:'不看課文，能說出為什麼要先回原點、哪些保護不能只放在 LabVIEW、「脈波送完」和「到位」的差別、超過 32767 個脈波要怎麼寫，以及交握的順序和逾時。',
 body:[
 C.h3('這一課的工作','x','會動的東西'),
-`<p>前面的測試站，最危險的事是「判錯」。這一課的機台會動：最危險的事是<b>撞</b>。程式寫錯，壞的不再只是一筆資料，而是探針、治具、板子，甚至人的手。所以這一課的重點不是怎麼讓它動，而是<b>什麼情況下不准它動、誰來擋</b>。</p>`,
+`<p>這一台叫 <b>FL02</b>，test_id 開頭是 <code>FL02-</code>（W1 的共同設定表）。前面的測試站，最危險的事是「判錯」。這一課的機台會動：最危險的事是<b>撞</b>。程式寫錯，壞的不再只是一筆資料，而是探針、治具、板子，甚至人的手。所以這一課的重點不是怎麼讓它動，而是<b>什麼情況下不准它動、誰來擋</b>。</p>`,
 C.h3('① 聽懂需求','','生產主管的原話'),
-`<div class="fig" style="background:#fffdf3;border:1px solid #e8dca8;border-radius:6px;padding:10px 14px"><p>「W18 的燒錄站一次只能放一片，作業員一直換板子。做一台有 XY 平台的：托盤一次放 4 片（2×2），平台帶著燒錄探針頭一片一片移過去，氣缸壓下去燒、燒完抬起來換下一片。作業員只要換托盤。」</p></div>`,
+`<div class="fig" style="background:#fffdf3;border:1px solid #e8dca8;border-radius:6px;padding:10px 14px"><p>「W18 的燒錄站（FL01）一次只能放一片，作業員一直換板子。做一台有 XY 平台的：托盤一次放 4 片（2×2），平台帶著燒錄探針頭一片一片移過去，氣缸壓下去燒、燒完抬起來換下一片。作業員只要換托盤。」</p></div>`,
 ask('為什麼不用一個治具一次壓 4 片、4 台燒錄器同時燒？',
  `<p>也可以，那是「四頭並行」：最快，但要 4 台燒錄器、4 組探針、治具也大。這台的做法是一套燒錄器、一個探針頭，靠平台移動：比較便宜，換產品時只要改座標表（像 W11 的配方），代價是四片一片一片燒，比較慢。這是 W16 的節拍取捨，要和生產主管一起算。</p>
  <p>另外，同一片板子上的好幾個點，產線會用針床治具一次壓下去（W6、W10）；用 XY 平台一點一點去壓，是飛針測試機的做法，很慢，只適合少量多樣。這一課的平台移動的是「片和片之間」，不是同一片上的點。</p>`),
@@ -233,9 +239,9 @@ C.table(['項目','FX3S（電晶體輸出）','注意'],[
 ]),
 note('特殊暫存器的編號要自己核對','目前值、最高速度、爬行速度、加減速時間這些特殊暫存器（D8340 起）和旗標的編號，網路上找得到的多半是 FX3U／FX3G 手冊。FX3S 看起來相同，但寫程式前一定要在 FX3S 的定位手冊上核對一次。'),
 C.table(['I/O','用途','點數'],[
- ['輸出','X、Y 脈波 2、方向 2；Z 軸氣缸電磁閥 1','5'],
- ['輸入','X、Y 的 DOG 2；Z 上、下感測器 2；X、Y 驅動器警報 2；X、Y 到位 INP 2；急停狀態 1','9'],
- ['','FX3S-20M 是 12 入 8 出：剩下的點不多，再加按鈕、指示燈就不夠了','實際上常要加擴充，或換 FX3U']
+ ['輸出','X、Y 脈波 2、方向 2；Z 軸氣缸電磁閥 1；伺服 ON（兩軸可以共用）1；原點復歸後清偏差的 CLEAR 信號（看驅動器的接法）0～2','約 7'],
+ ['輸入','X、Y 的 DOG 2；Z 相 2；Z 上、下感測器 2；X、Y 驅動器警報 2；X、Y 到位 INP 2；急停狀態 1；開始、原點復歸按鈕 2','約 13'],
+ ['','FX3S-20M 是 12 入 8 出：<b>已經不夠</b>','實際上要加擴充，或換 FX3U']
 ]),
 C.h3('④ 原點、極限、到位','','三個觀念'),
 `<p><b>原點</b>：PLC 的目前值（D8340）只是「從開機起送出去幾個脈波」。斷過電、PLC 重開、急停、驅動器警報之後，這個數字和平台實際的位置就沒有關係了。所以：</p>
@@ -247,9 +253,9 @@ C.h3('④ 原點、極限、到位','','三個觀念'),
 C.h3('⑤ 先在托盤模擬上試','','五種會撞、會錯的情況'),
 `<p>先選一種情況、所有保護都不勾，看會發生什麼事；再一項一項勾上去，看哪一項擋住了它。目標：每一種情況，都是<b>被擋下（什麼都沒壞）</b>或<b>被發現</b>，而不是撞機或默默做錯。</p>`,
 {fn:stageFig},
-ask('「只寫了低位字」為什麼會變成 105.5 mm？',
- `<p>40.000 mm × 1000 ＝ 40000 個脈波，超過 16 位元的 32767，要用兩個字（D300 低位、D301 高位），PLC 用 32 位元的 DDRVA。舊程式只寫了 D300，D301 裡還留著上一次的 1：PLC 讀到的是 1 × 65536 ＋ 40000 ＝ 105536。</p>
- <p>反過來，如果 PLC 用的是 16 位元的 DRVA，40000 會被讀成 −25536，平台往反方向衝。兩種錯都要靠<b>驗收時用一個大於 32767 的目標測一次</b>，平常只跑小座標根本看不出來。軟體極限是最後一道：它擋得住「超出範圍」的錯，擋不住「在範圍內但是錯」的錯。</p>`),
+ask('「只寫了低位字」為什麼會往反方向衝？',
+ `<p>目標用兩個字：D300 低位、D301 高位，PLC 用 32 位元的 DDRVA 讀。上一次有人寸動時送過一個負座標，負數的高位字是 0xFFFF，一直留在 D301。這次舊程式只寫了 D300 ＝ 40000：PLC 讀到的是 0xFFFF 和 40000 合起來的 −25536，平台往反方向衝。</p>
+ <p>這個平台只有 0～60 mm，正常的目標高位都是 0：只寫低位平常<b>剛好對</b>，所以這個錯一直沒被發現，直到有人送過負座標。解法是兩個字都寫。軟體極限是最後一道：它擋得住「超出範圍」的錯，擋不住「在範圍內但是錯」的錯。</p>`),
 ask('步進馬達失步，為什麼 PLC 和 LabVIEW 都不知道？',
  `<p>步進馬達是開迴路：PLC 送了脈波，就假設它走到了，沒有編碼器回報，也沒有 INP。負載太重、加速太快、遇到共振，少走了幾步，誰也不知道，一直錯到下一次回原點。</p>
  <p>對策：加速放緩、避開共振的轉速；定期回原點，回原點時比對「應該送幾個脈波才碰到原點」和實際的差（模擬裡的最後一項）；要求高的話改用閉迴路步進或伺服。</p>`),
@@ -264,14 +270,14 @@ C.table(['位址','誰寫','內容'],[
  ['D311','PLC','異常碼：1 未回原點、2 超出軟體極限、3 Z 軸未上升、4 異常結束、5 驅動器警報'],
  ['D312～D315','PLC','目前位置 X、Y（指令位置）']
 ]),
-`<p>交握照 W11、W13 的規則：<b>資料先放好、再舉旗子；對方回應了才放下旗子；開始前確認上一次已經結束；逾時就當失敗</b>。新的只有兩件：PLC 收到命令會先檢查前置條件，不合格就<b>拒絕並回報原因、不偷偷修正</b>；「完成」是實際到位，不是脈波送完。（位址和 W7 的 D200～D203、W11 的 D210～D222 不重疊。）</p>`,
+`<p>交握照 W11、W13 的規則：<b>資料先放好、再舉旗子；對方回應了才放下旗子；開始前確認上一次已經結束；逾時就當失敗</b>。新的只有兩件：PLC 收到命令會先檢查前置條件，不合格就<b>拒絕並回報原因、不偷偷修正</b>；「完成」是實際到位，不是脈波送完。（位址和 W7 的 D200～D203、W11 的 D210～D222 不重疊；D300 起在 FX3S 的停電保持區之外，斷電會清 0：命令和狀態本來就不該在斷電後留著，正好。）</p>`,
 {steps:{title:'XY_Move.vi：mm → 脈波 → 寫目標 → 寫命令 → 輪詢 → 清命令',lv:mvv,steps:[
- {t:'mm 換成脈波',view:'split',add:['x','y','kp','m1','m2','a1','a2','a3','a4','r1','r2','a5','a6','a7','a8','i1','i2','px','a9'],h:`<p>脈波數 ＝ mm × 每 mm 脈波數（導程 10 mm、每轉 10000 脈波 → 1000）。先 Round To Nearest，再 To Long Integer（I32）：直接轉型會截掉小數，39.9996 mm 會少一個脈波。</p><p>每 mm 脈波數放在設定檔，和驅動器的電子齒輪比一起寫進交機文件：有人改了驅動器參數、這裡沒改，就是「單位換算錯」的撞機。</p>`},
- {t:'32 位元拆成兩個字',view:'split',add:['sp','a10','hi','a11','lo','a12'],h:`<p>Split Number 把 I32 拆成高位（hi）、低位（lo）兩個 16 位元的字。40000 個脈波：高位 0、低位 −25536（同樣的 16 個位元，當有號數看就是負的）。PLC 用 DDRVA 把 D300、D301 當成一個 32 位元的數，就是 40000。</p><p>Write32.vi 裡面就是這一步加兩次 FX_WriteD（L14）：先寫低位 D，再寫高位 D＋1。</p>`},
+ {t:'mm 換成脈波',view:'split',add:['x','y','kp','m1','m2','a1','a2','a3','a4','a5','a7','i1','i2','px','a9'],h:`<p>脈波數 ＝ mm × 每 mm 脈波數（導程 10 mm、每轉 10000 脈波 → 1000）。To Long Integer 轉成 I32：它會<b>四捨五入</b>到最接近的整數（剛好 .5 時取偶數，13.5 → 14、14.5 → 14），39.9996 mm 會變成 40000。換成 C 或 Python 寫，<code>int()</code> 是直接截掉小數的，會少一個脈波：換語言時要注意。</p><p>每 mm 脈波數放在設定檔，和驅動器的電子齒輪比一起寫進交機文件：有人改了驅動器參數、這裡沒改，就是「單位換算錯」的撞機。</p>`},
+ {t:'32 位元拆成兩個字',view:'split',add:['sp','a10','hi','a11','lo','a12'],h:`<p>Split Number 把 I32 拆成高位（hi）、低位（lo）兩個 <b>U16</b>（無號）。40000 個脈波：高位 0、低位 40000，直接接到 FX_WriteD 的 Value（也是 U16）。PLC 用 DDRVA 把 D300、D301 當成一個 32 位元的數，就是 40000。</p><p>同一組 16 個位元，當有號數看是 −25536：如果 PLC 錯用了 16 位元的 DRVA 只讀 D300，或你在 GX Works2 用有號顯示，看到的就是 −25536。</p><p>Write32.vi 裡面就是這一步加兩次 FX_WriteD（L14）：先寫低位 D，再寫高位 D＋1。<b>高位是 0 也要寫</b>：D301 裡可能還留著上一次的值（例如負座標留下的 0xFFFF）。</p>`},
  {t:'寫目標，最後寫命令',view:'split',add:['visa','w32','kd0','b1','b2','b3','w32b','kd2','b4','b5','b6','b7','wc','kd4','k1','b8','b9','b10','b11'],h:`<p>錯誤線把順序排好：X 目標 → Y 目標 → <b>最後</b>才寫 D304 ＝ 1。FX_WriteD 一次只寫一個字，兩軸的目標要寫好幾次；命令最後寫，PLC 看到命令時，四個字都已經放好了。</p><p>開始之前還要先讀一次 D310，確認是 0（待命）：上一次的交握已經結束。（圖上省略，和 W13 的 ⓪ 一樣。）</p>`},
- {t:'輪詢到完成或逾時',view:'split',add:['wl','tk0','tv','te','tt','c1','c2','c3','rd','kd10','k2c','c4','c5','c6','c7','ia','c8','k2','ge','c9','c10','tk','sub','c11','c12','klim','gt','c13','c14','or','c15','c16','cond','c17','wt','k50','c18'],h:`<p>每 50 ms 讀一次 D310、D311（FX_ReadD 一次讀 2 個字）。狀態 ≥ 2（完成或異常）就離開迴圈。</p><p>逾時：迴圈前記下 Tick Count，每一圈相減。逾時要<b>依距離算</b>：距離 ÷ 速度 ＋ 加減速時間，乘 2 再加 1 秒。固定寫 10 秒，短的移動卡住要等很久才發現；寫太短，長的移動會被誤判。</p>`},
- {t:'清命令',view:'split',add:['tst','tto','c19','c20','st','d1','code','ms','res','scv','k0','k9','sel','d2','d3','d4','wc2','kd4b','d5','d6'],h:`<p>完成或異常：讀目前位置記錄下來，寫 D304 ＝ 0，表示「收到了」；PLC 看到 0，把 D310 清回 0。逾時：寫 D304 ＝ 9（停止），報警，這一格判 ERROR。</p><p>狀態 3 時，D311 的異常碼要轉成中文顯示給作業員（W17 的代碼對照表）。1「未回原點」：提示按原點復歸；3「Z 軸未上升」：這是 LabVIEW 流程的錯，停下來通知工程師。</p>`},
- {t:'Run',view:'split',add:[],h:`<p>先用 X ＝ 40、正常 Run：看 40000 被拆成高位 0、低位 −25536。再試 PLC 拒絕和逾時。最後把 X 改成 30（30000，沒超過 32767）：高位 0，低位就是 30000。<b>32.767 mm 以下，只寫低位也剛好對</b>：這就是為什麼這個錯平常看不出來。</p>`}
+ {t:'輪詢到完成或逾時',view:'split',add:['wl','tk0','tv','se','tt','c1','c2','c2b','c3','rd','kd10','k2c','c4','c5','c6','c7','ia','c8','k2','ge','c9','c10','tk','sub','c11','c12','klim','gt','c13','c14','or','c15','c16','e1','e2','ub','e3','e4','or2','cond','c17','wt','k50','c18'],h:`<p>每 50 ms 讀一次 D310、D311（FX_ReadD 一次讀 2 個字，Words 是 U16 陣列）。狀態 ≥ 2（完成或異常）就離開迴圈。</p><p>錯誤線走 Shift Register：通訊斷了，FX_ReadD 的錯誤留到下一圈，也接到停止條件（Unbundle 出 status 再 Or）：<b>第一次出錯就離開</b>，不用等到逾時，錯誤碼也看得到。</p><p>迴圈前的起始時間用一個有 error 線的 Tick Count（W16 講過的寫法），接在寫完命令之後：一般的 Tick Count 沒有輸入，LabVIEW 可能在寫目標之前就先執行它，時間就算錯了。</p><p>逾時：迴圈前記下 Tick Count，每一圈相減。逾時要<b>依距離算</b>：距離 ÷ 速度 ＋ 加減速時間，乘 2 再加 1 秒。固定寫 10 秒，短的移動卡住要等很久才發現；寫太短，長的移動會被誤判。</p>`},
+ {t:'清命令',view:'split',add:['tst','tto','c19','c20','st','d1','code','ms','res','scv','k0','k9','sel','d2','d3','d4','wc2','kd4b','d5','d6','d7'],h:`<p>完成或異常：讀目前位置記錄下來，寫 D304 ＝ 0，表示「收到了」；PLC 看到 0，把 D310 清回 0。逾時：寫 D304 ＝ 9（停止），報警，這一格判 ERROR。</p><p>和 L17 的 D106 不一樣：D106 是 PLC 收到就自己清 0，只告訴你「收到了」；D304 要等 PLC 回報「做完了、結果如何」，所以由 LabVIEW 看到結果之後才清。</p><p>狀態 3 時，D311 的異常碼要轉成中文顯示給作業員（W17 的代碼對照表）。1「未回原點」：提示按原點復歸；3「Z 軸未上升」：這是 LabVIEW 流程的錯，停下來通知工程師。</p>`},
+ {t:'Run',view:'split',add:[],h:`<p>先用 X ＝ 40、正常 Run：40000 被拆成高位 0、低位 40000。再試 PLC 拒絕、逾時、通訊斷了。</p><p>32 位元有兩種不同的錯，驗收時要分別測：</p><ul><li><b>PLC 用了 16 位元的 DRVA</b>：只讀 D300，超過 32767（32.767 mm）才出錯，40000 會變成 −25536。小座標都對，所以平常看不出來。驗收時用一個<b>大於 32767 的目標</b>測。</li><li><b>LabVIEW 只寫低位字</b>：高位字是上一次留下的。上一次是正的小座標（高位 0）就剛好對；上一次送過負座標（高位 0xFFFF），這次 40000 就變成 −25536，小座標也會錯。驗收時先送一個<b>負目標</b>，再送正目標。</li></ul>`}
 ]}},
 C.h3('⑦ 主流程和節拍','','一盤四片'),
 C.table(['步驟','做什麼','約幾秒'],[
@@ -300,7 +306,9 @@ C.h3('測','q','小測驗'),
  {q:'「Z 軸沒上升不准動 XY」應該放在哪裡？',o:['PLC（LabVIEW 也檢查，當第二道）','只放 LabVIEW','只放在作業指導書','不用做'],a:0,ex:'程式寫錯、電腦當機時還要有效。'},
  {q:'急停應該由誰切斷動力？',o:['安全繼電器的硬體接線','LabVIEW','PLC 程式','作業員'],a:0,ex:'切斷動力的不能是軟體。'},
  {q:'「脈波送完」為什麼不等於到位？',o:['伺服可能還在追或被卡住；要看到位信號 INP','脈波會遺失','PLC 會算錯','一定等於'],a:0,ex:'完成要看完成旗標＋INP＋沒有警報。'},
- {q:'目標 40000 個脈波，只寫了低位字，PLC 用 16 位元讀會變成？',o:['−25536','40000','0','32767'],a:0,ex:'超過 32767 就要兩個字。'},
+ {q:'目標 40000 個脈波，PLC 卻用 16 位元的 DRVA 只讀 D300，會變成？',o:['−25536','40000','0','32767'],a:0,ex:'超過 32767 就要兩個字、用 DDRVA。'},
+ {q:'Split Number 把 I32 的 40000 拆開，低位是？',o:['40000（U16）','−25536','0','400'],a:0,ex:'輸出是無號的 U16；−25536 是同樣的位元當有號數看。'},
+ {q:'To Long Integer 把 39999.6 轉成？',o:['40000（四捨五入）','39999（截斷）','錯誤','39999.6'],a:0,ex:'LabVIEW 的轉換是四捨五入；C、Python 的 int() 才是截斷。'},
  {q:'下定位命令的順序？',o:['確認待命 → 寫目標 → 最後寫命令','先寫命令再寫目標','同時寫','只寫命令'],a:0,ex:'資料先放好再舉旗子。'},
  {q:'軟體極限在沒回原點時為什麼擋不住？',o:['它比的是 PLC 以為的位置，原點錯了這個位置就是錯的','它太慢','它只擋 Y 軸','它會自動關掉'],a:0,ex:'所以還要硬體極限，和「沒回原點不准動」。'},
  {q:'教點的目的？',o:['用實際對準的座標，吃掉固定的定位誤差','讓作業員學習','加快速度','不用回原點'],a:0,ex:'重複精度好，就能靠教點。'},
