@@ -255,6 +255,7 @@ C.h3('⑥ 一步一步寫','','Count.vi：計數器差值累加'),
  {t:'累加成本班產量',view:'split',add:['k0b','sr2','w0b','add','w13','w14','w15','total','w16'],h:`<p>第三個 Shift Register（U32，初值 0）累加每一圈的差值。用 U32 是因為一班的產量可能超過 65535。Add 的兩邊是 U16 和 U32，LabVIEW 會自動轉型，接點上出現一個小紅點（coercion dot）：這裡是故意的、不會出錯；介意的話在前面加 To Unsigned Long Integer。</p>`},
  {t:'Run：繞過 0、拔線再接回',view:'split',add:[],h:`<p>D202 從 65530 開始，每圈 +3：繞過 0 之後「這一圈多了幾包」一直是 3。</p><p>跑幾圈後切「讀取失敗」幾秒再切回來：失敗那幾圈是 0，接回來的第一圈一次補回中斷期間多出來的數量。訊息列最後的「PLC 真正多了」和本班產量要一樣。</p>`}
 ]}},
+tip('參考答案','<a href="vi/LV2018/W07_Count.zip" download>W07_Count.zip（LabVIEW 2018）</a>　<a href="vi/W07_Count.zip" download style="font-size:13px">2026 版</a>：解開後保持資料夾結構。W07_sub 裡的 FX_ReadD.vi 是<b>假的</b>（端子位置和 L13 的真 FX_ReadD 一樣，多了 value (sim)、fail (sim)），圖上「SIM ONLY」那一塊在實機上要刪掉。error in 刻意不串：讀不到一次之後，下一次還是要讀。測試版 W07_Count_test.vi 實測四組都對：65530 起每秒 +3，產量 0、3、6、9、12；繞回加一次讀取失敗，最後 16；第一次就讀不到，產量 0、0、5；65530 → 5 這一圈是 11。'),
 C.h3('⑦ 測試、交機','','模擬一個班'),
 `<p>下面是整個監控程式的模擬：上面的時間軸是電腦看到的每一秒，下面是 OEE、停機紀錄、原因排行和班別報表。照驗收表一條一條試。</p>`,
 {fn:oeeSim},
