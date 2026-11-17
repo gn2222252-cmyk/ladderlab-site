@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="5264cff0c4">
+<meta name="ll-version" content="ca7150485e">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>迴圈實驗室：While、For、通道、Shift Register | LadderLab</title>
@@ -123,7 +123,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "5264cff0c4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "ca7150485e" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
