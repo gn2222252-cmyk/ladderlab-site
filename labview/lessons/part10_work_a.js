@@ -168,6 +168,7 @@ C.table(['課','情境','對應的職缺工作'],[
  ['W20','XY 平台定位','伺服、步進、運動規劃（Y15、Y19、Y20、Y03）'],
  ['W21','LabVIEW 和 Python 並用','「LabVIEW 或 Python」、資料分析和報表（Y03、Y09）']
 ]),
+`<p style="font-size:14px">老師備課：<a href="teacher-work.html">實務案例教師版</a>（W6～W21 的評分重點、常見錯誤、課堂建議）。</p>`,
 C.table(['W6 起的共同設定','內容'],[
  ['產品 PM5（12 V 轉 5 V，滿載 2 A）','v1：W6～W14、W16、W17、W19、W21；v1.1（換 MOSFET）：W15；v2（在 v1.1 上加一顆 MCU，要燒錄）：W18、W20'],
  ['序號','<code>PM5-</code> 加 8 位數字'],

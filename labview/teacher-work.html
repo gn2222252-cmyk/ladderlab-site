@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="zh-Hant"><head>
+<meta name="ll-version" content="cb947d9160"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>實務案例教師版｜雙龍門 LabVIEW 課程</title>
+<style>
+:root{--ink:#1f2933;--mut:#5b6876;--line:#d8dee6;--bg:#fbfcfd;--acc:#1f5fa8}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Noto Sans TC","Microsoft JhengHei",sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:26px;margin:8px 0 4px} h2{font-size:21px;margin:36px 0 8px;padding-top:12px;border-top:2px solid var(--line)}
+h3{font-size:16px;margin:16px 0 4px;color:var(--acc)}
+.back{font-size:13px;font-weight:400;margin-left:8px}
+nav{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;margin:12px 0;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:#fff}
+ul.ck{list-style:none;padding-left:4px} ul.ck li{margin:3px 0}
+code{background:#eef2f6;padding:0 4px;border-radius:3px;font-size:14px}
+@media print{nav,.back,.no-print{display:none} h2{break-before:page}}
+</style></head><body><main>
+<p class="no-print"><a href="index.html">← 回 LabVIEW 課程</a>　<a href="../teacher.html">老師專區</a></p>
+<h1>實務案例 W6～W21：教師版</h1>
+<p style="color:var(--mut)">每一課：帶走的事、可以打勾的評分重點、常見錯誤和怎麼發現、課堂建議、要實機確認的事。勾選框只是方便上課時用，重新整理就會清掉。可以直接列印（每一課一頁）。</p>
+<nav><a href="#W6">W6　產線功能測試站（Judge.vi）</a><a href="#W7">W7　設備稼動監控（Count.vi）</a><a href="#W8">W8　接手舊程式（T03_Judge.vi）</a><a href="#W9">W9　測試結果進資料庫</a><a href="#W10">W10　治具開短路測試（Scan.vi）</a><a href="#W11">W11　配方與警報（Alarm_TempLow.vi）</a><a href="#W12">W12　老化燒機記錄（History.vi）</a><a href="#W13">W13　簡易 AOI（Judge_Washer.vi）</a><a href="#W14">W14　現場除錯（FailRate.vi）</a><a href="#W15">W15　特性曲線自動量測（Sweep.vi）</a><a href="#W16">W16　縮短測試時間</a><a href="#W17">W17　上傳 MES（Upload.vi）</a><a href="#W18">W18　燒錄站（Flash.vi）</a><a href="#W19">W19　部署到產線電腦（ConfigPath.vi）</a><a href="#W20">W20　XY 平台定位（XY_Move.vi）</a><a href="#W21">W21　LabVIEW 和 Python 並用（RunPy.vi、yield_report.py）</a></nav>
+<p>共用的東西請先看 W1 的「W6 起的共同設定」表：PM5 的版本、序號格式、站名（A 廠 ST01、ST02；B 廠 ST11、ST12；燒錄站 FL01；XY 平台燒錄站 FL02）、test_id 格式（站號－日期－6 位流水號）、時間線。</p>
+<h2 id="W6">W6　產線功能測試站（Judge.vi） <a class="back" href="index.html#W06">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>上下限放在檔案（limits.csv），程式裡不寫數字；改了要走核准。</li>
+<li>先證明「量得準」再寫程式：量測散佈要遠小於公差。</li>
+<li>任何一條結束路徑（完成、FAIL、儀器錯誤、按停止）都要先關負載、再關電源。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> 序號用 Match Regular Expression 檢查 <code>^PM5-[0-9]{8}$</code>，有 ^ 和 $；找不到時看 offset past match ＝ −1。</label></li>
+<li><label><input type="checkbox"> In Range and Coerce 有勾 Include upper limit（S3：含邊界）。</label></li>
+<li><label><input type="checkbox"> 上下限從 limits.csv 讀成陣列，前面板沒有讓人改上下限的控制項。</label></li>
+<li><label><input type="checkbox"> CSV 每一列有時間、序號、第幾次、結果、失敗項、5 個量測值；重測新增一列，不覆蓋。</label></li>
+<li><label><input type="checkbox"> 「斷電」是獨立的狀態，四條結束路徑都會經過它。</label></li>
+<li><label><input type="checkbox"> 儀器錯誤記 ERROR，不算 PASS 也不算 FAIL。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>In Range and Coerce 預設<b>不含上限</b>，忘了勾，剛好等於上限的板子會判 FAIL。發現：驗收 T9 用一片剛好等於上限的板子（或暫時把上限改成量到的值）。</li>
+<li>序號規則少了 ^ 和 $，前後多出字元的序號也會過。發現：驗收 T1 打一串像商品條碼的數字。</li>
+<li>只在「測完」那條路斷電，FAIL 或 DMM 逾時時電源還開著。發現：驗收 T7 勾「DMM 的 USB 線鬆了」，看電源和負載是不是都 OFF。</li>
+<li>把 ERROR 算成 FAIL，或把它算進良率的分母。發現：看 CSV 的結果欄有沒有 ERROR 這個值。</li>
+<li>學生把 <code>[0-9]</code> 改寫成 <code>\d</code>，而字串常數又開了「'\' Codes Display」，反斜線被當成跳脫碼。課文用 <code>[0-9]</code> 就是為了避開這件事。發現：序號格式明明對卻一直被擋時，打開常數看它的顯示模式。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>模擬測試站先用預設（不勾 DMM 鬆、不勾工程模式）測一片良品，再照驗收表 T1～T8 一條一條做。</li>
+<li>先問「T01 無載電流越小越好，為什麼還要下限 5 mA？」，答案在驗收 T6「治具沒壓好」。</li>
+<li>分組討論：「電源和負載自己都能量電壓，為什麼還要買一台 DMM？」可以接到四線量測和 W14。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>電源、負載、DMM 的 SCPI 指令以各儀器的程式手冊為準。</li>
+<li>In Range and Coerce 的 Include upper limit 在 LabVIEW 2018 的右鍵選單。</li>
+</ul>
+<h2 id="W7">W7　設備稼動監控（Count.vi） <a class="back" href="index.html#W07">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>監控程式只讀不寫 PLC；遠端啟動機台的顧慮是現場可能有人。</li>
+<li>16 位元計數器會繞回 0：用 U16 相減再累加；第一次讀取和讀取失敗的那一圈都不算產量。</li>
+<li>通訊中斷的時間記成「不知道」，不能算成停機。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> 一次讀 D200～D203 四個字，每 1 秒一次（S1）。</label></li>
+<li><label><input type="checkbox"> 差值用 U16 相減：65530 → 5 算出 11。</label></li>
+<li><label><input type="checkbox"> 讀取有錯的那一圈保留上一次的值，不相減。</label></li>
+<li><label><input type="checkbox"> 差值大到不合理時當成 PLC 重置，記一筆事件，不算產量（S2）。</label></li>
+<li><label><input type="checkbox"> 停機開始的條件是「這一圈狀態是 2，而且上一圈不是 2」。</label></li>
+<li><label><input type="checkbox"> 可用率、效能、良率、OEE 的算法照工廠的定義，計畫停機不算進計畫時間。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>讀取失敗時 Index Array 給 0，照樣相減，差值繞回成六萬多包，恢復時又再算一次。發現：Count.vi 的 Run 步驟「拔線再接回」，看產量有沒有跳。</li>
+<li>計數放在一般型的 D 暫存器，PLC 斷電或 STOP 就清成 0。FX3S 的 D0～D127 是一般型，D128～D255 才是停電保持型，所以課文用 D200 起。發現：問學生計數放在哪個 D、PLC 重開會不會歸零。</li>
+<li>把通訊中斷的時間算成停機，可用率被拉低。發現：模擬勾「通訊線拔掉」一段時間，看時間軸那一段是不是黑色。</li>
+<li>GX Works2 顯示 −32768、LabVIEW 讀到 32768，就以為有一邊錯了。發現：用這一課的「問自己」讓學生解釋：兩邊是同一個 16 位元，一邊看成有號、一邊看成無號。</li>
+<li>效能算出來超過 100 %，沒有追問原因。發現：問「標準週期是誰給的」。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>模擬先不勾「通訊線拔掉」「計數從 65 500 開始」，跑完一個班看 OEE；再一項一項勾起來比較。</li>
+<li>先問「監控程式為什麼只讀不寫？」，用廠長那句「順便讓我在辦公室按一下就能開機」開頭。</li>
+<li>分組算小測驗的可用率、效能、OEE，對答案。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>通訊埠、鮑率、站號要和 PLC 一致（L12～L14 的設定）。</li>
+<li>FX3S 停電保持區的範圍，以三菱 FX3S 程式手冊為準。</li>
+</ul>
+<h2 id="W8">W8　接手舊程式（T03_Judge.vi） <a class="back" href="index.html#W08">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>動手之前先做三件事：複製一份放進版本控制、用已知的板子跑一次留基準、讀懂流程。</li>
+<li>一次只改一件事，每改一次跑回歸測試。</li>
+<li>看不懂的東西（例如沒註解的 Wait 3000 ms）先問、先實驗，搞懂了再寫註解，不能直接刪。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> T03_Judge.vi：DMM 讀取有錯時，讀值換成 NaN，結果是 ERROR，錯誤優先。</label></li>
+<li><label><input type="checkbox"> 回歸測試台上，指出哪一項修改改壞了哪一類板子。</label></li>
+<li><label><input type="checkbox"> 變更說明有版本、改了什麼、為什麼、行為改變（哪類板子結果會變）。</label></li>
+<li><label><input type="checkbox"> 能分辨「改壞了」和「舊程式本來就錯」（例如 T03 上限寫成 5.15，規格書是 5.10）。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>「順手」刪掉看不懂的 Wait，每片快 3 秒，結果某一類板子判錯。發現：回歸測試台勾 D，看哪一類板子的結果變了。</li>
+<li>一次改好幾項才跑回歸測試，出現差異時不知道是哪一項造成的。發現：要學生說出每一項修改各自造成的差異。</li>
+<li>舊程式 DMM 讀不到時判 PASS：錯誤沒處理，區域變數還是上一片的值。發現：基準測試時用「DMM 線鬆了」那一類板子（B5）。</li>
+<li>用新版 LabVIEW 存檔，2018 打不開。發現：交作業時用 2018 開一次；要用 Save for Previous Version。</li>
+<li>把 Wait 放在量 T03 那一格，註解卻寫「等電源上升」：程式和說明對不上，接手的人會改錯。發現：對照程式裡 Wait 的位置和註解寫的用途。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>回歸測試台先一項都不勾，跑出基準；再一次勾一項（A～E）。</li>
+<li>先問「基準跑出來，B5（DMM 線鬆了）竟然是 PASS，要現在就修嗎？」</li>
+<li>分組找出舊程式那一格的四個問題，比哪一組找得多。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>VI 是二進位檔，git 看不出改了哪裡。課文的 tip 提到兩件事：勾「Separate compiled code from source file」；Tools ▸ Compare ▸ Compare VIs 只有專業版才有。學校的 LabVIEW 是哪一版、有沒有這個工具，要先確認；沒有的話，就在提交訊息寫清楚改了什麼。</li>
+</ul>
+<h2 id="W9">W9　測試結果進資料庫 <a class="back" href="index.html#W09">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>兩個表：tests 一次測試一列、meas 一項量測一列；每筆量測都存當時的 lo、hi 和程式版本。</li>
+<li>序號是外面來的字串，要用參數化查詢，不能用 Format Into String 拼進 SQL。</li>
+<li>資料庫斷線時產線照常測：先存本機，另一個迴圈恢復後補傳，不重複、不遺失。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> tests 有 test_id（主鍵）、sn、station、operator、ts、result、fail_item、limits_ver、sw_ver。</label></li>
+<li><label><input type="checkbox"> test_id 由測試站產生，格式是站號－日期－6 位流水號（例如 ST01-20261114-000057）。</label></li>
+<li><label><input type="checkbox"> ERROR 的那一片也寫一列 tests（S1）。</label></li>
+<li><label><input type="checkbox"> 重測是另一列：test_id 不同、sn 相同。</label></li>
+<li><label><input type="checkbox"> 暫存檔先寫成 .tmp 再改名，上傳迴圈不會讀到寫一半的檔案。</label></li>
+<li><label><input type="checkbox"> 寫入用 Create Parameterized Query → Set Parameter Value → Execute Query，不拼字串。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>只存量測值，不存當時的上下限；上下限改過以後，查不出當時用什麼標準判的。發現：問「這一片當時的上限是多少」。</li>
+<li>讓資料庫自動編號，斷線補傳時對不起來。發現：驗收 T3 拔網路線測 10 片再接回，看資料庫是不是剛好多 10 筆。</li>
+<li>上傳中途斷線，留下「有 tests 沒有 meas」的半筆資料。發現：驗收 T4；要用交易（Begin、Commit／Rollback）。</li>
+<li>序號用字串拼進 SQL。發現：讓學生解釋「特殊字元或惡意輸入會變成別的 SQL 指令」。</li>
+<li>查詢結果靠程式在背後再過濾一次，SQL 本身看不出來，別人照抄 SQL 會得到不一樣的答案。發現：SQL 主控台裡每一個查詢的結果，都要能從那句 SQL 本身解釋得通。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>SQL 主控台先照順序跑 ① ② ③，再問「你要怎麼回覆品保？」</li>
+<li>暫存模擬先不勾「資料庫斷線」跑一次，再勾起來比較。</li>
+<li>分組討論：「為什麼 test_id 要由測試站自己產生？」</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>Database Connectivity Toolkit 的 VI 名稱和流程。</li>
+<li>資料庫主機、帳號權限由 IT 給；測試站帳號只要寫入和查詢自己的表。</li>
+</ul>
+<h2 id="W10">W10　治具開短路測試（Scan.vi） <a class="back" href="index.html#W10">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>用一個參考電阻和一個 AI 通道量電阻：Rx ＝ 1000 × V ÷（Vs − V）。</li>
+<li>一次只接通一顆繼電器（one-hot），切換後要等穩定；等多久要用實驗決定。</li>
+<li>治具自檢點（P8）不對，就先修治具，其他點的結果都不可信。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> 第 i 圈 DO 寫 1 &lt;&lt; i（i ＝ 5 時寫 32）。</label></li>
+<li><label><input type="checkbox"> Wait 包成有錯誤線的 SubVI，順序是 Write → 等 → Read。</label></li>
+<li><label><input type="checkbox"> 開路另外處理：V ≥ Vs − 2 mV 時直接輸出 +Inf。</label></li>
+<li><label><input type="checkbox"> 空腳 P16 的上限是 +Inf，所以 In Range and Coerce 有勾 Include upper limit。</label></li>
+<li><label><input type="checkbox"> 迴圈結束後 DO 全部寫 0。</label></li>
+<li><label><input type="checkbox"> 等待時間是實驗找出來的（試 2、5、10 ms），寫進註解。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>Wait 和 DAQmx Write 並排放，沒有資料相依，等不到。發現：模擬把等待設 0 ms，好板子也有好幾點 FAIL。</li>
+<li>上一顆繼電器沒放開，兩點並聯，兩點都量錯。發現：模擬勾「程式寫錯：上一顆沒放開」。</li>
+<li>開路時 V 比 Vs 大一點點，分母變負，算出負電阻，開路被判成短路。發現：拿一片開路的板子，看那一點是不是顯示 +Inf。</li>
+<li>換成輸入阻抗低的 DAQ，高阻值的點會量錯。發現：模擬勾「換成 AI 輸入阻抗只有 144 kΩ 的低價 DAQ」。</li>
+<li>板子通電時做開短路測試。發現：小測驗「開短路測試時板子應該？」答案是不通電。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>模擬先用預設（10 ms、不勾兩個「寫錯」）跑好板子，再把等待改成 0 ms。</li>
+<li>先問「P16 空腳量到開路是 PASS，P7 量到開路是 FAIL，為什麼？」</li>
+<li>分組做驗收 T3：2、5、10 ms 各跑 10 次，找最短的安全等待時間。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>繼電器的動作時間看規格書，再實際試 2、5、10、20 ms。</li>
+<li>所用 DAQ 的 DO 條數、AI 輸入阻抗和解析度。</li>
+<li>USB DAQ 開機時 DO 的狀態，會不會讓繼電器全部吸合。</li>
+</ul>
+<h2 id="W11">W11　配方與警報（Alarm_TempLow.vi） <a class="back" href="index.html#W11">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>作業員只能選配方，工程師才能改；配方存檔前和讀檔時都要檢查範圍。</li>
+<li>下載到 PLC 後要讀回比對，一致才准啟動。</li>
+<li>警報要有遲滯、延遲、栓鎖和確認：還在警報中按「確認」，燈繼續亮，恢復後才熄。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> 遲滯：低於 165 °C 才 ON，回到 168 °C 以上才 OFF。</label></li>
+<li><label><input type="checkbox"> 栓鎖：條件消失後，沒按確認燈不熄。</label></li>
+<li><label><input type="checkbox"> 配方範圍：溫度 120～220 °C、壓力 1.0～6.0 bar、時間 0.5～10 s；存檔前和讀檔時都檢查。</label></li>
+<li><label><input type="checkbox"> 變更紀錄每一列有時間、誰、改了哪個參數、舊值、新值。</label></li>
+<li><label><input type="checkbox"> 回讀不一致時不准啟動，並顯示是哪個參數。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>只靠 3 °C 遲滯，雜訊約 6 °C 時還是會叫好幾次：遲滯帶要比雜訊的峰對峰值大。發現：警報模擬只勾遲滯，數警報發了幾次。</li>
+<li>以為 JSON 少一個欄位只是「那個欄位讀不到」：Unflatten From JSON 遇到少了叢集要的欄位（改了標籤或加了參數），會回錯誤，整筆讀不進來。發現：用記事本刪掉 recipes.json 的一個欄位再開程式。</li>
+<li>「確認之後燈什麼時候熄」在規格、程式、操作說明裡寫得不一樣。發現：照規格 A1、A2 跑 Run 步驟，三份文件對一次。</li>
+<li>保護機台的 Interlock 只寫在 LabVIEW。發現：問「電腦當機時誰來擋？」答案是 PLC。</li>
+<li>範圍檢查只在存檔時做，讀檔時不做。發現：驗收 T3 用記事本把壓力改成 9 再開程式。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>警報模擬先三個都不勾（遲滯、延遲、栓鎖），看警報洗版；再一個一個勾。</li>
+<li>先問「下載到 PLC 為什麼要讀回來比對？寫進去不就好了嗎？」</li>
+<li>分組討論課文那段話裡的兩個問題（作業員改錯參數、警報洗版），各自真正的原因。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>在 LabVIEW 2018 讀一個少了一欄的 JSON，看錯誤碼和輸出。</li>
+<li>實機上常是 PLC 算出警報位元，LabVIEW 讀來顯示、確認、記錄。PLC 那一端怎麼做，要和 PLC 程式對齊。</li>
+</ul>
+<h2 id="W12">W12　老化燒機記錄（History.vi） <a class="back" href="index.html#W12">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>長時間程式的四個敵人：記憶體一直長、資料只在記憶體、通訊斷了就停、電腦自己重開。</li>
+<li>量測和存檔分開（生產者／消費者），每筆寫完就 Flush，定時換檔。</li>
+<li>時間用時間戳記，不用「第幾圈 × 10 秒」推算。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> History.vi：超過 N 筆就從後面取 N 個，存回 Shift Register；起點用 Max &amp; Min 和 0 取大的。</label></li>
+<li><label><input type="checkbox"> 每一筆有日期加時間的時間戳（B1）。</label></li>
+<li><label><input type="checkbox"> 每筆寫完 Flush File，每小時換一個檔（B2）。</label></li>
+<li><label><input type="checkbox"> 通訊錯誤時記 NaN、重開 VISA、繼續測。</label></li>
+<li><label><input type="checkbox"> 一台壞了只關那一台、記下時間，其他繼續。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>每筆都 Build Array 接到 Shift Register、沒有上限，記憶體一直長。發現：驗收 T1 把間隔改成 0.1 秒跑 1 小時，看工作管理員。</li>
+<li>跑完才存檔，第 6 小時當掉資料全沒了。發現：驗收 T3 用工作管理員強制結束，看檔案有沒有到最後一筆。</li>
+<li>通訊錯誤就停整支程式。發現：驗收 T2 拔掉儀器 USB 1 分鐘再插回。</li>
+<li>以為「Wait 10000 的一圈 ＝ 讀儀器時間 ＋ 10 秒」：Wait 和讀儀器並排時是取長的那個，而且一圈變長之後全部往後推。要固定間隔，用時間排程（下一次 ＝ 上一次 ＋ 10 秒）。發現：用 Tick Count 量幾圈的實際間隔。</li>
+<li>斷電時「最多損失最後一筆」不一定成立：還在作業系統快取裡的資料可能不見，要靠 UPS。發現：問學生 B2 那句的前提是什麼。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>模擬先用第一組做法（不限長度、跑完才存、出錯就停）跑一次，中途按「通訊斷」和「電腦當機」。</li>
+<li>先問「10 台 × 2 個數 × 2880 筆才幾百 kB，為什麼記憶體會一直長？」</li>
+<li>燒機前電腦要設定的事（課文的 warn），可以和 W19 一起講。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>長時間跑時，用工作管理員看記憶體曲線。</li>
+<li>熱電偶模組要有冷接點補償（W2）。</li>
+</ul>
+<h2 id="W13">W13　簡易 AOI（Judge_Washer.vi） <a class="back" href="index.html#W13">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>AOI 的成敗大半在光源：量外徑用背光，光源變暗時固定門檻會誤判。</li>
+<li>像素換 mm 要用校正片，校正和量測要用同一種量法。</li>
+<li>和 PLC 交握：先把 Result 放好，再設 Done；看到 PLC 把 Trigger 拉回 0 之後，才清 Done。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> 像素換 mm：校正片 10 mm 量到 80 px 時，161 px 是 20.125 mm。</label></li>
+<li><label><input type="checkbox"> 外徑判定 19.8～20.2 mm（V1），面積比 &lt; 95 % 判缺角（V2）。</label></li>
+<li><label><input type="checkbox"> 沒有工件、影像太暗或太亮時回 NG，亮「視覺異常」（V4）。</label></li>
+<li><label><input type="checkbox"> 交握順序：Result → Done → 等 Trigger 回 0 → 清 Done。</label></li>
+<li><label><input type="checkbox"> PLC 端有逾時：視覺沒回應時剔除工件。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>光源變暗後背景比門檻還暗，背景被當成工件。發現：模擬把光源調到 50 %，固定門檻 128 不變。</li>
+<li>只量外徑、不看面積比，缺一小角時外框寬度可能不變。發現：用缺角的 NG 品測。</li>
+<li>DAQ 的數位線直接接 PLC 的 24 V I/O。發現：接線前先查兩邊的電壓準位。</li>
+<li>Done 和 Result 同時設，PLC 可能讀到上一片的結果。發現：問學生「Result 為什麼要在 Done 之前放好？」</li>
+<li>只拿 OK 品調參數，沒有先收集 NG 樣本。發現：驗收 T1 的 OK 50 片、各種 NG 品各 10 片，每片過 3 次。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>模擬先用預設（光源 100 %、門檻 128、不勾自動門檻），再把光源往下調。</li>
+<li>先問「320 像素看 40 mm，一個像素是幾 mm？要量 ±0.2 mm 夠嗎？」</li>
+<li>分組討論漏判和誤判哪個比較嚴重（課文的 note）。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>FX3S 的實際輸入濾波值。</li>
+<li>Vision Assistant 試用版能不能產生 LabVIEW 程式。</li>
+</ul>
+<h2 id="W14">W14　現場除錯（FailRate.vi） <a class="back" href="index.html#W14">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>除錯順序：先把問題講清楚，先圍堵，再看已經有的資料，再做小實驗，最後才動手換東西。</li>
+<li>突然變差，先查「那天改了什麼」（變更、保養紀錄）。</li>
+<li>不能用放寬上下限來「解決」問題；修好要用數字確認。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> FailRate.vi：只留最近 50 片，滿 50 片才通知。</label></li>
+<li><label><input type="checkbox"> 門檻是 p 管制圖上限，約 7.9 %（p̄ ＝ 2 %、n ＝ 50），不是隨手定的 5 %。</label></li>
+<li><label><input type="checkbox"> 除錯報告有問題、影響（好板子被誤判、壞板子可能被放過）、證據、對策、確認方法。</label></li>
+<li><label><input type="checkbox"> A/B 對調一次只換一樣。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>一接到「很多 FAIL」就去換治具或放寬上下限。發現：問「你的資料說是哪一站、哪一項、從哪一天開始？」</li>
+<li>門檻設太低（例如 5 %），正常的站一天會亮好幾次，很快就沒人理（W11 的洗版）。發現：Run 步驟先用 2 % 跑一陣子，看燈多常亮。</li>
+<li>只看「好板子被誤判」，忘了「壞板子可能被放過」。發現：問課文那題「哪一種壞板子會被 ST02 放過？」</li>
+<li>找到一個「看起來像」的原因就停：例如只換探針，卻解釋不了為什麼四線量測會受探針影響、為什麼是那一天開始。發現：問學生「四線量測下，負載探針磨損為什麼本來不影響 DMM 讀值？」</li>
+<li>FAIL 率只存在記憶體裡，程式重開就歸零。發現：問「明天開機時，最近 50 片從哪裡來？」答案是從 W9 的資料庫算。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>除錯模擬先選「（先查，再決定）」，不要讓學生直接猜原因。</li>
+<li>先問「這句話裡缺了什麼？去現場之前要先問清楚什麼？」</li>
+<li>分組比較「FAIL 的板子拿到 ST01 重測」和「DMM 對調」各自證明了什麼。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>golden sample 連測、A/B 對調都要在實際的測試站上做，網頁只是模擬。</li>
+</ul>
+<h2 id="W15">W15　特性曲線自動量測（Sweep.vi） <a class="back" href="index.html#W15">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>效率要量四個值：Vin、Iin、Vout、Iout；電壓用四線量在板子的端子上。</li>
+<li>每一點要等到熱穩定再讀；輕載時輸入電流的準確度決定效率準不準。</li>
+<li>報告要寫到別人能重做一次：條件、接線、儀器和校正日期。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> For 迴圈掃負載點，右邊的通道開自動索引，收集成陣列。</label></li>
+<li><label><input type="checkbox"> 迴圈不管怎麼結束（跑完或出錯），都會呼叫 Load_Off.vi（C8）；Load_Off.vi 有錯誤輸入時照樣關負載，再把錯誤傳出去。</label></li>
+<li><label><input type="checkbox"> 能說出 Sweep.vi 和規格 C2、C4、C5 的差別，以及照規格要怎麼改（課文的對照表）。</label></li>
+<li><label><input type="checkbox"> 報告欄位有樣品、測試條件 C1～C6、接線照片、儀器型號和校正到期日。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>電壓用兩線量在負載的端子上，Vout 少了導線壓降，重載效率偏低。發現：量測台只改「量電壓的位置」，看哪一段曲線變最多。</li>
+<li>冷的板子從輕載快速掃到重載，重載效率偏高。發現：比較「每點等 1 秒、直接開始」和「暖機、等到穩定」兩組。</li>
+<li>把 2D 數值陣列直接接到「表格」：表格是字串，線接不起來。要先用 Number To Fractional String 轉成字串。發現：方塊圖上那條線是斷的。</li>
+<li>Sweep.vi 的掃法和自己寫的規格不一樣（方向、點數、暖機）。發現：照規格逐條對 Sweep.vi。</li>
+<li>Load_Off.vi 遇到前面的錯誤就不做事，出錯時負載沒關。發現：小測驗「Load_Off.vi 有錯誤輸入時應該？」。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>量測台先用最快、最省事的設定跑一次，再一項一項換成規格的做法，看曲線怎麼變。</li>
+<li>先問「兩個人抄出來的曲線不一樣，可能是哪些原因？」</li>
+<li>分組估算兩種做法各要花多少時間（課文的問自己）。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>用 DMM 串在輸入線上量 Iin 時，負載電壓、檔位、保險絲。</li>
+<li>實際的熱時間常數和暖機時間要量過才知道（模型是示意）。</li>
+</ul>
+<h2 id="W16">W16　縮短測試時間 <a class="back" href="index.html#W16">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>先量時間花在哪，再改；從最大塊的下手。</li>
+<li>用 Flat Sequence 加 Tick Count 量每一步；Profile 視窗量不到等儀器的時間。</li>
+<li>改完要證明品質沒變：GR&amp;R 散佈沒變大、逐片比對沒有偏差、回歸測試結果相同。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> 節拍算對：7.5 小時做 1800 片是 15 秒。</label></li>
+<li><label><input type="checkbox"> Tick Count 放在 Flat Sequence 的框裡，前後各一個。</label></li>
+<li><label><input type="checkbox"> 改法依「省最多」排先後，而且一次改一個。</label></li>
+<li><label><input type="checkbox"> 改成「開始時開一次儀器」之後，每片問 *ESR? 和 CONF? 確認。</label></li>
+<li><label><input type="checkbox"> 沒有拿掉測項、沒有改上下限或測試條件（R1）。</label></li>
+<li><label><input type="checkbox"> 改前改後用同一批 20 片逐片比對，平均差小於公差的 5 %（R2b）。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>拿掉一個測項來省時間。發現：時間表上選 G 會出現紅色警告。</li>
+<li>輪詢到穩定判斷得太鬆（連續 2 次差 &lt; 20 mV），讀值整批偏低，GR&amp;R 看不出來。發現：用 R2b 的逐片比對。</li>
+<li>把負載後的等待直接改成規格寫的最小值 0.4 秒：W8 量過回穩慢的良品要 1.2 秒。發現：對照 W8 回歸測試台的 B2 類。</li>
+<li>把「開儀器」移到開始以後，不知道儀器中途重開機。發現：問每片要問哪個指令（*ESR? 的開機位元）。</li>
+<li>已經用雙治具，瓶頸在人，還在改程式。發現：小測驗的最後一題。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>時間表先全部用「現況」，看 18.2 秒花在哪；再一項一項改。</li>
+<li>先問「先改哪一個最划算？」</li>
+<li>分組討論「輪詢到穩定」的兩種判斷，為什麼一種可以、一種不行。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>多個命令一次送、儀器並行，各廠牌支援的程度不同，以手冊為準。</li>
+<li>DMM 積分時間（PLC）對雜訊的影響要實測。</li>
+</ul>
+<h2 id="W17">W17　上傳 MES（Upload.vi） <a class="back" href="index.html#W17">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>過站檢查在上電之前同步做；上傳結果可以在背景慢慢送。</li>
+<li>逾時不等於沒收到：一定會重送，所以每筆要帶唯一鍵（test_id），MES 用它去重。</li>
+<li>暫時錯誤（逾時、5xx）才重送，間隔越來越長；永久錯誤（4xx）停下來通知人。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> POST 有加標頭 <code>Content-Type: application/json</code>。</label></li>
+<li><label><input type="checkbox"> 200 也要看回應內容：只有 accepted 或 duplicate 才刪暫存檔。</label></li>
+<li><label><input type="checkbox"> 回應分成三種：送達、暫時錯誤、永久錯誤。</label></li>
+<li><label><input type="checkbox"> 重送間隔 1、2、4…最多 60 秒，加隨機值；400 不重送、亮燈。</label></li>
+<li><label><input type="checkbox"> result 用字串 "PASS"，不用 enum（Flatten To JSON 不支援 enum）。</label></li>
+<li><label><input type="checkbox"> MES 連不上時能不能先測，照品保寫的政策（P1），不是程式自己決定。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>POST 沒設 Content-Type: application/json，MES 回 415 或把內容當成表單。發現：自己做的模擬 MES 收到的內容格式不對。</li>
+<li>MES 回 200 就刪暫存檔：前面的 Proxy 回一頁登入頁也是 200，資料就不見了。發現：Upload.vi 的 Run 選「200，但回的是 Proxy 的登入頁」。</li>
+<li>失敗就一直重送、成功才測下一片，產線卡住。發現：上傳模擬選策略 ②，情境選「網路斷線」。</li>
+<li>逾時後重送，MES 沒有去重，變成兩筆。發現：上傳模擬選「MES 很慢」、策略 ③ 或 ④，不勾 MES 的重複檢查。</li>
+<li>MES 回中文原因，LabVIEW 2018 顯示亂碼。發現：原因用代碼，測試站自己有代碼對中文的表（M1）。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>上傳模擬先用 ① 跑四種情境，再換 ②、③、④，比較遺失、重複、卡產線。</li>
+<li>先問「為什麼過站檢查要在上電之前做，不能丟給背景迴圈？」</li>
+<li>分組比較「MES 改版，欄位名稱對不上」時，③ 和 ④ 的差別。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>HTTP Client 的 timeout 預設 10 秒；HTTPS 要用 ConfigSSL 設憑證。</li>
+<li>整合測試 IT1～IT12 要和 IT 的測試用 MES 一起做。</li>
+</ul>
+<h2 id="W18">W18　燒錄站（Flash.vi） <a class="back" href="index.html#W18">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>用 System Exec 呼叫命令列工具：路徑加引號、用非互動參數；System Exec 沒有逾時。</li>
+<li>燒錄成功要看好幾道：檔案雜湊、寫入後驗證、return code、輸出文字、重開後讀回版本。</li>
+<li>工具的失敗行為要自己故意做實驗記下來；發行清單的舊版標停用，不刪。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> 命令裡的路徑和參數有空白的都加雙引號。</label></li>
+<li><label><input type="checkbox"> 燒錄 OK 要三個條件同時成立：return code ＝ 0、找得到成功字樣（offset ≥ 0）、找不到 <code>Error:</code>（offset &lt; 0）。</label></li>
+<li><label><input type="checkbox"> 燒之前比對 SHA256 和 release.csv。</label></li>
+<li><label><input type="checkbox"> 每一片記錄序號、test_id（FL01-…）、版本、SHA256、工具和版本、燒錄器序號。</label></li>
+<li><label><input type="checkbox"> 做過 E1～E6 的失敗實驗，記下結束碼和輸出。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>只看 return code。有些情況失敗了它還是 0（例如包在 .bat 裡）。發現：燒錄站模擬選「包在 .bat 裡，結束碼被蓋掉」。</li>
+<li>工具跳出對話框，System Exec 一直等，測試站卡住。發現：模擬不勾 N。</li>
+<li>以為讀回版本（B）就夠了，不看結束碼和輸出：驗證失敗的板子照樣重開、回報新版本，被放過。發現：燒錄站模擬裡找最少的關卡，每一種情況都要判對。</li>
+<li>找 "Error" 太寬鬆，檔名或路徑裡剛好有這幾個字就誤判。發現：用帶冒號的 <code>Error:</code>。</li>
+<li>燒完、驗證都過，沒讀回版本，不知道板子有沒有真的跑起來。發現：問「哪一種情況只有重開後讀回版本抓得到？」</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>燒錄站模擬先全部不勾，看七種情況各怎麼錯；再找最少的關卡。</li>
+<li>先問「快閃記憶體壞了一格，為什麼沒開 -v 時會被判 PASS？」</li>
+<li>分組寫燒錄 SOP 要寫的項目（課文的 note）。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>燒錄工具的命令和輸出字樣是示意，以手冊、<code>-h</code> 和 E1 實驗為準。</li>
+<li>LabVIEW 2018 沒有內建 SHA256。</li>
+</ul>
+<h2 id="W19">W19　部署到產線電腦（ConfigPath.vi） <a class="back" href="index.html#W19">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>設定檔、暫存資料夾、log 放 ProgramData，不放 Program Files。</li>
+<li>先在乾淨電腦、用作業員帳號裝一次跑一次；缺東西和權限問題只有在那裡看得到。</li>
+<li>換版留退路：舊版的安裝程式和每一台的設定檔備份留著；版本號從 EXE 讀，寫進每一筆紀錄。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> ConfigPath.vi：先 Check if File or Folder Exists，在就不動，不在才從範本複製。</label></li>
+<li><label><input type="checkbox"> 範本在建置規格裡設成 Always Included。</label></li>
+<li><label><input type="checkbox"> Copy 的 overwrite 保持 False，不會蓋掉這台電腦的設定。</label></li>
+<li><label><input type="checkbox"> 部署清單 DP1～DP7 每一項都寫了版本或來源。</label></li>
+<li><label><input type="checkbox"> ProgramData 裡的資料夾由安裝程式或 IT 建立，開放 Users 群組「修改」。</label></li>
+<li><label><input type="checkbox"> 和 IT 約好 Windows 更新時間；關掉睡眠和 USB 選擇性暫停。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>設定檔和 EXE 一起放在 Program Files，作業員帳號存不了。發現：部署模擬 A 選第一個。</li>
+<li>在程式裡先 Create Folder：資料夾已經存在時會回錯誤 10；而且程式自己建的資料夾，別的帳號可能寫不進去。發現：第二次執行 ConfigPath.vi，看有沒有錯誤。</li>
+<li>程式用作業員帳號自己在 ProgramData 建的資料夾，換另一個作業員帳號可能只能讀，已在課文說明。發現：驗收 V4 用兩個不同的作業員帳號各存一次設定。</li>
+<li>只在開發電腦上用管理員帳號試過。發現：部署模擬 C 選第一個，看一週裡出什麼事。</li>
+<li>版本號寫死在畫面上，換版忘了改。發現：問「這筆紀錄是哪一版程式測的？」</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>部署模擬先全部用第一個選項，跑一週；再一項一項改。</li>
+<li>先問「C 為什麼這麼重要？它又不會讓任何問題消失。」</li>
+<li>分組討論 F 和 G 為什麼要分開。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>Application Builder：Professional 版內含，Base／Full 版要另外買。先在專案的 Build Specifications 按右鍵，看有沒有 New ▸ Application (EXE)。</li>
+<li>安裝程式要用乾淨電腦試一次（驗收 V1）。</li>
+</ul>
+<h2 id="W20">W20　XY 平台定位（XY_Move.vi） <a class="back" href="index.html#W20">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>開機一定要先回原點：PLC 的目前值只是送出去的脈波數，斷電後和實際位置無關。</li>
+<li>互鎖（「Z 軸沒上升不准動 XY」）和軟體極限放在 PLC，LabVIEW 也檢查，當第二道；急停由安全繼電器的硬體接線切斷。</li>
+<li>下命令的順序：確認待命 → 寫目標 → 最後寫命令 → 輪詢到完成或逾時 → 清命令。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> mm 換脈波後用 To Long Integer（四捨五入）。</label></li>
+<li><label><input type="checkbox"> 32 位元目標用 Split Number 拆成兩個字，低位字寫 D300、高位字寫 D301。</label></li>
+<li><label><input type="checkbox"> 命令 D304 最後才寫；完成後 LabVIEW 把 D304 清回 0。</label></li>
+<li><label><input type="checkbox"> 逾時依距離和速度算，再加餘裕。</label></li>
+<li><label><input type="checkbox"> 「完成」要等到位信號 INP，不是脈波送完就算。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>PLC 用 16 位元的 DRVA 只讀 D300，40000 個脈波變成 −25536，往反方向衝。發現：托盤模擬的「只寫低位字」情境。</li>
+<li>以為 Split Number 拆出來的低位是 −25536：它輸出 U16，40000 拆出來就是 40000；−25536 是 PLC 用 16 位元讀的時候才會出現。發現：在 LabVIEW 用 Probe 看 Split Number 的輸出型別。</li>
+<li>以為轉成整數會截掉小數，多加一個 Round To Nearest：LabVIEW 的 To Long Integer 本來就是四捨五入（C、Python 的 int() 才是截斷）。發現：小測驗「To Long Integer 把 39999.6 轉成？」</li>
+<li>沒回原點時以為軟體極限擋得住。發現：問「軟體極限比的是誰以為的位置？」</li>
+<li>步進馬達失步，PLC 和 LabVIEW 都不知道。發現：模擬勾 R（每盤結束回原點，檢查偏了多少）。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>托盤模擬先五個保護都不勾，跑每一種情境；再一個一個勾。</li>
+<li>先問「為什麼不用一個治具一次壓 4 片、4 台燒錄器同時燒？」</li>
+<li>分組討論每一個保護該放在 PLC、驅動器、安全繼電器還是 LabVIEW（課文的分工表）。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>FX3S 的特殊暫存器編號要自己核對（課文的 note）。</li>
+<li>課程實機的輸出型式（漏型或源型）和伺服驅動器的脈波輸入設定（research_W20）。</li>
+<li>FX3S-20M 的 I/O 點數夠不夠（課文的 I/O 表約 7 出，輸入更多）。</li>
+</ul>
+<h2 id="W21">W21　LabVIEW 和 Python 並用（RunPy.vi、yield_report.py） <a class="back" href="index.html#W21">看課文</a></h2>
+<h3>帶走</h3>
+<ul>
+<li>判定（PASS／FAIL）留在 LabVIEW；Python 做事後的統計和畫圖。</li>
+<li>和別人的程式接，要先寫介面規格：命令列、一行 ASCII JSON、ok 欄位、結束碼、stderr。</li>
+<li>規格要嚴格，接收要寬容，但不能寬容到把錯誤當成功：結束碼和 ok 都要看。</li>
+</ul>
+<h3>評分重點</h3>
+<ul class="ck">
+<li><label><input type="checkbox"> 命令裡 python.exe、腳本、含空白的參數都加雙引號；python.exe 用設定檔裡的完整路徑。</label></li>
+<li><label><input type="checkbox"> 先 Trim Whitespace，再用 <code>[^\r\n]+$</code> 取最後一行。</label></li>
+<li><label><input type="checkbox"> 兩段解析：先用 {ok, ver} 解析，ok 為 true 才讀第二段。</label></li>
+<li><label><input type="checkbox"> 分析成功要四個條件：System Exec 沒錯、結束碼 0、解析沒錯、ok 是 true。</label></li>
+<li><label><input type="checkbox"> RunPy.vi 放在背景迴圈；有逾時，超過就結束 python.exe、記「逾時」。</label></li>
+<li><label><input type="checkbox"> 結束碼 3（資料不足）在報表寫「資料不足」，不通知工程師。</label></li>
+</ol>
+<h3>常見錯誤</h3>
+<ul>
+<li>整段 stdout 當 JSON 解析，同事多印一行 loading... 就判失敗。發現：交班模擬不勾 L，看「多印一行」那一列。</li>
+<li>只看結束碼，或只看 ok。發現：交班模擬的「拿掉 try/except、結束碼 1」只有 R 抓得到。</li>
+<li>用一個叢集一次解析全部欄位：失敗時的 JSON 少了欄位，每一個 ok:false（連資料不足）都會讓 Unflatten 報錯。要分兩段解析。發現：RunPy.vi 的 Run 選「資料不足」，看解析錯誤的燈。</li>
+<li>字串常數開了「\ Codes Display」，<code>\s</code> 被換成空格，正規表示式抓不到最後一行。發現：常數的顯示模式；先用 Trim Whitespace 再比對。</li>
+<li>Python 的 <code>lo &lt;= v &lt;= hi</code> 包含上限，In Range and Coerce 預設不包含。同一份規格翻成兩種語言，邊界可能不一樣。發現：用剛好等於上限的值，兩邊各跑一次。</li>
+</ul>
+<h3>課堂建議</h3>
+<ul>
+<li>交班模擬先七道檢查全部不勾，再一道一道加，目標是沒有「錯」和「卡住」。</li>
+<li>先問「在他電腦上跑得很好之後，你要先問清楚什麼？」</li>
+<li>分組對照 PY1～PY10 讀腳本，找出照規格的地方和要注意的地方；改一處（例如子群大小），記得更新 ver。</li>
+</ul>
+<h3>要實機或軟體確認</h3>
+<ul>
+<li>學校電腦的 LabVIEW 是 32 還是 64 位元（說明 ▸ 關於 LabVIEW）。Python Node 才需要對齊位元數，System Exec 不用。</li>
+<li>LabVIEW 2018 的 Unflatten From JSON：報錯時 value 輸出什麼、遇到 <code>\uXXXX</code> 怎麼還原。</li>
+<li>學校或產線電腦上 <code>import pandas, matplotlib</code> 要幾秒；作業員帳號第一次跑會建 matplotlib 的字型快取。</li>
+<li>用 PyVISA（<code>@py</code>）連軟儀器電表 <code>TCPIP0::127.0.0.1::5562::SOCKET</code>，結尾字元要設成 <code>\n</code>。</li>
+</ul>
+</main><script>
+(function () {
+  if (location.protocol === "file:") return;
+  function check() {
+    fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.version || d.version === "cb947d9160" || document.getElementById("ll-newver")) return;
+      var bar = document.createElement("div");
+      bar.id = "ll-newver";
+      bar.className = "newver";
+      bar.innerHTML = "網站已經更新，你看到的是舊版。<button type=\"button\">載入新版</button>";
+      bar.querySelector("button").onclick = function () {
+        fetch(location.href, { cache: "reload" }).catch(function () { return null; }).then(function () { location.reload(); });
+      };
+      document.body.appendChild(bar);
+    }).catch(function () { return null; });
+  }
+  setTimeout(check, 1500);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+})();
+</script>
+</body></html>

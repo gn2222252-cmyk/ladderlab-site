@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1dfa5253c4">
+<meta name="ll-version" content="cb947d9160">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -59,7 +59,7 @@
 <script src="lessons/part9_myrio_lv1.js?v=aa96580ec5"></script>
 <script src="lessons/part9_myrio_lv2.js?v=8c53a60c47"></script>
 <script src="lessons/part9_myrio_lv3.js?v=1e1fae5de5"></script>
-<script src="lessons/part10_work_a.js?v=52ee0dad5d"></script>
+<script src="lessons/part10_work_a.js?v=b1e8c7ad21"></script>
 <script src="lessons/part10_work_b.js?v=9a3c08a9da"></script>
 <script src="lessons/part10_work_c.js?v=a737e85f71"></script>
 <script src="lessons/part10_work_d.js?v=7bd8e20e98"></script>
@@ -96,7 +96,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1dfa5253c4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "cb947d9160" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

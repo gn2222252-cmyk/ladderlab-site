@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1dfa5253c4">
+<meta name="ll-version" content="cb947d9160">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>給老師：用 LadderLab 上可程式控制實習（8 週課表、課綱對照、電腦教室設定） | LadderLab</title>
@@ -41,6 +41,7 @@
   <li><b>作業</b>：每一章都有自動評分的練習題，評分會說出錯在哪一秒、哪一個輸出。</li>
   <li><b>補救與自學</b>：請假或進度落後的學生可以照<a href="path.html">課程地圖</a>自己補上。</li>
   <li><b>檢定準備</b>：氣壓乙級、工業配線乙級的 PLC 題做成模擬機台，可以一條一條驗收（<a href="exam.html">檢定專區</a>）。</li>
+  <li><b>LabVIEW 實務案例</b>：W6～W21 每一課都有評分重點、常見錯誤和怎麼發現、課堂建議（<a href="labview/teacher-work.html">實務案例教師版</a>，可以列印）。</li>
 </ul>
 <div class="callout">模擬器不能取代實機。實機要練的有接線、GX Works2 寫入與監看、量測和故障排除。網站負責讓學生帶著「已經會動的程式」走進工場。</div>
 </section>
@@ -143,7 +144,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1dfa5253c4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "cb947d9160" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
