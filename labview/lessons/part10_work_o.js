@@ -26,9 +26,9 @@ const CASES=[
  {t:'燒錄線接觸不良，連不上 MCU'},
  {t:'發行資料夾裡的檔案被人換成舊版 2.2.0'},
  {t:'快閃記憶體有一格壞了，寫進去的和檔案不一樣'},
- {t:'燒錄命令包在 .bat 裡，.bat 沒把結束碼傳出來；這一片線沒接好'},
- {t:'燒錄器要求更新它自己的韌體（跳出對話框）'},
- {t:'燒完、驗證都過，但板子不開機（MCU 的設定位元組被設錯）'}
+ {t:'燒錄命令包在 .bat 裡，結束碼被後面的命令蓋掉；這一片線沒接好'},
+ {t:'燒錄工具跳出視窗等人按（例如 J-Link 在 Windows 上的提示視窗）'},
+ {t:'燒完、驗證都過，但板子不開機（治具把 BOOT0 腳拉高，或晶振沒焊）'}
 ];
 function judge(i,c){
   // 每一個情境在各道關卡看到什麼
@@ -36,9 +36,9 @@ function judge(i,c){
    {},
    {rc:1,text:'Error: No STM32 target found!',rb:'old'},
    {hash:1,rb:'2.2.0'},
-   c.V?{rc:1,text:'Error: Download verification failed',rb:'old'}:{rb:'2.3.1',latent:1},
+   c.V?{rc:1,text:'Error: Data mismatch found at address …',rb:'2.3.1',vf:1}:{rb:'2.3.1',latent:1},
    {text:'Error: No STM32 target found!',rb:'old'},
-   c.N?{rc:3,text:'Error: ST-LINK firmware upgrade required',rb:'old'}:{hang:1},
+   c.N?{rc:1,text:'Error: …（不跳視窗，印出錯誤就結束）',rb:'old'}:{hang:1},
    {rb:'none'}
   ][i];
   if(S.hang)return {v:'卡住',why:'工具跳出對話框等人按，System Exec 沒有逾時，整個測試站停在那裡'};
@@ -47,7 +47,7 @@ function judge(i,c){
   if(c.R&&S.rc)why.push('return code '+S.rc);
   if(c.T&&S.text)why.push('輸出有「'+S.text+'」');
   if(c.B&&S.rb&&S.rb!=='2.3.1')why.push(S.rb==='none'?'問版本沒有回應':S.rb==='old'?'讀回的是舊版或空白':'讀回 '+S.rb+'，不是 2.3.1');
-  return why.length?{v:'FAIL',why:why.join('；')}:{v:'PASS',why:S.latent?'沒有寫入後驗證：壞的那一格平常用不到，板子照樣開機回報 2.3.1。出貨後某天跑到那一段程式才出事':''};
+  return why.length?{v:'FAIL',why:why.join('；')}:{v:'PASS',why:S.latent?'沒有寫入後驗證：壞的那一格平常用不到，板子照樣開機回報 2.3.1。出貨後某天跑到那一段程式才出事':S.vf?'工具驗證失敗了，但站沒看 return code 和輸出，照樣重開；板子跑的是幾乎完整的新韌體，回報 2.3.1':''};
 }
 function flashFig(el){
   el.className='fig';el.style.cssText='border:1px solid #c9d6e8;border-radius:6px;padding:10px 12px;background:#f8fbff';
@@ -67,18 +67,18 @@ function flashFig(el){
 }
 
 /* ---- 一步一步寫：Flash.vi ---- */
-const CASE=['正常','燒錄線沒接好','驗證失敗（快閃記憶體壞）','包在 .bat 裡，結束碼沒傳出來（線沒接好）'];
+const CASE=['正常','燒錄線沒接好','驗證失敗（快閃記憶體壞）','包在 .bat 裡，結束碼被蓋掉（線沒接好）'];
 const OUT=[
- 'Opening and parsing file: PM5FW_2.3.1.bin\nMemory Programming ...\nFile download complete\nDownload verified successfully\nMCU Reset',
+ '…\nFile download complete\n…\nDownload verified successfully',
  'Error: No STM32 target found!',
- 'Memory Programming ...\nFile download complete\nError: Download verification failed',
+ '…\nFile download complete\n…\nError: Data mismatch found at address 0x08004A20\nDownload verification failed',
  'Error: No STM32 target found!'];
 const fv={name:'Flash.vi',view:'split',ratio:1.5,
  fp:{w:360,h:330,items:[
   {id:'cs',k:'enum',ctl:true,label:'這一片的情況（模擬用）',options:CASE,x:12,y:8,v:0},
   {id:'tool',k:'str',ctl:true,label:'tool（燒錄工具的完整路徑）',x:12,y:60,w:330,v:'C:\\Program Files\\STMicroelectronics\\STM32Cube\\STM32CubeProgrammer\\bin\\STM32_Programmer_CLI.exe'},
   {id:'fw',k:'str',ctl:true,label:'fw（發行資料夾裡的韌體）',x:12,y:110,w:330,v:'\\\\fileserver\\release\\PM5\\PM5FW_2.3.1.bin'},
-  {id:'txt',k:'str',label:'standard output ＋ standard error',x:12,y:160,w:330,h:80},
+  {id:'txt',k:'str',label:'standard output ＋ standard error（字樣是示意）',x:12,y:160,w:330,h:80},
   {id:'rc',k:'num',label:'return code',x:12,y:262,w:50},
   {id:'ok',k:'led',label:'燒錄 OK',color:'green',x:120,y:262}]},
  bd:{w:1260,h:340,structs:[],
@@ -93,7 +93,7 @@ const fv={name:'Flash.vi',view:'split',ratio:1.5,
   {id:'txt',k:'ind',t:'str',label:'輸出文字',x:720,y:20},
   {id:'kok',k:'const',t:'str',v:'verified successfully',x:700,y:64},
   {id:'mr1',k:'fn',fn:'Match Regular Expression',x:870,y:110,h:56},
-  {id:'ker',k:'const',t:'str',v:'Error',x:740,y:250},
+  {id:'ker',k:'const',t:'str',v:'Error:',x:740,y:250},
   {id:'mr2',k:'fn',fn:'Match Regular Expression',x:870,y:220,h:56},
   {id:'ge',k:'fn',fn:'Greater Or Equal To 0?',x:960,y:150},
   {id:'lt',k:'fn',fn:'Less Than 0?',x:960,y:260},
@@ -127,7 +127,7 @@ const fv={name:'Flash.vi',view:'split',ratio:1.5,
  sim:{init:()=>({}),
   step(inp){
    const n=+inp.cs||0,txt=OUT[n],rc=[0,1,1,0][n];
-   const okS=txt.indexOf('verified successfully')>=0,er=txt.indexOf('Error')>=0,ok=rc===0&&okS&&!er;
+   const okS=txt.indexOf('verified successfully')>=0,er=txt.indexOf('Error:')>=0,ok=rc===0&&okS&&!er;
    return {out:{txt,rc,ok},
     vals:{'fis.resulting string':'"C:\\…\\STM32_Programmer_CLI.exe" -c port=SWD … -v -rst','sx.return code':rc,'mr1.offset past match':okS?'≥ 0':-1,'mr2.offset past match':er?'≥ 0':-1,'eq.out':rc===0,'ge.out':okS,'lt.out':!er,'a1.out':rc===0&&okS,'a2.out':ok},
     msg:(ok?'三個條件都成立：燒錄 OK（接著還要讀回版本）。':'燒錄失敗：'+[rc!==0?'return code '+rc:'',!okS?'找不到成功字樣':'',er?'輸出有 Error':''].filter(Boolean).join('、')+'。')+(n===3?' 注意 return code 是 0：只看它就會判成功。':'')};},
@@ -152,13 +152,14 @@ ask('至少列出五個要回去問的問題。',
  <li><b>節拍</b>：一片可以花幾秒？（W16）</li></ol>`),
 C.h3('② 寫成規格','','燒錄站規格'),
 C.table(['編號','規格'],[
- ['F1','韌體只從唯讀的發行資料夾拿。<code>release.csv</code> 一列一版：料號、版本、檔名、SHA256、核准人、生效日'],
- ['F2','工單指定版本；燒之前算檔案的 SHA256，和清單比對，不符就不燒（ERROR，通知工程師）'],
+ ['F1','韌體只從唯讀的發行資料夾拿。<code>release.csv</code> 一列一版：料號、版本、檔名、SHA256、核准人、生效日。發行資料夾在網路上，本機留一份快取：網路斷時只能用快取裡雜湊相符、清單上仍有效的版本；快取也沒有就停'],
+ ['F2','工單指定版本；燒之前算檔案的 SHA256，和清單比對，不符就不燒（ERROR，通知工程師）。LabVIEW 2018 沒有內建 SHA256：用 System Exec 執行 Windows 內建的 <code>certutil -hashfile 檔案 SHA256</code>'],
  ['F3','用命令列工具，參數一律寫在設定檔；一定要用<b>非互動</b>參數，並開寫入後驗證'],
- ['F4','PASS 要同時成立：return code ＝ 0、輸出有成功字樣、輸出沒有 Error'],
- ['F5','燒完重開，UART 送 <code>VER?</code>，回應要等於工單指定的版本；10 秒沒回應判 FAIL'],
- ['F6','每一片記錄（W9 的資料庫，並上傳 MES，W17）：test_id、序號、版本、SHA256、工具和版本、燒錄器序號、return code、輸出的前幾行、讀回的版本、秒數'],
- ['F7','換版：RD 發行、品保核准後才更新 release.csv；舊版標「停用」，不刪（追溯要用）']
+ ['F4','PASS 要同時成立：return code ＝ 0、輸出有成功字樣、輸出沒有 <code>Error:</code>（只找 Error 會被檔名或路徑裡的字誤判）'],
+ ['F5','燒完<b>斷電再上電</b>（有些 MCU 第一次燒完只做軟體重開，會停在晶片內建的開機程式，好板子被誤判），UART 送 <code>VER?</code>，回應要等於工單指定的版本；10 秒沒回應判 FAIL'],
+ ['F6','每一片記錄（W9 的資料庫，並上傳 MES，W17）：test_id、序號、版本、SHA256、工具和版本、燒錄器序號、MCU 的唯一 ID、讀回的設定位元組（option bytes）、return code、輸出的前幾行、讀回的版本、秒數'],
+ ['F7','換版：RD 發行、品保核准後才更新 release.csv；舊版標「停用」，不刪（追溯要用）'],
+ ['F8','重燒：連不上（No target）可以重壓治具再燒，最多 2 次；寫入後驗證失敗不能重燒，判 FAIL 送修，原因記下來']
 ]),
 C.h3('③ 盤點','','System Exec.vi'),
 `<p>${fn('Connectivity','Libraries & Executables','System Exec.vi')}：執行一個命令列，等它結束，把它輸出的文字和結束碼交回來。</p>`,
@@ -169,10 +170,10 @@ C.table(['端子','意思','注意'],[
  ['standard output／standard error','工具印出來的文字','有些工具把錯誤印在 standard error（例如 esptool 新版），兩個都要看'],
  ['return code','工具自己回的結束碼，通常 0 是成功','和 LabVIEW 的 error out 是兩回事：工具失敗，error out 不一定有錯']
 ]),
-warn('System Exec 沒有逾時','它只會一直等。燒錄工具如果跳出一個對話框（例如「燒錄器韌體需要更新，要更新嗎？」），測試站就永遠停在那裡。所以一定要用工具的非互動參數，而且第一次接手一個工具時，先試試看它什麼情況會跳視窗。真的需要逾時，進階做法是用 .NET 的 Process 類別（WaitForExit 可以給毫秒，超過就結束它）。'),
+warn('System Exec 沒有逾時','它只會一直等。燒錄工具如果跳出一個視窗等人按，測試站就永遠停在那裡。各工具的脾氣不同：STM32CubeProgrammer 的命令列版遇到燒錄器韌體太舊，會印出錯誤就結束；J-Link 在 Windows 上可能跳出提示視窗，要用它的命令把視窗關掉（查手冊）。第一次接手一個工具時，先試試看它什麼情況會跳視窗。真的需要逾時，簡單的做法：讓工具把輸出寫到檔案，System Exec 不等（wait until completion? 接 False），另一個迴圈計時，超過時間就用 <code>taskkill</code> 結束它，再讀檔案。進階做法是 .NET 的 Process 類別（WaitForExit 給毫秒，超過就 Kill），但同時讀它的輸出時要照微軟文件的寫法，不然會互相卡住。'),
 C.table(['常見工具','命令的樣子（示意，以手冊和 -h 為準）','寫入後驗證'],[
  ['STM32CubeProgrammer CLI','<code>STM32_Programmer_CLI -c port=SWD mode=UR -w 檔案.bin 0x08000000 -v -rst</code>','<code>-v</code>'],
- ['SEGGER J-Link Commander','<code>JLink.exe -device 型號 -if SWD -speed 4000 -CommanderScript prog.jlink</code>','命令檔裡寫驗證的命令'],
+ ['SEGGER J-Link Commander','<code>JLink.exe -device 型號 -if SWD -speed 4000 -CommanderScript prog.jlink</code>','命令檔裡寫驗證的命令；Windows 上可能跳視窗，要用命令關掉'],
  ['esptool（ESP32）','<code>esptool --port COM5 write-flash 0x0 檔案.bin</code>','寫入後自動用 MD5 比對'],
  ['Microchip IPECMD','<code>ipecmd.exe -?</code> 列出全部參數','看安裝目錄裡的說明檔']
 ]),
@@ -188,19 +189,22 @@ C.table(['實驗','做法','記下來'],[
 ]),
 `<p>這張表就是你寫判斷邏輯的依據，也要放進燒錄 SOP。換工具版本時，重做一次。</p>`,
 ask('E6 為什麼要做？',
- `<p>常見的情況：有人把燒錄命令寫進一個 .bat，LabVIEW 呼叫 .bat。.bat 裡最後一行如果是別的命令（例如 <code>echo done</code>），回給 LabVIEW 的就是那一行的結束碼：<b>燒錄失敗了，return code 還是 0</b>。要在 .bat 最後用 <code>exit /b %errorlevel%</code> 把燒錄工具的結束碼傳出來，或乾脆不要包 .bat，直接呼叫工具。</p>
- <p>這就是為什麼 F4 不只看 return code，還要看輸出文字。</p>`),
+ `<p>常見的情況：有人把燒錄命令寫進一個 .bat，LabVIEW 呼叫 .bat。燒錄那一行後面如果還有別的命令（例如 <code>copy</code> 一份 log 到網路資料夾），.bat 回給 LabVIEW 的是<b>最後執行的那個命令</b>的結束碼：copy 成功了，<b>燒錄失敗，return code 還是 0</b>。（不是每一種命令都會蓋掉：例如 <code>echo</code> 不會改變結束碼。所以要做實驗，不要猜。）</p>
+ <p>解法：燒錄那一行的<b>緊接下一行</b>就把結束碼存起來（<code>set RC=%errorlevel%</code>），最後 <code>exit /b %RC%</code>；或乾脆不要包 .bat，直接呼叫工具。</p>
+ <p>還有更麻煩的：工具自己的結束碼也不一定可靠。ST 的社群有人回報，STM32CubeProgrammer 的命令列版在連線中斷、驗證錯誤時也回 0。這就是為什麼 F4 不只看 return code，還要看輸出文字。</p>`),
 C.h3('⑤ 每一道關卡擋什麼','','在燒錄站模擬上試'),
 `<p>下面列出七種實際會遇到的情況，和六道可以加的檢查。先全部不勾，看看會怎樣；再一道一道加上去，找出<b>最少要哪幾道</b>，七種情況才全部判對、測試站也不會卡住。每一道都要花時間，右下角是每片的秒數。</p>`,
 {fn:flashFig},
 ask('哪一種情況只有「重開後讀回版本」抓得到？',
- `<p>「燒完、驗證都過，但板子不開機」。檔案對、寫進去的也和檔案一樣，工具回報一切成功，但板子根本沒跑起來（例如 MCU 的設定位元組被設錯）。<b>燒對檔案、燒進去了、板子跑得起來，是三件不同的事</b>，要分別確認：雜湊管第一件，寫入後驗證管第二件，讀回版本管第三件。</p>
+ `<p>「燒完、驗證都過，但板子不開機」。檔案對、寫進去的也和檔案一樣，工具回報一切成功，但板子根本沒跑起來（例如治具的 BOOT0 腳被拉高，MCU 開機進了晶片內建的開機程式；或晶振沒焊）。<b>燒對檔案、燒進去了、板子跑得起來，是三件不同的事</b>，要分別確認：雜湊管第一件，寫入後驗證管第二件，讀回版本管第三件。</p>
  <p>讀回版本也順便抓到「檔案被換成舊版」：就算沒做雜湊比對，板子報 2.2.0 就知道不對。但那時已經燒下去了；雜湊比對在燒之前就擋下來，而且會告訴你是<b>發行資料夾</b>出了問題，整條線都要停下來查。</p>`),
 ask('「快閃記憶體壞了一格」為什麼沒開 -v 時會被判 PASS？讀回版本不是也做了嗎？',
  `<p>壞的那一格可能在平常用不到的地方（例如某個很少跑的功能）。板子照樣開機、照樣回報 2.3.1，所有檢查都過了，出貨之後某一天跑到那一段程式才出事。只有<b>寫入後把整個內容讀回來比對</b>（-v）抓得到。多花 4 秒，換掉一個出貨後才會發生、而且很難查的問題。</p>`),
-ask('只勾 N、V、B 三道，七種情況就全部判對了。規格為什麼還要 H、R、T？',
- `<p>判對不等於夠用。B（讀回版本）只知道「不對」，不知道<b>為什麼</b>：</p>
- <ul><li><b>R、T 告訴你原因</b>：「No target found」是接觸問題，作業員重壓治具再燒一次就好；「verification failed」是板子的問題，要送修，不能一直重燒。只有 B 的話，兩種都是「問版本沒回應」，作業員不知道該怎麼處理。而且 B 要重開、等 10 秒逾時才知道失敗。</li>
+ask('最少要哪幾道？規格為什麼 H、R、T 三道都要？',
+ `<p>模擬裡最少是 N、V、B，再加 R 或 T 其中一道。少了 R 和 T，「驗證失敗」那一片站根本不知道失敗，照樣重開，板子跑的是幾乎完整寫進去的新韌體，回報 2.3.1，就被放過了：<b>V 開了，也要有人看它的結果</b>。</p>
+ <p>但規格三道都要，因為判對不等於夠用：</p>
+ <ul><li><b>R 和 T 都要</b>：結束碼可能被 .bat 蓋掉，工具自己也有失敗時回 0 的回報；輸出文字的字樣也可能隨工具版本改變。兩個一起看，任一個說失敗就是失敗。</li>
+ <li><b>它們告訴你原因</b>：「No target found」是接觸問題，作業員重壓治具再燒一次就好（F8）；驗證失敗是板子的問題，要送修，不能一直重燒。只有 B 的話，作業員只知道「不對」。而且 B 要斷電、上電、等 10 秒逾時才知道失敗。</li>
  <li><b>H 在燒之前就擋</b>：檔案被換掉時，沒有 H，每一片都會燒成舊版、讀回 2.2.0、判 FAIL、重燒、又 FAIL，一直到有人發現。有 H，第一片就停下來，而且直接指出是<b>發行資料夾</b>出問題，整條線都要停下來查。</li></ul>
  <p>檢查不只是為了判 PASS／FAIL，也是為了出事時<b>馬上知道是哪裡出事</b>。這和 W14「每一筆都留證據」是同一件事。</p>`),
 C.h3('⑥ 寫程式','','Flash.vi'),
@@ -208,8 +212,8 @@ C.h3('⑥ 寫程式','','Flash.vi'),
  {t:'組出命令',view:'split',add:['cs','kf','tool','fw','fis','w1','w2','w3'],h:`<p>Format Into String 把工具路徑和韌體路徑放進命令裡。格式字串裡兩個 %s 外面都加了<b>雙引號</b>：<code>C:\\Program Files\\…</code> 有空白，不加引號，命令列會在空白處斷開，變成找不到程式。</p><p>工具路徑、參數、韌體路徑都從設定檔和 release.csv 來（F1、F3），不要寫死在程式裡。作業員只掃序號，程式從工單查出要燒哪一版。</p>`},
  {t:'System Exec',view:'split',add:['kT','sx','w4','w5','rc','w15'],h:`<p>wait until completion? 接 True：等工具結束，才拿得到輸出和 return code。等的這段時間 LabVIEW 什麼都不能做（這個 VI 卡在這裡），所以它要放在燒錄站自己的流程裡，畫面用另一個迴圈更新。</p>`},
  {t:'兩個輸出合起來看',view:'split',add:['cat','w6','w7','txt','w8'],h:`<p>standard output 和 standard error 接成一個字串：有的工具把錯誤印在 standard error，只看 standard output 會漏掉。這段文字也要存進紀錄（F6 存前幾行），出問題時才有東西查。</p>`},
- {t:'三個條件都要成立',view:'split',add:['kok','mr1','w9','w10','ker','mr2','w11','w12','ge','w13','lt','w14','eq','w16','a1','w17','w18','a2','w19','w20','ok','w21'],h:`<p>Match Regular Expression 找不到時，offset past match 是 −1。所以：</p><ul><li>return code ＝ 0（Equal To 0?）</li><li>找得到成功字樣：offset ≥ 0</li><li>找不到 Error：offset &lt; 0</li></ul><p>三個 And 起來才是「燒錄 OK」。成功字樣用 ④ 實驗 E1 記下來的那一句，不要用自己猜的。</p><p>這只是燒錄這一步。之後還有重開、讀回版本（F5）：用 W6、I 單元的 VISA 送 <code>VER?</code>。</p>`},
- {t:'Run：四種情況',view:'split',add:[],h:`<p>依序選四種情況 Run。最後一種：包在 .bat 裡，return code 是 0，但輸出有 Error：只看 return code 就會判成功。</p>`}
+ {t:'三個條件都要成立',view:'split',add:['kok','mr1','w9','w10','ker','mr2','w11','w12','ge','w13','lt','w14','eq','w16','a1','w17','w18','a2','w19','w20','ok','w21'],h:`<p>Match Regular Expression 找不到時，offset past match 是 −1。所以：</p><ul><li>return code ＝ 0（Equal To 0?）</li><li>找得到成功字樣：offset ≥ 0</li><li>找不到 <code>Error:</code>：offset &lt; 0（帶冒號，避免檔名或路徑裡剛好有 Error 這幾個字）</li></ul><p>三個 And 起來才是「燒錄 OK」。成功字樣和錯誤字樣用 ④ 實驗記下來的那幾句，不要用自己猜的：這個模擬的輸出文字只是示意，實際的字樣會隨工具和版本不同。</p><p>這只是燒錄這一步。之後還有重開、讀回版本（F5）：用 W6、I 單元的 VISA 送 <code>VER?</code>。</p>`},
+ {t:'Run：四種情況',view:'split',add:[],h:`<p>依序選四種情況 Run。最後一種：包在 .bat 裡，結束碼被後面的命令蓋掉，return code 是 0，但輸出有 <code>Error:</code>：只看 return code 就會判成功。</p>`}
 ]}},
 C.h3('⑦ 記錄和換版','','韌體版本控管'),
 `<p>職缺寫的「韌體版本控管」，在產線上就是兩件事：<b>燒之前</b>只能燒核准過的那一版（F1、F2、F7），<b>燒之後</b>每一片都查得到燒了什麼（F6）。</p>`,
