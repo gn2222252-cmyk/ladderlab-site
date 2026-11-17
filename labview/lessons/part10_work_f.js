@@ -25,10 +25,11 @@ function makeDB(){
     else if(kind<0.04){v[1]=4.86;v[2]=4.80;}
     else if(kind<0.06){v[4]=82.5;}
     else if(kind<0.1){v[1]=5.085+r()*0.01;v[2]=5.105+r()*0.03;}
-    v[3]=Math.abs(v[1]-v[2])/v[1]*100;
+    v[3]=Math.abs(v[1]-v[2])/v[1]*100;v[5]=12+(v[0]-17)*0.8;
     const runOne=(vals,tsx)=>{
       const tid=++id;let res='PASS',fi='';
-      const rows=ITEMS.map((it,i)=>{const hi=it[0]==='T03'?t3hi:it[2];const p=vals[i]>=it[1]&&vals[i]<=hi;if(!p&&res==='PASS'){res='FAIL';fi=it[0];}return {test_id:tid,item:it[0],value:+vals[i].toFixed(4),lo:it[1],hi,pass:p?1:0};});
+      const IT=ver==='L1.1'?ITEMS.concat([['T06',0,50]]):ITEMS;
+      const rows=IT.map((it,i)=>{const hi=it[0]==='T03'?t3hi:it[2];const p=vals[i]>=it[1]&&vals[i]<=hi;if(!p&&res==='PASS'){res='FAIL';fi=it[0];}return {test_id:tid,item:it[0],value:+vals[i].toFixed(4),lo:it[1],hi,pass:p?1:0};});
       tests.push({test_id:tid,sn:s,station:st,operator:ops[(d*2+k)%4],ts:tsx,result:res,fail_item:fi,limits_ver:ver,sw_ver:ver==='L1.0'?'1.0.0':'1.1.0'});meas.push(...rows);return res;};
     const res=runOne(v,ts);
     // 有幾片 FAIL 之後被拿去重測，第二次 PASS（重測到 PASS 為止的痕跡）
@@ -101,7 +102,7 @@ function sqlConsole(el){
   <textarea data-k="q" rows="3" style="width:100%;font:13px Consolas,monospace;box-sizing:border-box"></textarea>
   <p><button type="button" class="btn" data-k="run">執行</button> <span data-o="info" style="font-size:13px;color:#445"></span></p>
   <div style="max-height:260px;overflow:auto"><table class="tbl" style="font-size:12px;width:100%" data-o="tb"></table></div>
-  <p style="font-size:12px;color:#667">支援：SELECT 欄位 FROM 表格 WHERE 條件 AND 條件 …（= &lt; &gt; &lt;= &gt;= != IN LIKE）、COUNT／AVG／MIN／MAX／SUM、GROUP BY … HAVING、ORDER BY … DESC、LIMIT。字串用單引號。SQL Server 取前幾列寫 <code>SELECT TOP 10 …</code>；MySQL、PostgreSQL、SQLite 寫 <code>LIMIT 10</code>。範例的 test_id 為了好打字用整數，規格 S2 的實際格式是像 ST01-20261114-0057 的字串。</p>`;
+  <p style="font-size:12px;color:#667">支援：SELECT 欄位 FROM 表格 WHERE 條件 AND 條件 …（= &lt; &gt; &lt;= &gt;= != IN LIKE）、COUNT／AVG／MIN／MAX／SUM、GROUP BY … HAVING、ORDER BY … DESC、LIMIT。字串用單引號。SQL Server 取前幾列寫 <code>SELECT TOP 10 …</code>；MySQL、PostgreSQL、SQLite 寫 <code>LIMIT 10</code>。範例的 test_id 為了好打字用整數，規格 S2 的實際格式是像 ST01-20261114-000057 的字串。</p>`;
   const o=k=>el.querySelector('[data-o='+k+']'),ta=el.querySelector('[data-k=q]');
   // 讓範例 ② 指到客訴那一片真正的 test_id
   const cid=db.tests.find(t=>t.sn==='PM5-26110457').test_id;EX[1][1]=EX[1][1].replace('1158',cid);
@@ -166,7 +167,7 @@ ask('meas 為什麼要存 lo 和 hi？上下限不是都在 limits.csv 裡嗎？
  <p>這是追溯的原則：<b>判斷結果的依據要跟結果存在一起</b>。</p>`),
 C.table(['編號','規格'],[
  ['S1','每次測試（含重測、含 ERROR）寫一列 tests；每項量測寫一列 meas'],
- ['S2','test_id 由測試站產生，全廠不重複（例如站號＋時間＋流水號），不要等資料庫給'],
+ ['S2','test_id 由測試站產生，全廠不重複（站號－日期－6 位流水號，例如 ST01-20261114-000057），不要等資料庫給'],
  ['S3','資料庫斷線時產線照常測，資料先存本機暫存檔，恢復後自動補傳，不重複、不遺失'],
  ['S4','序號從條碼槍來，寫入資料庫時用參數化查詢，不拼字串'],
  ['S5','測試站電腦的時間要和伺服器同步（NTP），ts 才排得出先後'],
@@ -198,7 +199,7 @@ C.plan({start:'W6 的 Main.vi 旁邊多一個 Upload_Loop.vi（獨立的迴圈�
  in:'測試迴圈：一次測試的結果（tests 一列 ＋ meas 幾列）。上傳迴圈：暫存資料夾裡的檔案清單。',
  calc:'（資料庫的 test_id 設成主鍵：同一筆傳兩次時會得到「主鍵重複」錯誤，上傳迴圈把它當作「已經傳過」，刪掉暫存檔。）測試迴圈：組好資料 → 寫成暫存檔（先寫成 .tmp，寫完再改名成 .json，避免上傳迴圈讀到寫一半的檔案）。上傳迴圈：每 2 秒看一次資料夾 → 一個檔案一個交易（transaction）：插入 tests 和 meas，全部成功才 commit，然後刪檔；失敗就留著下次再試。',
  out:'資料庫的兩個表；畫面上一個小燈：「待上傳 N 筆」，N 一直變大就通知工程師。',
- loop:'測試迴圈照產線節奏；上傳迴圈 2 秒一圈，斷線時拉長到 30 秒，不要一直猛連。',
+ loop:'測試迴圈照產線節奏；上傳迴圈 2 秒一圈；斷線時重試間隔越來越長，最多 60 秒，不要一直猛連（W17 會講為什麼、怎麼加隨機值）。',
  end:'程式結束時上傳迴圈把剩下的傳完（給個上限時間）；沒傳完的留在資料夾，下次開機繼續。'}),
 ask('為什麼 test_id 要由測試站自己產生，不讓資料庫自動編號？',
  `<p>資料庫斷線時，暫存檔也需要一個唯一的編號；而且補傳時如果同一個檔案傳了兩次（例如寫入成功但回應沒收到），有自己的 test_id 就能判斷「這筆已經有了」，不會重複。用站號 ＋ 時間 ＋ 流水號，全廠就不會撞號。</p>`),
