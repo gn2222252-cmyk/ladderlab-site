@@ -237,6 +237,7 @@ C.h3('⑥ 一步一步寫','','Alarm_TempLow.vi：遲滯＋栓鎖確認'),
  {t:'栓鎖和確認',view:'split',add:['lat','ack','sr2','not2','and2','or2','c1','c2','c3','c4','c5','c6','c7'],h:`<p>警報燈 ＝ 警報狀態 <b>或</b>（上一圈燈亮 <b>且</b> 沒按確認）。還在警報中時第一項就是 True，按確認也不會熄；恢復之後，按確認那一圈第二項變 False，燈熄。這就是規格 A2 的栓鎖型。</p><p>畫面上的「亮」和「閃」用這兩個 Boolean 決定：警報狀態 True → 亮；警報狀態 False 但警報燈 True → 閃（等確認）。</p><p>確認按鈕用 Latch When Released（W1 說過為什麼）。</p>`},
  {t:'Run：照規格 A1、A2 測',view:'split',add:[],h:`<p>溫度 164 → 燈亮。按確認 → 還亮。溫度 170 → 狀態 OFF，燈還亮（閃，等確認）。按確認 → 熄。</p><p>延遲（連續 3 秒）沒有畫在這裡：再加一個 Shift Register 累計「ON 條件連續成立的時間」，到 3 秒才讓它進入警報狀態。自己試著加上去。</p>`}
 ]}},
+tip('參考答案','<a href="vi/LV2018/W11_Alarm_TempLow.vi" download>W11_Alarm_TempLow.vi（LabVIEW 2018）</a>　<a href="vi/W11_Alarm_TempLow.vi" download style="font-size:13px">2026 版</a>。比圖上多兩件事：兩個 Shift Register 都接 False 初始值（不然下一次 Run 會帶著上次的狀態），「確認」按鈕設成 Latch When Released（設成 Switch 的話，警報中按一下，恢復時燈就自己熄了，違反 A2）。測試版 <a href="vi/LV2018/W11_Alarm_TempLow_test.vi" download>W11_Alarm_TempLow_test.vi</a>：設定 175，溫度 173、165、164.9、166、166（按確認）、167.9、168、170、170（按確認）、170、160，三個輸出逐圈都和規格一致（實測通過）。'),
 C.h3('⑦ 測試、交機','',''),
 C.table(['測試','操作','預期','規格'],[
  ['T1','作業員身分試著改參數','改不了','R2'],
