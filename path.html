@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="9bb65e80d2">
+<meta name="ll-version" content="4c4c569e07">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PLC 課程地圖：三菱 FX3S 從零到會設計、會除錯 | LadderLab</title>
@@ -75,7 +75,7 @@ function lvProgress() {
   const done = Object.keys(lv.done || {}).filter((k) => lv.done[k]);
   if (!done.length && !best) return "";
   const part = (re) => done.filter((k) => re.test(k)).length;
-  return `<p class="why">LabVIEW 課程進度：基礎與專案 ${part(/^L\d/)}/24、檔案 I/O ${part(/^F\d/)}/5、架構 ${part(/^A\d/)}/9、CLAD ${part(/^C/)}/19、接入新儀器 ${part(/^I\d/)}/14、myRIO ${part(/^M\d/)}/18、實務案例 ${part(/^W\d/)}/21、高階實務 ${part(/^H\d/)}/8` +
+  return `<p class="why">LabVIEW 課程進度：基礎與專案 ${part(/^L\d/)}/24、檔案 I/O ${part(/^F\d/)}/5、架構 ${part(/^A\d/)}/9、CLAD ${part(/^C/)}/19、接入新儀器 ${part(/^I\d/)}/14、myRIO ${part(/^M\d/)}/18、實務案例 ${part(/^W\d/)}/21、高階實務 ${part(/^H\d/)}/9` +
     (best && typeof best.pct === "number" ? `；模擬考最佳 ${Math.round(best.pct)}%` : "") +
     (lv.last ? `　<a href="labview/index.html#${esc(lv.last)}">回到上次的課 ›</a>` : "") + "</p>";
 }
@@ -112,7 +112,7 @@ renderWaitlist(document.getElementById("wl"), "path", "想在 Pro 開放時第�
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "9bb65e80d2" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "4c4c569e07" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
