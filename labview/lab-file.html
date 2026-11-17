@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1ee4799cfc">
+<meta name="ll-version" content="bc3df2440f">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>檔案 I/O 實驗室：開檔方式、檔案指標、CSV 紀錄 | LadderLab</title>
@@ -170,7 +170,7 @@ Replace File</div>
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1ee4799cfc" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "bc3df2440f" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
