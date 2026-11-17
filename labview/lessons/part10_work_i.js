@@ -176,6 +176,7 @@ C.h3('⑥ 一步一步寫','','History.vi：只留最近 N 筆'),
  {t:'存回 Shift Register',view:'split',add:['hist','w12','w13','sz2','size','w14','w15'],h:`<p>取出來的子陣列接回 Shift Register 右邊，同時顯示。Run，看「陣列長度」到 N 之後就不再增加。</p>`},
  {t:'Run：改 N',view:'split',add:[],h:`<p>跑一陣子把 N 從 5 改成 3，陣列馬上剩 3 個；改回 5，會慢慢再長到 5。實際程式裡 N ＝ 360（一小時），而所有資料都已經寫在檔案裡了。</p><p>Waveform Chart 本身也有這個功能：右鍵 ▸ Chart History Length。圖表只拿來看，就直接用它（預設 1024 點）。</p><p>N 很大、或每圈很快時，可以預先配好 N 格的陣列，用 Replace Array Subset 加一個「寫到第幾格」的索引繞圈寫（環狀緩衝），就不用每圈重新配置。</p>`}
 ]}},
+tip('參考答案','<a href="vi/LV2018/W12_History.vi" download>W12_History.vi（LabVIEW 2018）</a>　<a href="vi/W12_History.vi" download style="font-size:13px">2026 版</a>。Read_V.vi 換成「this reading」控制項，先把 N 設好再 Run。測試版 <a href="vi/LV2018/W12_History_test.vi" download>W12_History_test.vi</a>：輸入 1～7、N ＝ 5，長度依序是 1、2、3、4、5、5、5，最後的歷史是 3～7（實測通過）。'),
 C.h3('⑦ 測試、交機','','長時間的程式，要刻意測長時間的事'),
 C.table(['測試','操作','預期','規格'],[
  ['T1','把間隔改成 0.1 秒跑 1 小時（等於 10 秒跑 100 小時）','工作管理員裡的記憶體不再增加','B3'],
