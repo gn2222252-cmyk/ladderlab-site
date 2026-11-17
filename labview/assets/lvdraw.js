@@ -17,7 +17,8 @@ const T={
   enum:{c:'#1652c9',x:'U16'},
   bool:{c:'#008a00',x:'TF'}, str:{c:'#e0359e',x:'abc'}, path:{c:'#1a8a7a',x:'Path'},
   err:{c:'#a08400',x:'err'}, clu:{c:'#8b4a2b',x:'▦'}, visa:{c:'#6b3fa0',x:'I/O'},
-  queue:{c:'#007b7b',x:'Q'}, ref:{c:'#2b6e5c',x:'ref'}, time:{c:'#8b4a2b',x:'⏲'}, void:{c:'#888',x:''}
+  queue:{c:'#007b7b',x:'Q'}, ref:{c:'#2b6e5c',x:'ref'}, time:{c:'#8b4a2b',x:'⏲'}, void:{c:'#888',x:''},
+  obj:{c:'#a33b3b',x:'obj'}, objB:{c:'#2f7d3a',x:'obj'}, pic:{c:'#1d5fb8',x:'pic'}
 };
 LV.T=T;
 function base(t){return (t||'dbl').replace(/\[\]/g,'')}
@@ -209,6 +210,7 @@ function wireStyle(t){
   const b=base(t),a=isArr(t),c=tcol(t);
   if(b==='err'||b==='clu'||b==='time') return {c,w:a?6:5,dbl:true};
   if(b==='visa'||b==='queue') return {c,w:a?4:2.4};
+  if(b==='obj'||b==='objB') return {c,w:a?6:4.5,dash:'5 2'};  // LabVIEW 類別的線：粗、有花紋；顏色依類別而不同
   if(b==='str') return {c,w:a?4:2.2,dash:a?null:'7 1.5'};
   return {c,w:a?3.4:1.6};
 }
