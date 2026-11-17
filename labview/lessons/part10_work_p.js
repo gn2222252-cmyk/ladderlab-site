@@ -168,6 +168,7 @@ C.h3('⑤ 寫程式','','ConfigPath.vi'),
  {t:'第一次：複製範本',view:'split',add:['tcfg','w11','ad','ktp','bp3','w13','w14','cp','w15','w16','te','w18','eo','w19'],h:`<p>範本放在程式資料夾：Application Directory 在 EXE 裡回傳 EXE 所在的資料夾；在開發環境裡，VI 在專案中回傳專案的資料夾，不在專案中回傳 VI 所在的資料夾。範本檔在建置規格裡要設成 Always Included，EXE 旁邊才會有。</p><p>Copy 還有一個 overwrite 輸入，預設 False：目的地已經有檔案時不會蓋掉，剛好保護作業員的設定。</p><p><b>為什麼不先 Create Folder？</b>資料夾已經存在時，Create Folder 會回錯誤；更重要的是，程式自己建的資料夾只有建立的帳號能改（②）。資料夾由安裝程式或 IT 建好（DP7）。資料夾不在，Copy 會回錯誤：錯誤線接出去，畫面顯示「部署不完整，請通知工程師」，不要讓程式在沒有設定檔的情況下繼續跑。True 頁的錯誤通道設 Use Default If Unwired。</p>`},
  {t:'Run',view:'split',add:[],h:`<p>兩種情況各 Run 一次。第二次執行時什麼都不複製：這很重要，否則每次開程式，作業員的設定都被範本蓋回去。</p>`}
 ]}},
+tip('參考答案','<a href="vi/LV2018/W19_ConfigPath.zip" download>W19_ConfigPath.zip（LabVIEW 2018）</a>　<a href="vi/W19_ConfigPath.zip" download style="font-size:13px">2026 版</a>：解開後 station_template.ini 要和 VI 在同一個資料夾（在開發環境，Application Directory 是專案或 VI 所在的資料夾）。<b>它會真的寫 C:\\ProgramData\\MyCompany\\PM5Station</b>，試完自己刪掉。實測：①先手動建好 PM5Station 資料夾，第一次 Run：already existed? = F，範本被複製；②在 station.ini 加一行再 Run：already existed? = T，那一行還在；③把資料夾刪掉再 Run：Copy 回報錯誤 7（找不到路徑）。這就是故意不放 Create Folder 的結果：資料夾由安裝程式或 IT 建，權限才對（DP7）。'),
 note('程式讀自己的版本','畫面的「關於」和每一筆測試紀錄的版本，用 vi.lib 裡的 FileVersionInfo.vi 讀正在執行的 EXE（路徑用 Application 屬性的 Directory Path 和 Name 組出來）。在開發環境裡沒有 EXE 可以讀：用 App.Kind 屬性判斷：<b>等於 Run Time System</b> 時才去讀 EXE 的版本，其他情況都顯示「開發版」（試用版、學生版的開發環境，App.Kind 不一定是 Development System，所以不要反過來判斷），這樣開發時測出來的資料也不會被當成正式版本。'),
 C.h3('⑥ 驗收和換版','','交機文件'),
 C.table(['項次','驗收（每一台都做）','預期'],[
