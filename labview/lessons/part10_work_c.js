@@ -332,6 +332,7 @@ C.h3('⑥ 一步一步寫','','Judge.vi：判定和組一列 CSV'),
  <p>Append_Line.vi 用 F 部分學過的寫法：Open/Create/Replace File（open or create）→ Set File Position 到檔尾 → Write to Text File → Close。<b>不要每次重寫整個檔案</b>：程式當掉時，最多只損失最後一列。</p>`},
  {t:'Run：換板子、改序號',view:'split',add:[],h:`<p>依序選四種板子 Run：良品全部 PASS；「輸出電壓偏低」第一個失敗是 T02；「效率不足」是 T05；「治具沒壓好」是 <b>T01</b>（因為 T01 有下限）。</p><p>把序號改錯，量測全部 PASS，結果仍是 FAIL。真正的測試站在「檢查序號」就擋下來，不會量；這裡是第二道防線。</p>`}
 ]}},
+tip('參考答案','<a href="vi/LV2018/W06_Judge.zip" download>W06_Judge.zip（LabVIEW 2018）</a>　<a href="vi/W06_Judge.zip" download style="font-size:13px">2026 版</a>：解開後保持資料夾結構（W06_sub 裡是 Append_Line.vi）。和課文不同的地方：Measure_All.vi 換成 5 個量測值的陣列控制項；序號檢查用 Match Pattern（建置工具放不了 Match Regular Expression），沒有 {8}，所以 [0-9] 寫 8 次，結果一樣。實測 7 組都對：T02 剛好 5.10 判 PASS（含上限）、T05 剛好 85 判 PASS、T01 0.2 mA 判 FAIL 且第一個失敗是 T01、像商品條碼的序號和多一個 X 的序號都擋下來；CSV 每一列結尾是 CR LF，重測新增一列不覆蓋。'),
 ask('上下限為什麼不做成前面板的數值控制項，讓工程師方便調？',
  `<p>前面板的東西作業員也碰得到。產線很忙時，「這片差一點點，調一下上限就過了」真的會發生，而且沒有紀錄。放在檔案裡（甚至加上檢查碼或放在只有工程師能寫的資料夾），改的時候走變更流程，CSV 裡也可以記下當時用的上下限版本，出問題時查得到。</p>`),
 C.h3('⑦ 測試、交機','','在模擬測試站上照表測'),
