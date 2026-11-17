@@ -122,7 +122,7 @@ C.table(['W6 用 LabVIEW 做的','改用 TestStand 後由誰做','TestStand 裡�
  ['讀 DMM、換算成量測值','<b>LabVIEW</b>','Code module：被步驟呼叫的 VI'],
  ['不管怎麼結束都要斷電','TestStand','Cleanup 群組：一定會跑']
 ]),
-ask('W6 的 Judge.vi 自己比上下限、自己寫檔。如果原封不動搬進 TestStand，用 Pass/Fail Test 呼叫它，會少掉什麼？',`<p>Pass/Fail Test 只拿到一個布林。報表上看不到量測值和上下限，資料庫裡也沒有，之後做良率分析（W14）、GR&R（W6）、查客訴（W9）都沒有數字可用；改上下限還要改 VI。</p><p>NI 的建議是 <b>VI 只回傳量測值，上下限放在 sequence 裡，由 Numeric Limit Test 判定</b>。這和 W6「上下限不寫死在程式裡」是同一個想法，只是放的地方從 CSV 換成 TestStand。</p>`),
+ask('W6 的 Judge.vi 自己比上下限、自己寫檔。如果原封不動搬進 TestStand，用 Pass/Fail Test 呼叫它，會少掉什麼？',`<p>Pass/Fail Test 只拿到一個布林。報表上看不到量測值和上下限，資料庫裡也沒有，之後做良率分析（W14）、重複性分析（W6）、查客訴（W9）都沒有數字可用；改上下限還要改 VI。</p><p>NI 的建議是 <b>VI 只回傳量測值，上下限放在 sequence 裡，由 Numeric Limit Test 判定</b>。這和 W6「上下限不寫死在程式裡」是同一個想法，只是放的地方從 CSV 換成 TestStand。</p>`),
 C.h3('② 步驟的種類','','選錯種類，報表就少東西'),
 C.table(['Step Type','誰判定','什麼時候用'],[
  ['Numeric Limit Test','TestStand：module 回傳一個數值，步驟比上下限（Step.Result.Numeric）','一個數字、一組上下限：W6 的 T01～T05'],
