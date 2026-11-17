@@ -17,7 +17,7 @@ function makeDB(){
   for(let d=0;d<3;d++)for(let k=0;k<110;k++){
     const st=k%2?'ST02':'ST01';const mins=8*60+Math.floor(k*4.3+r()*3);const hh=String(Math.floor(mins/60)).padStart(2,'0'),mm=String(mins%60).padStart(2,'0'),ss=String(Math.floor(r()*60)).padStart(2,'0');
     const ts=days[d]+' '+hh+':'+mm+':'+ss;
-    const ver=(d===0||(d===1&&mins<10*60))?'L1.0':'L1.1',t3hi=ver==='L1.0'?5.15:5.10;
+    const ver=(d<2||(d===2&&mins<10*60))?'L1.0':'L1.1',t3hi=ver==='L1.0'?5.15:5.10;
     const s='PM5-'+(++sn);
     let v=[17+(r()-.5)*3,5.02+(r()-.5)*.02,4.975+(r()-.5)*.03,0,88.6+(r()-.5)*1.2];
     let kind=r();
@@ -32,7 +32,7 @@ function makeDB(){
       tests.push({test_id:tid,sn:s,station:st,operator:ops[(d*2+k)%4],ts:tsx,result:res,fail_item:fi,limits_ver:ver,sw_ver:ver==='L1.0'?'1.0.0':'1.1.0'});meas.push(...rows);return res;};
     const res=runOne(v,ts);
     // 有幾片 FAIL 之後被拿去重測，第二次 PASS（重測到 PASS 為止的痕跡）
-    if(res==='FAIL'&&r()<0.5){const v2=v.slice();if(v2[4]<85)v2[4]=85.4;if(v2[1]<4.9){v2[1]=4.905;v2[2]=4.86;}v2[3]=Math.abs(v2[1]-v2[2])/v2[1]*100;if(v2[2]>t3hi)v2[2]=t3hi-0.001;runOne(v2,ts.replace(/:(\d\d)$/,(m,x)=>':'+String((+x+40)%60).padStart(2,'0')));}
+    if(res==='FAIL'&&r()<0.5){const v2=v.slice();if(v2[4]<85)v2[4]=85.4;if(v2[1]<4.9){v2[1]=4.905;v2[2]=4.86;}v2[3]=Math.abs(v2[1]-v2[2])/v2[1]*100;if(v2[2]>t3hi)v2[2]=t3hi-0.001;const m2=mins+2;runOne(v2,days[d]+' '+String(Math.floor(m2/60)).padStart(2,'0')+':'+String(m2%60).padStart(2,'0')+':'+ss);}
   }
   return {tests,meas};
 }
@@ -61,6 +61,9 @@ function sqlRun(db,q){
    }while(kw('AND')&&++p);}
   let rows=T.filter(r=>conds.every(f=>f(r)));
   let gb=null;if(kw('GROUP')){p++;eat('BY');gb=[];do{const c=ident();chk(c);gb.push(c);}while(op(',')&&++p);}
+  const AGG=['COUNT','AVG','MIN','MAX','SUM'];
+  const aggOf=(g,f,c)=>{const vs=g.map(r=>c==='*'?1:r[c]);if(f==='COUNT')return vs.length;if(!vs.length)return '';if(f==='SUM')return +vs.reduce((a,b)=>a+b,0).toFixed(4);if(f==='AVG')return +(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(4);if(f==='MIN')return Math.min(...vs);return Math.max(...vs);};
+  let hv=null;if(kw('HAVING')){if(!gb)throw new Error('HAVING 要接在 GROUP BY 後面');p++;const f=ident().toUpperCase();if(!AGG.includes(f))throw new Error('HAVING 後面要接 COUNT、AVG… 這類函式');if(!op('('))throw new Error('少了左括號');p++;let c='*';if(op('*'))p++;else{c=ident();chk(c);}if(!op(')'))throw new Error('少了右括號');p++;const k=peek();if(!k||k.t!=='op')throw new Error('要接比較符號');p++;hv={f,c,o:k.v,v:lit()};}
   sel.forEach(s=>{if(s.col&&s.col!=='*')chk(s.col);});
   const hasAgg=sel.some(s=>s.agg);
   let out,head;
@@ -68,7 +71,9 @@ function sqlRun(db,q){
     const groups=new Map();rows.forEach(r=>{const k=gb?gb.map(c=>r[c]).join('\u0001'):'';if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r);});
     if(!gb&&!groups.size)groups.set('',[]);
     head=sel.map(s=>s.name||s.col);
-    out=[...groups.values()].map(g=>sel.map(s=>{if(!s.agg){if(gb&&!gb.includes(s.col))throw new Error('有 GROUP BY 時，'+s.col+' 要放在 GROUP BY 裡');return g[0]?g[0][s.col]:'';}
+    let gl=[...groups.values()];
+    if(hv)gl=gl.filter(g=>{const x=aggOf(g,hv.f,hv.c),v=hv.v;switch(hv.o){case '=':return x==v;case '!=':case '<>':return x!=v;case '<':return x<v;case '>':return x>v;case '<=':return x<=v;case '>=':return x>=v;}return false;});
+    out=gl.map(g=>sel.map(s=>{if(!s.agg){if(gb&&!gb.includes(s.col))throw new Error('有 GROUP BY 時，'+s.col+' 要放在 GROUP BY 裡');return g[0]?g[0][s.col]:'';}
       const vs=g.map(r=>s.col==='*'?1:r[s.col]);if(s.agg==='COUNT')return vs.length;if(!vs.length)return '';
       if(s.agg==='SUM')return +vs.reduce((a,b)=>a+b,0).toFixed(4);if(s.agg==='AVG')return +(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(4);if(s.agg==='MIN')return Math.min(...vs);return Math.max(...vs);}));
   }else{
@@ -87,24 +92,25 @@ function sqlConsole(el){
    ['① 這個序號測過幾次',"SELECT test_id, ts, station, operator, result, fail_item, limits_ver FROM tests WHERE sn = 'PM5-26110457'"],
    ['② 那一次的每一項量測',"SELECT item, value, lo, hi, pass FROM meas WHERE test_id = 1158"],
    ['③ 同樣問題的還有誰',"SELECT test_id, value, hi FROM meas WHERE item = 'T03' AND value > 5.10 AND pass = 1"],
-   ['④ 每一站的良率',"SELECT station, result, COUNT(*) FROM tests GROUP BY station, result"],
-   ['⑤ FAIL 之後重測到 PASS 的',"SELECT sn, COUNT(*) FROM tests GROUP BY sn"]
+   ['④ 每一站 PASS／FAIL 各幾筆',"SELECT station, result, COUNT(*) FROM tests GROUP BY station, result"],
+   ['⑤ 測了不只一次的序號',"SELECT sn, COUNT(*) FROM tests GROUP BY sn HAVING COUNT(*) > 1"],
+   ['⑥ 看那幾片的先後',"SELECT sn, ts, result, fail_item FROM tests WHERE sn IN ('X') ORDER BY ts"]
   ];
   el.innerHTML=`<p style="margin:0 0 6px"><b>測試資料庫（三天、兩站，約 ${db.tests.length} 次測試）。</b>表格：<code>tests</code>（每一次測試一列）、<code>meas</code>（每一項量測一列）。</p>
   <p style="display:flex;flex-wrap:wrap;gap:6px">${EX.map((e,i)=>`<button type="button" class="btn" data-x="${i}">${e[0]}</button>`).join('')}</p>
   <textarea data-k="q" rows="3" style="width:100%;font:13px Consolas,monospace;box-sizing:border-box"></textarea>
   <p><button type="button" class="btn" data-k="run">執行</button> <span data-o="info" style="font-size:13px;color:#445"></span></p>
   <div style="max-height:260px;overflow:auto"><table class="tbl" style="font-size:12px;width:100%" data-o="tb"></table></div>
-  <p style="font-size:12px;color:#667">支援：SELECT 欄位 FROM 表格 WHERE 條件 AND 條件 …（= &lt; &gt; &lt;= &gt;= != IN LIKE）、COUNT／AVG／MIN／MAX／SUM、GROUP BY、ORDER BY … DESC、LIMIT。字串用單引號。</p>`;
+  <p style="font-size:12px;color:#667">支援：SELECT 欄位 FROM 表格 WHERE 條件 AND 條件 …（= &lt; &gt; &lt;= &gt;= != IN LIKE）、COUNT／AVG／MIN／MAX／SUM、GROUP BY … HAVING、ORDER BY … DESC、LIMIT。字串用單引號。SQL Server 取前幾列寫 <code>SELECT TOP 10 …</code>；MySQL、PostgreSQL、SQLite 寫 <code>LIMIT 10</code>。範例的 test_id 為了好打字用整數，規格 S2 的實際格式是像 ST01-20261114-0057 的字串。</p>`;
   const o=k=>el.querySelector('[data-o='+k+']'),ta=el.querySelector('[data-k=q]');
   // 讓範例 ② 指到客訴那一片真正的 test_id
   const cid=db.tests.find(t=>t.sn==='PM5-26110457').test_id;EX[1][1]=EX[1][1].replace('1158',cid);
+  const cnt={};db.tests.forEach(t=>cnt[t.sn]=(cnt[t.sn]||0)+1);const rt=Object.keys(cnt).filter(k=>cnt[k]>1).slice(0,3);EX[5][1]=EX[5][1].replace("'X'",rt.map(x=>"'"+x+"'").join(', '));
   function run(){
     try{const t0=performance.now();const r=sqlRun(db,ta.value);
       let rows=r.rows;
-      if(/GROUP BY sn$/i.test(ta.value.trim()))rows=rows.filter(x=>x[1]>1);
       o('tb').innerHTML='<tr>'+r.head.map(h=>`<th>${h}</th>`).join('')+'</tr>'+rows.slice(0,80).map(x=>'<tr>'+x.map(v=>`<td>${v}</td>`).join('')+'</tr>').join('');
-      o('info').textContent=rows.length+' 列'+(rows.length>80?'（只顯示前 80 列）':'')+(rows!==r.rows?'（範例 ⑤ 只列出次數大於 1 的序號）':'')+'，'+(performance.now()-t0).toFixed(1)+' ms';
+      o('info').textContent=rows.length+' 列'+(rows.length>80?'（只顯示前 80 列）':'')+'，'+(performance.now()-t0).toFixed(1)+' ms';
     }catch(e){o('tb').innerHTML='';o('info').innerHTML='<b style="color:#c0392b">錯誤：</b>'+e.message;}
   }
   el.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{ta.value=EX[+b.dataset.x][1];run();});
@@ -127,7 +133,7 @@ function bufferSim(el){
     if(!document.body.contains(el)){clearInterval(timer);return;}
     S.t++;
     if(mode()==='direct'){
-      if(S.dlg){if(down()){S.stuck++;o('msg').textContent='錯誤視窗：「資料庫連線失敗」。作業員只能按確定……按了之後這一片的資料就沒了。';if(S.stuck%5===0){S.lost++;S.dlg=false;}}else{S.dlg=false;}}
+      if(S.dlg){if(down()){S.stuck++;o('msg').textContent='錯誤視窗：「資料庫連線失敗」。作業員只能按確定……按了之後這一片的資料就沒了。';if(S.stuck%5===0){S.lost++;S.dlg=false;}}else{S.lost++;S.dlg=false;o('msg').textContent='網路恢復了，錯誤視窗關掉，但那一片沒有重寫：算遺失。';}}
       else if(S.t%3===0){S.n++;if(down()){S.dlg=true;o('msg').textContent='寫入失敗，跳出錯誤視窗，產線停住。';}else{S.db++;o('msg').textContent='';}}
     }else{
       if(S.t%3===0){S.n++;S.buf++;}
@@ -152,8 +158,8 @@ ask('如果資料是 W6 那樣「每天、每站一個 CSV」，要花多久才�
 C.h3('② 寫成規格','','先設計表格'),
 `<p>一次測試有 5 項量測（W8 之後是 6 項，以後可能更多）。如果做成一個表、每項一欄，加測項就要改表格。所以分成兩個表：</p>`,
 C.table(['表格','一列代表','欄位'],[
- ['tests','一次測試','test_id（每次測試唯一的編號）、sn、station、operator、ts（時間）、result、fail_item、limits_ver、sw_ver'],
- ['meas','一次測試裡的一項量測','test_id（對到 tests）、item、value、lo、hi、pass']
+ ['tests','一次測試','test_id（每次測試唯一的編號，<b>主鍵</b>）、sn、station、operator、ts（時間）、result、fail_item、limits_ver、sw_ver'],
+ ['meas','一次測試裡的一項量測','test_id（對到 tests）、item、value、lo、hi、pass；主鍵是（test_id, item）']
 ]),
 ask('meas 為什麼要存 lo 和 hi？上下限不是都在 limits.csv 裡嗎？',
  `<p>因為上下限會變（W8：T03 上限從 5.15 改成 5.10）。三個月後查一片舊板子，你要知道的是<b>當時</b>用什麼標準判 PASS，不是現在的。每一筆都存下當時的 lo、hi，再加上 limits_ver 和 sw_ver，就不用去猜。</p>
@@ -169,7 +175,7 @@ C.table(['編號','規格'],[
 C.h3('③ 盤點','','資料庫在哪、用什麼連'),
 C.table(['項目','內容'],[
  ['資料庫','IT 部門管理的 SQL Server（也可能是 MySQL、PostgreSQL）。要問：主機位址、資料庫名稱、帳號權限（測試站只需要寫入和查詢自己的表）'],
- ['LabVIEW 怎麼連','Database Connectivity Toolkit（DB Tools Open Connection、Insert Data、Execute Query、Close）；或 VIPM 上的 SQLite 函式庫（只在本機存）。用哪一個看你的 LabVIEW 版本和授權'],
+ ['LabVIEW 怎麼連','Database Connectivity Toolkit：寫入是 DB Tools Open Connection →（Begin Transaction）→ Create Parameterized Query → Set Parameter Value → Execute Query →（Commit／Rollback Transaction）→ Free Object → Close Connection；查詢在 Execute Query 之後用 Fetch Recordset Data 拿結果。或 VIPM 上的 SQLite 函式庫（只在本機存）。用哪一個看你的 LabVIEW 版本和授權'],
  ['連線字串','放在設定檔或 UDL 檔，<b>不要寫死在程式裡</b>；密碼不要寫在程式碼或截圖裡'],
  ['網路','測試站到機房的網路會不會斷？斷多久？（答案通常是「偶爾」，所以要有 S3）']
 ]),
@@ -178,18 +184,18 @@ C.h3('④ 先驗證','','用 SQL 把品保的問題問一遍'),
 `<p>寫 LabVIEW 之前，先確定「這樣存，真的查得到品保要的東西」。下面是三天的資料（已經依上面的設計存好了）。依序按 ① 到 ⑤，看每一句 SQL 在問什麼，也可以自己改。</p>`,
 {fn:sqlConsole},
 ask('查完 ① ② ③，你要怎麼回覆品保？',
- `<p>① 這片在 11/14 測過一次，PASS，用的是 <b>L1.0</b> 版上下限。② 它的 T03（滿載輸出電壓）是 5.121 V，當時上限 5.15，所以 PASS；但規格書是 5.10，<b>依規格應該 FAIL</b>。這正是 W8 發現的舊程式錯誤。</p>
- <p>③ 同樣「T03 大於 5.10 卻 PASS」的還有幾片，全部是 L1.0 那段時間測的。把這些 test_id 對回 tests 的序號，就是要追回或通知客戶的清單。</p>
+ `<p>① 這片在 11/14 測過一次（那天是週六加班），PASS，用的是 <b>L1.0</b> 版上下限。② 它的 T03（滿載輸出電壓）是 5.121 V，當時上限 5.15，所以 PASS；但規格書是 5.10，<b>依規格應該 FAIL</b>。這正是 W8 發現的舊程式錯誤。</p>
+ <p>③ 同樣「T03 大於 5.10 卻 PASS」的還有幾片，全部是 L1.0 那段時間（11/16 週一 10:00 換版之前）測的。把這些 test_id 對回 tests 的序號，就是要追回或通知客戶的清單。</p>
  <p>回覆要附上查詢的 SQL 和結果：別人可以照著重查，也知道你是怎麼得到這個結論的。</p>`),
 ask('④ 每一站的良率、⑤ 測了不只一次的序號，各有什麼用？',
  `<p>④ 兩站的 FAIL 比例差很多時，先懷疑測試站（治具、儀器）而不是產品。⑤ 列出重測過的序號，對照 result：「FAIL 之後重測到 PASS」的板子，品保通常要另外看，因為可能是接觸不良，也可能是真的有問題卻被重測蒙混過去。CSV 很難看出這個，資料庫一句 GROUP BY 就出來了。</p>`),
 C.h3('⑤ 規劃','','寫入不能拖累產線'),
 `<p>最直覺的寫法是：測完一片 → 寫資料庫 → 下一片。問題是資料庫在別的機房，網路偶爾會斷。斷線時會怎樣？下面比較兩種做法：</p>`,
 {fn:bufferSim},
-`<p>第二種做法就是 A 部分學過的<b>生產者／消費者</b>：測試迴圈（生產者）只負責把結果放進本機暫存（檔案或 Queue ＋ 檔案），上傳迴圈（消費者）負責送到資料庫，成功才刪掉。測試迴圈永遠不等網路。</p>`,
+`<p>第二種做法就是 第 16 課學過的<b>生產者／消費者</b>（Queue）：測試迴圈（生產者）只負責把結果放進本機暫存（檔案或 Queue ＋ 檔案），上傳迴圈（消費者）負責送到資料庫，成功才刪掉。測試迴圈永遠不等網路。</p>`,
 C.plan({start:'W6 的 Main.vi 旁邊多一個 Upload_Loop.vi（獨立的迴圈），兩者之間用暫存資料夾溝通：每一次測試存成一個小檔案（檔名 ＝ test_id）。',
  in:'測試迴圈：一次測試的結果（tests 一列 ＋ meas 幾列）。上傳迴圈：暫存資料夾裡的檔案清單。',
- calc:'測試迴圈：組好資料 → 寫成暫存檔（先寫成 .tmp，寫完再改名成 .json，避免上傳迴圈讀到寫一半的檔案）。上傳迴圈：每 2 秒看一次資料夾 → 一個檔案一個交易（transaction）：插入 tests 和 meas，全部成功才 commit，然後刪檔；失敗就留著下次再試。',
+ calc:'（資料庫的 test_id 設成主鍵：同一筆傳兩次時會得到「主鍵重複」錯誤，上傳迴圈把它當作「已經傳過」，刪掉暫存檔。）測試迴圈：組好資料 → 寫成暫存檔（先寫成 .tmp，寫完再改名成 .json，避免上傳迴圈讀到寫一半的檔案）。上傳迴圈：每 2 秒看一次資料夾 → 一個檔案一個交易（transaction）：插入 tests 和 meas，全部成功才 commit，然後刪檔；失敗就留著下次再試。',
  out:'資料庫的兩個表；畫面上一個小燈：「待上傳 N 筆」，N 一直變大就通知工程師。',
  loop:'測試迴圈照產線節奏；上傳迴圈 2 秒一圈，斷線時拉長到 30 秒，不要一直猛連。',
  end:'程式結束時上傳迴圈把剩下的傳完（給個上限時間）；沒傳完的留在資料夾，下次開機繼續。'}),

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="5d9778625a">
+<meta name="ll-version" content="bbb82d8c1a">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>布林實驗室：按鈕機械動作、邏輯閘、比較 | LadderLab</title>
@@ -107,12 +107,12 @@
       <span>輸出 <span class="scalar dbl" id="sout"></span></span>
     </div>
     <h2>In Range and Coerce：在不在範圍內，超出就夾回邊界</h2>
-    <p class="why">兩個輸出：<b>In Range?</b>（是否在上下限之間）和 <b>coerced(x)</b>（超出就換成最近的邊界）。邊界的菱形實心＝包含、空心＝不包含（在節點上點一下切換）。常用來限制使用者輸入的設定值。</p>
+    <p class="why">兩個輸出：<b>In Range?</b>（是否在上下限之間）和 <b>coerced(x)</b>（超出就換成最近的邊界）。<b>預設包含下限、不包含上限</b>：x 剛好等於上限時 In Range? 是 False。要包含上限，在節點上按右鍵勾 Include upper limit（下限同理）。常用來限制使用者輸入的設定值。</p>
     <div class="mrow">
       <label>下限 <input class="scalar" id="lo" value="0"></label>
       <label>x <input class="scalar" id="cx" value="65" type="range" min="-20" max="120" style="width:200px"></label> <b id="cxv"></b>
       <label>上限 <input class="scalar" id="hi" value="50"></label>
-      <label class="check small"><input type="checkbox" id="incl" checked> 包含上限</label>
+      <label class="check small"><input type="checkbox" id="incl"> 包含上限（Include upper limit）</label>
     </div>
     <div class="nline" id="nline"></div>
     <p>In Range? <span class="led" id="inr"></span>　coerced(x) = <span class="scalar dbl" id="cout"></span></p>
@@ -126,7 +126,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "5d9778625a" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "bbb82d8c1a" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
