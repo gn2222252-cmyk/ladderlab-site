@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="1b021f1107">
+<meta name="ll-version" content="750db4eba5">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -17,7 +17,7 @@
   <a href="fxlab.html" style="margin-left:10px;font-weight:700">FX 封包練習台（網頁版模擬 PLC）</a>
   <a href="instlab.html" style="margin-left:10px;font-weight:700">儀器接入練習台（八台模擬儀器）</a>
   <a href="labs.html" style="margin-left:10px;font-weight:700">動畫實驗室（29 個）</a>
-  <span class="fine">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。「接入新儀器」I1～I14 教拿到沒看過的儀器怎麼接、怎麼規劃程式：網頁上有模擬儀器，也可以下載軟儀器用真的 LabVIEW 練。「myRIO 嵌入式控制」M1～M16（另有 M3+ MXP 麵包板、M3++ 七段顯示器）從開專案、接線、PWM、編碼器到開機自動執行（LabVIEW 2018 32 位元）。「實務案例」W1～W10 每一課是一份完整的工作：聽需求、寫規格、盤點硬體、先驗證、規劃、一步一步寫、照規格驗收交機（包裝機操作畫面、DAQ 馬達監測站、myRIO 搬運小車操作盒、產線功能測試站、設備稼動監控、接手舊程式、測試資料庫與追溯、治具開短路測試）。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
+  <span class="fine">第 0～11 課、檔案 I/O 實作（F1～F5）與 CLAD 證照課可以直接在網頁上學，F 課附 LabVIEW 2018 參考 VI 可下載。「接入新儀器」I1～I14 教拿到沒看過的儀器怎麼接、怎麼規劃程式：網頁上有模擬儀器，也可以下載軟儀器用真的 LabVIEW 練。「myRIO 嵌入式控制」M1～M16（另有 M3+ MXP 麵包板、M3++ 七段顯示器）從開專案、接線、PWM、編碼器到開機自動執行（LabVIEW 2018 32 位元）。「實務案例」W1～W11 每一課是一份完整的工作：聽需求、寫規格、盤點硬體、先驗證、規劃、一步一步寫、照規格驗收交機（包裝機操作畫面、DAQ 馬達監測站、myRIO 搬運小車操作盒、產線功能測試站、設備稼動監控、接手舊程式、測試資料庫與追溯、治具開短路測試、配方與警報）。第 12 課起要用 LabVIEW 連軟 PLC 或實機（序列埠）；動手前可以先在 FX 封包練習台把要送的封包試對。課文提到的「實作環境」是雙龍門實作包的資料夾。LabVIEW 為 NI（National Instruments）之商標，本課程為獨立製作，與 NI 無關；CLAD 題庫為原創題目，考試形式以 NI 官網為準。</span>
 </div>
 <button id="menuBtn" class="btn">☰ 課程目錄</button>
 <div id="app">
@@ -66,6 +66,7 @@
 <script src="lessons/part10_work_e.js?v=1fe434bff8"></script>
 <script src="lessons/part10_work_f.js?v=acd603bb6a"></script>
 <script src="lessons/part10_work_g.js?v=3a49e6090b"></script>
+<script src="lessons/part10_work_h.js?v=158e83a8e6"></script>
 <script src="lessons/part6_arch_a.js?v=4d7dc3ad04"></script>
 <script src="lessons/part6_arch_b.js?v=4d47316f96"></script>
 <script src="lessons/part5_clad_a.js?v=7f85b05e87"></script>
@@ -85,7 +86,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "1b021f1107" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "750db4eba5" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
