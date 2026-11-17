@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="b6e8019749">
+<meta name="ll-version" content="e9c838f6a3">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>全班進度表：合併學生的進度檔 | LadderLab</title>
@@ -106,13 +106,13 @@
     students.sort((a, b) => a.name.localeCompare(b.name, "zh-Hant", { numeric: true }));
     const cols = columns();
     const mainAll = C.chapters.reduce((n, ch) => n + ch.items.length, 0);
-    const head = ["學生", "存檔日", "主線完成"].concat(cols.map((c) => c.head), ["LabVIEW 基礎與專案（24）", "LabVIEW 檔案 I/O（5）", "LabVIEW 架構（9）", "CLAD 課（19）", "接入新儀器（14）", "myRIO（18）", "實務案例（17）", "CLAD 模擬考最佳"]);
+    const head = ["學生", "存檔日", "主線完成"].concat(cols.map((c) => c.head), ["LabVIEW 基礎與專案（24）", "LabVIEW 檔案 I/O（5）", "LabVIEW 架構（9）", "CLAD 課（19）", "接入新儀器（14）", "myRIO（18）", "實務案例（18）", "CLAD 模擬考最佳"]);
     rows = students.map((s) => {
       const done = (it) => s.sets[it.k] && s.sets[it.k].has(it.id);
       const main = C.chapters.reduce((n, ch) => n + ch.items.filter(done).length, 0);
       return [s.name, s.saved, `${main}/${mainAll}`].concat(cols.map((c) => c.kind === "chapter"
         ? `${c.ch.items.filter(done).length}/${c.ch.items.length}` : (done(c.it) ? "✓" : "")),
-        [`${s.lv.lessons}/24`, `${s.lv.file}/5`, `${s.lv.arch}/9`, `${s.lv.clad}/19`, `${s.lv.inst}/14`, `${s.lv.myrio}/18`, `${s.lv.work}/17`, s.lv.best]);
+        [`${s.lv.lessons}/24`, `${s.lv.file}/5`, `${s.lv.arch}/9`, `${s.lv.clad}/19`, `${s.lv.inst}/14`, `${s.lv.myrio}/18`, `${s.lv.work}/18`, s.lv.best]);
     });
     $("table").innerHTML = students.length ? `<thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>` +
       rows.map((r) => `<tr>${r.map((v, i) => `<td class="${v === "✓" ? "ok" : (i > 2 && v === "" ? "no" : "")}">${esc(v || (i > 2 ? "·" : ""))}</td>`).join("")}</tr>`).join("") + "</tbody>" : "";
@@ -160,7 +160,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "b6e8019749" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "e9c838f6a3" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
