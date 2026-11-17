@@ -1,4 +1,4 @@
-/* 高階實務 H4：TestStand 和 LabVIEW 怎麼分工。
+/* 高階實務 H2：TestStand 和 LabVIEW 怎麼分工。
    證據（docs/research_advanced.md 1.4）：資深職缺最常見的進階工具是 TestStand（21 則裡 7 則，都是國外對照）；PTT P01 一家用 TestStand 除錯產線、
    P04「有 LabVIEW 團隊的公司多半有一套類似 TestStand 的框架」。
    事實來源：docs/research_teststand.md（助理整理，NI TestStand Reference Manual 373435E、Using LabVIEW with TestStand 373200C、
@@ -12,19 +12,21 @@ const warn=(t,b)=>`<div class="warn"><b>${t}</b>${b}</div>`;
 const note=(t,b)=>`<div class="note"><b>${t}</b>${b}</div>`;
 const tip=(t,b)=>`<div class="tip"><b>${t}</b>${b}</div>`;
 
-/* ---- W6 的五個測項，搬到 TestStand ---- */
+/* ---- W6 的五個測項 + W8 加的 T06，搬到 TestStand ----
+   T04 照 W6 的定義由 T02、T03 算：|T02 − T03| ÷ T02 × 100。T06 是 W8 加的輸出漣波（≤ 50 mV），下限 0。 */
 const T=[
  {id:'T01',n:'無載輸入電流 mA',lo:5,hi:30,v:17},
  {id:'T02',n:'無載輸出電壓 V',lo:4.90,hi:5.10,v:5.02,d:2},
  {id:'T03',n:'滿載輸出電壓 V',lo:4.85,hi:5.10,v:4.97,d:2},
- {id:'T04',n:'負載調整率 %',lo:0,hi:1.5,v:0.996},
- {id:'T05',n:'滿載效率 %',lo:85,hi:100,v:88.6}
+ {id:'T04',n:'負載調整率 %（由 T02、T03 算）',lo:0,hi:1.5,calc:1,d:2},
+ {id:'T05',n:'滿載效率 %',lo:85,hi:100,v:88.6},
+ {id:'T06',n:'輸出漣波 mV（W8 加的）',lo:0,hi:50,v:12}
 ];
 
-/* ---- 模擬器：照手冊的規則跑一片 ----
-   規則（research_teststand.md）：Numeric Limit Test 由 TestStand 比上下限；module 的 error out 接到 Step.Result.Error，出錯時這一步是 Error
-   （不是 Failed），並跳過 Post／Status Expression；Setup 或 Main 出錯、或操作員終止，跳到 Cleanup；Cleanup 一定跑、其中一步出錯也繼續。
-   「出錯之後 Main 剩下的步驟不跑」是手冊預設行為（跳到 Cleanup）。 */
+/* ---- 模擬器：照手冊的規則跑一片（docs/research_teststand.md、docs/review_H4.md）----
+   Numeric Limit Test 由 TestStand 比上下限；Failed 之後 Main 預設繼續跑（Immediately Goto Cleanup on Sequence Failure 預設關，RM p.56）；
+   module 的 error out 接到 Step.Result.Error，這一步是 Error；出錯或 Terminate 時跳到 Cleanup（RM p.26）；
+   Terminate 要等目前這一步的 module 回來，這一步照常有結果，從下一步開始停（RM p.44）。Abort 不跑 Cleanup，模擬器不示範。 */
 const SC=[
  {t:'正常的一片'},
  {t:'T02 只有 4.85 V（板子真的壞了）',bad:'T02',val:4.85},
@@ -39,25 +41,24 @@ function seqFig(el){
    <div data-o="out" style="margin-top:8px"></div>`;
   function run(){
     const s=SC[+el.querySelector('[data-k=s]').value],swallow=el.querySelector('[data-k=m]').value==='1';
-    const R=[];let jump=false,why='';
+    const R=[],val={};let jump=false,why='',dead=false,zeroPass=false;
     R.push(['Setup','Power On + 設定 5.00 V（Action）','Done']);
     R.push(['Setup','開 DMM 的 VISA session（Action）','Done']);
     let uut='Passed';
     for(const t of T){
+      const f=x=>t.d?(+x).toFixed(t.d):x;
       if(jump){R.push(['Main',t.id+' '+t.n,'（沒有執行）']);continue;}
-      if(s.term===t.id){R.push(['Main',t.id+' '+t.n,'操作員在這一步按了 Terminate']);jump=true;why='操作員終止';uut='Terminated';continue;}
-      if(s.err===t.id){
-        if(swallow){R.push(['Main',t.id+' '+t.n,`Failed（量測值 0，下限 ${t.d?t.lo.toFixed(t.d):t.lo}）`]);if(uut==='Passed')uut='Failed';continue;}
-        R.push(['Main',t.id+' '+t.n,'Error：VISA 讀取逾時（Step.Result.Error.Occurred = True）']);jump=true;why='run-time error';uut='Error';continue;}
-      const v=s.bad===t.id?s.val:t.v,ok=v>=t.lo&&v<=t.hi,f=x=>t.d?x.toFixed(t.d):x;
-      R.push(['Main',t.id+' '+t.n,(ok?'Passed':'Failed')+`（${f(v)}，${f(t.lo)}～${f(t.hi)}）`]);
+      if(s.err===t.id)dead=true;
+      if(dead&&!t.calc&&!swallow){R.push(['Main',t.id+' '+t.n,'Error：VISA 讀取逾時（Step.Result.Error.Occurred = True）']);jump=true;why='run-time error';uut='Error';continue;}
+      const v=t.calc?Math.abs(val.T02-val.T03)/val.T02*100:(dead?0:(s.bad===t.id?s.val:t.v));
+      val[t.id]=v;
+      const ok=v>=t.lo&&v<=t.hi;
+      let txt=(ok?'Passed':'Failed')+`（${f(v)}，${f(t.lo)}～${f(t.hi)}）`;
+      if(dead&&!t.calc&&ok){txt+='：DMM 根本沒接上，卻判 PASS';zeroPass=true;}
+      if(s.term===t.id)txt+='　← 操作員在這一步按了 Terminate：這一步跑完才停';
+      R.push(['Main',t.id+' '+t.n,txt]);
       if(!ok&&uut==='Passed')uut='Failed';
-    }
-    if(s.err&&swallow){ // 後面的 DMM 讀取也都吞掉
-      let after=false;R.forEach(r=>{if(r[0]==='Main'){if(r[1].startsWith(s.err))after=true;else if(after){const t=T.find(x=>r[1].startsWith(x.id));r[2]=`Failed（量測值 0，下限 ${t.d?t.lo.toFixed(t.d):t.lo}）`;}}});
-      if(T.slice(T.findIndex(x=>x.id===s.err)).some(t=>t.lo<=0)){ // T04 下限 0：0 會被判 PASS
-        R.forEach(r=>{if(r[1].startsWith('T04')&&r[2].startsWith('Failed'))r[2]='Passed（量測值 0，0～1.5）：DMM 根本沒接上，卻判 PASS';});
-      }
+      if(s.term===t.id){jump=true;why='操作員終止';uut='Terminated';}
     }
     R.push(['Cleanup','Power Off（Action）','Done']);
     R.push(['Cleanup','關 DMM 的 VISA session（Action）','Done']);
@@ -65,8 +66,9 @@ function seqFig(el){
     el.querySelector('[data-o=out]').innerHTML=`<table style="border-collapse:collapse;width:100%">${R.map(r=>`<tr><td style="padding:2px 6px;color:#555;width:70px">${r[0]}</td><td style="padding:2px 6px">${r[1]}</td><td style="padding:2px 6px;color:${col(r[2])}">${r[2]}</td></tr>`).join('')}</table>
      <p style="margin:8px 0 0">這一片的結果：<b style="color:${uut==='Passed'?'#1e7b34':uut==='Failed'?'#b9770e':'#c0392b'}">${uut}</b>。${
       jump?`Main 因為${why}沒有跑完，<b>但 Cleanup 照樣執行：電源關了、session 關了</b>。`:''}${
-      s.err&&swallow?'<br><b style="color:#c0392b">錯誤被吞掉了：</b>報表上這一片是 FAIL（看起來是板子壞），其實是 DMM 掉線；T04 的下限是 0，量測值 0 還被判 PASS。修了板子也修不好，產線會一直誤判，直到有人發現 DMM 沒接。':''}${
-      s.err&&!swallow?'<br>報表上這一片是 <b>Error</b>，不是 FAIL：操作員知道要檢查測試站，不是把板子丟進不良品區（W6 的 ERROR 也是同一個道理）。':''}</p>`;
+      s.bad?'Failed 之後 Main 照樣跑完（TestStand 的預設）；W6 那種「第一個 FAIL 就停」要另外設定。':''}${
+      s.err&&swallow?`<br><b style="color:#c0392b">錯誤被吞掉了：</b>報表上這一片是 FAIL（看起來是板子壞），其實是 DMM 掉線${zeroPass?'；T06 的下限是 0，量測值 0 還被判 PASS':''}。修了板子也修不好，產線會一直誤判，直到有人發現 DMM 沒接。`:''}${
+      s.err&&!swallow?'<br>報表上這一片是 <b>Error</b>，不是 FAIL。手冊的說法是：run-time error 代表測試過程本身出了問題，不是用來表示產品不良。操作員知道要檢查測試站，不是把板子丟進不良品區（W6 的 ERROR 也是同一個道理）。':''}</p>`;
   }
   el.querySelectorAll('select').forEach(x=>x.onchange=run);run();
 }
@@ -95,11 +97,11 @@ const mv={name:'Measure_DCV.vi',view:'split',ratio:1.7,
    const bad=+inp.st===1;
    return {out:{meas:bad?0:4.97,eo:bad?{status:true,code:-1073807339,source:'VISA Read in Query DMM.vi'}:{status:false,code:0,source:''}},
     vals:{'rd.value':bad?0:4.97},
-    msg:bad?'VISA 逾時：error out 的 status = T。TestStand 會把它放進 Step.Result.Error，這一步是 Error，然後跳到 Cleanup；measurement 的 0 不會被拿去比上下限（手冊：出錯時跳過 Post 和 Status Expression）。':'只回傳量測值。上下限 4.85～5.10 在 sequence 裡，由 Numeric Limit Test 比。'};},
+    msg:bad?'VISA 逾時：error out 的 status = T。TestStand 會把它放進 Step.Result.Error，這一步的狀態是 Error（不是 Failed），接著跳到 Cleanup。measurement 雖然是 0，這一片也不會被記成產品不良。':'只回傳量測值。上下限 4.85～5.10 在 sequence 裡，由 Numeric Limit Test 比。'};},
   doneMsg:'換一種情況再 Run'}
 };
 
-L.push({id:'H4',order:41,no:'H4',part:PART,title:'TestStand 和 LabVIEW 的分工：把 W6 的測試站拆成「流程」和「量測」',mins:75,files:[],
+L.push({id:'H2',order:41,no:'H2',part:PART,title:'TestStand 和 LabVIEW 的分工：把 W6 的測試站拆成「流程」和「量測」',mins:75,files:[],
 goals:[['學會','TestStand 管什麼、LabVIEW 管什麼；Step Type 怎麼選（Numeric Limit、Pass/Fail、Action…）；寫出好被 TestStand 呼叫的 VI（只回量測值、接 error out）；Error 和 Failed 的差別、Cleanup 一定跑；Test UUTs 和 Single Pass；產線電腦裝哪一種授權、Run-Time 版本'],
  ['工作上','資深測試職缺最常寫的進階工具；進了用 TestStand 的公司，你寫的 LabVIEW 大多是被它呼叫的 code module，也常要用它除錯產線問題'],
  ['用到','W6 的測試站（上下限放檔案、ERROR 不算 PASS 也不算 FAIL、任何路徑都要斷電）；W19 的部署']],
@@ -132,9 +134,9 @@ C.table(['Step Type','誰判定','什麼時候用'],[
 tip('型別','手冊寫明：量測值和上下限要是 DBL，不能用 64 位元整數。W7 的 U16 計數值要先轉 DBL 再回傳。'),
 C.h3('③ 寫一個好被呼叫的 VI','','LabVIEW 這邊的工作'),
 `<p>手冊和 NI 的最佳做法整理起來：</p>
-<ul><li><b>只回傳量測值</b>，不比上下限、不寫檔、不跳對話框（記錄交給 TestStand 的報表和資料庫）。</li>
+<ul><li><b>只回傳量測值</b>，不比上下限、不寫檔（記錄交給 TestStand 的報表和資料庫）。量測的 VI 不跳對話框是課程的建議（產線上沒人按會卡住），不是 NI 文件的明文規定。</li>
 <li><b>有標準的 error out</b>：TestStand 會自動把它接到這一步的 Step.Result.Error。不需要 error in。</li>
-<li><b>資料用參數傳</b>（接線板上的控制項和指示器），不要在 VI 裡用 TestStand API 讀寫變數；只有要依步驟狀態動態存取時才傳 ThisContext（sequence context），而且要先檢查參考是否有效。這樣 VI 拿到 TestStand 以外也能單獨測（H3 的單元測試會用到）。</li>
+<li><b>資料用參數傳</b>（接線板上的控制項和指示器），不要在 VI 裡用 TestStand API 讀寫變數；只有要依步驟狀態動態存取時才傳 ThisContext（sequence context），而且要先檢查參考是否有效。這樣 VI 拿到 TestStand 以外也能單獨測，之後寫單元測試也靠這一點。</li>
 <li><b>儀器 session 在 Setup 開、Cleanup 關</b>，量測的 VI 只拿 session 來用。</li>
 <li>接線板不需要特定樣式；但<b>不支援 LabVIEW 類別型別的控制項和指示器</b>。H1 的類別要留在 VI 裡面，接線板上用一般型別。</li></ul>`,
 {steps:{title:'Measure_DCV.vi：給 Numeric Limit Test 呼叫的量測 VI',lv:mv,steps:[
@@ -142,26 +144,27 @@ C.h3('③ 寫一個好被呼叫的 VI','','LabVIEW 這邊的工作'),
  {t:'只回傳量測值和 error out',view:'split',add:['meas','w3','eo','w4'],h:`<p>measurement（DBL）在 TestStand 的 VI 參數表指到 Step.Result.Numeric；error out 會自動對應到 Step.Result.Error。<b>這個 VI 裡沒有上下限、沒有 PASS/FAIL、沒有寫檔</b>。</p>`},
  {t:'Run',view:'split',add:[],h:`<p>兩種情況各 Run 一次。第二種情況 measurement 是 0，但 error out 有錯：TestStand 會判這一步 Error，不會拿 0 去比上下限。<b>如果你把 error out 拿掉，0 就會被當成量測值</b>，看下面的模擬器。</p>`}
 ]}},
-C.h3('④ 跑一片：Error 不是 FAIL，Cleanup 一定跑','','照手冊的執行規則'),
+C.h3('④ 跑一片：Error 不是 FAIL，出錯或終止都會跑 Cleanup','','照手冊的執行規則'),
 `<p>sequence：Setup 開電源、開 DMM；Main 是 T01～T05 五個 Numeric Limit Test；Cleanup 關電源、關 DMM。選情況，再切換 code module 的寫法：</p>`,
 {fn:seqFig},
-ask('斷電為什麼要放在 Cleanup，不放在 Main 的最後一步？',`<p>Setup 或 Main 出錯、或操作員按 Terminate，TestStand 都會直接跳到 Cleanup，Main 後面的步驟不會跑。放在 Main 最後一步，DMM 掉線那一片就會一直帶電（W6 的「任何結束路徑都要斷電」）。Cleanup 裡的步驟就算其中一步出錯，也會繼續跑下一步。</p>`),
+ask('斷電為什麼要放在 Cleanup，不放在 Main 的最後一步？',`<p>Setup 或 Main 出錯、或操作員按 Terminate，TestStand 都會直接跳到 Cleanup，Main 後面的步驟不會跑。放在 Main 最後一步，DMM 掉線那一片就會一直帶電（W6 的「任何結束路徑都要斷電」）。Cleanup 裡的步驟就算其中一步出錯，也會繼續跑下一步。</p><p>兩個例外要知道：<b>Abort 不跑 Cleanup</b>（手冊寫明，所以平常要用 Terminate）；Terminate 要等目前這一步的 VI 回來才生效，VI 卡在一個很長的等待裡，按了看起來就像沒反應（NI 建議長時間等待的 module 要自己檢查終止狀態）。另外，測試站可以設成出錯時先跳出 Run-Time Error 對話框讓人選擇怎麼處理，你們的站怎麼設要先問清楚。</p>`),
 C.h3('⑤ 流程模型、序號、報表','',''),
 C.table(['項目','選項','差別'],[
- ['執行入口','Test UUTs／Single Pass','Test UUTs 一片接一片、每片問序號；Single Pass 只測一次、<b>不問序號</b>（除錯、驗證程式時用）'],
+ ['執行入口','Test UUTs／Single Pass','Test UUTs 一片接一片、每片問序號；Single Pass 跑一輪、<b>不問序號</b>（除錯、驗證程式時用；Parallel、Batch 模型下是每個測試座各跑一次）'],
  ['流程模型','Sequential','一次測一片（預設）'],
  ['','Parallel','好幾個測試座各自開始、各自結束：一座測完先換板子，其他座繼續'],
  ['','Batch','好幾座當一組一起開始、一起結束（例如同一片載板上的幾塊板子）；可以讓某一步整批只跑一次'],
- ['報表格式','ASCII、HTML、XML、ATML（2019 起可另存 PDF）','ASCII 最快最小，XML 最慢最大；ATML 不支援 Batch 的整批報表'],
- ['資料庫','透過 ADO／OLE DB／ODBC','和報表用同一份結果；要做自動分析（W14）用資料庫比解析報表檔好']
+ ['報表格式','ASCII、HTML、XML、ATML','ASCII 最快最小，XML 最慢最大；ATML 不支援 Batch 的整批報表；TestStand 2019 起，ASCII 以外的格式可以輸出 PDF'],
+ ['資料庫','透過 ADO／OLE DB／ODBC','和報表用同一份結果（Locals.ResultList）；W14 那種跨很多片的分析，從資料庫查會比一份份解析報表檔方便（課程的看法）']
 ]),
-ask('W16 的雙治具共用一組儀器、輪流測。如果老闆再加一套儀器，讓兩座各自放板子、各自開始結束，對應哪一種流程模型？若兩座仍共用同一台 DMM，要注意什麼？',`<p>兩座各自開始、各自結束是 Parallel。Batch 是整組一起開始、一起結束，適合同一片載板上的幾塊板子一起測。</p><p>如果兩座共用同一台 DMM，就要確保同一時間只有一座在用它（否則兩邊的命令和回應會交錯，W16 用繼電器切換也是同一個問題）。TestStand 有做同步的機制，用法請查你的版本的手冊；這一點 LadderLab 沒有查證細節。</p>`),
+ask('W16 的雙治具共用一組儀器、輪流測。如果老闆再加一套儀器，讓兩座各自放板子、各自開始結束，對應哪一種流程模型？若兩座仍共用同一台 DMM，要注意什麼？',`<p>兩座各自開始、各自結束是 Parallel。Batch 是整組一起開始、一起結束，適合同一片載板上的幾塊板子一起測。</p><p>如果兩座共用同一台 DMM，就要確保同一時間只有一座在用它（否則兩邊的命令和回應會交錯，W16 用繼電器切換也是同一個問題）。TestStand 手冊有兩種做法：<b>Lock 步驟</b>（同一時間只讓一個執行緒用某個資源，其他的排隊；每個 Lock 要配一個 Unlock，可以設逾時），以及每一步的同步設定（讓這一步不能和其他執行緒同時跑）。實際設定以你的版本為準。</p>`),
 C.h3('⑥ 上下限、條件、運算式','','改規格時不用改程式'),
 C.table(['想做的','用什麼','注意'],[
  ['上下限寫在步驟裡','Step.Limits.Low／High','最簡單；改規格要改 sequence file，要走變更流程（W8）'],
  ['上下限從檔案或資料庫載入','Property Loader 步驟','手冊寫<b>只支援 ANSI 編碼</b>：限值檔有中文、存成 UTF-8 可能讀不對（以你的版本的手冊為準）'],
  ['整台測試站共用的值','Station Globals','用運算式讓上下限引用它'],
  ['前一步過了才跑這一步','Precondition','每次執行時計算'],
+ ['像 W6 一樣，第一個 FAIL 就停','sequence 的 Immediately Goto Cleanup on Sequence Failure','預設是關的：預設 Failed 之後 Main 會繼續跑完，報表上每一項都有結果'],
  ['暫時跳過或強制某一步的結果','Run Mode：Skip、Pass、Fail','固定的設定，不執行 module；<b>除錯完一定要改回 Normal</b>，否則產線會一直強制 Pass'],
  ['呼叫 module 前後處理數值','Pre-Expression、Post-Expression','module 出錯時，Post 和 Status Expression 會被跳過']
 ]),
@@ -177,7 +180,7 @@ warn('產線電腦上的授權','要在產線電腦上單步進入 LabVIEW 程�
 C.h3('⑧ 部署：和 W19 一樣，再多兩件事','',''),
 `<ul><li>產線電腦裝的是<b>部署授權</b>（Base Deployment Engine），不是開發版；每一台都要一個授權。</li>
 <li>TestStand 用 <b>LabVIEW Run-Time Engine</b> 執行 VI，預設依 VI 的存檔版本自動選 Run-Time。Run-Time 只能跑同一版存檔的 VI：課程的 LabVIEW 2018 VI，產線電腦就要裝 2018 的 Run-Time。位元數也要配合（64 位元 TestStand 和 32 位元 VI 的限制，目前只查到 NI 社群的說法，要用你的版本確認）。</li>
-<li>VI 用到 vi.lib 這類路徑時，Run-Time 不像開發環境那樣能自己找到：用 TestStand 的部署工具一起打包，部署工具的版本要和 TestStand 開發系統一致。</li></ul>`,
+<li>VI 用到 vi.lib 這類路徑時，Run-Time 不像開發環境那樣能自己找到：用 TestStand 的部署工具打包（版本要和 TestStand 開發系統一致），<b>部署後一定要在乾淨的產線電腦上實際跑一次</b>（W19 的驗收），不要假設打包了就沒事。</li></ul>`,
 C.h3('⑨ 最容易做錯的三件事','',''),
 C.table(['做錯','結果','正確'],[
  ['在 VI 裡比上下限，用 Pass/Fail Test','報表、資料庫沒有量測值；改規格要改程式','VI 只回量測值，用 Numeric Limit Test'],
@@ -188,7 +191,7 @@ C.h3('測','q','小測驗'),
 {quiz:[
  {q:'NI 建議 W6 的 T02（輸出電壓 4.90～5.10 V）在 TestStand 裡用哪種步驟？',o:['Numeric Limit Test，VI 只回傳電壓','Pass/Fail Test，VI 自己比上下限','Action','String Value Test'],a:0,ex:'上下限放 sequence，TestStand 判定，報表和資料庫才有數值。'},
  {q:'VI 的 error out 有錯時，這一步的結果是？',o:['Error（run-time error），然後跳到 Cleanup','Failed','Passed','TestStand 不會注意到'],a:0,ex:'error out 自動接到 Step.Result.Error。'},
- {q:'斷電的步驟應該放在？',o:['Cleanup 群組','Main 的最後一步','Setup 群組','不用放，TestStand 會自動斷電'],a:0,ex:'出錯或被終止都會跳到 Cleanup，Cleanup 一定跑。'},
+ {q:'斷電的步驟應該放在？',o:['Cleanup 群組','Main 的最後一步','Setup 群組','不用放，TestStand 會自動斷電'],a:0,ex:'出錯或 Terminate 都會跳到 Cleanup（Abort 例外，所以平常用 Terminate）。'},
  {q:'Single Pass 和 Test UUTs 的差別？',o:['Single Pass 只測一次、不問序號；Test UUTs 一片接一片、每片問序號','完全一樣','Single Pass 比較快所以產線用它','Test UUTs 不產生報表'],a:0,ex:'產線用 Test UUTs。'},
  {q:'TestStand 的 code module VI，接線板上可以放 LabVIEW 類別的控制項嗎？',o:['不支援；類別留在 VI 裡面，接線板用一般型別','可以','只能放一個','只能放在 error 叢集裡'],a:0,ex:'手冊的型別對照表寫明不支援 LabVIEW Object。'},
  {q:'一般只跑測試的產線電腦，裝哪種 TestStand 授權？',o:['Base Deployment Engine','Development System','不需要授權','LabVIEW 開發版'],a:0,ex:'要在現場單步進入 LabVIEW 才需要 Debug Deployment Environment。'},

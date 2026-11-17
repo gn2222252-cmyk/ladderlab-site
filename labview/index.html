@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="109684710e">
+<meta name="ll-version" content="3da8d96380">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LabVIEW 上位機課程：從零寫出 PLC 上位機＋CLAD 證照 | LadderLab</title>
@@ -79,8 +79,9 @@
 <script src="lessons/part10_work_r.js?v=b2651fbb23"></script>
 <script src="lessons/part6_arch_a.js?v=4d7dc3ad04"></script>
 <script src="lessons/part6_arch_b.js?v=4d47316f96"></script>
-<script src="lessons/part11_adv_a.js?v=a7ec56f0d3"></script>
-<script src="lessons/part11_adv_b.js?v=c7ae85b3c5"></script>
+<script src="lessons/part11_adv_a.js?v=4255998ee2"></script>
+<script src="lessons/part11_adv_b.js?v=19bd6dd249"></script>
+<script src="lessons/part11_adv_c.js?v=89763a61c0"></script>
 <script src="lessons/part5_clad_a.js?v=7f85b05e87"></script>
 <script src="lessons/part5_clad_b.js?v=ca63eb5604"></script>
 <script src="lessons/part5_clad_c.js?v=4be88d75a5"></script>
@@ -98,7 +99,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "109684710e" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "3da8d96380" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
