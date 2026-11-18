@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="26fc85f942">
+<meta name="ll-version" content="0fd7e23539">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>資料流實驗室：節點什麼時候執行 | LadderLab</title>
@@ -171,7 +171,7 @@
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "26fc85f942" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "0fd7e23539" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";
