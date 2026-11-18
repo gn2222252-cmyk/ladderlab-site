@@ -7,8 +7,11 @@
    - kernel32 GetComputerNameA：緩衝區 2 字元、nSize 2 → 回傳 0、nSize 16；先問大小再配置 → 回傳 1、名稱 15 字元。H12_Station_Name.vi 照這個做，實測通過。
    - Minimum size 設成 nSize、空字串 → 回傳 1、名稱 15 字元。
    - 空字串、nSize 64、錯誤檢查 Disabled（2）→ 回傳 1、名稱 15 字元、沒有錯誤（寫超過配置的空間，結果卻看起來正常）。
-   - 同上、錯誤檢查 Maximum（0）→ 回傳 0、名稱空、nSize 0、error out 的 status 和 code 都是 0。為什麼失敗，NI 沒有公開。
-     （0 Maximum、1 Default、2 Disabled：NI VI Scripting 說明 Error Checking Level 頁，助手查證。）
+   - 同上、Default（1）→ 一樣回傳 1、名稱完整、沒有錯誤（Default 抓不到寫過頭）。
+   - 同上、Maximum（0）→ LabVIEW 跳出錯誤 1516（0x5EC）「DLL 寫超過了某個參數配置的空間，記憶體可能已被破壞」，停止 VI。
+     （0 Maximum、1 Default、2 Disabled：NI VI Scripting 說明 Error Checking Level 頁。原始輸出 labview_vi/out/probe_h12_clfn_2026-11-18*.txt）
+   - 緩衝區 16、nSize 1（作業 1）→ 回傳 0、nSize 16、緩衝區沒被寫入。Maximum 加上配置好的緩衝區 → 正常，不誤報。
+   - 同一個 LabVIEW 先用路徑載過 32 位元 kernel32 後，之後用名稱的 kernel32 也斷線，重開 LabVIEW 才好（觀察，原因沒查）。
    - 64 位元 LabVIEW 用路徑指定 C:\Windows\SysWOW64\kernel32.dll（32 位元）→ VI 斷線，執行回錯誤 1003。錯誤清單文字沒有讀出。
    - 假軸卡 SDK FakeAxisCard.dll（C#，csc 編成 .NET Framework 4，AnyCPU）：test_FakeAxisCard.ps1 在 Windows PowerShell 5.1 的 64 位元、32 位元都 0 失敗。
    - .NET 節點不能用腳本設定（Constructor、Invoke 的 Class 是唯讀），所以「LabVIEW 裡用 .NET 節點呼叫假 SDK」的步驟沒有實測，課文有標明。 */
@@ -21,7 +24,7 @@ const note=(t,b)=>`<div class="note"><b>${t}</b>${b}</div>`;
 const tip=(t,b)=>`<div class="tip"><b>${t}</b>${b}</div>`;
 
 /* ---- .h 宣告 → 節點設定 ---- */
-const MAPOPT=['數值 I32，傳值（Value）','數值 U32，傳指標（Pointer to Value）','字串 C String Pointer，要預先配置（或設 Minimum size）','字串 C String Pointer，當輸入就好','陣列 Array Data Pointer，要預先配置筆數','無號 pointer-sized 整數','U8 陣列 Array Data Pointer（不要用字串）'];
+const MAPOPT=['數值 I32，傳值（Value）','數值 U32，傳指標（Pointer to Value）','字串 C String Pointer，要預先配置（或設 Minimum size）','字串 C String Pointer，當輸入就好','DBL 陣列 Array Data Pointer，要預先配置筆數','無號 pointer-sized 整數','U8 陣列 Array Data Pointer，要預先配置（不要用字串）'];
 const MAPQ=[
  ['int axis','0','一般整數、只是輸入：I32 傳值。'],
  ['DWORD* nSize（函式會改它）','1','有 * 而且函式會寫回：Pointer to Value。DWORD 是 32 位元無號。'],
@@ -29,7 +32,7 @@ const MAPQ=[
  ['const char* fileName（只讀）','3','const 表示函式只讀：當輸入傳進去就好。'],
  ['double* data, int count（函式把量測值填進 data）','4','函式填陣列：先配置 count 筆（Initialize Array），再把 count 另外傳。'],
  ['HANDLE hCard（Open 回傳的裝置代碼）','5','handle、void* 會隨 32／64 位元變長：用 pointer-sized。寫死 U32，64 位元下指標會被截掉。'],
- ['unsigned char* frame（相機原始影像，裡面會有 0）','6','C 字串遇到 0 就結束，二進位資料會被截斷：改用 U8 陣列。'],
+ ['unsigned char* frame（函式把相機原始影像寫進來，資料裡會有 0）','6','C 字串遇到 0 就結束，二進位資料會被截斷：改用 U8 陣列，而且一樣要先配置夠大。'],
  ['BOOL 回傳值（Windows API）','0','Windows 的 BOOL 是 4 bytes 的 int（不是 C++ 的 bool）：I32，0 是失敗。']
 ];
 function mapFig(el){
@@ -61,14 +64,15 @@ note('為什麼有這一課（資料來源）','C# 出現在 5 則職缺；資�
 C.h3('① 拿到 SDK，先問五件事','','還沒開 LabVIEW 之前'),
 C.table(['問題','為什麼','去哪裡找答案'],[
  ['是<b>原生 DLL</b>（C／C++ 寫的）還是 <b>.NET 組件</b>（C# 寫的）？','原生 DLL 用 Call Library Function Node；.NET 用 Constructor／Invoke／Property Node，做法完全不同','手冊；有 .h 的通常是原生 DLL；C# 同事給的是 .NET'],
- ['<b>32 還是 64 位元</b>？','LabVIEW 和原生 DLL 的位元數必須一樣，Windows 不讓同一個程式混用（NI 知識庫）','LabVIEW：Help ▸ About；SDK：資料夾名稱 x86／x64，或問廠商'],
- ['<b>呼叫慣例</b>：C 還是 stdcall？','選錯，NI 說明寫可能讓 LabVIEW 不正常關閉','.h 裡寫 WINAPI、__stdcall 的是 stdcall；Windows API 都是 stdcall'],
+ ['<b>32 還是 64 位元</b>？','LabVIEW 和原生 DLL 的位元數必須一樣，Windows 不讓同一個程式混用（NI 知識庫）','LabVIEW：64 位元 Windows 上，裝在 Program Files (x86) 的是 32 位元、Program Files 的是 64 位元；SDK：資料夾名稱 x86／x64，或問廠商'],
+ ['<b>呼叫慣例</b>：C 還是 stdcall？','選錯，NI 說明寫可能讓 LabVIEW 不正常關閉','.h 裡寫 WINAPI、__stdcall 的是 stdcall；大部分 Windows API 是 stdcall（可變參數的函式例外）'],
  ['<b>記憶體誰配置</b>？字串、陣列要多大？','函式要寫入的緩衝區，要 LabVIEW 先配置好；配置不夠就寫壞記憶體','手冊的每個函式說明；常見寫法是「先問大小」'],
  ['能不能<b>多執行緒同時呼叫</b>（thread-safe）？','不能的話，平行迴圈同時呼叫會出偶發錯誤，很難重現','手冊；沒寫的就當作不能']
 ]),
-ask('LabVIEW 2018 在學校是 32 位元，廠商只給 x64 的 DLL，怎麼辦？',`<p>沒辦法直接用。要嘛跟廠商要 x86 版，要嘛換 64 位元的 LabVIEW。LadderLab 在 64 位元 LabVIEW 2026 試過用路徑指定 32 位元的 kernel32（C:\\Windows\\SysWOW64 裡那個）：<b>VI 直接斷線，按執行回錯誤 1003（VI 不能執行）</b>。論壇上常見的訊息是「Library not found or failed to load」。</p><p>同一個 VI 要在兩種位元下都能用，NI 說明寫可以用萬用字元命名，例如 <code>mylib*.*</code> 會對到 mylib32 或 mylib64。</p>`),
+ask('LabVIEW 2018 在學校是 32 位元，廠商只給 x64 的 DLL，怎麼辦？',`<p>沒辦法直接用。要嘛跟廠商要 x86 版，要嘛換 64 位元的 LabVIEW。LadderLab 在 64 位元 LabVIEW 2026 試過用路徑指定 32 位元的 kernel32（C:\\Windows\\SysWOW64 裡那個）：<b>VI 直接斷線，按執行回錯誤 1003</b>。1003 只代表「VI 不能執行」，不是位元數專用的錯誤，原因要打開錯誤清單看；論壇上常見的訊息是「Library not found or failed to load」。LadderLab 另外觀察到：同一個 LabVIEW 載過那個 32 位元的檔之後，連用名稱指定的 kernel32 也一起斷線，重開 LabVIEW 才恢復（原因沒查）。</p><p>同一個 VI 要在兩種位元下都能用，NI 說明寫可以用萬用字元命名，例如 <code>mylib*.*</code> 會對到 mylib32 或 mylib64。</p>`),
 C.h3('② .h 的宣告怎麼對到節點設定','',''),
-`<p>Call Library Function Node 在 ${fn('Connectivity','Libraries & Executables','Call Library Function Node')}。雙擊打開設定：Function 頁選 DLL、函式、呼叫慣例、執行緒；Parameters 頁一個一個加參數，<b>型別、傳值或傳指標、順序都要和 .h 一模一樣</b>；Error Checking 頁選錯誤檢查等級。對話框下方會即時顯示 C 的函式原型，拿來和 .h 對照。</p>`,
+note('看懂 .h 的三個符號','<code>*</code> 是指標：傳的是「資料放在哪裡」，函式可以透過它把結果寫回來（LabVIEW 選 Pointer to Value、陣列、字串）。<code>const</code> 表示函式只讀、不會改。<b>handle</b>（HANDLE、void*）是廠商給你的「代號」，你不用看懂它，只要原封不動存起來、下次傳回去。'),
+`<p>Call Library Function Node 在 ${fn('Connectivity','Libraries & Executables','Call Library Function Node')}。雙擊打開設定：Function 頁選 DLL、函式、呼叫慣例、執行緒；Parameters 頁按 + 一個一個加參數，左邊選參數、右邊設 Type、Data type、Pass（Value 或 Pointer to Value）、字串和陣列的格式與 Minimum size，<b>型別、傳值或傳指標、順序都要和 .h 一模一樣</b>；Error Checking 頁選錯誤檢查等級。對話框下方會即時顯示 C 的函式原型，拿來和 .h 對照。</p>`,
 {fn:mapFig},
 C.h3('③ 實作：讀測站名稱','','先問大小，再配置'),
 `<p>測試紀錄要寫「哪一台電腦測的」（W6、H8 的追溯）。Windows 的 kernel32.dll 有一個函式 <code>BOOL GetComputerNameA(LPSTR lpBuffer, LPDWORD nSize)</code>：你給它一個緩衝區和緩衝區大小，它把電腦名稱寫進去；緩衝區太小就回傳 0（失敗），並把 nSize 改成需要的大小（含結尾的 0）。</p>`,
@@ -77,7 +81,7 @@ C.table(['參數','.h','節點設定'],[
  ['lpBuffer','LPSTR（char*，函式寫入）','字串，C String Pointer'],
  ['nSize','LPDWORD（DWORD*，函式讀也寫）','數值 U32，Pointer to Value']
 ]),
-`<p>H12_Station_Name.vi 用兩個節點：</p><ol><li>第一個：緩衝區接空字串、nSize 接 0 → 回傳 0，nSize 變成需要的大小。</li><li>Initialize Array 做出 nSize 個 U8（0），Byte Array To String 變成字串 → 這就是配置好的緩衝區。</li><li>第二個：接這個緩衝區和 nSize → 回傳 1，拿到名稱。</li></ol>
+`<p>H12_Station_Name.vi 用兩個節點：</p><ol><li>第一個：緩衝區接空字串、nSize 接 0 → 回傳 0，nSize 變成需要的大小。</li><li>Initialize Array 做出 nSize 個 U8 的 0，Byte Array To String 變成字串 → 這就是配置好的緩衝區。注意 element 要是 <b>U8</b>：直接在 element 上建常數會是 DBL，接不上 Byte Array To String；在常數上右鍵 Representation ▸ U8，或像參考 VI 一樣先經過 To Unsigned Byte Integer。</li><li>第二個：接這個緩衝區和 nSize → 回傳 1，拿到名稱。</li></ol>
 <p>函式庫用<b>名稱</b> <code>kernel32.dll</code> 指定，不用路徑：系統 DLL 用路徑的話，建置時會被包進去散佈到別台電腦（NI 說明）。呼叫慣例選 stdcall。</p>`,
 C.table(['LadderLab 實測（LabVIEW 2026 64 位元）','回傳','nSize 回來','名稱'],[
  ['緩衝區 2 字元、nSize 2（太小）','0','16','—'],
@@ -87,17 +91,19 @@ C.table(['LadderLab 實測（LabVIEW 2026 64 位元）','回傳','nSize 回來',
 tip('下載','<a href="vi/LV2018/H12_Station_Name.vi" download>H12_Station_Name.vi（LabVIEW 2018）</a>　<a href="vi/H12_Station_Name.vi" download style="font-size:13px">2026 版</a>。不用裝任何東西，32、64 位元的 LabVIEW 都能用（kernel32 兩種都有）。執行後面板會顯示你的電腦名稱。'),
 tip('Minimum size 是另一種寫法','在 Parameters 頁選 lpBuffer，把 Minimum size 設成 nSize：LabVIEW 會依 nSize 自動把緩衝區加長（實測：接空字串也拿到名稱）。手冊說「緩衝區至少 N 個字元」時最方便。'),
 C.h3('④ 危險實驗：結果對，不代表呼叫是對的','','錯誤檢查等級'),
-`<p>如果<b>不配置</b>：緩衝區接空字串，nSize 卻填 64，會怎樣？LabVIEW 只配置 1 byte（結尾的 0）給空字串（NI 論壇常客的說明，社群）；函式相信 nSize 說的 64，寫了 16 bytes，多出來的 15 bytes 寫到不屬於這個字串的記憶體。</p>`,
+`<p>如果<b>不配置</b>：緩衝區接空字串，nSize 卻填 64，會怎樣？依 NI 論壇常客的說明（社群），LabVIEW 只配置 1 byte（結尾的 0）給空字串；函式相信 nSize 說的 64，把 16 bytes 寫進去，多出來的部分寫到不屬於這個字串的記憶體。下表的 Maximum 那一列，就是 LabVIEW 自己抓到這件事。</p>`,
 C.table(['錯誤檢查等級（節點的 Error Checking 頁）','LadderLab 實測：空字串、nSize 64'],[
- ['Disabled','<b>回傳 1、名稱完整 15 字元、沒有任何錯誤</b>。看起來完全正常，但記憶體已經被寫壞了'],
- ['Maximum','回傳 0、名稱空、nSize 變 0、error out 沒有錯誤也沒有警告。函式失敗了，但為什麼這樣失敗，NI 沒有公開']
+ ['Disabled','<b>回傳 1、名稱完整 15 字元、沒有任何錯誤</b>'],
+ ['Default（預設）','<b>一樣：回傳 1、名稱完整、沒有任何錯誤</b>。Default 只攔例外、檢查呼叫慣例，抓不到寫過頭'],
+ ['Maximum','LabVIEW 跳出<b>錯誤 1516</b>：DLL 寫超過了某個參數配置的空間，記憶體可能已被破壞；VI 被停止'],
+ ['Maximum，但緩衝區有配置 64 字元','回傳 1、名稱 15 字元、沒有錯誤（配置正確時不會誤報）']
 ]),
-warn('這就是 DLL 最可怕的地方','寫壞的記憶體可能屬於 LabVIEW 的其他資料，當下沒事，之後在完全不相干的地方當掉（NI 說明：DLL 造成的當機不一定在呼叫時發生）。所以：<b>函式要寫入的字串、陣列一定先配置</b>；開發時錯誤檢查用 Default 或 Maximum（Maximum 會檢查寫超過配置的空間，但比較慢、比較吃記憶體，NI 建議只在除錯時用）；<b>不要為了快改成 Disabled</b>。'),
+warn('這就是 DLL 最可怕的地方','用預設的 Default，寫過頭時<b>結果完全正常、沒有任何錯誤</b>。寫壞的記憶體可能屬於 LabVIEW 的其他資料，當下沒事，之後在完全不相干的地方當掉（NI 說明：DLL 造成的當機不一定在呼叫時發生）。所以：<b>函式要寫入的字串、陣列一定先配置</b>，不能靠錯誤檢查；接新的 DLL 函式時，把錯誤檢查暫時改成 <b>Maximum</b> 跑一遍，看會不會出現 1516（Maximum 比較慢、比較吃記憶體，NI 建議只在除錯時用，交機前改回 Default）；<b>不要為了快改成 Disabled</b>。'),
 `<ul><li><b>錯誤 1097</b>：DLL 裡發生了例外，LabVIEW 攔到了，但記憶體可能已經被破壞（NI 知識庫）。常見原因是型別設錯、緩衝區沒配置、位元數或呼叫慣例錯。<b>不能清掉錯誤繼續跑</b>，要找到原因，最好重開 LabVIEW。</li>
-<li>看錯誤時要看 <b>code</b>，不能只看 status：LabVIEW 的警告是 status 為 FALSE、code 不是 0。</li>
+<li>看錯誤時要看 <b>code</b>，不能只看 status：LabVIEW 的警告是 status 為 FALSE、code 不是 0（NI 說明）。DLL 函式自己的失敗（像回傳 0 的 BOOL）也不會出現在 error out，<b>要檢查回傳值</b>。</li>
 <li>DLL 和 LabVIEW 在同一個程式（行程）裡，DLL 當掉，LabVIEW 跟著關掉，沒存的東西就沒了。<b>呼叫新的 DLL 之前先存檔</b>。不穩定的 DLL 可以包成獨立的小程式，用 System Exec 或 TCP 呼叫（W21 的做法），當掉只掉那個程式（推論）。</li></ul>`,
 C.h3('⑤ 執行緒','','UI thread 還是 any thread'),
-`<ul><li><b>Run in UI thread</b>（預設）：呼叫切到 LabVIEW 的使用者介面執行緒，一次只跑一個呼叫。NI 說明另外寫了：UI thread 上的呼叫按 LabVIEW 的停止鍵也中斷不了。</li>
+`<ul><li><b>Run in UI thread</b>（預設）：呼叫切到 LabVIEW 的使用者介面執行緒，一次只跑一個呼叫。NI 說明另外寫了：UI thread 上的節點不會執行中止用的 callback，所以按 LabVIEW 的停止鍵，DLL 不會被通知要中途停下來。</li>
 <li><b>Run in any thread</b>：比較快，但 DLL 必須 thread-safe（能同時被多個地方呼叫）。NI 說明列的條件包括不存全域資料、不直接存取硬體、用 mutex 保護共用資源。</li>
 <li><b>實務上</b>：手冊沒寫 thread-safe 的，保守用 UI thread，或把所有呼叫包在<b>不可重入</b>的 VI 裡，確保一次只有一個呼叫（推論；NI 說明列的 thread-safe 條件之一是「只被一個不可重入的 VI 呼叫」）。很多軸卡、相機 SDK 要求同一條執行緒初始化和呼叫，要看手冊。</li></ul>`,
 C.h3('⑥ C# 同事給的 .NET 組件','','假軸卡 SDK'),
@@ -111,14 +117,14 @@ C.table(['方法（類別 LadderLab.FakeMotion.AxisCard）','做什麼'],[
  ['static string ErrorText(int code)','錯誤碼的文字說明']
 ]),
 tip('下載','<a href="vi/H12_FakeAxisCard.zip" download>H12_FakeAxisCard.zip</a>（LabVIEW 2018 和 2026 通用）：FakeAxisCard.cs（原始碼）、FakeAxisCard.dll、test_FakeAxisCard.ps1、README.txt。想自己編：每台 Windows 10／11 都有 <code style="word-break:break-all">C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe</code>，指令在 README。不用 LabVIEW 先檢查：<code style="word-break:break-all">powershell -NoProfile -ExecutionPolicy Bypass -File test_FakeAxisCard.ps1</code>，最後一行要是 failures: 0。'),
-`<p>LadderLab 用 Windows PowerShell 5.1（和 LabVIEW 2018 一樣載入 .NET Framework 4）跑過 17 項檢查，64 位元和 32 位元都通過：.NET 組件編成 AnyCPU，<b>32、64 位元的 LabVIEW 都能載入</b>，這點和原生 DLL 不一樣。</p>
+warn('下面 LabVIEW 的步驟沒有實測','LadderLab 的建置工具不能設定 .NET 節點（Constructor 和 Invoke 的類別是唯讀），所以步驟是照 NI 說明和範例寫的，沒有在 LabVIEW 裡跑過；SDK 本身用 PowerShell 測過。卡住時看 LabVIEW 附的範例 examples\\Connectivity\\Dot NET\\Calling a Private .NET Assembly.vi。'),
+`<p>LadderLab 用 Windows PowerShell 5.1（和 LabVIEW 2018 一樣載入 .NET Framework 4）跑過 17 項檢查，64 位元和 32 位元的 PowerShell 都通過。組件編成 AnyCPU，所以<b>推論</b> 32、64 位元的 LabVIEW 都能載入（LabVIEW 裡沒測），這點和原生 DLL 不一樣。</p>
 <p>在 LabVIEW 裡的做法（${fn('Connectivity','.NET')}）：</p>
-<ol><li>把 FakeAxisCard.dll 放在 VI 同一個資料夾，VI 放進專案（NI 強烈建議 .NET 的 VI 放在專案裡；NI 範例提醒 DLL 搬離 VI 的資料夾會出現錯誤 1172）。</li>
+<ol><li>建一個專案，把 <b>FakeAxisCard.dll、VI、.lvproj 放在同一個資料夾</b>（NI 說明：在專案裡時，私有組件預設到專案資料夾找；NI 強烈建議 .NET 的 VI 放在專案裡；NI 範例提醒 DLL 搬走會出現錯誤 1172）。</li>
 <li>放一個 <b>Constructor Node</b>，雙擊，Browse 選 FakeAxisCard.dll，選 LadderLab.FakeMotion 裡的 AxisCard 和它的建構子。輸出是一個物件的 reference。</li>
-<li>reference 接到 <b>Invoke Node</b>，在節點上選方法 Open，cardNo 接 0。接著 MoveAbs，再用 While Loop 每 100 ms 呼叫 GetPosition、IsMoving，直到停下來。</li>
-<li>每個方法的回傳值是錯誤碼：不是 0 就轉成 LabVIEW 的錯誤（例如用 Error Cluster From Error Code.vi，自訂錯誤碼放在 5000～9999），訊息用 ErrorText 的結果。</li>
+<li>reference 接到 <b>Invoke Node</b>，在節點上選方法 Open，cardNo 接 0。接著 MoveAbs，再用 While Loop 每 100 ms 呼叫 GetPosition、IsMoving，直到停下來。GetPosition 的位置從 out 參數出來：它在 Invoke Node 上長什麼樣子、輸入要不要接，以你的 LabVIEW 實際看到的為準（沒有實測）。</li>
+<li>每個方法的回傳值是錯誤碼：不是 0 就轉成 LabVIEW 的錯誤（例如用 Error Cluster From Error Code.vi，自訂錯誤碼放在 LabVIEW 保留給使用者的 5000～9999，I10 有教），訊息用 ErrorText 的結果。</li>
 <li>最後呼叫 Close，再用 <b>Close Reference</b> 關掉 reference。</li></ol>`,
-warn('這一段 LabVIEW 的步驟沒有實測','LadderLab 的建置工具不能設定 .NET 節點（Constructor 和 Invoke 的類別是唯讀），所以上面的步驟是照 NI 說明和範例寫的，沒有在 LabVIEW 裡跑過；SDK 本身用 PowerShell 測過。out 參數在 Invoke Node 上怎麼出現、要不要接輸入，以你的 LabVIEW 實際看到的為準。卡住時看 LabVIEW 附的範例 examples\\Connectivity\\Dot NET\\Calling a Private .NET Assembly.vi。'),
 C.table(['.NET 常見狀況','原因和做法'],[
  ['C# 同事改了 DLL、重編了，LabVIEW 還在跑舊的','組件載入後留在記憶體，直到載入它的專案（或 LabVIEW）關掉（NI 說明）。關掉專案再開；不在專案裡用的要重開 LabVIEW。用 .NET Assemblies in Memory 對話框看載入的是哪一版'],
  ['LabVIEW 2018 載不進同事給的組件','NI 官方寫 .NET Core 支援是從 LabVIEW 2024 Q3 開始逐步加入。2018 請同事編成 .NET Framework 4.x（這一課的 SDK 就是）；.NET Standard 2.0 能不能用沒有確認'],
@@ -148,8 +154,8 @@ C.table(['錯誤','症狀','怎麼避免'],[
  ['部署少檔','產線電腦載入失敗','乾淨電腦驗收'],
  ['.NET 組件改了沒生效','跑的還是舊版','關專案或重開 LabVIEW']
 ]),
-C.h3('⑩ 作業','',''),
-`<ol><li>打開 H12_Station_Name.vi，把第二個節點的 nSize 改接常數 1，執行，看回傳值和 nSize 回來多少，說明為什麼。（<b>不要</b>把 nSize 改成比緩衝區大的數字，那就是 ④ 的危險實驗。）</li>
+C.h3('⑩ 作業','','另外約 2～3 小時'),
+`<ol><li>打開 H12_Station_Name.vi，只把<b>第二個節點</b>的 nSize 改接常數 1（Initialize Array 那條線不要動），執行，看回傳值和 nSize 回來多少，說明為什麼。LadderLab 實測：回傳 0、nSize 回來 16、名稱是空的。（<b>不要</b>把 nSize 改成比緩衝區大的數字，那就是 ④ 的危險實驗。）</li>
 <li>把它改成 Minimum size 的寫法（只用一個節點），比較兩種寫法哪個比較好讀。</li>
 <li>解開 H12_FakeAxisCard.zip，先跑 test_FakeAxisCard.ps1 確認 SDK 沒問題，再照 ⑥ 在 LabVIEW 裡做：開卡、把 0 軸移到 150 mm、每 100 ms 顯示位置、到位後關卡。故意移到 400 mm，確認錯誤有轉成 LabVIEW 的錯誤、訊息看得懂。</li>
 <li>照 ⑦ 把 ③ 包成 <code>Axis Open.vi</code>、<code>Axis MoveAbs.vi</code>、<code>Axis Close.vi</code>，並寫一支 H5 的測試：沒開卡就 MoveAbs 一定要回錯誤。</li></ol>`,
@@ -157,7 +163,7 @@ C.h3('測','q','小測驗'),
 {quiz:[
  {q:'64 位元的 LabVIEW 可以呼叫 32 位元的原生 DLL 嗎？',o:['不行，位元數必須一樣','可以，會自動轉換','只有 stdcall 的可以','重開機就可以'],a:0,ex:'Windows 不讓同一個程式混用。LadderLab 實測：VI 斷線，回錯誤 1003。'},
  {q:'函式會把結果寫進 char* buffer，LabVIEW 這邊要？',o:['先配置夠長的字串（或設 Minimum size）再傳進去','接一個空字串就好','改成 Pascal String','不用管，DLL 會自己配置'],a:0,ex:'DLL 不能把 LabVIEW 給的 C 字串加長。'},
- {q:'緩衝區沒配置，結果卻顯示正確的名稱、也沒錯誤，代表？',o:['不代表沒事：多寫的部分可能已經寫壞記憶體','程式是對的','LabVIEW 自動修好了','DLL 有自己配置'],a:0,ex:'LadderLab 實測（錯誤檢查 Disabled）就是這樣。'},
+ {q:'緩衝區沒配置，結果卻顯示正確的名稱、也沒錯誤，代表？',o:['不代表沒事：多寫的部分可能已經寫壞記憶體','程式是對的','LabVIEW 自動修好了','DLL 有自己配置'],a:0,ex:'LadderLab 實測：Default 和 Disabled 都這樣；改成 Maximum 才跳出錯誤 1516。'},
  {q:'Open 回傳的 HANDLE 要用什麼型別存？',o:['pointer-sized 整數','U32','DBL','字串'],a:0,ex:'寫死 U32，64 位元下指標會被截掉。'},
  {q:'出現錯誤 1097 時？',o:['找原因（型別、配置、位元數、呼叫慣例），重開 LabVIEW','清掉錯誤繼續跑','改成 Disabled 讓它不報錯','加大 Wait'],a:0,ex:'記憶體可能已經被破壞。'},
  {q:'C# 同事重編了組件，LabVIEW 還在跑舊版，因為？',o:['組件載入後留在記憶體，要關專案或重開 LabVIEW','LabVIEW 不支援 C#','要重新安裝 LabVIEW','DLL 壞了'],a:0,ex:'NI 說明：載入後一直留到載入它的專案或 LabVIEW 關閉。'},
