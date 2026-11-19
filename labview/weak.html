@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta name="ll-version" content="5719a05db4">
+<meta name="ll-version" content="66cbb93fd6">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>不熟專區：卡住的地方和練習題 | LadderLab</title>
@@ -35,7 +35,7 @@
   .wkshot img { display: block; width: 100%; height: auto; }
   .mk { position: absolute; transform: translate(-50%, -50%); width: 26px; height: 26px; border-radius: 50%; color: #fff; font: 700 13px/1 system-ui, sans-serif; display: grid; place-items: center; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45); cursor: pointer; padding: 0; }
   @media (max-width: 600px) { .mk { width: 20px; height: 20px; font-size: 11px; } }
-  .mk.bad, .ml .n.bad { background: #c0392b; } .mk.good, .ml .n.good { background: #1e7b34; } .mk.todo, .ml .n.todo { background: #b9770e; }
+  .mk.bad, .ml .n.bad { background: #c0392b; } .mk.good, .ml .n.good { background: #1e7b34; } .mk.todo, .ml .n.todo { background: #b9770e; } .mk.note, .ml .n.note { background: #4a6fa5; }
   .ml { list-style: none; padding: 0; margin: 6px 0; }
   .ml li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; padding: 6px; border-radius: 6px; font-size: 14px; line-height: 1.6; }
   .ml li.flash { background: rgba(245,158,11,.25); }
@@ -67,21 +67,21 @@
   <div id="drill"></div>
 
   <h2>題目與作答紀錄</h2>
-  <p class="legend">截圖上的圓圈可以點：<b style="color:#c0392b">紅</b> 有問題、<b style="color:#1e7b34">綠</b> 做對、<b style="color:#b9770e">橘</b> 還沒做。</p>
+  <p class="legend">截圖上的圓圈可以點：<b style="color:#c0392b">紅</b> 有問題、<b style="color:#1e7b34">綠</b> 做對、<b style="color:#b9770e">橘</b> 還沒做或要補、<b style="color:#4a6fa5">藍</b> 小提醒。</p>
   <div id="probs"></div>
 
   <h2>怎麼更新這一頁</h2>
   <p class="why">做完一題（或重做），把方塊圖和前面板的截圖傳給 Claude：它會照題目要求檢查、在截圖上標出問題、更新上面的不熟點，必要時加新的練習題。你在這台瀏覽器按的「我覺得熟了」和答題紀錄只存在這個瀏覽器。</p>
 </main>
 <footer><p><a href="../privacy.html">隱私權政策與使用條款</a>　LabVIEW 為 NI（National Instruments）之商標。本站為獨立開發，與 NI 無關。</p></footer>
-<script src="weak-data.js?v=e3c4de307b"></script>
+<script src="weak-data.js?v=01495165ad"></script>
 <script src="weak.js?v=1d8bb292d0"></script>
 <script>
 (function () {
   if (location.protocol === "file:") return;
   function check() {
     fetch("../version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.version || d.version === "5719a05db4" || document.getElementById("ll-newver")) return;
+      if (!d.version || d.version === "66cbb93fd6" || document.getElementById("ll-newver")) return;
       var bar = document.createElement("div");
       bar.id = "ll-newver";
       bar.className = "newver";

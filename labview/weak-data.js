@@ -1,6 +1,6 @@
 /* 不熟專區的資料：練習題目、作答紀錄（截圖和標記）、不熟點、練習題。
    新增方法：做完題目把截圖給 Claude，它會在 problems[].tries 加一筆、更新 weak[].status，必要時加 drills。
-   status：'不熟'、'練習中'、'熟了'、'還沒作答'。截圖標記的 x、y 是圖片寬高的百分比；kind：bad 有問題、good 做對、todo 還沒做。 */
+   status：'不熟'、'練習中'、'熟了'、'還沒作答'。截圖標記的 x、y 是圖片寬高的百分比；kind：bad 有問題、good 做對、todo 還沒做或要補、note 小提醒。 */
 window.WEAK = {
 updated: '2026-11-19',
 problems: [
@@ -19,7 +19,7 @@ problems: [
   hints:['先只改一件事：把 Frequency、Amplitude、Sine 三個端子拖進迴圈裡，執行中轉旋鈕看看。',
          '存檔放在迴圈裡：「儲存數據」按鈕（機械動作 Latch When Released）接一個 Case Structure，True 頁才寫檔。',
          'Simulate Signal 的輸出是動態資料（藍色粗線），先接 Convert from Dynamic Data 轉成 1D 陣列，再接 Write Delimited Spreadsheet.vi 的 1D data；transpose? 接 True，一個數一列，Excel 比較好看。'],
-  answer:'<ol><li>While Loop 裡：Frequency、Amplitude → Simulate Signal → Sine（Waveform Graph）。stop 接停止條件。</li><li>迴圈裡加「儲存數據」按鈕（Latch When Released）→ Case Structure。</li><li>True 頁：Simulate Signal 的輸出 → Convert from Dynamic Data（1D array of scalars - single channel）→ Write Delimited Spreadsheet.vi 的 1D data；transpose? 接 True；file path 不接會跳出選檔視窗，接了就寫到那個檔。False 頁什麼都不做。</li><li>想連時間也存：再用 Ramp Pattern 或 i × dt 做一個時間陣列，和數值組成 2D 陣列（Build Array）再寫。</li></ol>'},
+  answer:'<ol><li>While Loop 裡：Frequency、Amplitude → Simulate Signal → Sine（Waveform Graph）。stop 接停止條件。</li><li>迴圈裡加「儲存數據」按鈕（Latch When Released）→ Case Structure。</li><li>True 頁：Simulate Signal 的輸出 → Convert from Dynamic Data（1D array of scalars - single channel）→ Write Delimited Spreadsheet.vi 的 1D data；transpose? 接 True；file path 不接會跳出選檔視窗，接了就寫到那個檔。False 頁什麼都不做。</li><li>想連時間也存：再用 Ramp Pattern，或用 For Loop 的 i × dt（不是 While Loop 的圈數）做一個時間陣列，和數值組成 2D 陣列（Build Array）再寫。</li></ol>'},
  {id:'P5', title:'簡易密碼鎖與錯誤鎖定', practice:'Event Structure、String',
   goal:'做一個登入驗證視窗，連續輸入錯誤時鎖定系統。',
   req:['密碼輸入框要用密碼遮罩（顯示 *），加一個「確認登入」按鈕',
@@ -27,13 +27,14 @@ problems: [
        '和預設密碼（例如 LabVIEW2026）比對：對了顯示歡迎訊息；<b>連續</b>錯 3 次，把輸入框和按鈕都設成停用，顯示「系統已鎖定」'],
   tries:[{date:'2026-11-19', img:'img/weak/p5_try1.png', w:895, h:560, summary:'事件結構、移位暫存器計次、屬性節點都用上了，方向是對的；鎖定的次數、鎖的範圍、stop 的寫法有問題。',
    marks:[
-    {n:1, x:47.4, y:28.3, kind:'bad', weak:'K3', text:'次數 +1 之後用「&gt; 3」比較：第 3 次錯時 3 &gt; 3 不成立，<b>第 4 次</b>錯才鎖。改成「≥ 3」。'},
+    {n:1, x:47.4, y:28.3, kind:'bad', weak:'K3', text:'你的對話框寫「超過3次」，所以用了「&gt; 3」，這個想法很自然。但題目是「錯 3 次就鎖」：第 3 次錯時 +1 後是 3，3 &gt; 3 不成立，要到<b>第 4 次</b>才鎖。改成「≥ 3」，或把對話框改成「已錯 3 次」。'},
     {n:2, x:82.8, y:25.0, kind:'bad', weak:'K4', text:'只把「請輸入密碼」設成停用，「確認登入」按鈕還能按。題目要兩個都停用，並顯示「系統已鎖定」。'},
-    {n:3, x:31.5, y:86.2, kind:'bad', weak:'K4', text:'stop 事件把密碼框設回 Enabled：<b>按一下 stop 就解鎖了</b>。鎖定不應該被別的事件解開。'},
+    {n:3, x:29, y:84, kind:'bad', weak:'K4', text:'stop 事件把密碼框設回 Enabled：<b>按一下 stop 就解鎖了</b>。鎖定不應該被別的事件解開。如果是想讓下次執行時輸入框是可用的，把「設回 Enabled」放在程式<b>一開始</b>（迴圈前面）初始化，不要放在 stop 事件裡。'},
     {n:4, x:88.4, y:67.3, kind:'bad', weak:'K2', text:'stop 端子放在事件結構外面，和事件結構沒有資料相依：通常在等待事件之前就讀完了，第一次按 stop 停不下來。stop 端子要放進「stop: Value Change」那一頁。'},
-    {n:5, x:35.1, y:39.4, kind:'bad', weak:'', text:'小地方：「登陸成功」台灣的用法是「登入成功」。'},
+    {n:5, x:35.1, y:39.4, kind:'note', weak:'', text:'小地方：「登陸成功」台灣的用法是「登入成功」。'},
     {n:6, x:4.5, y:30.5, kind:'good', text:'用移位暫存器記錯誤次數，初始值 0，這是對的。'},
-    {n:7, x:91.4, y:56.2, kind:'good', text:'「確認登入」按鈕的端子放在它自己的 Value Change 事件頁裡，Latch 按鈕被讀到才會彈回，這是對的。'}
+    {n:7, x:91.4, y:56.2, kind:'good', text:'「確認登入」按鈕的端子放在它自己的 Value Change 事件頁裡，Latch 按鈕被讀到才會彈回，這是對的。'},
+    {n:8, x:55, y:18, kind:'todo', weak:'K3', text:'截圖只看得到 False 頁。答對的 True 頁有沒有把次數歸零（題目說「連續」錯 3 次）？下次把那一頁也截給我。'}
    ]}],
   hints:['先修計次：每錯一次 +1，<b>+1 之後的值 ≥ 3</b> 就鎖；答對時把次數歸零（題目說「連續」）。',
          '鎖定時用兩個屬性節點（或一個屬性節點加長）把「請輸入密碼」和「確認登入」都設成 Disabled and Grayed Out，另外用一個字串指示器顯示「系統已鎖定」。',
@@ -47,8 +48,8 @@ problems: [
   tries:[],
   hints:['金額要「記住」：用移位暫存器（初始值 0）。投 10 就 +10、投 50 就 +50。',
          '飲料用 Enum（綠茶、咖啡、果汁）接 Case Structure，每一頁輸出那種飲料的價格。',
-         '用 Event Structure 放三個事件：投 10、投 50、購買。購買頁：金額 ≥ 價格？True：找零 = 金額 − 價格，金額 → 0，顯示出貨成功；False：One Button Dialog「金額不足」，金額不變。'],
-  answer:'<ol><li>前面板：三個 Latch 按鈕（投入 10 元、投入 50 元、購買）、Enum「飲料」（綠茶、咖啡、果汁）、數值指示器「目前投入金額」「找零金額」、stop。</li><li>While Loop + 移位暫存器「金額」（初始 0）+ Event Structure。</li><li>「投入 10 元」頁：金額 + 10；「投入 50 元」頁：金額 + 50。</li><li>「購買」頁：Enum → Case 得到價格；金額 ≥ 價格？True：找零 = 金額 − 價格，金額 → 0，訊息「出貨成功」；False：One Button Dialog「金額不足，還差 X 元」，金額不變。</li><li>每一頁都把「金額」接到移位暫存器右邊，沒改的頁直接穿過去。</li><li>狀態機版本（進階）：Enum 狀態「等待投幣、檢查金額、出貨、找零」，每個狀態決定下一個狀態，C9 和結構實驗室有教。</li></ol>'}
+         '用 Event Structure 放三個事件：投 10、投 50、購買。購買頁：金額 ≥ 價格？True：找零 = 金額 − 價格，金額 → 0，顯示出貨成功；False：One Button Dialog「金額不足」，金額不變。<b>注意：「金額」的通道不要用 Use Default If Unwired</b>（題 5 剛學的），沒接的事件頁會把金額變成 0，投的錢就不見了；每一頁都要把金額接過去。'],
+  answer:'<ol><li>前面板：三個 Latch 按鈕（投入 10 元、投入 50 元、購買）、Enum「飲料」（綠茶、咖啡、果汁）、數值指示器「目前投入金額」「找零金額」、stop。</li><li>While Loop + 移位暫存器「金額」（初始 0）+ Event Structure。</li><li>「投入 10 元」頁：金額 + 10；「投入 50 元」頁：金額 + 50。</li><li>「購買」頁：Enum → Case 得到價格；金額 ≥ 價格？True：找零 = 金額 − 價格，金額 → 0，訊息「出貨成功」；False：One Button Dialog「金額不足，還差 X 元」，金額不變。</li><li>每一頁都把「金額」接到移位暫存器右邊，沒改的頁直接穿過去。<b>不要</b>在金額的通道上用 Use Default If Unwired，否則沒接的頁會輸出 0。</li><li>狀態機版本（進階）：Enum 狀態「等待投幣、檢查金額、出貨、找零」，每個狀態決定下一個狀態，C9 和結構實驗室有教。</li></ol>'}
 ],
 weak: [
  {id:'K1', name:'端子放在迴圈裡面還是外面', from:['P4'], status:'不熟',
@@ -72,7 +73,7 @@ weak: [
   why:'用 Switch 機械動作會每一圈都寫；寫檔放在迴圈外面就只能在結束時存一次。',
   links:[{t:'C6 字串與檔案 I/O',h:'index.html#C06'},{t:'C17 迴圈收集資料再寫檔',h:'index.html#C17'},{t:'檔案 I/O 實驗室',h:'lab-file.html'},{t:'波形實驗室',h:'lab-wave.html'}]},
  {id:'K6', name:'Enum + Case 選擇、移位暫存器累加（販賣機）', from:['P2'], status:'還沒作答',
-  concept:'Enum 接 Case Structure，每個項目一頁；要「記住」的值（例如投入金額）放在移位暫存器，每個事件頁都要把它接回去。',
+  concept:'Enum 接 Case Structure，每個項目一頁；要「記住」的值（例如投入金額）放在移位暫存器，每個事件頁都要把它接回去。這種通道不能用 Use Default If Unwired：沒接的頁會輸出預設值 0，記住的值就被清掉了。',
   why:'販賣機題還沒作答，先列出來，做完再依作答更新。',
   links:[{t:'第 6 課 Case Structure',h:'index.html#L06'},{t:'C2 Enum',h:'index.html#C02'},{t:'C9 State Machine',h:'index.html#C09'},{t:'Enum 實驗室',h:'lab-enum.html'},{t:'結構實驗室（State Machine）',h:'lab-struct.html'}]}
 ],
@@ -93,8 +94,8 @@ drills: [
  {id:'D22', weak:'K2', kind:'mc', q:'「確認登入」是 Latch When Released 按鈕，它的端子應該放在哪裡？',
   o:['它自己的「確認登入: Value Change」事件頁裡','迴圈外面','事件結構外面、迴圈裡面','不需要端子'], a:0, ex:'Latch 按鈕被讀到才會彈回；放在自己的事件頁，每次事件都會讀到它。'},
  {id:'D23', weak:'K2', kind:'build', q:'改你的題 5：把 stop 端子搬進「stop: Value Change」事件頁，從那裡接停止條件；刪掉 stop 事件裡把密碼框設回 Enabled 的屬性節點。',
-  hints:['事件結構右邊的輸出通道接到停止條件；stop 頁接 stop 端子（True），確認登入頁沒接的話會是 False，可以在通道上右鍵 Use Default If Unwired。'],
-  check:['按一次 stop 就停','鎖定之後按 stop，密碼框還是鎖著（程式停了）','沒有任何警告說 Latch 按鈕沒被讀到'],
+  hints:['事件結構右邊的輸出通道接到停止條件；stop 頁接 stop 端子。其他頁沒接時 VI 會斷線：先在通道上右鍵 Use Default If Unwired，沒接的頁才會輸出 False（或每一頁都接一個 False 常數）。'],
+  check:['按一次 stop 就停','鎖定之後按 stop，密碼框還是鎖著（程式停了）','錯誤清單（Ctrl+L）勾 Show Warnings，沒有警告說 Latch 按鈕沒被讀到'],
   answer:'stop 頁：stop 端子 → 事件結構輸出通道 → 停止條件。確認登入頁：通道給 False。stop 頁裡沒有屬性節點。'},
  {id:'D31', weak:'K3', kind:'mc', q:'次數從 0 開始，每錯一次「次數 + 1」之後和 3 比較，用「&gt;」。第幾次錯會鎖？',
   o:['第 4 次','第 3 次','第 2 次','永遠不會鎖'], a:0, ex:'第 3 次錯時 +1 後是 3，3 &gt; 3 不成立。要第 3 次鎖就用 ≥ 3。'},
@@ -111,7 +112,7 @@ drills: [
  {id:'D42', weak:'K4', kind:'mc', q:'Disabled 和 Disabled and Grayed Out 差在哪？',
   o:['兩個都不能操作；Disabled 外觀不變，Grayed Out 會變灰','Disabled 還能操作','Grayed Out 還能操作','沒有差別'], a:0, ex:'給使用者看得出「被鎖了」，通常選 Disabled and Grayed Out。'},
  {id:'D43', weak:'K4', kind:'build', q:'題 5 的鎖定改成：密碼框和「確認登入」都設成 Disabled and Grayed Out，再用字串指示器顯示「系統已鎖定」。',
-  hints:['在控制項上右鍵 Create ▸ Property Node ▸ Disabled，在屬性上右鍵 Change All To Write，再接常數 2（或建 Enum 常數）。','兩個控制項各要一個屬性節點；錯誤線串起來，順序就固定。'],
+  hints:['在控制項上右鍵 Create ▸ Property Node ▸ Disabled，在屬性上右鍵 Change All To Write，再在輸入上右鍵 Create Constant，從下拉選 Disabled and Grayed Out（你在題 5 就是這樣做的）。直接接數字 2 也可以，但不好讀。','兩個控制項各要一個屬性節點；錯誤線串起來，順序就固定。'],
   check:['第 3 次錯：兩個都變灰、都不能按','畫面顯示「系統已鎖定」','整個程式沒有任何地方會把它們設回 Enabled'],
   answer:'False 頁裡的「≥ 3」Case 的 True 頁：兩個屬性節點（Disabled = 2）+「訊息」= 系統已鎖定。'},
  {id:'D51', weak:'K5', kind:'mc', q:'Write Delimited Spreadsheet.vi 接一個 1000 點的 1D 陣列，transpose? 沒接（False）。檔案裡長什麼樣？',
@@ -121,11 +122,11 @@ drills: [
  {id:'D53', weak:'K5', kind:'mc', q:'Write Delimited Spreadsheet.vi 的 file path 沒有接，執行到它時會？',
   o:['跳出選檔視窗讓使用者選','寫到桌面','錯誤','寫到 VI 旁邊的 data.csv'], a:0, ex:'沒給路徑時會問使用者；產線程式通常要給固定的路徑和檔名規則（W6、W19）。'},
  {id:'D54', weak:'K5', kind:'build', q:'在題 4 加「儲存數據」：按一下，把當下的波形存成 .csv，用 Excel 打開檢查。',
-  hints:['迴圈裡：按鈕（Latch）→ Case Structure。','True 頁：Simulate Signal 輸出 → Convert from Dynamic Data → Write Delimited Spreadsheet.vi（1D data，transpose? = True）。','檔名可以用 Format Date/Time String 做成「wave_%Y%m%d_%H%M%S.csv」，每按一次一個新檔。'],
+  hints:['迴圈裡：按鈕（Latch）→ Case Structure。','True 頁：Simulate Signal 輸出 → Convert from Dynamic Data → Write Delimited Spreadsheet.vi（1D data，transpose? = True）。','檔名可以用 Format Date/Time String 做成「wave_%Y%m%d_%H%M%S.csv」，每按一次一個新檔。它輸出的是字串，要再用 Build Path 接上資料夾路徑，才能接到 file path。'],
   check:['按一下只產生一個檔（或只寫一次）','Excel 打得開，一個數一列','檔案裡的點數和 Simulate Signal 設定的一樣'],
   answer:'見「題目與作答紀錄」題 4 的參考做法。'},
  {id:'D61', weak:'K6', kind:'mc', q:'販賣機的「目前投入金額」要跨好幾次按鈕記住，用什麼最直接？',
-  o:['While Loop 的移位暫存器','迴圈外的數值控制項','每次重新計算','Case Structure 的通道'], a:0, ex:'移位暫存器把上一圈的值帶到下一圈；每個事件頁都要把它接回右邊。'},
+  o:['While Loop 的移位暫存器','迴圈外的數值控制項','每次重新計算','Case Structure 的通道'], a:0, ex:'移位暫存器把上一圈的值帶到下一圈；每個事件頁都要把它接回右邊。不要在這個通道用 Use Default If Unwired，沒接的頁會把金額變成 0。'},
  {id:'D62', weak:'K6', kind:'mc', q:'Enum「飲料」接 Case Structure，之後在 Enum 裡加了「奶茶」，Case Structure 沒有「奶茶」頁也沒有 Default 頁，會？',
   o:['VI 斷線，要補「奶茶」頁或加 Default','自動用綠茶的價格','執行時錯誤','奶茶免費'], a:0, ex:'Enum 接 Case 時，每個值都要有頁（或有 Default）。把 Enum 做成 Type Def，改一次全部跟著更新（C2）。'},
  {id:'D63', weak:'K6', kind:'mc', q:'投入 50 元，買咖啡（35 元）。按購買之後「找零金額」和「目前投入金額」應該是？',
